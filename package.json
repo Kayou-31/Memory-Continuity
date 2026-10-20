@@ -1,0 +1,70 @@
+{
+  "name": "@dsh-external/dsh-rp-memory",
+  "version": "0.1.0-dev.1",
+  "description": "DSH 人工 narrator RP Memory 预览：有效剧情、来源检索和显式候选采纳",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/types/rp-plugin.d.ts",
+  "files": [
+    "lib",
+    "src",
+    "scripts/build.mjs",
+    "tsconfig.json",
+    "SOURCE-MANIFEST.json",
+    "UPSTREAM.json",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "docs"
+  ],
+  "exports": {
+    ".": {
+      "types": "./lib/types/rp-plugin.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-agent": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "3.18.4"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "license": "BSD-3-Clause",
+  "author": "Kayou",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kayou-31/dsh-rp-memory.git"
+  },
+  "engines": {
+    "node": ">=22",
+    "dsh": "0.2.0-rc.2"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit --emitDeclarationOnly false",
+    "test": "node --test --test-concurrency=1 test/*.test.mjs",
+    "evaluate:fixture": "node scripts/benchmarks/rp-memory.mjs --mode fixture --corpus benchmarks/rp/golden.jsonl --output fixture-report.json"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "esbuild": "0.25.12",
+    "@types/node": "24.19.2",
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-agent": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "@deepseek-ai/schemastery": "3.18.4"
+  }
+}

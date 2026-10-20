@@ -1,0 +1,46 @@
+{
+  "designVersion": "1.0",
+  "createdDate": "2026-10-20",
+  "repository": "Kayou-31/dsh-ultra-mode",
+  "baselineCommit": "00bc770ef5e0819fb0fb3bee4afbd9576e303364",
+  "ultraVersion": "0.6.0",
+  "memoryVersion": "0.1.0",
+  "status": "design-and-implementation-plan; no RP product implementation tested",
+  "files": [
+    {
+      "path": "00_START_HERE.md",
+      "bytes": 4393,
+      "sha256": "295b2a96d881cdec9ceddfe4db323cce67798228ed5bfa0b6cfe26d59ea17a5a"
+    },
+    {
+      "path": "01_RP_MEMORY_SPEC.md",
+      "bytes": 26713,
+      "sha256": "8869ac84e25e7d7300a45b5b0127c05c0f84ab635869690d47ef2fb1134c6925"
+    },
+    {
+      "path": "02_IMPLEMENTATION_PLAN.md",
+      "bytes": 25893,
+      "sha256": "fa7c612fe79646d665c5ba2cd17e96d0133188865257c63332d2dcb6fc396c1f"
+    },
+    {
+      "path": "03_CONTRACTS_REFERENCE.ts",
+      "bytes": 19180,
+      "sha256": "757c17b64cab4e332e90bee045350e011ac54ba911dd66aa6439debdcbd61b84"
+    },
+    {
+      "path": "04_ACCEPTANCE.md",
+      "bytes": 30222,
+      "sha256": "1da38087ee7d01b34f3ee080c44a5431cb2def70aa74c9eb1e272ba697aa5145"
+    },
+    {
+      "path": "05_BASELINE_AND_CAPABILITIES.md",
+      "bytes": 21708,
+      "sha256": "9275dacbcf0dcfcd9d2b16a8c861431db2feaaf3183483aed2a0c654763c091a"
+    },
+    {
+      "path": "06_CODEX_START_PROMPT.md",
+      "bytes": 4415,
+      "sha256": "2f3da3e989da60b6198089a1988b4ae9c21ad307c5fe70c8e0107ed1df0adb79"
+    }
+  ]
+}

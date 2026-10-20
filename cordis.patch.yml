@@ -1,0 +1,7 @@
+- insert:
+    - id: rp-memory
+      name: '@dsh-external/dsh-rp-memory'
+      config:
+        enabled: false
+        contextCompression: false
+        strictPov: false

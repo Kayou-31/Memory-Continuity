@@ -1,0 +1,5 @@
+node_modules/
+lib/
+work/
+*.tgz
+fixture-report.json

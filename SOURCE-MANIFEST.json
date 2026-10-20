@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "entry": "src/rp-plugin.ts",
+  "files": [
+    {
+      "path": "src/rp/candidates.ts",
+      "bytes": 6620,
+      "sha256": "33168d2fb7b78143c9a81ecaf97ea315b5a76bf20c9367726d3cb4c93463fc7d"
+    },
+    {
+      "path": "src/rp/canonical.ts",
+      "bytes": 13743,
+      "sha256": "ad45c4892c0b543112da348fbb088a2bd26a6a835f4db024cda519c3cfbf7ec7"
+    },
+    {
+      "path": "src/rp/capabilities.ts",
+      "bytes": 10061,
+      "sha256": "4a8074e071b2956c5c741e21f90b171ff49c54c081700d9362a486931da9b2e7"
+    },
+    {
+      "path": "src/rp/global.ts",
+      "bytes": 17826,
+      "sha256": "f5875bcf4d5439293f006d8d4f8e385dda60542f882bd3eb6901d43c4ac4a261"
+    },
+    {
+      "path": "src/rp/host-adapter.ts",
+      "bytes": 730,
+      "sha256": "93f91758689e4c3e77088e8d873668d4e94b3206013aae8c97e4ff45589944bc"
+    },
+    {
+      "path": "src/rp/jobs.ts",
+      "bytes": 9092,
+      "sha256": "5be10377351e7866e75322f3727c0bfdaea0cdbf5f2fd6d2043774f7b9f1009d"
+    },
+    {
+      "path": "src/rp/memory.ts",
+      "bytes": 5314,
+      "sha256": "88bb9e2944977579dfa012c90b0cfba13561dbff0ce7f0eae61f9098fdbc7455"
+    },
+    {
+      "path": "src/rp/packet.ts",
+      "bytes": 8570,
+      "sha256": "7b5808365406991986a76883b1e150534ddcc5bdd30a2165db0cbd235cbfc98d"
+    },
+    {
+      "path": "src/rp/reducer.ts",
+      "bytes": 7291,
+      "sha256": "ed7e2606b422ff63c6de9a7e2f2a844098ac3647fcc8e66034f38a28381af23a"
+    },
+    {
+      "path": "src/rp/retrieval-index.ts",
+      "bytes": 2426,
+      "sha256": "6a67814d08872a072b0a67743287c64675b10efd8b1218865a13cb07a2bd02d8"
+    },
+    {
+      "path": "src/rp/retrieval.ts",
+      "bytes": 6876,
+      "sha256": "ca77384dd9c07d0799e06f0470b70cf4f046630a6c7965159f6584a0f0668053"
+    },
+    {
+      "path": "src/rp/rp-plugin.ts",
+      "bytes": 50181,
+      "sha256": "bca129353a52f52c9712ff47a907894ff55e2ca83a07b3a566be51ca169ff08e"
+    },
+    {
+      "path": "src/rp/schema.ts",
+      "bytes": 16718,
+      "sha256": "e5845ff514c07e41c99b5916aa2a84b028353aa5cf3ee92c41da4842347350d5"
+    },
+    {
+      "path": "src/rp/session-policy.ts",
+      "bytes": 7072,
+      "sha256": "a33cd164f9d442135826eb801460a28d9e7dd55c5b9d9040bc38746c0349fe3c"
+    },
+    {
+      "path": "src/rp/source-adapter.ts",
+      "bytes": 2593,
+      "sha256": "6647a6ddbb05e602e1a440b9d38224725c129eb342a1e6a0f10e2f7b937e9b6f"
+    },
+    {
+      "path": "src/rp/store.ts",
+      "bytes": 107287,
+      "sha256": "390f55e8b66b0368e973bfec2eaf25c6a2a7eccd707f71613e2f5ae8f8a28e48"
+    },
+    {
+      "path": "src/rp/summarizer.ts",
+      "bytes": 16046,
+      "sha256": "10480d4061ebd2ef72e529ed7c15c1616ed6bf373ac4d4a98832aebfe32953a3"
+    },
+    {
+      "path": "src/rp/types.ts",
+      "bytes": 12107,
+      "sha256": "6ad48e7a02c0002387ded126ad4a2365024a37c8b32e9ac4f024b18b025e2d04"
+    },
+    {
+      "path": "src/rp-plugin.ts",
+      "bytes": 1187,
+      "sha256": "232974aaac545dd4a373bb0d0db1bb6160dad2d3f37b16e5428fb0ab80eb4d08"
+    },
+    {
+      "path": "lib/index.js",
+      "bytes": 250052,
+      "sha256": "4409d9461524d7945118fe9870c5d4551b22b2cfe90c838915756612b8eb56cb"
+    },
+    {
+      "path": "lib/index.js.map",
+      "bytes": 458833,
+      "sha256": "ea34f145ac1d74fdb55cf7cb031e8cd40a376111c9788b79f040f044001ab42b"
+    },
+    {
+      "path": "lib/types/rp/candidates.d.ts",
+      "bytes": 2063,
+      "sha256": "52eab9217865653be1941aa7e9d520fae4943c8dc46b19fd69a3479e050f5d0f"
+    },
+    {
+      "path": "lib/types/rp/canonical.d.ts",
+      "bytes": 3059,
+      "sha256": "eecea15d757d753bc4df307addd24e16f50d698c7d537638d64cdc89dc896086"
+    },
+    {
+      "path": "lib/types/rp/capabilities.d.ts",
+      "bytes": 3480,
+      "sha256": "6b92432167c3b39edf453b4af0e605346ffb427c1e8e347175535f1d55a12db7"
+    },
+    {
+      "path": "lib/types/rp/global.d.ts",
+      "bytes": 2683,
+      "sha256": "0303d47c37fdd3e3549540ac43175c6c48f48263f9b7c75895f952a68216ec44"
+    },
+    {
+      "path": "lib/types/rp/host-adapter.d.ts",
+      "bytes": 552,
+      "sha256": "6263bfd70e63117a5beb032684068c76dcceb5c659d2f35e02d1ae90f25a695f"
+    },
+    {
+      "path": "lib/types/rp/jobs.d.ts",
+      "bytes": 1956,
+      "sha256": "3e993b3fb0a78aa884e1dbf255baea02c86ad76231a14a8bb1b425aeb9d41c96"
+    },
+    {
+      "path": "lib/types/rp/memory.d.ts",
+      "bytes": 13946,
+      "sha256": "cabcabaa44d2af5afbfac7aaa092c632af07d27873c662891df1f2961dbe30b7"
+    },
+    {
+      "path": "lib/types/rp/packet.d.ts",
+      "bytes": 2324,
+      "sha256": "35bcfdca507cde8ce20def54048a55e5b5b2138e5c34a0f53ed6a02525a3dfad"
+    },
+    {
+      "path": "lib/types/rp/reducer.d.ts",
+      "bytes": 816,
+      "sha256": "270b0dfcc29f6c200ed3e41a718e2df860a104257aaecbc4ef7904c69f0e346b"
+    },
+    {
+      "path": "lib/types/rp/retrieval-index.d.ts",
+      "bytes": 502,
+      "sha256": "154975177aa34b3d683032fe11908227a0f89982933c37c8e4f35a5921fae9ee"
+    },
+    {
+      "path": "lib/types/rp/retrieval.d.ts",
+      "bytes": 2021,
+      "sha256": "b9dd8239e25e53b37b24ff4518a5f2ef720966bc77aa9b2154fc7fea1469201e"
+    },
+    {
+      "path": "lib/types/rp/rp-plugin.d.ts",
+      "bytes": 16249,
+      "sha256": "2b9d3f67a356db039f43d8e887649346b301e35ba05c0f94557e94354a174291"
+    },
+    {
+      "path": "lib/types/rp/schema.d.ts",
+      "bytes": 2394,
+      "sha256": "f5df212b5d2c314951e98b44b07f49c2e77eb18b37537921d36d44c73defdc9b"
+    },
+    {
+      "path": "lib/types/rp/session-policy.d.ts",
+      "bytes": 2188,
+      "sha256": "79010ede2dbfc77eb77d8c4c7d297b67bf7552a86117e07e65dff88595ca99d4"
+    },
+    {
+      "path": "lib/types/rp/source-adapter.d.ts",
+      "bytes": 846,
+      "sha256": "4ebd8dd37c1d5efbe13bdb7fee3244d8d95c6c9a95377b731a1be70ce37f2172"
+    },
+    {
+      "path": "lib/types/rp/store.d.ts",
+      "bytes": 7240,
+      "sha256": "8df258c93738acbf2b3add38b82248832b49d29ca870903607b62653e6a08667"
+    },
+    {
+      "path": "lib/types/rp/summarizer.d.ts",
+      "bytes": 3595,
+      "sha256": "d2628f201cc2943ba12f430646029744f82ae979f2721f4a6efa19a5c87200bf"
+    },
+    {
+      "path": "lib/types/rp/types.d.ts",
+      "bytes": 13324,
+      "sha256": "279ba9d69987d80f5c1e05c483c295495767da3efd829c8f75f4c9768525139f"
+    },
+    {
+      "path": "lib/types/rp-plugin.d.ts",
+      "bytes": 1567,
+      "sha256": "c7e3f7a7dba96fbe3aafe6ffee2ed616bc97f9a686f788d2e14b5b7f9f63b649"
+    }
+  ]
+}

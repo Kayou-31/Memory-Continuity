@@ -1,0 +1,433 @@
+{
+  "schemaVersion": 1,
+  "upstream": "https://github.com/Kayou-31/dsh-ultra-mode",
+  "baselineCommit": "00bc770ef5e0819fb0fb3bee4afbd9576e303364",
+  "localDevelopmentCheckpoint": "4ab57b02db38bc488a66ddb8a75ff22c22cb6759",
+  "checkpointPublicUrl": null,
+  "checkpointBoundary": "Local integration checkpoint. Original full development history is not published; release source archive and its SHA-256 provide the public source chain.",
+  "branch": "codex/rp-memory-v1",
+  "acceptedP4": "584996b746b3d6e2690c62c006f3a93d8a676b7c",
+  "acceptedP5": "3ec8141607e6b5c1fc8cd45d86384d506e8864fb",
+  "license": "BSD-3-Clause",
+  "sourceMapping": [
+    {
+      "path": "src/rp/candidates.ts",
+      "upstreamPath": "src/rp/candidates.ts",
+      "bytes": 6620,
+      "sha256": "33168d2fb7b78143c9a81ecaf97ea315b5a76bf20c9367726d3cb4c93463fc7d",
+      "upstreamSha256": "33168d2fb7b78143c9a81ecaf97ea315b5a76bf20c9367726d3cb4c93463fc7d",
+      "upstreamBytes": 6620,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/canonical.ts",
+      "upstreamPath": "src/rp/canonical.ts",
+      "bytes": 13743,
+      "sha256": "ad45c4892c0b543112da348fbb088a2bd26a6a835f4db024cda519c3cfbf7ec7",
+      "upstreamSha256": "ad45c4892c0b543112da348fbb088a2bd26a6a835f4db024cda519c3cfbf7ec7",
+      "upstreamBytes": 13743,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/capabilities.ts",
+      "upstreamPath": "src/rp/capabilities.ts",
+      "bytes": 10061,
+      "sha256": "4a8074e071b2956c5c741e21f90b171ff49c54c081700d9362a486931da9b2e7",
+      "upstreamSha256": "4a8074e071b2956c5c741e21f90b171ff49c54c081700d9362a486931da9b2e7",
+      "upstreamBytes": 10061,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/global.ts",
+      "upstreamPath": "src/rp/global.ts",
+      "bytes": 17826,
+      "sha256": "f5875bcf4d5439293f006d8d4f8e385dda60542f882bd3eb6901d43c4ac4a261",
+      "upstreamSha256": "f5875bcf4d5439293f006d8d4f8e385dda60542f882bd3eb6901d43c4ac4a261",
+      "upstreamBytes": 17826,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/host-adapter.ts",
+      "upstreamPath": "src/rp/host-adapter.ts",
+      "bytes": 730,
+      "sha256": "93f91758689e4c3e77088e8d873668d4e94b3206013aae8c97e4ff45589944bc",
+      "upstreamSha256": "93f91758689e4c3e77088e8d873668d4e94b3206013aae8c97e4ff45589944bc",
+      "upstreamBytes": 730,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/jobs.ts",
+      "upstreamPath": "src/rp/jobs.ts",
+      "bytes": 9092,
+      "sha256": "5be10377351e7866e75322f3727c0bfdaea0cdbf5f2fd6d2043774f7b9f1009d",
+      "upstreamSha256": "5be10377351e7866e75322f3727c0bfdaea0cdbf5f2fd6d2043774f7b9f1009d",
+      "upstreamBytes": 9092,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/memory.ts",
+      "upstreamPath": "src/rp/memory.ts",
+      "bytes": 5314,
+      "sha256": "88bb9e2944977579dfa012c90b0cfba13561dbff0ce7f0eae61f9098fdbc7455",
+      "upstreamSha256": "88bb9e2944977579dfa012c90b0cfba13561dbff0ce7f0eae61f9098fdbc7455",
+      "upstreamBytes": 5314,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/packet.ts",
+      "upstreamPath": "src/rp/packet.ts",
+      "bytes": 8570,
+      "sha256": "7b5808365406991986a76883b1e150534ddcc5bdd30a2165db0cbd235cbfc98d",
+      "upstreamSha256": "7b5808365406991986a76883b1e150534ddcc5bdd30a2165db0cbd235cbfc98d",
+      "upstreamBytes": 8570,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/reducer.ts",
+      "upstreamPath": "src/rp/reducer.ts",
+      "bytes": 7291,
+      "sha256": "ed7e2606b422ff63c6de9a7e2f2a844098ac3647fcc8e66034f38a28381af23a",
+      "upstreamSha256": "ed7e2606b422ff63c6de9a7e2f2a844098ac3647fcc8e66034f38a28381af23a",
+      "upstreamBytes": 7291,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/retrieval-index.ts",
+      "upstreamPath": "src/rp/retrieval-index.ts",
+      "bytes": 2426,
+      "sha256": "6a67814d08872a072b0a67743287c64675b10efd8b1218865a13cb07a2bd02d8",
+      "upstreamSha256": "6a67814d08872a072b0a67743287c64675b10efd8b1218865a13cb07a2bd02d8",
+      "upstreamBytes": 2426,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/retrieval.ts",
+      "upstreamPath": "src/rp/retrieval.ts",
+      "bytes": 6876,
+      "sha256": "ca77384dd9c07d0799e06f0470b70cf4f046630a6c7965159f6584a0f0668053",
+      "upstreamSha256": "ca77384dd9c07d0799e06f0470b70cf4f046630a6c7965159f6584a0f0668053",
+      "upstreamBytes": 6876,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/rp-plugin.ts",
+      "upstreamPath": "src/rp/rp-plugin.ts",
+      "bytes": 50181,
+      "sha256": "bca129353a52f52c9712ff47a907894ff55e2ca83a07b3a566be51ca169ff08e",
+      "upstreamSha256": "bca129353a52f52c9712ff47a907894ff55e2ca83a07b3a566be51ca169ff08e",
+      "upstreamBytes": 50181,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/schema.ts",
+      "upstreamPath": "src/rp/schema.ts",
+      "bytes": 16718,
+      "sha256": "e5845ff514c07e41c99b5916aa2a84b028353aa5cf3ee92c41da4842347350d5",
+      "upstreamSha256": "e5845ff514c07e41c99b5916aa2a84b028353aa5cf3ee92c41da4842347350d5",
+      "upstreamBytes": 16718,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/session-policy.ts",
+      "upstreamPath": "src/rp/session-policy.ts",
+      "bytes": 7072,
+      "sha256": "a33cd164f9d442135826eb801460a28d9e7dd55c5b9d9040bc38746c0349fe3c",
+      "upstreamSha256": "a33cd164f9d442135826eb801460a28d9e7dd55c5b9d9040bc38746c0349fe3c",
+      "upstreamBytes": 7072,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/source-adapter.ts",
+      "upstreamPath": "src/rp/source-adapter.ts",
+      "bytes": 2593,
+      "sha256": "6647a6ddbb05e602e1a440b9d38224725c129eb342a1e6a0f10e2f7b937e9b6f",
+      "upstreamSha256": "6647a6ddbb05e602e1a440b9d38224725c129eb342a1e6a0f10e2f7b937e9b6f",
+      "upstreamBytes": 2593,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/store.ts",
+      "upstreamPath": "src/rp/store.ts",
+      "bytes": 107287,
+      "sha256": "390f55e8b66b0368e973bfec2eaf25c6a2a7eccd707f71613e2f5ae8f8a28e48",
+      "upstreamSha256": "390f55e8b66b0368e973bfec2eaf25c6a2a7eccd707f71613e2f5ae8f8a28e48",
+      "upstreamBytes": 107287,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/summarizer.ts",
+      "upstreamPath": "src/rp/summarizer.ts",
+      "bytes": 16046,
+      "sha256": "10480d4061ebd2ef72e529ed7c15c1616ed6bf373ac4d4a98832aebfe32953a3",
+      "upstreamSha256": "10480d4061ebd2ef72e529ed7c15c1616ed6bf373ac4d4a98832aebfe32953a3",
+      "upstreamBytes": 16046,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp/types.ts",
+      "upstreamPath": "src/rp/types.ts",
+      "bytes": 12107,
+      "sha256": "6ad48e7a02c0002387ded126ad4a2365024a37c8b32e9ac4f024b18b025e2d04",
+      "upstreamSha256": "6ad48e7a02c0002387ded126ad4a2365024a37c8b32e9ac4f024b18b025e2d04",
+      "upstreamBytes": 12107,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "src/rp-plugin.ts",
+      "upstreamPath": "src/rp-plugin.ts",
+      "bytes": 1187,
+      "sha256": "232974aaac545dd4a373bb0d0db1bb6160dad2d3f37b16e5428fb0ab80eb4d08",
+      "upstreamSha256": "232974aaac545dd4a373bb0d0db1bb6160dad2d3f37b16e5428fb0ab80eb4d08",
+      "upstreamBytes": 1187,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "LICENSE",
+      "upstreamPath": "LICENSE",
+      "bytes": 1513,
+      "sha256": "4801f2b5a44c434b5e8038b867dc020bdfa23b34f88fb6121e0c44f0e02ebb3b",
+      "upstreamSha256": "4801f2b5a44c434b5e8038b867dc020bdfa23b34f88fb6121e0c44f0e02ebb3b",
+      "upstreamBytes": 1513,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "benchmarks/rp/golden.jsonl",
+      "upstreamPath": "benchmarks/rp/golden.jsonl",
+      "bytes": 19031,
+      "sha256": "f94151b50017183e0d87a820fb93ee5911cea857d050d104813cfd31d461aa5d",
+      "upstreamSha256": "f94151b50017183e0d87a820fb93ee5911cea857d050d104813cfd31d461aa5d",
+      "upstreamBytes": 19031,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-devkit/00_START_HERE.md",
+      "upstreamPath": "docs/rp-memory-devkit/00_START_HERE.md",
+      "bytes": 4393,
+      "sha256": "295b2a96d881cdec9ceddfe4db323cce67798228ed5bfa0b6cfe26d59ea17a5a",
+      "upstreamSha256": "295b2a96d881cdec9ceddfe4db323cce67798228ed5bfa0b6cfe26d59ea17a5a",
+      "upstreamBytes": 4393,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-devkit/01_RP_MEMORY_SPEC.md",
+      "upstreamPath": "docs/rp-memory-devkit/01_RP_MEMORY_SPEC.md",
+      "bytes": 26713,
+      "sha256": "8869ac84e25e7d7300a45b5b0127c05c0f84ab635869690d47ef2fb1134c6925",
+      "upstreamSha256": "8869ac84e25e7d7300a45b5b0127c05c0f84ab635869690d47ef2fb1134c6925",
+      "upstreamBytes": 26713,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-devkit/02_IMPLEMENTATION_PLAN.md",
+      "upstreamPath": "docs/rp-memory-devkit/02_IMPLEMENTATION_PLAN.md",
+      "bytes": 25893,
+      "sha256": "fa7c612fe79646d665c5ba2cd17e96d0133188865257c63332d2dcb6fc396c1f",
+      "upstreamSha256": "fa7c612fe79646d665c5ba2cd17e96d0133188865257c63332d2dcb6fc396c1f",
+      "upstreamBytes": 25893,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-devkit/03_CONTRACTS_REFERENCE.ts",
+      "upstreamPath": "docs/rp-memory-devkit/03_CONTRACTS_REFERENCE.ts",
+      "bytes": 19180,
+      "sha256": "757c17b64cab4e332e90bee045350e011ac54ba911dd66aa6439debdcbd61b84",
+      "upstreamSha256": "757c17b64cab4e332e90bee045350e011ac54ba911dd66aa6439debdcbd61b84",
+      "upstreamBytes": 19180,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-devkit/04_ACCEPTANCE.md",
+      "upstreamPath": "docs/rp-memory-devkit/04_ACCEPTANCE.md",
+      "bytes": 30222,
+      "sha256": "1da38087ee7d01b34f3ee080c44a5431cb2def70aa74c9eb1e272ba697aa5145",
+      "upstreamSha256": "1da38087ee7d01b34f3ee080c44a5431cb2def70aa74c9eb1e272ba697aa5145",
+      "upstreamBytes": 30222,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-devkit/05_BASELINE_AND_CAPABILITIES.md",
+      "upstreamPath": "docs/rp-memory-devkit/05_BASELINE_AND_CAPABILITIES.md",
+      "bytes": 21708,
+      "sha256": "9275dacbcf0dcfcd9d2b16a8c861431db2feaaf3183483aed2a0c654763c091a",
+      "upstreamSha256": "9275dacbcf0dcfcd9d2b16a8c861431db2feaaf3183483aed2a0c654763c091a",
+      "upstreamBytes": 21708,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-devkit/06_CODEX_START_PROMPT.md",
+      "upstreamPath": "docs/rp-memory-devkit/06_CODEX_START_PROMPT.md",
+      "bytes": 4415,
+      "sha256": "2f3da3e989da60b6198089a1988b4ae9c21ad307c5fe70c8e0107ed1df0adb79",
+      "upstreamSha256": "2f3da3e989da60b6198089a1988b4ae9c21ad307c5fe70c8e0107ed1df0adb79",
+      "upstreamBytes": 4415,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-devkit/MANIFEST.json",
+      "upstreamPath": "docs/rp-memory-devkit/MANIFEST.json",
+      "bytes": 1429,
+      "sha256": "ca347b1e6b3ebed8804bb8b37b2689363e01928e97609c093eca4ad72d93bb8f",
+      "upstreamSha256": "ca347b1e6b3ebed8804bb8b37b2689363e01928e97609c093eca4ad72d93bb8f",
+      "upstreamBytes": 1429,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-narrator.zh.md",
+      "upstreamPath": "docs/rp-memory-narrator.zh.md",
+      "bytes": 9749,
+      "sha256": "d29ccd609bf094543463d6d27cb817d06d0c62594a44e7b61ea6873991ce5ec8",
+      "upstreamSha256": "d29ccd609bf094543463d6d27cb817d06d0c62594a44e7b61ea6873991ce5ec8",
+      "upstreamBytes": 9749,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-summary.zh.md",
+      "upstreamPath": "docs/rp-memory-summary.zh.md",
+      "bytes": 6910,
+      "sha256": "3cfcfa4794216c6f73b8fcc2e95341f11a223b36131acd5daa0b9aa0c9abe781",
+      "upstreamSha256": "3cfcfa4794216c6f73b8fcc2e95341f11a223b36131acd5daa0b9aa0c9abe781",
+      "upstreamBytes": 6910,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-design.zh.md",
+      "upstreamPath": "docs/rp-memory-design.zh.md",
+      "bytes": 3343,
+      "sha256": "2455cb479bc1f3fae6b84280357195ac5a1b8420b609d97b6b9b9d40b113c86a",
+      "upstreamSha256": "2455cb479bc1f3fae6b84280357195ac5a1b8420b609d97b6b9b9d40b113c86a",
+      "upstreamBytes": 3343,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-evaluation.zh.md",
+      "upstreamPath": "docs/rp-memory-evaluation.zh.md",
+      "bytes": 1560,
+      "sha256": "0e8804afb0c9141f85359f7456dc16ab539b6da6b3c9fa3416eac1f52596d930",
+      "upstreamSha256": "0e8804afb0c9141f85359f7456dc16ab539b6da6b3c9fa3416eac1f52596d930",
+      "upstreamBytes": 1560,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "scripts/benchmarks/rp-memory.mjs",
+      "upstreamPath": "scripts/benchmarks/rp-memory.mjs",
+      "bytes": 4298,
+      "sha256": "80298951ffdab81b5a594ac2fc0466cb14eec3921d4ff70c45b8f94b28ed61ce",
+      "upstreamSha256": "80298951ffdab81b5a594ac2fc0466cb14eec3921d4ff70c45b8f94b28ed61ce",
+      "upstreamBytes": 4298,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "scripts/host-acceptance/network-guard.cjs",
+      "upstreamPath": "scripts/host-acceptance/network-guard.cjs",
+      "bytes": 1695,
+      "sha256": "0a55f02b67964018820c896fcd223e240d4b684aa91e5d4c80d08c9c8df70e8e",
+      "upstreamSha256": "0a55f02b67964018820c896fcd223e240d4b684aa91e5d4c80d08c9c8df70e8e",
+      "upstreamBytes": 1695,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "scripts/host-acceptance/rp-package-guard.cjs",
+      "upstreamPath": "scripts/host-acceptance/rp-package-guard.cjs",
+      "bytes": 2492,
+      "sha256": "ac0020d0f368f7ec99fafc2de37c65bb3194081aa916ffa481eab2e30a8cb52c",
+      "upstreamSha256": "ac0020d0f368f7ec99fafc2de37c65bb3194081aa916ffa481eab2e30a8cb52c",
+      "upstreamBytes": 2492,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "test/fixtures/rp/story-fixture.mjs",
+      "upstreamPath": "test/fixtures/rp/story-fixture.mjs",
+      "bytes": 994,
+      "sha256": "ce4a980a9e6c3ce784d84bb9d823e132f27ddfaff6eee890fdc901bfc008302e",
+      "upstreamSha256": "ce4a980a9e6c3ce784d84bb9d823e132f27ddfaff6eee890fdc901bfc008302e",
+      "upstreamBytes": 994,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "test/fixtures/rp/semantic-candidates.json",
+      "upstreamPath": "test/fixtures/rp/semantic-candidates.json",
+      "bytes": 595,
+      "sha256": "ebe2d2a9bc97b0f0596be2ae6965f164aeda487d0ca265b7a6a3a8f0e51fde8a",
+      "upstreamSha256": "ebe2d2a9bc97b0f0596be2ae6965f164aeda487d0ca265b7a6a3a8f0e51fde8a",
+      "upstreamBytes": 595,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "test/rp-store.test.mjs",
+      "upstreamPath": "test/rp-store.test.mjs",
+      "bytes": 33593,
+      "sha256": "3031e4c426eb614f0db494fff8308e963715e9fe9e698183e8e74a46773279a7",
+      "upstreamSha256": "3031e4c426eb614f0db494fff8308e963715e9fe9e698183e8e74a46773279a7",
+      "upstreamBytes": 33593,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "test/rp-branch.test.mjs",
+      "upstreamPath": "test/rp-branch.test.mjs",
+      "bytes": 43498,
+      "sha256": "db84862769a9c049118d99e9a3450a8e47c851c65923987c3b780ab423eb1759",
+      "upstreamSha256": "db84862769a9c049118d99e9a3450a8e47c851c65923987c3b780ab423eb1759",
+      "upstreamBytes": 43498,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "test/rp-retrieval.test.mjs",
+      "upstreamPath": "test/rp-retrieval.test.mjs",
+      "bytes": 25210,
+      "sha256": "4688c13f10ac8908a05b6adb3fc2edf7fea7cc9a824f15ba57ebfd2c40087081",
+      "upstreamSha256": "4688c13f10ac8908a05b6adb3fc2edf7fea7cc9a824f15ba57ebfd2c40087081",
+      "upstreamBytes": 25210,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "test/rp-summary.test.mjs",
+      "upstreamPath": "test/rp-summary.test.mjs",
+      "bytes": 24443,
+      "sha256": "e34efdc487b55df101eaf46a2b6072199ca3b4f56c7239546952163d1575375e",
+      "upstreamSha256": "e34efdc487b55df101eaf46a2b6072199ca3b4f56c7239546952163d1575375e",
+      "upstreamBytes": 24443,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "test/rp-evaluation.test.mjs",
+      "upstreamPath": "test/rp-evaluation.test.mjs",
+      "bytes": 1552,
+      "sha256": "6b5d69cb361b42ede9dd5f6b68708a41bf85654f81316a2d85737447e4e3cacc",
+      "upstreamSha256": "6b5d69cb361b42ede9dd5f6b68708a41bf85654f81316a2d85737447e4e3cacc",
+      "upstreamBytes": 1552,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "cordis.patch.yml",
+      "upstreamPath": "packages/dsh-rp-memory/cordis.patch.yml",
+      "bytes": 168,
+      "sha256": "4ccb3b0126c4021039d83a5cb60174ab1611968915ae178e3d1aee3d03dd8ea6",
+      "upstreamSha256": "4ccb3b0126c4021039d83a5cb60174ab1611968915ae178e3d1aee3d03dd8ea6",
+      "upstreamBytes": 168,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "README.md",
+      "upstreamPath": "packages/dsh-rp-memory/README.md",
+      "bytes": 2818,
+      "sha256": "69cfc62527f8c4c21cd5b52dd61fa7c2cb1328d17135ee705696866f415b15b0",
+      "upstreamSha256": "b71d4f4fc6872d3b4bd87d2256879801afd89cb40633e7eb33731b9a55a2fd59",
+      "upstreamBytes": 2139,
+      "derivation": "RP README with independent build instructions appended"
+    }
+  ],
+  "externalEvidence": {
+    "A40": "Full development source/evidence archive, compatible engineering TGZ files and acceptance matrix; these source-only RP tests do not rerun engineering coexistence.",
+    "native": "Pinned SDK0.2.0-rc.2 reports; source-only test suite covers listed deterministic RP tests, not all native probes."
+  },
+  "excluded": [
+    "daily/temporary profiles",
+    "credentials",
+    "real user stories",
+    "node_modules",
+    "work caches",
+    "raw incident logs/process lists/quarantine objects/base64"
+  ],
+  "implementationCheckpoint": "54be6535ae0b6fe73f227971f180e89de718c7b9",
+  "documentRefinement": "Only RP README clarified generated snapshots remain local; runtime/source/type bytes unchanged"
+}

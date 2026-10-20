@@ -1,0 +1,1 @@
+import test from 'node:test';import assert from 'node:assert/strict';import * as rp from '../lib/index.js';test('RP default entry is disabled with native compression and POV closed',()=>{assert.equal(rp.name,'@dsh-external/dsh-rp-memory');assert.equal(rp.Config({}).enabled,false);assert.equal(rp.Config({}).contextCompression,false);assert.equal(rp.Config({}).strictPov,false)});

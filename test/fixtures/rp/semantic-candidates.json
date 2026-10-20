@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "policyVersion": "rp.summary.v1",
+  "sourceText": "艾琳把蓝钥匙放在桌上。钥匙的颜色仍是蓝色。",
+  "correctSummary": "艾琳把蓝钥匙放在桌上。",
+  "incorrectSummary": "艾琳把金钥匙放在桌上。",
+  "claims": [
+    { "subject": "key", "property": "color", "expected": "blue", "correct": "blue", "incorrect": "gold", "critical": true }
+  ],
+  "annotation": "Fixed fixture annotations authored by the implementer; human review and real model quality are not run. Structural source validity cannot establish semantic color fidelity."
+}
