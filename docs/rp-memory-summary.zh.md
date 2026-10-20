@@ -1,6 +1,6 @@
 # RP 人工结构化候选、分层摘要与作业
 
-P4 扩展 P3 的人工 narrator Memory。普通 `/rp accept <sourceId>` 仍只表示用户选定这一版对白；结构化事件与摘要需要独立提案和采纳。SDK `0.2.0-rc.2` 尚无经过可信 admission 的后台候选调用路径，`/rp summarize-auto` 明确返回 `capability_missing`。自动采纳、strict POV、native compaction 均未因此解锁。
+P4 扩展 P3 的人工 narrator Memory。普通 `/rp accept <sourceId>` 仍只表示用户选定这一版对白；结构化事件与摘要需要独立提案和采纳。dev.2 升级至 SDK `0.2.1-rc.2` 仍未接通经过可信 admission 的后台候选调用路径，`/rp summarize-auto` 明确返回 `capability_missing`。自动采纳、strict POV、native compaction 均未因此解锁。
 
 ## 实际用户入口
 

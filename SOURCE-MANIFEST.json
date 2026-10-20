@@ -59,8 +59,8 @@
     },
     {
       "path": "src/rp/rp-plugin.ts",
-      "bytes": 50181,
-      "sha256": "bca129353a52f52c9712ff47a907894ff55e2ca83a07b3a566be51ca169ff08e"
+      "bytes": 50376,
+      "sha256": "e47a06119a6d67aefd0d3a189d877512665879089660afbfd4ef39783dffa890"
     },
     {
       "path": "src/rp/schema.ts",
@@ -99,13 +99,13 @@
     },
     {
       "path": "lib/index.js",
-      "bytes": 250052,
-      "sha256": "4409d9461524d7945118fe9870c5d4551b22b2cfe90c838915756612b8eb56cb"
+      "bytes": 250248,
+      "sha256": "3ea5b30622d0e6358b63653084225958d67aa3ee799a77787ee528fc1d01d13a"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 458833,
-      "sha256": "ea34f145ac1d74fdb55cf7cb031e8cd40a376111c9788b79f040f044001ab42b"
+      "bytes": 459140,
+      "sha256": "847c607432353b57cb88b7649e4ef7f3eca4e1d0b5a1d0823504b1fb2661727b"
     },
     {
       "path": "lib/types/rp/candidates.d.ts",

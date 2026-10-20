@@ -1,6 +1,6 @@
 # RP narrator Memory（P3）
 
-P3 提供手动采纳的 narrator Memory。RP 默认关闭；没有自动将 completion 当作采纳，没有原生历史压缩，没有 strict character POV。实际已验证的宿主是 `0.2.0-rc.2`、session format 4、本地合成 provider；桌面 UI、真实模型和付费 provider 未运行。P6 负责最终独立附属包和离线安装验收。
+P3 提供手动采纳的 narrator Memory。RP 默认关闭；没有自动将 completion 当作采纳，没有原生历史压缩，没有 strict character POV。dev.2 的宿主目标是 `0.2.1-rc.2`、session format 4、本地合成 provider；dev.1 的 `0.2.0-rc.2` 验证证据另行保留。桌面 UI、真实模型和付费 provider 未运行。最终独立包、原生探针和历史回归的实际范围见对应发行报告。
 
 ## 启用条件
 

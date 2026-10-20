@@ -1,8 +1,8 @@
 # RP Memory 预览交付与来源
 
-本版本提供用户明确采纳的 narrator Memory、独立分支与 global 权限、来源检索、分层摘要和候选作业边界。公开入口为 `@dsh-external/dsh-rp-memory`，版本 `0.1.0-dev.1`。BSD-3-Clause；上游为 Kayou-31/dsh-ultra-mode，设计基线 `00bc770ef5e0819fb0fb3bee4afbd9576e303364`。后续开发 checkpoint 仅本地，不能把该哈希拼成假 GitHub 链接。独立仓库的 UPSTREAM.json 记录原路径、字节和哈希；完整开发源归档补充工程共存来源。
+本版本提供用户明确采纳的 narrator Memory、独立分支与 global 权限、来源检索、分层摘要和候选作业边界。公开入口为 `@dsh-external/dsh-rp-memory`，版本 `0.1.0-dev.2`。BSD-3-Clause；上游为 Kayou-31/dsh-ultra-mode，设计基线 `00bc770ef5e0819fb0fb3bee4afbd9576e303364`。后续开发 checkpoint 仅本地，不能把该哈希拼成假 GitHub 链接。独立仓库的 UPSTREAM.json 记录原路径、字节和哈希；完整开发源归档补充工程共存来源。
 
-默认 `enabled:false`、`contextCompression:false`、`strictPov:false`。仅 SDK `0.2.0-rc.2`、session format 4 有实际本地原生证据。工程兼容包声明的其他 SDK 版本不等于 RP 已支持。根 wrapper 不要求禁用实例先初始化原生服务，启用时会复核实际服务身份、容量和已声明的合作写入者。
+默认 `enabled:false`、`contextCompression:false`、`strictPov:false`。dev.2 精确适配 SDK `0.2.1-rc.2`、session format 4、Cordis `4.0.5`、Schemastery `3.18.5`；SDK `0.2.0-rc.2` 使用冻结 dev.1。启用入口拒绝旧版与混版 peers。根 wrapper 不要求禁用实例先初始化原生服务，启用时会复核实际服务身份、容量和已声明的合作写入者。跨 SDK 历史迁移未测；在新隔离 profile 验证后再决定使用，不能将此版本适配视为已有剧情数据迁移承诺。
 
 独立源码仓库保留 src/rp 与单份 src/rp-plugin.ts；专用 build 默认输出 RP 的 ESM 与类型。完整开发仓库仍以 root src 为权威；companions/core-src 是生成快照。构建和 pack 不执行 live 驱动，包没有隐藏 root 或工程伴随包依赖。安装后的启用与用户控制见 [narrator说明](rp-memory-narrator.zh.md) 和 [候选说明](rp-memory-summary.zh.md)。
 

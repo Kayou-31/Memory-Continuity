@@ -2,10 +2,11 @@
   "schemaVersion": 1,
   "upstream": "https://github.com/Kayou-31/dsh-ultra-mode",
   "baselineCommit": "00bc770ef5e0819fb0fb3bee4afbd9576e303364",
-  "localDevelopmentCheckpoint": "4ab57b02db38bc488a66ddb8a75ff22c22cb6759",
+  "localDevelopmentCheckpoint": "2dbe2d6e02ffe84cacebf2b1d9a5c90ca224f104",
   "checkpointPublicUrl": null,
   "checkpointBoundary": "Local integration checkpoint. Original full development history is not published; release source archive and its SHA-256 provide the public source chain.",
-  "branch": "codex/rp-memory-v1",
+  "branch": "codex/rp-memory-sdk021",
+  "previousPublicCommit": "60e6aa8b36f982e2f1665879666b2215b96ad05e",
   "acceptedP4": "584996b746b3d6e2690c62c006f3a93d8a676b7c",
   "acceptedP5": "3ec8141607e6b5c1fc8cd45d86384d506e8864fb",
   "license": "BSD-3-Clause",
@@ -112,10 +113,10 @@
     {
       "path": "src/rp/rp-plugin.ts",
       "upstreamPath": "src/rp/rp-plugin.ts",
-      "bytes": 50181,
-      "sha256": "bca129353a52f52c9712ff47a907894ff55e2ca83a07b3a566be51ca169ff08e",
-      "upstreamSha256": "bca129353a52f52c9712ff47a907894ff55e2ca83a07b3a566be51ca169ff08e",
-      "upstreamBytes": 50181,
+      "bytes": 50376,
+      "sha256": "e47a06119a6d67aefd0d3a189d877512665879089660afbfd4ef39783dffa890",
+      "upstreamSha256": "e47a06119a6d67aefd0d3a189d877512665879089660afbfd4ef39783dffa890",
+      "upstreamBytes": 50376,
       "derivation": "byte-identical"
     },
     {
@@ -274,28 +275,28 @@
     {
       "path": "docs/rp-memory-narrator.zh.md",
       "upstreamPath": "docs/rp-memory-narrator.zh.md",
-      "bytes": 9749,
-      "sha256": "d29ccd609bf094543463d6d27cb817d06d0c62594a44e7b61ea6873991ce5ec8",
-      "upstreamSha256": "d29ccd609bf094543463d6d27cb817d06d0c62594a44e7b61ea6873991ce5ec8",
-      "upstreamBytes": 9749,
+      "bytes": 9826,
+      "sha256": "6e22513856c8815e3ab69537ff2081f29e492c0f2feb3dc112ef9e75aaa0ec94",
+      "upstreamSha256": "6e22513856c8815e3ab69537ff2081f29e492c0f2feb3dc112ef9e75aaa0ec94",
+      "upstreamBytes": 9826,
       "derivation": "byte-identical"
     },
     {
       "path": "docs/rp-memory-summary.zh.md",
       "upstreamPath": "docs/rp-memory-summary.zh.md",
-      "bytes": 6910,
-      "sha256": "3cfcfa4794216c6f73b8fcc2e95341f11a223b36131acd5daa0b9aa0c9abe781",
-      "upstreamSha256": "3cfcfa4794216c6f73b8fcc2e95341f11a223b36131acd5daa0b9aa0c9abe781",
-      "upstreamBytes": 6910,
+      "bytes": 6932,
+      "sha256": "1fe805216075085319a2f02616be5035d1c8457ff408dec03f82cc908c1a394b",
+      "upstreamSha256": "1fe805216075085319a2f02616be5035d1c8457ff408dec03f82cc908c1a394b",
+      "upstreamBytes": 6932,
       "derivation": "byte-identical"
     },
     {
       "path": "docs/rp-memory-design.zh.md",
       "upstreamPath": "docs/rp-memory-design.zh.md",
-      "bytes": 3343,
-      "sha256": "2455cb479bc1f3fae6b84280357195ac5a1b8420b609d97b6b9b9d40b113c86a",
-      "upstreamSha256": "2455cb479bc1f3fae6b84280357195ac5a1b8420b609d97b6b9b9d40b113c86a",
-      "upstreamBytes": 3343,
+      "bytes": 3524,
+      "sha256": "455b4b0fabd8157f66fd6081109772dd5b1bf0171537fcaf78ac845b8630971e",
+      "upstreamSha256": "455b4b0fabd8157f66fd6081109772dd5b1bf0171537fcaf78ac845b8630971e",
+      "upstreamBytes": 3524,
       "derivation": "byte-identical"
     },
     {
@@ -305,6 +306,15 @@
       "sha256": "0e8804afb0c9141f85359f7456dc16ab539b6da6b3c9fa3416eac1f52596d930",
       "upstreamSha256": "0e8804afb0c9141f85359f7456dc16ab539b6da6b3c9fa3416eac1f52596d930",
       "upstreamBytes": 1560,
+      "derivation": "byte-identical"
+    },
+    {
+      "path": "docs/rp-memory-sdk021.zh.md",
+      "upstreamPath": "docs/rp-memory-sdk021.zh.md",
+      "bytes": 2998,
+      "sha256": "b8e98f7d9ecd586b39b31756e78243f80aab23b110488aebeea98a5fe02c785d",
+      "upstreamSha256": "b8e98f7d9ecd586b39b31756e78243f80aab23b110488aebeea98a5fe02c785d",
+      "upstreamBytes": 2998,
       "derivation": "byte-identical"
     },
     {
@@ -409,16 +419,22 @@
     {
       "path": "README.md",
       "upstreamPath": "packages/dsh-rp-memory/README.md",
-      "bytes": 2818,
-      "sha256": "69cfc62527f8c4c21cd5b52dd61fa7c2cb1328d17135ee705696866f415b15b0",
-      "upstreamSha256": "b71d4f4fc6872d3b4bd87d2256879801afd89cb40633e7eb33731b9a55a2fd59",
-      "upstreamBytes": 2139,
+      "bytes": 3555,
+      "sha256": "90e3106a91b2583e30a49aa2556b37a8954eb34fd850a7a4a0c8a51a9317c2e5",
+      "upstreamSha256": "6425135dd074acc3f01adae9d51e97533aa995a29839a20eb515c7cfc166ca8b",
+      "upstreamBytes": 2876,
       "derivation": "RP README with independent build instructions appended"
     }
   ],
+  "targetSdk": {
+    "version": "0.2.1-rc.2",
+    "officialTag": "dsh-v0.2.1-rc.2",
+    "officialCommit": "687f282e8625c6b8d11ff58211a90524be2e4317",
+    "nativeLockSha256": "1e05948bb2893e0525816e5af063a34007b0e1f1686374bb117ffdfbc8f5a7a6"
+  },
   "externalEvidence": {
-    "A40": "Full development source/evidence archive, compatible engineering TGZ files and acceptance matrix; these source-only RP tests do not rerun engineering coexistence.",
-    "native": "Pinned SDK0.2.0-rc.2 reports; source-only test suite covers listed deterministic RP tests, not all native probes."
+    "A40": "Compatible engineering packages retain dev.1 hashes. SDK021 source-bundled helper coexistence evidence is distinct from final TGZ active composition, which has not been fully replayed.",
+    "native": "SDK021 native capability/manual Memory/mode-refusal evidence is external to this RP-only source test suite. See the dev.2 release report. Historical SDK020 evidence belongs to dev.1."
   },
   "excluded": [
     "daily/temporary profiles",
@@ -427,7 +443,5 @@
     "node_modules",
     "work caches",
     "raw incident logs/process lists/quarantine objects/base64"
-  ],
-  "implementationCheckpoint": "54be6535ae0b6fe73f227971f180e89de718c7b9",
-  "documentRefinement": "Only RP README clarified generated snapshots remain local; runtime/source/type bytes unchanged"
+  ]
 }
