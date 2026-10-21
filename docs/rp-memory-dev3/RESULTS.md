@@ -2,6 +2,8 @@
 
 执行日期：2026-10-20（America/Tijuana）；日志保留 UTC 时间戳。此文件记录实际执行，不把方案文件当作通过证据。
 
+**更新：** 本文前半保留首次实现/交付的历史结果；当前新增结论、已补齐的 R40 和剩余未验证项，以末节“Luna 与原生宿主补验”及其原始记录为准。本轮没有修改生产源码或开启任何自动能力。
+
 ## 基线和环境
 
 独立仓库 Kayou-31/dsh-rp-memory 初始工作区干净，本地 HEAD 与重新 fetch 后 origin/main 均为 `4272dd98ed40afb0b3bb162014c97da0fd49e242`，没有后续修复被覆盖。开发分支 `fix/rp-memory-dev3`。沿用 `D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-021-public`，没有迁移旧环境；ZIP 的四份缺失 docs 已合入，无关文件保留。
@@ -111,8 +113,89 @@ SOURCE-MANIFEST由实际build生成。最终TGZ、源码ZIP、修改patch、日�
 
 实现提交：`a97eaf24cc25881827a55b0d699a24c880a9724c`。交付HEAD另含方案/结果/迁移文档提交，精确HEAD在外部交付清单；均只在本地，没有push。
 
-## 交付状态
+## 首次交付时的状态（历史节点）
 
 - **已完成：** T1–T8核心实现与先红后绿回归；T9固定事实引用绑定；T10版本、独立构建/类型检查、一次109项完整suite、fixture、成功dry-run和实际TGZ及10项原生bundle验证；源码/日志/patch/哈希交付。
 - **未完成的扩展验收：** 上表每行列出的额外故障/排列未全部穷举，尤其工程companion最终包双加载顺序R40。不能将此报告宣称为全部R矩阵子情形已完成或任意混装兼容。
 - **未验证：** 真实模型质量、日常用户profile迁移、跨SDK、桌面完整UI、长期运行、断电和其他OS/Node全版本。自动功能继续关闭。push/Release/npm发布按任务约束未执行。
+
+## Luna 与原生宿主补验（2026-10-21 UTC）
+
+用户明确授权后，在 `c8448e6` 基础上执行本节。没有改动 `src/`、生产摘要/压缩开关、存储协议或版本号。branch/global 仍为v1、host journal仍为dev.3的v2，迁移规则与MIGRATION一致；没有新增历史迁移、付费API、push或发布。此前原始交付文件保留，本节更新交付单独放在当前会话 `outputs/dev3-luna-followup/`。
+
+### 实际代码、输入和执行边界
+
+外部控制器直接 bundle 当前 `src/rp/memory.ts`。其实际调用链包含 observeSource → applyControl → summaries.propose/adopt → retcon/privacy_delete/fork → packets.prepare → retrieval.search/get。与此前最终TGZ（SHA-256 `62cbb39a7fa020abaf28eb84a1f5fad818418bd3a9868eb82aeecd45564cfcd2`）内22份src文件逐一核对，全部一致；不是手写一套相似存储来代替 dev.3。所有剧情、来源和密语都是合成测试数据，独立work profile未接触日常用户数据。
+
+固定四场景：远期事实/人物关系方向、Retcon、隐私删除、兄弟分支。每个场景先生成一份摘要候选并在测试profile中显式采纳，再执行相关变更。生成12个完整近期轮次，实际packet保留最后8轮、16条消息。A组只获得这些近期消息；B组获得完全相同的近期消息，加上实际有效packet.text和预选的有界授权检索结果。不是自主检索评测，也不能把差异单独归因于摘要。
+
+4个摘要任务和8个答题任务全部串行，逐个收到完成后才派下一个；均指定 `gpt-6-luna`、`low`、`fork_turns=none`。摘要直接给文本；答题仅准许读取指定prompt文件一次，随后禁止额外工具、写文件和创建代理。主执行者保存原始响应，没有为提高分数重跑、改写答案或事后修改金标准。另有第13个只读Luna任务审阅评分和证据边界，不计入实验样本，没有修改文件。
+
+`LUNA-RESULTS.json` 保存所有12个实验任务的完整prompt、模型原始JSON、prompt哈希、实际packet/候选/检索输出、固定评分和人工审阅；`LUNA-PLAN.md` 保存预先方案与执行裁决。请求的模型路由有spawn参数证据，但底层实际请求数、token、费用、子任务完整工具审计、内部自动压缩事件没有导出，均不推算。共享工作区是软隔离，不能证明严格沙箱盲测，也没有宣称关闭了Codex内部压缩。没有连接新的付费模型API；Codex子代理消耗账号额度。
+
+### 原始结果与没有通过的部分
+
+每题只允许冻结金标准里的简短值；引文还须是对应记录内的连续原文，并包含该题预先规定的事实支撑片段。null只有在该题应拒答且无引文时计为合理拒答。不是用另一个模型给自己的答案打分。
+
+| 场景 | 近期组正确 / 3 | 记忆组正确 / 3 | 记忆组严格引文支持或合理拒答 / 3 | 实际现象 |
+|---|---:|---:|---:|---|
+| 远期事实/关系方向 | 0 | 3 | 3 | 记忆组保留持有人、位置及双向不同态度；近期组均拒答 |
+| Retcon | 0 | 2 | 0 | 回答琥珀色和林岚，没有回答旧蓝色；两条引用只给after值，严格支撑条件不满足；口令题拒答 |
+| 隐私删除 | 1 | 3 | 3 | 两组均拒答已删除口令；记忆组保留独立来源的会合地点与船票持有人 |
+| 分支 | 0 | 0 | 0 | 两组均拒答；记忆组未输出兄弟分支事实，但没有回答当前分支事实，不能视为语义保真通过 |
+| **合计** | **1/12** | **8/12** | **6/12** | 原始分数包括1个应拒答题；其余11题中记忆组答对7题，严格引文支持5题 |
+
+两组prompt合计为11,736与24,987 UTF-8字节。它们是输入文本字节数，既不是token数，也不是精确压缩率；两组输入量不同。单次、短合成场景、无重复抽样、无统计显著性，不代表真实长对话、其他模型或DSH provider质量。
+
+**夹具和评价限制必须随分数一起读：** Retcon将口令放在通用`rule`字段，没有提供明确口令映射；分支把路线、凭据、队长分别放在同一个`key`实体的`location/inventory/identity`里，没有领域语义映射。控制器中的状态与兄弟分支隔离断言成立，但答题拒答不能单独归因于模型或产品缺陷。512 UTF-16字符的有界get可以停在半截JSON，payload位于截断前；本轮没有提供后续分页。下一轮需改进表达和分页，**本轮没有修完夹具再重跑来替换原始结果**。分支语义评测及Retcon口令题保持不确定/未充分验证。
+
+4份摘要的核心旧事实均保留，但有额外语义偏差：Retcon摘要把“没有改变”写成“后续仍不确定”；分支摘要增加“无其他未决事项”的宽泛断言。结构校验接受来源和锚点不表示摘要自然语言已获全面认证。只读审阅确认评分为固定事实/引文条件，未发现需修改生产代码的问题，并明确支持上述隔离、夹具和宿主证据限制；无用户人工裁决声明。
+
+实际控制器还断言：Retcon后旧摘要不在新packet；删除后原source不出现在search且get拒绝；分支变更后当前摘要失效而父分支摘要和兄弟分支自身状态保留。这些是实际代码机制证据，独立于Luna答题分数。
+
+### 已补齐的原生宿主验证
+
+真实解包加载RP最终TGZ，以及沿用dev.1原字节的Ultra `0.6.1-dev.rp.1`、Memory/Decision `0.1.1-dev.rp.1`。没有修改工程companion源码或TGZ。用实际Cordis/AgentLoop/CommandRuntime/Session/JSONL persistence/ToolRuntime/LlmRuntime与合成terminal，测试进程装载network guard，禁止真实模型网络访问。
+
+- RP+Memory、RP+Ultra+Memory、RP+Decision+Memory各跑工程先加载和RP先加载，共6项：共享同一个`sessionMemoryPolicy/v1`，RP不进入工程memory，伪造/直接下游调用拒绝，真实认证input恰好进入terminal一次，disabled调用安全，continue-clean保留分支且空宿主历史，close后旧会话和新clean会话都不能旁路。
+- 第7项启动两个全新Node进程：工程先加载时，RP disabled仍拒绝旧RP会话；重新启用后status可诊断、ambiguous输入不自动重发，continue-clean继承原分支且空历史。两个冷进程terminal计数均为0。
+- 一次完整原生补验 **7/7、0失败、0跳过、exit0，2.484秒**，`host-companion-final.log`；不是把此前3项定向检查拼成7项。初始6/6以及后续包含冷进程的6/7失败均保留对应日志。
+
+精确SDK的package.json在验收脚本中逐个读出并断言：DSH服务`0.2.1-rc.2`、Cordis`4.0.5`、Schemastery`3.18.5`。合成terminal验证的是宿主集成，不是Luna经DSH provider调用，也不是桌面UI验证。R40的这三个固定组合及两顺序已从首次报告的未执行更新为有证据；其它混装组合不扩展声明。
+
+### 本轮文件与命令
+
+| 修改/新增 | 原因 |
+|---|---|
+| `benchmarks/rp/luna-pilot.json` | 预先固定四场景、问题、正确值和事实支撑片段 |
+| `scripts/benchmarks/luna-pilot.mjs` | 独立测试控制器；prepare/materialize/score；没有模型API路径、没有生产自动能力 |
+| `scripts/benchmarks/luna-score.mjs`、`test/rp-luna-pilot.test.mjs` | 先红后绿的2项评分回归：同源无关引文、正确引文、虚构记录ID、重复答案拒绝 |
+| `test/fixtures/rp/native-host.mjs` | 测试用安装前后钩子、指定真实bundle和冷启动目录；生产源码未改 |
+| `scripts/host-acceptance/dev3-companion.test.mjs`、`dev3-cold.mjs` | 真实TGZ双顺序、准入/关闭/空历史续接及全新进程恢复 |
+| README、sdk021/evaluation文档、LUNA-PLAN、LUNA-RESULTS、本报告 | 更新实际证据、模型失败和未验证项 |
+
+Node **22.23.3**，npm **11.16.0**；其余构建/SDK版本沿用前文。本轮集中验收明确以Node22启动npm-cli，并将Node22加入子进程PATH，未安装/升级依赖、未设置低内存上限。`work/verify-followup.ps1` 的一次串行运行从 **2026-10-21 06:45:24Z 到06:46:30Z**：
+
+| 命令 | 实际退出码与结果 |
+|---|---|
+| `npm run typecheck` | 0 |
+| `npm run build` | 0，独立声明及bundle构建 |
+| `npm test` | **0；111 tests / 111 pass / 0 fail / 0 skip；61.200秒，一次完整suite** |
+| `npm run evaluate:fixture` | 0，原12个固定标注样本，仍不代表真实模型输出 |
+| `npm pack --dry-run --cache work/npm-cache` | 0，75文件；与首次交付的打包错误分开记录 |
+
+实际形式均为`node22 npm-cli.js ...`，`followup-results.json`含每条命令的起止时间和退出码。此后更新仅涉及报告/归档，最终包还会独立记录pack与bundle重放，不将这些定向验证加入111项计数。评分器首次退出1、修复后0；prepare首次退出1、修正夹具后的v2退出0；materialize、score、collect均退出0。
+
+失败诊断：首次host测试错误地把Schemastery schema的调用结果当作原始配置再传给Cordis，volatile配置拒绝；改为让真实Cordis校验原始JSON后通过。冷启动首测在blocked旧会话上调用业务`ready`，返回ownership_lost；改测所要求的诊断`status`和`continue-clean`后通过，没有放宽业务门禁。解包命令有一次PowerShell空管道语法错误，解析阶段未执行，随后修正。没有重复同一错误无限重试。模型答题失败没有自动重试。
+
+### 当前完成、未完成、未验证
+
+- **已完成：** 4个摘要+8个答题的Luna串行pilot、真实dev.3代码复用与22份源码哈希核验、原始输入输出及固定评分交付；R40三个固定组合双顺序、disabled/准入/关闭/续接和冷启动ambiguous恢复；一次111项完整suite和规定五条集中命令。没有为本轮补验引入生产功能或数据迁移。
+- **未完成：** 分支夹具的领域语义表达、Retcon口令映射、完整分页材料，以及修订后独立新一轮语义试验；这次模型答题不是全绿。前文各行额外故障点/排列仍未全部穷举，R40范围只更新本节明确覆盖的子项。
+- **未验证：** 严格沙箱盲测和内部无自动压缩、实际token/费用/底层请求数、真实长上下文质量、不同随机重复与统计稳定性、Luna经DSH provider的真实调用、跨SDK日常profile迁移、桌面完整UI、长期运行、断电及其他OS/Node全版本。合成宿主测试与Codex Luna任务不能互相替代这些证据。
+
+最终打包字节数、SHA-256、精确本地提交和重放日志放在外部补验`delivery-manifest.json`，避免将包自身哈希写进包内。此前交付的TGZ/ZIP/manifest原件保留。
+
+归档阶段补记：加入只读审阅文档后，实际npm pack本身退出0、包有76文件；外围检查脚本仍写死75，因`76 !== 75`退出1。保留首份pack JSON；按实际新增文件改为验证允许路径和审阅文档存在，再执行最终打包，不将这一外围断言失败隐藏为全程无错。
+
+最终归档验证：实际pack及外围检查均退出0，76文件；解包后逐项核对46个manifest条目的字节数/SHA-256并与本地构建比较，全部一致，生产bundle与首次交付相同。对更新TGZ入口的原生companion/冷进程补验 **7/7、exit0**，生命周期补验 **10/10、exit0**；日志分别为`followup-final-tgz-companion.log`、`followup-final-tgz-lifecycle.log`。这两次定向运行不计入前面的111项完整suite。之后仅纳入本段归档记录，最终包继续按同一入口重放并由外部manifest记录准确哈希，不在本文嵌入自引用哈希。
