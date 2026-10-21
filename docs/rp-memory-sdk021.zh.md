@@ -11,3 +11,7 @@ SDK021 的 AgentLoop 会在准备请求后再次执行 `refreshContext`。原有
 P0 另外一次固定输出复跑 exit 0、network 0。注入、固定原生 fork、本地合成模型调用 verified；canonical selection 与完整 filtering unsupported；durable replacement 仍 failed；lifecycle、token accounting、exclusive compaction ownership 和 UI unverified。这是 SDK 原生能力表，不替代 RP 应用的人工账本与预算证据。P5、strict POV 和后台原生自动候选持续关闭。独立 RP 根使用新依赖的默认 build（TypeScript 声明类型检查和 esbuild）exit 0，实际 TGZ 的隔离 import/disabled guard 证明由最终发行报告单独绑定。
 
 本轮没有重复旧版 legacy822；其初始失败、定向修正及 40 skip 仍只属于 dev.1 的历史报告。工程 Ultra/Memory/Decision 三个 TGZ 沿用 dev.1 同哈希附件。本轮源代码独立 bundle/helper 共存证据与全部最终 TGZ 的启用组合不同，后者尚未完整重放。跨 SDK 既有 profile 历史迁移、真实/付费模型、桌面完整操作、长期运行、断电持久性均未测。固定标注语料的历史分数不等于本轮真实模型质量验证。
+
+## dev.3 稳定性修复
+
+本轮新增的关闭/诊断/干净续接、host journal v2、容量、检索证明和摘要失效规则见 [兼容与迁移说明](rp-memory-dev3/MIGRATION.md)，实际执行结果见 [RESULTS](rp-memory-dev3/RESULTS.md)。本文原有 dev.1/dev.2 历史证据仍保留其原验证范围。

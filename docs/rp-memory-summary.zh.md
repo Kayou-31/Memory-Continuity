@@ -49,3 +49,7 @@ job 状态与输入副本仍在 P1 同一 sealed transaction chain；独立 job 
 所有 P4 生成都是固定输出的离线 fixture。取消是合作式协议：generator 必须响应 AbortSignal 并关闭自己的 stream 后才 settle。`timeoutMs` 只是发出 abort 请求，不保证不合作的 generator 在硬截止时间退出；close 会等真实退出，profile 槽也会一直保留，避免底层仍运行时启动第二个任务。真实 SDK stream 关闭、实际模型 usage、输出预留和语义质量未运行。已有 P3 实际叙事请求的 output reserve 与完整预算门继续适用。摘要 `measuredTokens` 标为 estimated，使用 UTF-8 bytes 的保守估计，不是 tokenizer 或收费 token。
 
 `semantic-candidates.json` 给出真实“蓝钥匙”来源、正确摘要和结构合法的“金钥匙”错误摘要。实现代理编写的固定 fixture 标注与 exact-claim scorer 把错误计为 unsupported/critical error。它验证评价报告能拒绝已标注的错误，不证明一般自然语言摘要忠实。人工复核、真实模型质量与 live 扮演均为 not-run，live 样本数为 0。
+
+## dev.3 稳定性修复
+
+本轮新增的关闭/诊断/干净续接、host journal v2、容量、检索证明和摘要失效规则见 [兼容与迁移说明](rp-memory-dev3/MIGRATION.md)，实际执行结果见 [RESULTS](rp-memory-dev3/RESULTS.md)。本文原有 dev.1/dev.2 历史证据仍保留其原验证范围。

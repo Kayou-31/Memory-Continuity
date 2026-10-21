@@ -64,3 +64,7 @@ P4 必须复用 `openRpMemory` 返回的 `store/control/global/coordinator`，�
 隐私删除承诺覆盖本插件已声明的可删 blob 和批准删除的独立 publication。tombstone 先落盘；物理清理失败可观察并按同 key 重试。宿主原始 JSONL、外部模型、备份及用户明确保留的发布副本不在物理删除承诺中。宿主残留违规原文通过 veto 阻断，不声称已从原生历史擦除。
 
 strict POV/full filtering、自动采纳、原生持久替换和压缩仍关闭。真实 UI、真实 provider、付费模型、长期语义质量、外部未知写入者、跨进程请求独占和断电恢复未验证。独立 retcon 污染旧 raw 与独立 wrong-branch 污染旧 raw 的原生负例本阶段未执行，不能从大测试标题推导全部 A 项通过。
+
+## dev.3 稳定性修复
+
+本轮新增的关闭/诊断/干净续接、host journal v2、容量、检索证明和摘要失效规则见 [兼容与迁移说明](rp-memory-dev3/MIGRATION.md)，实际执行结果见 [RESULTS](rp-memory-dev3/RESULTS.md)。本文原有 dev.1/dev.2 历史证据仍保留其原验证范围。
