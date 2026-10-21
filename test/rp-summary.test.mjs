@@ -31,6 +31,55 @@ async function source(f, key, text = 'PUBLIC_KEY_BLUE', events = [], accepted = 
 const span = s => ({ sourceRevisionId: s.id, publicTextSha256: s.publicTextSha256, startUtf16: 0, endUtf16: s.publicTextLengthUtf16, quoteSha256: s.publicTextSha256 })
 const selection = (s, extra = {}) => ({ level: 'scene', sourceRevisionIds: [s.id], dependencySummaryIds: [], supportEventIds: [], ...extra })
 const raw = (s, text = '蓝钥匙仍在。', level = 'scene') => ({ schemaVersion: 1, proposedEvents: [], proposedSummary: { level, text, sourceRevisionIds: [s.id], exactAnchors: [span(s)] } })
+
+test('R10 R11 R12 R13 source-only scene created before event invalidates through arc on retcon, preserving evidence and sibling', async () => {
+  const f = await setup(), other = await source(f, 'unrelated'), keep = (await publish(f, other, 'keep')).summary
+  const s = await source(f, 'blue_key'), scene = (await publish(f, s, 'scene')).summary
+  const makeLevel = async (level, dependency) => {
+    const c = must(await f.summaries.propose(f.authority, raw(s, level, level), selection(s, { level, dependencySummaryIds: [dependency.id] })))
+    return must(await f.summaries.adopt(f.authority, await ctl(f, level), c.id, { idempotencyKey: level })).summary
+  }
+  const chapter = await makeLevel('chapter', scene), arc = await makeLevel('arc', chapter)
+  must(await f.store.savePayloadCopy(f.authority, { idempotencyKey: 'cache', id: 'cache_old', kind: 'cache', sourceRevisionIds: [s.id], dependencyIds: [arc.id], body: 'old cache' }))
+  must(await f.canonical.applyControl(f.authority, await ctl(f, 'event'), { kind: 'accept', sourceRevisionIds: [s.id], events: [{ id: 'event_blue', payload: { kind: 'state_change', subjectId: 'key', key: 'color', after: 'blue' }, epistemic: 'world' }], idempotencyKey: 'event', expected: must(await f.store.readFence(f.authority)) }))
+  const manifest = must(await f.canonical.forkManifest(f.authority, must(await f.store.readFence(f.authority)).contextRevision)), sibling = must(await f.canonical.forkBranch(f.authority, { ...manifest, idempotencyKey: 'sibling' })), sa = must(await f.control.authorize({ ...f.request, branchId: sibling.id }))
+  const operation = { kind: 'retcon', targetEventIds: ['event_blue'], events: [{ id: 'event_gold', payload: { kind: 'state_change', subjectId: 'key', key: 'color', after: 'gold' }, epistemic: 'world' }], idempotencyKey: 'retcon', expected: must(await f.store.readFence(f.authority)) }, control = await ctl(f, 'retcon')
+  must(await f.canonical.applyControl(f.authority, control, operation)); must(await f.canonical.applyControl(f.authority, control, operation))
+  assert.deepEqual(must(await f.store.readSummaries(f.authority)).map(x => x.id), [keep.id])
+  assert.equal(must(await f.store.readSource(f.authority, span(s))), 'PUBLIC_KEY_BLUE')
+  assert.equal(must(await f.store.readPayloadCopies(f.authority)).some(x => x.id === 'cache_old'), false)
+  assert.equal(must(await f.store.readSummaries(sa)).length, 4)
+  const cold = await api.openRpMemory({ profileRoot: path.join(f.directory, 'profile'), entityIds: ['erin', 'king', 'key'] }), ca = must(await cold.control.authorize(f.request))
+  assert.deepEqual(must(await cold.store.readSummaries(ca)).map(x => x.id), [keep.id])
+})
+
+test('R13 transitive event invalidation also expires summaries of the dependent event source', async () => {
+  const f = await setup(), a = await source(f, 'claim_source', 'claim', [{ id: 'event_claim', epistemic: 'world', payload: { kind: 'state_change', subjectId: 'key', key: 'color', after: 'blue' } }])
+  const b = await source(f, 'knowledge_source', 'knowledge', [{ id: 'event_knowledge', epistemic: 'world', payload: { kind: 'knowledge_change', knowerId: 'erin', claimId: 'event_claim', action: 'learn' } }])
+  const summary = (await publish(f, b, 'dependent_summary')).summary, expected = must(await f.store.readFence(f.authority))
+  must(await f.store.commit(f.authority, { schemaVersion: 1, idempotencyKey: 'direct_invalidation', expected, nextContextRevision: expected.contextRevision + 1, sourceBindings: [], events: [], summaries: [], jobs: [], invalidatedIds: ['event_claim'], authorityChanges: [] }))
+  assert.equal(must(await f.store.readEvents(f.authority)).length, 0)
+  assert.equal(must(await f.store.readSummaries(f.authority)).some(s => s.id === summary.id), false)
+  assert.equal(must(await f.store.readSource(f.authority, span(a))), 'claim'); assert.equal(must(await f.store.readSource(f.authority, span(b))), 'knowledge')
+})
+
+test('R30 R31 final merged anchors reject 258 and 257 before candidate persistence; deduplicated 256 reads and adopts', async () => {
+  const { createHash } = await import('node:crypto'), quoteSha256 = createHash('sha256').update('字').digest('hex')
+  for (const union of [258, 257, 256]) {
+    const f = await setup(), s = await source(f, 'anchor_source', '字'.repeat(258))
+    const anchors = start => Array.from({ length: 129 }, (_, i) => ({ sourceRevisionId: s.id, publicTextSha256: s.publicTextSha256, startUtf16: start + i, endUtf16: start + i + 1, quoteSha256 }))
+    const children = []
+    for (const [i, start] of [0, union - 129].entries()) {
+      const proposal = raw(s); proposal.proposedSummary.exactAnchors = anchors(start)
+      const c = must(await f.summaries.propose(f.authority, proposal, selection(s)))
+      children.push(must(await f.summaries.adopt(f.authority, await ctl(f, 'child_' + i), c.id, { idempotencyKey: 'child_' + i })).summary)
+    }
+    const before = must(await f.store.readPayloadCopies(f.authority)).length, proposal = raw(s, 'chapter', 'chapter'); proposal.proposedSummary.exactAnchors = []
+    const result = await f.summaries.propose(f.authority, proposal, selection(s, { level: 'chapter', dependencySummaryIds: children.map(c => c.id) }))
+    if (union > 256) { deny(result, 'invalid_candidate'); assert.equal(must(await f.store.readPayloadCopies(f.authority)).length, before) }
+    else { const candidate = must(result); assert.equal(must(await f.summaries.get(f.authority, candidate.id)).proposedSummary.exactAnchors.length, 256); assert.equal(must(await f.summaries.adopt(f.authority, await ctl(f, 'final'), candidate.id, { idempotencyKey: 'final' })).summary.exactAnchors.length, 256) }
+  }
+})
 async function publish(f, s, key, options = {}) {
   const c = must(await f.summaries.propose(f.authority, raw(s), selection(s), options))
   return must(await f.summaries.adopt(f.authority, await ctl(f, key), c.id, { idempotencyKey: key, ...options }))

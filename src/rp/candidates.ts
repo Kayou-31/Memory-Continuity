@@ -1,6 +1,7 @@
 /** Untrusted generator data. No authority, store, path or control capability is
  * accepted here. Source identity and dependency metadata come from the host. */
 import { createHash, randomUUID } from 'node:crypto'
+import { MAX_EXACT_ANCHORS } from './schema.js'
 import { cloneInput, object, payload, sourceSpan, text, RpError } from './schema.js'
 import type { EventPayload, InputFence, Result, SemanticEvent, SourceRevision, SourceSpan, Summary } from './types.js'
 import type { GlobalFence } from './global.js'
@@ -55,11 +56,13 @@ export function validateCandidate(input: unknown, snapshot: CandidateSnapshot): 
       text(s.text, 262144)
       const expected = snapshot.sources.map(s => s.source.id).sort()
       if (s.level !== snapshot.selection.level || !Array.isArray(s.sourceRevisionIds) || JSON.stringify([...s.sourceRevisionIds].sort()) !== JSON.stringify(expected)) bad('Summary original-source coverage')
-      if (!Array.isArray(s.exactAnchors) || s.exactAnchors.length > 256) bad('Summary anchors')
+      if (!Array.isArray(s.exactAnchors)) bad('Summary anchors')
       s.exactAnchors.forEach((a: SourceSpan) => verifyCandidateSpan(a, snapshot))
       const anchors = [...(snapshot.selection.exactAnchors ?? []), ...snapshot.dependencies.flatMap(d => d.exactAnchors), ...s.exactAnchors] as SourceSpan[]
-      anchors.forEach(a => verifyCandidateSpan(a, snapshot))
-      proposedSummary = { level: s.level, text: s.text, sourceRevisionIds: expected, exactAnchors: [...new Map(anchors.map(a => [JSON.stringify(a), a])).values()] }
+      const merged = [...new Map(anchors.map(a => [JSON.stringify([a.sourceRevisionId, a.publicTextSha256, a.startUtf16, a.endUtf16, a.quoteSha256]), a])).values()]
+      if (merged.length > MAX_EXACT_ANCHORS) bad('Merged summary anchors exceed 256; discard and rebuild the candidate')
+      merged.forEach(a => verifyCandidateSpan(a, snapshot))
+      proposedSummary = { level: s.level, text: s.text, sourceRevisionIds: expected, exactAnchors: merged }
     }
     if (r.sceneBoundaryHint !== undefined && r.sceneBoundaryHint !== 'scene_end') bad('Boundary hint')
     return { ok: true, value: { schemaVersion: 1, id: 'candidate_' + randomUUID().replaceAll('-', ''), inputFence: structuredClone(snapshot.inputFence), proposedEvents, ...(proposedSummary ? { proposedSummary } : {}), ...(r.sceneBoundaryHint ? { sceneBoundaryHint: 'scene_end' as const } : {}) } }

@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { randomUUID, createHash } from 'node:crypto'
 import { canonical, withRpWriterLock, recoverRpWriterLock, readRpJson } from './store.js'
-import { cloneInput, denied, failure, id, hostId, hash, integer, invalid, object, parseRecord, RpError, scope as validateScope, text, visibility as validateVisibility } from './schema.js'
+import { checkedRpJson, MAX_RP_JSON_BYTES, MAX_RP_PUBLISH_BYTES, cloneInput, denied, failure, id, hostId, hash, integer, invalid, object, parseRecord, RpError, scope as validateScope, text, visibility as validateVisibility } from './schema.js'
 import type { CanonBinding, Result, Scope, SourceRevision, Visibility } from './types.js'
 import { MemoryCoordinator } from './session-policy.js'
 export type GlobalScope = Extract<Scope, { kind: 'profile' | 'world' }>
@@ -44,6 +44,7 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
     const initialSeal = await readSeal()
     try { names = (await fs.readdir(path.join(dir, 'commits'))).filter(f => /^\d{16}\.json$/u.test(f)).sort() } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e; names = [] }
     let state: State = { fence: { scope: g.scope, scopeRevision: 0, visibilityRevision: 0, deletionGeneration: 0 }, publications: [], keys: {}, previousHash: '0'.repeat(64), seq: 0 }
+    const hashes = new Map<number, string>()
     for (const name of names) {
       let envelope: Record<string, any>, value: State
       try {
@@ -52,11 +53,12 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
       } catch (e) { throw new RpError('store_corrupt', 'Global metadata schema corrupt: ' + (e instanceof Error ? e.message : 'invalid')) }
       if (sha(canonical(value)) !== envelope.sha256 || value.seq !== state.seq + 1 || value.previousHash !== sha(canonical(state)) || !same(value.fence.scope, g.scope)) throw new RpError('store_corrupt', 'Global transaction chain corrupt')
       state = value
+      hashes.set(state.seq, envelope.sha256)
     }
     const seal = await readSeal()
     if (!same(initialSeal ?? null, seal ?? null)) throw new RpError('stale_input', 'Global publication changed during read')
     if (state.seq > (seal?.seq ?? 0) + 1) throw new RpError('store_corrupt', 'Global unsealed transaction chain')
-    if (seal && (seal.seq > state.seq || (seal.seq === state.seq && seal.hash !== sha(canonical(state))))) throw new RpError('store_corrupt', 'Global committed transaction missing')
+    if (seal && (seal.seq > state.seq || hashes.get(seal.seq) !== seal.hash)) throw new RpError('store_corrupt', 'Global committed transaction missing')
     return state
   }
   const allowed = (g: Grant, p: Meta) => same(p.scope, g.scope) && p.source.visibility.policyId === g.visibility.policyId && p.source.visibility.revision === g.visibility.revision && g.audienceSetIds.includes(p.source.visibility.audienceSetId)
@@ -80,7 +82,8 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
       return ok({ ...publicMeta, body, verification: privateDeleted ? 'private-source-deleted' : 'source-match' })
     } catch (e) { return failure(e) }
   }
-  const mutate = async (authority: object, approval: object, input: unknown, update: (s: State, g: Grant, v: any) => Promise<string>): Promise<Result<GlobalPublication | GlobalFence>> => {
+  const mutate = async (authority: object, approval: object, input: unknown, update: (s: State, g: Grant, v: any, blobs: { file: string; body: string }[]) => Promise<string>, publication = false): Promise<Result<GlobalPublication | GlobalFence>> => {
+    let published = false
     try {
       const g = await grant(authority, true); if (!approvals.has(approval)) denied('trusted global command approval required')
       const value = cloneInput(input) as any; text(value.idempotencyKey, 256); const effect = sha(canonical(value))
@@ -88,20 +91,35 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
         await grant(authority, true); if (!approvals.has(approval)) denied('global command approval revoked'); const dir = directory(g.scope); await fs.mkdir(dir, { recursive: true })
         return withRpWriterLock(dir, async () => {
           const current = await load(g), commandKey = sha(value.idempotencyKey), prior = current.keys[commandKey]
-          if (prior) { if (prior.effect !== effect) throw new RpError('idempotency_conflict', 'Global command differs'); await atomic(path.join(dir, 'seal.json'), canonical({ seq: current.seq, hash: sha(canonical(current)) })); await purge(current, g, value); return prior.result ? read(authority, prior.result) : ok(current.fence) }
+          const sealHead = async () => {
+            if (current.seq === 0) return
+            const target = path.join(dir, 'seal.json'), expected = { seq: current.seq, hash: sha(canonical(current)) }
+            let existing: unknown; try { existing = await readRpJson(target) } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e }
+            if (!same(existing ?? null, expected)) await atomic(target, canonical(expected))
+          }
+          if (prior) { if (prior.effect !== effect) throw new RpError('idempotency_conflict', 'Global command differs'); published = true; await sealHead(); await purge(current, g, value); return prior.result ? read(authority, prior.result) : ok(current.fence) }
           if (!same(current.fence, value.expected)) throw new RpError('stale_input', 'Global fence changed')
-          const next = structuredClone(current), result = await update(next, g, value)
+          await sealHead()
+          const next = structuredClone(current), blobs: { file: string; body: string }[] = [], result = await update(next, g, value, blobs)
           next.fence.scopeRevision++; next.previousHash = sha(canonical(current)); next.seq++; next.keys[commandKey] = { effect, result }
+          if (next.publications.length > 4096 || Object.keys(next.keys).length > (publication ? 3072 : 4096)) throw new RpError('capacity_exceeded', 'Global metadata count limit; old state preserved')
           validateState(next, g)
+          const encoded = checkedRpJson({ state: next, sha256: sha(canonical(next)) }, canonical, publication ? MAX_RP_PUBLISH_BYTES : MAX_RP_JSON_BYTES)
           await grant(authority, true); if (!approvals.has(approval)) denied('global command approval revoked before publication')
-          await atomic(path.join(dir, 'commits', String(next.seq).padStart(16, '0') + '.json'), canonical({ state: next, sha256: sha(canonical(next)) }))
+          for (const blob of blobs) await atomic(blob.file, blob.body)
+          const commitFile = path.join(dir, 'commits', String(next.seq).padStart(16, '0') + '.json')
+          try { await atomic(commitFile, encoded); published = true } catch (e) {
+            // A rename may have succeeded before an adapter reported an error.
+            try { published = await fs.readFile(commitFile, 'utf8') === encoded } catch (readError) { if ((readError as NodeJS.ErrnoException).code !== 'ENOENT') published = true }
+            throw e
+          }
           await atomic(path.join(dir, 'seal.json'), canonical({ seq: next.seq, hash: sha(canonical(next)) }))
           // Tombstone is durable before any approved body is removed.
           await purge(next, g, value)
           return result ? read(authority, result) : ok(next.fence)
         })
       })
-    } catch (e) { return failure(e) }
+    } catch (e) { return failure(e instanceof RpError ? e : new RpError(published ? 'persistence_uncertain' : 'persistence_failed', e instanceof Error ? e.message : 'Global persistence failure')) }
   }
   const store = {
     async listActive(authority: object) { try { const g = await grant(authority), state = await load(g), heads = new Map<string, Meta>(); for (const p of state.publications) heads.set(p.key, p); const values: GlobalPublication[] = []; for (const p of heads.values()) if (allowed(g, p) && !p.revoked && !p.deleted) { const r = await read(authority, p.id); if (!r.ok) return r; values.push(r.value) }; return ok(values) } catch (e) { return failure(e) } },
@@ -119,16 +137,16 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
     approval(input: { commandId: string; sessionId: string }) { id(input.commandId); hostId(input.sessionId); const handle = Object.freeze({}); approvals.add(handle); return handle },
     revokeApproval(handle: object) { approvals.delete(handle) },
     publish(authority: object, approval: object, input: Publish) {
-      return mutate(authority, approval, input, async (s, g, v) => {
+      return mutate(authority, approval, input, async (s, g, v, blobs) => {
         object(v, ['idempotencyKey', 'expected', 'key', 'body', 'privateSourceIds'], ['supersedes']); text(v.key, 128); text(v.body, 1048576); if (!Array.isArray(v.privateSourceIds) || v.privateSourceIds.length > 256) invalid('private source IDs'); v.privateSourceIds.forEach(id)
         if (g.scope.kind === 'profile' && !['language', 'person', 'dialogue_format', 'prose_style'].includes(v.key)) denied('global preference whitelist')
         const chain = s.publications.filter(p => p.key === v.key), head = chain.at(-1)
         if (chain.some(p => !allowed(g, p))) denied('global publication chain audience')
         if ((head?.id ?? undefined) !== v.supersedes) throw new RpError('stale_input', 'Explicit publication revision adoption required')
         const bodySha256 = sha(v.body), publicationId = uid('publication'), source: SourceRevision = { schemaVersion: 1, id: uid('approved'), scope: g.scope, origin: 'approved_publication', role: 'user_control', publicTextSha256: bodySha256, publicTextLengthUtf16: v.body.length, blobId: 'blob_' + bodySha256, visibility: g.visibility, capturedAt: new Date().toISOString() }
-        await atomic(path.join(directory(g.scope), 'blobs', source.id, source.blobId + '.txt'), v.body)
+        blobs.push({ file: path.join(directory(g.scope), 'blobs', source.id, source.blobId + '.txt'), body: v.body })
         s.publications.push({ id: publicationId, scope: g.scope, key: v.key, revision: (head?.revision ?? 0) + 1, bodySha256, source, supersedes: head?.id ?? null, privateSourceIds: [...v.privateSourceIds], privateDeleted: false, revoked: false, deleted: false }); return publicationId
-      }) as Promise<Result<GlobalPublication>>
+      }, true) as Promise<Result<GlobalPublication>>
     },
     privateDeletion(authority: object, approval: object, input: { idempotencyKey: string; expected: GlobalFence; privateSourceIds: readonly string[]; publicationDisposition: 'retain' | 'delete' }) {
       return mutate(authority, approval, input, async (s, g, v) => { object(v, ['idempotencyKey', 'expected', 'privateSourceIds', 'publicationDisposition']); if (!Array.isArray(v.privateSourceIds) || !['retain', 'delete'].includes(v.publicationDisposition)) invalid('explicit approved publication deletion disposition'); v.privateSourceIds.forEach(id); const affected = s.publications.filter(p => p.privateSourceIds.some(x => v.privateSourceIds.includes(x))); if (affected.some(p => !allowed(g, p))) denied('global deletion affected audience'); for (const p of affected) { p.privateDeleted = true; if (v.publicationDisposition === 'delete') p.deleted = true } s.fence.deletionGeneration++; return '' }) as Promise<Result<GlobalFence>>

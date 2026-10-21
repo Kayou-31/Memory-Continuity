@@ -82,13 +82,16 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
           bind(replacement, 'accepted', binding.acceptedSeq!, old.id); eventSources = [replacement]; proposals = value.events
         } else if (value.kind === 'reject' || value.kind === 'retract') {
           list(value.sourceRevisionIds)
-          for (const sourceId of value.sourceRevisionIds) {
-            const s = get(sourceId), b = bindings.get(s.id)
+          const targets = value.sourceRevisionIds.map(sourceId => { const s = get(sourceId), b = ledger.sourceBindings.find(b => b.sourceRevisionId === sourceId)
             if (value.kind === 'reject' && b?.disposition === 'accepted') invalid('accepted source needs explicit retraction')
             if (value.kind === 'retract' && b?.disposition !== 'accepted') invalid('active retraction target required')
-            bind(s, value.kind === 'reject' ? 'discarded' : 'retracted')
-            if (value.kind === 'retract') for (const later of ledger.sourceBindings) if (later.disposition === 'accepted' && later.acceptedSeq! > b!.acceptedSeq! && get(later.sourceRevisionId).origin === 'host_public') bind(get(later.sourceRevisionId), 'pending_replay')
+            return { s, b }
+          }), explicit = new Set(value.sourceRevisionIds)
+          if (value.kind === 'retract') {
+            const firstSeq = Math.min(...targets.map(t => t.b!.acceptedSeq!))
+            for (const later of ledger.sourceBindings) if (!explicit.has(later.sourceRevisionId) && later.disposition === 'accepted' && later.acceptedSeq! > firstSeq && get(later.sourceRevisionId).origin === 'host_public') bind(get(later.sourceRevisionId), 'pending_replay')
           }
+          for (const { s } of targets) bind(s, value.kind === 'reject' ? 'discarded' : 'retracted')
         } else if (value.kind === 'retcon') {
           list(value.targetEventIds)
           targets = value.targetEventIds

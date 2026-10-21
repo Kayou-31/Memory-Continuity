@@ -34,6 +34,7 @@ function choice(v: unknown, choices: readonly unknown[]) { if (!choices.includes
 function list(v: unknown, parse: (entry: any) => void, max = 2048, min = 0) { if (!Array.isArray(v) || v.length > max || v.length < min) invalid('array'); v.forEach(parse) }
 function ids(v: unknown, min = 0) { list(v, id, 2048, min); if (new Set(v as string[]).size !== (v as string[]).length) invalid('duplicate IDs') }
 function version(v: unknown) { if (v !== 1) invalid('schemaVersion') }
+export const MAX_EXACT_ANCHORS = 256
 export function scope(v: unknown): asserts v is Scope {
   const kind = (v as any)?.kind
   const fields = kind === 'profile' ? ['kind', 'profileId'] : kind === 'world' ? ['kind', 'profileId', 'worldId'] : kind === 'branch' ? ['kind', 'workspaceId', 'campaignId', 'branchId'] : kind === 'session' ? ['kind', 'workspaceId', 'campaignId', 'branchId', 'sessionId', 'sceneId'] : invalid('scope kind')
@@ -97,7 +98,7 @@ export function event(v: unknown): asserts v is SemanticEvent {
 }
 export function summary(v: unknown): asserts v is Summary {
   const r = object(v, ['schemaVersion', 'id', 'scope', 'level', 'createdFrom', 'sourceRevisionIds', 'dependencySummaryIds', 'supportEventIds', 'exactAnchors', 'text', 'visibility', 'policyVersion', 'measuredTokens', 'tokenMeasurement'])
-  version(r.schemaVersion); id(r.id); scope(r.scope); choice(r.level, ['scene', 'chapter', 'arc']); fence(r.createdFrom); ids(r.sourceRevisionIds, 1); ids(r.dependencySummaryIds); ids(r.supportEventIds); list(r.exactAnchors, sourceSpan, 256); text(r.text, 262144); visibility(r.visibility); text(r.policyVersion, 128); integer(r.measuredTokens); choice(r.tokenMeasurement, ['exact', 'estimated'])
+  version(r.schemaVersion); id(r.id); scope(r.scope); choice(r.level, ['scene', 'chapter', 'arc']); fence(r.createdFrom); ids(r.sourceRevisionIds, 1); ids(r.dependencySummaryIds); ids(r.supportEventIds); list(r.exactAnchors, sourceSpan, MAX_EXACT_ANCHORS); text(r.text, 262144); visibility(r.visibility); text(r.policyVersion, 128); integer(r.measuredTokens); choice(r.tokenMeasurement, ['exact', 'estimated'])
 }
 export function branch(v: unknown): asserts v is Branch {
   const r = object(v, ['schemaVersion', 'id', 'workspaceId', 'campaignId', 'contextRevision', 'parent', 'activeSourceManifestHash', 'canonBindingsHash']); version(r.schemaVersion); id(r.id); id(r.workspaceId); id(r.campaignId); integer(r.contextRevision); hash(r.activeSourceManifestHash); hash(r.canonBindingsHash)
@@ -129,7 +130,9 @@ export function observation(v: unknown): asserts v is SourceObservation {
   else if (r.host !== undefined || r.role !== 'user_control') invalid('control provenance')
 }
 /** Before serialization: bounded recursive inspection rejects lossy values and accessors. */
-export function cloneInput<T>(input: T): T {
+export const MAX_RP_JSON_BYTES = 4_194_304
+export const MAX_RP_PUBLISH_BYTES = 3_145_728
+export function cloneInput<T>(input: T, maxBytes = MAX_RP_JSON_BYTES, capacityError = false): T {
   const visit = (v: unknown, depth: number): void => {
     if (depth > 24) invalid('record depth')
     if (v === null || typeof v === 'boolean') return
@@ -141,8 +144,14 @@ export function cloneInput<T>(input: T): T {
     for (const key of Object.keys(v)) { const d = Object.getOwnPropertyDescriptor(v, key)!; if (!('value' in d)) invalid('accessor'); visit(d.value, depth + 1) }
   }
   visit(input, 0)
-  const encoded = JSON.stringify(input); if (Buffer.byteLength(encoded, 'utf8') > 4194304) invalid('record size')
+  const encoded = JSON.stringify(input); if (Buffer.byteLength(encoded, 'utf8') > maxBytes) { if (capacityError) throw new RpError('capacity_exceeded', 'RP complete envelope byte limit'); invalid('record size') }
   return JSON.parse(encoded) as T
+}
+/** Inspect the entire envelope, then write exactly these preflighted bytes. */
+export function checkedRpJson(input: unknown, encode: (value: unknown) => string, maxBytes = MAX_RP_JSON_BYTES): string {
+  const encoded = encode(cloneInput(input, maxBytes, true))
+  if (Buffer.byteLength(encoded, 'utf8') > maxBytes) throw new RpError('capacity_exceeded', 'RP complete envelope byte limit')
+  return encoded
 }
 export function parseRecord(input: unknown): Result<RpRecord> {
   try {

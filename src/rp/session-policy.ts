@@ -2,6 +2,7 @@
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
+import { acquireRpAdmission } from './admission.js'
 export const SESSION_MEMORY_POLICY = 'dsh.session-memory-policy/v1'
 export const EVIDENCE_POLICY_PROTOCOL = 'dsh-ultra-evidence/v2'
 interface Root { root?: Root; get(key: string): any; provide?(key: string, value: unknown): () => unknown; on?(name: string, listener: any): () => unknown }
@@ -81,15 +82,23 @@ export function engineeringAllowed(context: { root?: any; get?(key: string): any
 /** Kept root-owned even at zero plugin leases so closed RP bindings cannot fall through. */
 export function acquireSessionPolicy(context: Root, kind: string) {
   const root = context.root ?? context, evidence = root.get('ultraEvidenceSupport')
+  const admission = acquireRpAdmission(root)
   if (evidence !== undefined && evidence.protocol !== EVIDENCE_POLICY_PROTOCOL) throw new Error('Incompatible old evidence writer; align all companion bundles')
   let policy = root.get('sessionMemoryPolicy') as SessionMemoryPolicy | undefined
   if (policy && (policy.protocol !== SESSION_MEMORY_POLICY || typeof policy.request !== 'function')) throw new Error('Incompatible session memory policy')
   if (!policy) {
     policy = new SessionMemoryPolicy(); if (!root.provide) throw new Error('Root policy provider unavailable'); root.provide('sessionMemoryPolicy', policy)
+    root.provide('rpAdmissionGuard', true)
     const shared = policy
     // Root-owned recovery reader outlives plugin leases and never scans. A
     // disabled/unloaded RP owner must not silently fall back to raw sending.
-    root.on?.('llm/stream', async function* (options: { sessionId?: string }, next: () => AsyncIterable<unknown>) { if (options.sessionId && !engineeringAllowed(root, options.sessionId) && shared.status(options.sessionId).mode !== 'rp') throw new Error('RP recovery admission blocked; restore its owner or use a clean root session'); yield* next() })
+    root.on?.('llm/stream', async function* (options: { sessionId?: string }, next: () => AsyncIterable<unknown>) { if (options.sessionId && (!engineeringAllowed(root, options.sessionId) || admission.has(options.sessionId)) && (shared.status(options.sessionId).mode !== 'rp' || !admission.permits(options.sessionId, options))) throw new Error('RP recovery admission blocked; restore its owner or use a clean root session'); yield* next() })
+  }
+  // An engineering plugin may have supplied the v1 coordinator before RP loads.
+  if (kind === 'rp' && !root.get('rpAdmissionGuard')) {
+    root.provide?.('rpAdmissionGuard', true)
+    const shared = policy
+    root.on?.('llm/stream', async function* (options: { sessionId?: string }, next: () => AsyncIterable<unknown>) { if (options.sessionId && (!engineeringAllowed(root, options.sessionId) || admission.has(options.sessionId)) && (shared.status(options.sessionId).mode !== 'rp' || !admission.permits(options.sessionId, options))) throw new Error('RP admission blocked'); yield* next() })
   }
   policy.bindRoot(root, kind)
   const releaseWriter = policy.registerWriter(kind, { drain: async () => {} })

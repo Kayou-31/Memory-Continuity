@@ -15,7 +15,7 @@ export function evaluateCorpus(rows) {
       const dimensions = Object.fromEntries(['subject', 'speaker', 'object', 'predicate', 'epistemic', 'time'].map(k => [k, 0]))
       for (const claim of claims) {
         const target = row.facts.find(f => f.id === claim.factId)
-        const exact = row.facts.find(f => same(f, claim))
+        const exact = target && same(target, claim) ? target : undefined
         if (target) for (const k of Object.keys(dimensions)) if ((target[k] ?? null) === (claim[k] ?? null)) dimensions[k]++
         if (target && ['subject', 'speaker', 'object', 'predicate'].every(k => (target[k] ?? null) === (claim[k] ?? null))) attributed++
         const evidence = claim.citations ?? []
@@ -23,7 +23,7 @@ export function evaluateCorpus(rows) {
         for (const cite of evidence) {
           citations++
           const source = row.sources.find(s => s.id === cite.sourceId)
-          if (exact && exact.sourceIds.includes(cite.sourceId) && source && cite.quote && source.text.includes(cite.quote)) { goodCitations++; claimSupported = true }
+          if (exact && exact.sourceIds.includes(cite.sourceId) && source && cite.quote && source.text.includes(cite.quote) && exact.allowedCitations?.some(allowed => allowed.sourceId === cite.sourceId && allowed.quote === cite.quote)) { goodCitations++; claimSupported = true }
         }
         if (claimSupported) { supported++; matched.add(exact.id) }
         if (exact && !exact.viewpoints.includes(output.viewpoint)) povErrors++
@@ -39,7 +39,7 @@ export function evaluateCorpus(rows) {
           (otherRecall.rate === null || otherRecall.rate >= .95) && (unsupported.rate === null || unsupported.rate <= .01) && povErrors === 0 })
     }
   }
-  return { schemaVersion: 1, policyVersion: 'rp-exact-annotation-fixture/v1', corpusVersion: 'zh-rp-fixed/v1',
+  return { schemaVersion: 1, policyVersion: 'rp-exact-annotation-fixture/v2', corpusVersion: 'zh-rp-fixed/v2',
     toy: { status: 'separate-mechanism-evidence', path: 'acceptance-matrix.json' },
     offline: { status: 'fixed-annotated-fixtures', annotationAuthor: 'implementation agent; human-reviewable; no user adjudication claimed', modelGenerated: false,
       samples: rows.length, outputs: results.length, results, realModelCalls: 0, networkCalls: 0,

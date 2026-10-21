@@ -50,6 +50,22 @@ async function apply(f, op, key, ctl) {
 }
 async function accept(f, source, key, events = []) { return must(await apply(f, { kind: 'accept', sourceRevisionIds: [source.id], events }, key)) }
 const stateEvent = (id, value, extra = {}) => ({ id, payload: { kind: 'state_change', subjectId: 'key', key: 'color', after: value }, epistemic: 'world', ...extra })
+
+test('R33 R34 R35 batch retract uses one original snapshot and explicit targets dominate suffix replay', async () => {
+  const f = await setup(), sources = []
+  for (const [index, color] of ['blue', 'gold', 'red'].entries()) { const s = await observe(f, color, 'batch_' + index); await accept(f, s, 'accept_' + index, [stateEvent('event_batch_' + index, color)]); sources.push(s) }
+  const left = await child(f, 'left'), right = await child(f, 'right')
+  const operation = async (branch, order) => {
+    const ctl = await control(branch, 'retract'), expected = must(await branch.store.readFence(branch.authority)), input = { kind: 'retract', sourceRevisionIds: order.map(i => sources[i].id), idempotencyKey: 'retract_batch', expected }
+    const bad = await branch.canonical.applyControl(branch.authority, ctl, { ...input, sourceRevisionIds: [sources[0].id, 'source_missing'] }); assert.equal(bad.ok, false); assert.deepEqual(must(await branch.store.readFence(branch.authority)), expected)
+    must(await branch.canonical.applyControl(branch.authority, ctl, input)); must(await branch.canonical.applyControl(branch.authority, ctl, input))
+    const ledger = must(await branch.store.readLedger(branch.authority))
+    return sources.map(s => ledger.sourceBindings.find(b => b.sourceRevisionId === s.id).disposition)
+  }
+  assert.deepEqual(await operation(left, [0, 1]), ['retracted', 'retracted', 'pending_replay'])
+  assert.deepEqual(await operation(right, [1, 0]), ['retracted', 'retracted', 'pending_replay'])
+  assert.equal(must(await f.store.readEvents(f.authority)).length, 3)
+})
 async function project(f) { return must(await f.store.replayProjection(f.authority)) }
 async function child(f, key, manifest) {
   const fixed = manifest ?? must(await f.canonical.forkManifest(f.authority, must(await f.store.readFence(f.authority)).contextRevision))

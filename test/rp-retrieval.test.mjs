@@ -38,6 +38,23 @@ async function accept(f, src, key) { return must(await f.canonical.applyControl(
 const span = s => ({ sourceRevisionId: s.id, publicTextSha256: s.publicTextSha256, startUtf16: 0, endUtf16: s.publicTextLengthUtf16, quoteSha256: s.publicTextSha256 })
 const budget = { recentCompleteTurns: 8, targetTotalTokens: 48000, triggerTotalTokens: 72000, outputReserveTokens: 8192, toolReserveTokens: 2048, packetSoftTokens: 8000, contextWindow: 100000, inputLimit: 90000 }
 
+test('R14 R15 ongoing result assembly rejects a retcon between event and projection reads', async () => {
+  const f = await setup(), s = await source(f, 'RACE_SOURCE', 'race')
+  must(await f.canonical.applyControl(f.authority, await ctl(f, 'event'), { kind: 'accept', sourceRevisionIds: [s.id], events: [{ id: 'event_race', epistemic: 'world', payload: { kind: 'state_change', subjectId: 'key', key: 'color', after: 'blue' } }], idempotencyKey: 'event', expected: must(await f.store.readFence(f.authority)) }))
+  const control = await ctl(f, 'race_retcon'); let reads = 0
+  const wrapped = new Proxy(f.store, { get(target, key) { if (key === 'readEvents') return async a => { const old = await target.readEvents(a); if (++reads === 2) must(await f.canonical.applyControl(f.authority, control, { kind: 'retcon', targetEventIds: ['event_race'], events: [], idempotencyKey: 'race_retcon', expected: must(await target.readFence(a)) })); return old }; return target[key] } })
+  const retrieval = api.createRetrieval(wrapped)
+  deny(await retrieval.search(f.authority, { query: 'blue', kind: 'event' }), 'snapshot_changed')
+})
+
+test('R14 privacy deletion after the final source-body read cannot leak the old event', async () => {
+  const f = await setup(), s = await source(f, 'DELETE_RACE', 'delete_race')
+  must(await f.canonical.applyControl(f.authority, await ctl(f, 'event_delete'), { kind: 'accept', sourceRevisionIds: [s.id], events: [{ id: 'event_delete_race', epistemic: 'world', payload: { kind: 'state_change', subjectId: 'key', key: 'color', after: 'blue' } }], idempotencyKey: 'event_delete', expected: must(await f.store.readFence(f.authority)) }))
+  const control = await ctl(f, 'delete'); let reads = 0
+  const wrapped = new Proxy(f.store, { get(target, key) { if (key === 'readSource') return async (a, span) => { const old = await target.readSource(a, span); if (++reads === 2) must(await f.canonical.applyControl(f.authority, control, { kind: 'privacy_delete', sourceRevisionIds: [s.id], affectedBranchIds: [f.branch.id], idempotencyKey: 'delete_race', expected: must(await target.readFence(a)) })); return old }; return target[key] } })
+  const result = await api.createRetrieval(wrapped).search(f.authority, { query: 'blue', kind: 'event' }); assert.equal(result.ok, false, JSON.stringify(result)); assert.ok(['snapshot_changed', 'source_unavailable'].includes(result.code))
+})
+
 test('A21 independent approved publication, whitelist, pinned adoption and explicit retained/deleted copies', async () => {
   const f = await setup(), privateSource = await source(f, 'PRIVATE_ROMANCE', 'private'); await accept(f, privateSource, 'private')
   const approval = f.global.control.approval({ commandId: 'command_publish', sessionId: 'session_story' })
@@ -207,7 +224,7 @@ test('global write capacity validates the same state schema before publication a
   env.state.keys = Object.fromEntries(Array.from({ length: 4096 }, (_, i) => [sha('key_' + i), { effect: sha('effect_' + i), result: p.id }]))
   env.sha256 = sha(api.canonical(env.state)); await fs.writeFile(file, JSON.stringify(env)); await fs.writeFile(path.join(dir, 'seal.json'), JSON.stringify({ seq: 1, hash: env.sha256 }))
   const expected = must(await f.global.store.readFence(f.globalAuthority))
-  deny(await f.global.control.publish(f.globalAuthority, approval, { idempotencyKey: 'overflow', expected, key: 'overflow', body: 'OVERFLOW', privateSourceIds: [] }), 'invalid_record')
+  deny(await f.global.control.publish(f.globalAuthority, approval, { idempotencyKey: 'overflow', expected, key: 'overflow', body: 'OVERFLOW', privateSourceIds: [] }), 'capacity_exceeded')
   assert.deepEqual(must(await f.global.store.readFence(f.globalAuthority)), expected); assert.equal(await fs.stat(path.join(dir, 'commits/0000000000000002.json')).then(() => true, () => false), false)
 })
 

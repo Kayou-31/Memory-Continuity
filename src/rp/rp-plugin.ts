@@ -13,10 +13,12 @@ import { defineTool } from '@deepseek-ai/dsh-tools'
 import { canonical, readRpJson } from './store.js'
 import { openRpMemory } from './memory.js'
 import { acquireSessionPolicy, engineeringAllowed, type SessionMemoryPolicy } from './session-policy.js'
+import { acquireRpAdmission } from './admission.js'
+import { retrievalEvidence, verifyRetrievalEvidence, type RetrievalEvidence } from './retrieval-evidence.js'
 import { observePublicHostSource } from './source-adapter.js'
 import { fullSpan, unwrap } from './retrieval.js'
 import { estimateFinalRequest, type GlobalDependency, type InputBinding, type MemoryPacket, type RuntimeBudget } from './packet.js'
-import { cloneInput, fence as validateFence, hash, hostId, id, integer, object, RpError, scope as validateScope, text } from './schema.js'
+import { checkedRpJson, cloneInput, fence as validateFence, hash, hostId, id, integer, object, RpError, scope as validateScope, text } from './schema.js'
 import type { AuthorityRequest } from './store.js'
 import type { HostAuthority, InputFence, SourceRevision } from './types.js'
 import type { GlobalFence } from './global.js'
@@ -24,21 +26,8 @@ const sha = (s: string) => createHash('sha256').update(s).digest('hex')
 const uid = (p: string) => p + '_' + randomUUID().replaceAll('-', '')
 const body = (m: any) => (m.content ?? []).filter((b: any) => b.type === 'text').map((b: any) => b.text).join('\n')
 const normalizedMessage = (m: any) => canonical(m)
-interface Snapshot { messageId?: string; bodyHash: string; packetId: string; fence: InputFence; globals: GlobalFence[]; globalDependencies: GlobalDependency[]; globalPolicyHash: string; dependencyIds: string[]; eventIds: string[]; modeEpoch: number }
-interface Input extends InputBinding { dispatched: boolean; bodyHash: string; phase: 'observed' | 'accepted' | 'dispatching' | 'dispatched'; operationKey: string; expected: InputFence }
-interface DurableSession { schemaVersion: 1; sessionId: string; request: AuthorityRequest; inputs: Input[]; hostSources: Record<string, string>; snapshots: Record<string, Snapshot>; frames: Record<string, Snapshot>; receipts: Record<string, { contentHash: string; snapshot: Snapshot }>; pending: Record<string, Snapshot>; messageHashes: Record<string, string>; currentTurnId?: string; blocked?: boolean }
-interface Bound { agent: Agent; authority: HostAuthority; data: DurableSession; queue: Promise<unknown>; saveQueue: Promise<void>; packet?: MemoryPacket; staticSystem?: string; staticTools?: string; generation: number }
-function validateJournal(input: unknown): DurableSession {
-  const r = object(cloneInput(input), ['schemaVersion', 'sessionId', 'request', 'inputs', 'hostSources', 'snapshots', 'frames', 'receipts', 'pending', 'messageHashes'], ['currentTurnId', 'blocked'])
-  if (r.schemaVersion !== 1 || (r.blocked !== undefined && typeof r.blocked !== 'boolean')) throw new RpError('store_corrupt', 'RP host journal schema')
-  hostId(r.sessionId); if (r.currentTurnId !== undefined) id(r.currentTurnId)
-  const ids = (v: unknown) => { if (!Array.isArray(v) || v.length > 4096) throw new RpError('store_corrupt', 'RP host dependency IDs'); v.forEach(id) }
-  const snapshot = (v: unknown) => { const s = object(v, ['bodyHash', 'packetId', 'fence', 'globals', 'globalDependencies', 'globalPolicyHash', 'dependencyIds', 'eventIds', 'modeEpoch'], ['messageId']); hash(s.bodyHash); id(s.packetId); validateFence(s.fence); hash(s.globalPolicyHash); ids(s.dependencyIds); ids(s.eventIds); integer(s.modeEpoch); if (s.messageId) hostId(s.messageId); if (!Array.isArray(s.globals) || !Array.isArray(s.globalDependencies)) throw new RpError('store_corrupt', 'RP global snapshot list'); for (const g of s.globals) { object(g, ['scope', 'scopeRevision', 'visibilityRevision', 'deletionGeneration']); validateScope(g.scope); integer(g.scopeRevision); integer(g.visibilityRevision); integer(g.deletionGeneration) }; for (const d of s.globalDependencies) { object(d, ['publicationId', 'sourceId', 'bodySha256', 'scope', 'key']); id(d.publicationId); id(d.sourceId); hash(d.bodySha256); validateScope(d.scope); text(d.key, 128) } }
-  if (!Array.isArray(r.inputs)) throw new RpError('store_corrupt', 'RP inputs')
-  for (const i of r.inputs) { object(i, ['kind', 'sourceId', 'turnId', 'messageId', 'dispatched', 'bodyHash', 'phase', 'operationKey', 'expected']); if (i.kind !== 'input' || !['observed', 'accepted', 'dispatching', 'dispatched'].includes(i.phase) || typeof i.dispatched !== 'boolean') throw new RpError('store_corrupt', 'RP input stage'); id(i.sourceId); id(i.turnId); hostId(i.messageId); hash(i.bodyHash); text(i.operationKey, 256); validateFence(i.expected) }
-  for (const field of ['hostSources', 'snapshots', 'frames', 'receipts', 'pending', 'messageHashes']) { const map = object(r[field], [], Object.keys(r[field])); if (Object.keys(map).length > 4096) throw new RpError('store_corrupt', 'RP host map size'); for (const [key, value] of Object.entries(map)) { if (field === 'pending') hash(key); else hostId(key); if (field === 'hostSources') id(value); else if (field === 'messageHashes') hash(value); else if (field === 'receipts') { const rec = object(value, ['contentHash', 'snapshot']); hash(rec.contentHash); snapshot(rec.snapshot) } else snapshot(value) } }
-  return r as DurableSession
-}
+import { validateJournal, type Snapshot, type Input, type DurableSession } from './host-journal.js'
+interface Bound { agent: Agent; authority: HostAuthority; data: DurableSession; queue: Promise<unknown>; saveQueue: Promise<void>; packet?: MemoryPacket; staticSystem?: string; staticTools?: string; generation: number; lastError?: string; recoveryOnly?: boolean }
 export interface RpPluginConfig {
   enabled?: boolean; profileRoot?: string; workspaceRoot?: string; campaignId?: string; entityIds?: readonly string[]; budget?: RuntimeBudget
   /** P5 remains gated. Both default false; true is rejected before bootstrap. */
@@ -54,7 +43,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
   if (config.enabled !== true) {
     // No bootstrap, directory scan or capture while disabled. Retain a lazy
     // recovery veto for already-owned RP sessions instead of abandoning them.
-    const root = context.root ?? context, remove = root.on('llm/stream', (async function* (options: any, next: () => AsyncIterable<any>) { if (options.sessionId && !engineeringAllowed(root, options.sessionId) && (root.get('sessionMemoryPolicy') as any)?.status(options.sessionId).mode !== 'rp') throw new LlmError('RP recovery owner is unavailable', 'RP_ADMISSION'); yield* next() }) as never)
+    const root = context.root ?? context, remove = root.on('llm/stream', (async function* (options: any, next: () => AsyncIterable<any>) { if (options.sessionId && !engineeringAllowed(root, options.sessionId) && ((root.get('sessionMemoryPolicy') as any)?.status(options.sessionId).mode !== 'rp' || !(root.get('rpSessionAdmission') as any)?.permits(options.sessionId, options))) throw new LlmError('RP recovery owner is unavailable', 'RP_ADMISSION'); yield* next() }) as never)
     return Object.freeze({ enabled: false, close: async () => { remove() }, status: () => ({ enabled: false, contextCompression: false, strictPov: false }) })
   }
   for (const key of ['contextCompression', 'strictPov'] as const) if (config[key] !== undefined && typeof config[key] !== 'boolean') throw new RpError('invalid_record', 'RP mode option must be boolean: ' + key)
@@ -72,8 +61,13 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     const missing = Object.entries(checks).filter(([, valid]) => !valid).map(([key]) => key); if (missing.length) throw new RpError('capability_missing', 'Live pinned native services changed or are unavailable: ' + missing.join(','))
   }
   verifyNative()
+  const admission = acquireRpAdmission(root as any), owner = admission.createOwner(); admission.reserve(owner)
+  const startupCleanups: (() => unknown)[] = []
+  try {
   const lease = acquireSessionPolicy(root as any, 'rp'), policy = lease.policy
+  startupCleanups.push(() => lease.release())
   const memory = await openRpMemory({ profileRoot: config.profileRoot, entityIds: config.entityIds ?? [], coordinator: policy.coordinator })
+  startupCleanups.push(() => memory.retrieval.dispose(), () => memory.jobs.close())
   const workspaceRoot = await fs.realpath(config.workspaceRoot), hostRoot = path.join(config.profileRoot, '.dsh-rp', 'v1', 'host')
   await fs.mkdir(hostRoot, { recursive: true })
   let workspace = await memory.control.openWorkspace(workspaceRoot)
@@ -84,6 +78,14 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
   const globalPolicyHash = () => sha(canonical(globalSpecs))
   for (const grant of globalSpecs) globalAuthorities.push(unwrap(await memory.global.control.authorize(grant)))
   const visibility = { policyId: 'rp_user_policy', revision: 0, audienceSetId: 'rp_user' }, bound = new Map<string, Bound>(), handles: any[] = [], shutdown = new AbortController(), effects: (() => unknown)[] = []
+  const pendingTools = new Map<symbol, { agent: Agent; callId: string; generation: number; packetId: string; text: string; proof: RetrievalEvidence; provenance: 'retrieval-result' | 'status' | 'error' }>()
+  startupCleanups.push(async () => {
+    shutdown.abort(new Error('RP installation failed')); pendingTools.clear()
+    const errors: unknown[] = []
+    for (const b of bound.values()) { b.generation++; b.packet = undefined; b.data.blocked = true; try { b.agent.cancel({ kind: 'hook', reason: 'RP installation failed' }); await b.agent.whenIdle(); await policy.block(b.agent.id); admission.release(owner, b.agent.id) } catch (e) { errors.push(e) } }
+    for (const dispose of effects.reverse()) { try { await dispose() } catch (e) { errors.push(e) } }
+    if (errors.length) throw new AggregateError(errors, 'RP startup cleanup failed')
+  })
   const commandGrant = async (worldId?: string, entityId?: string) => policy.coordinator.mutate(async () => {
     if (worldId !== undefined) id(worldId); if (entityId !== undefined) id(entityId)
     const scope = worldId ? { kind: 'world', profileId: binding.profileId, worldId, ...(entityId ? { entityId } : {}) } : { kind: 'profile', profileId: binding.profileId }
@@ -93,26 +95,35 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     commandSpecs.push(spec)
     const tmp = grantFile + '.tmp-' + uid('write'), h = await fs.open(tmp, 'wx', 0o600); try { await h.writeFile(canonical({ schemaVersion: 1, grants: commandSpecs, sha256: sha(canonical(commandSpecs)) })); await h.sync() } finally { await h.close() }; await fs.rename(tmp, grantFile); return authority
   })
-  let closed = false
+  let closed = false, closePromise: Promise<void> | undefined
   const inputHistory = new Map<string, Map<string, Input>>()
   for (const name of (await fs.readdir(hostRoot)).filter(n => /^[a-f0-9]{64}\.json$/u.test(n))) {
+    try {
     const envelope = object(await readRpJson(path.join(hostRoot, name)), ['data', 'sha256']); if (sha(canonical(envelope.data)) !== envelope.sha256) throw new Error('RP input registry journal corrupt')
     const data = validateJournal(envelope.data)
     if (data.request.workspaceId !== binding.workspaceId || data.request.campaignId !== (config.campaignId ?? 'rp_campaign')) continue
     const map = inputHistory.get(data.request.branchId) ?? new Map<string, Input>(); data.inputs.forEach(i => map.set(i.sourceId, i)); inputHistory.set(data.request.branchId, map); memory.registerInputBindings(data.request.branchId, data.inputs)
+    } catch { /* An unverifiable journal supplies no branch or input authority. Resume stays blocked. */ }
   }
-  const live = (agent: Agent) => !closed && (root.get('agents') as any)?.get(agent.id) === agent && agent.session.header.cwd && path.resolve(agent.session.header.cwd) === path.resolve(workspaceRoot)
+  const live = (agent: Agent): boolean => !closed && (root.get('agents') as any)?.get(agent.id) === agent && !!agent.session.header.cwd && path.resolve(agent.session.header.cwd) === path.resolve(workspaceRoot)
   const file = (session: string) => path.join(hostRoot, sha(session) + '.json')
-  const save = (b: Bound): Promise<void> => b.saveQueue = b.saveQueue.catch(() => {}).then(async () => {
-    if (closed) throw new RpError('ownership_lost', 'RP owner disposed')
+  const writeJournal = async (b: Bound, final = false, nextData = b.data, beforeRename?: () => void): Promise<void> => {
+    if (closed && !final) throw new RpError('ownership_lost', 'RP owner disposed')
+    if (b.recoveryOnly) return
+    const encoded = checkedRpJson({ data: nextData, sha256: sha(canonical(nextData)) }, canonical)
+    validateJournal(nextData)
     const target = file(b.data.sessionId), tmp = target + '.tmp-' + uid('write'), h = await fs.open(tmp, 'wx', 0o600)
-    const data = validateJournal(b.data)
-    try { await h.writeFile(canonical({ data, sha256: sha(canonical(data)) })); await h.sync() } finally { await h.close() }
-    if (closed) { await fs.rm(tmp, { force: true }); throw new RpError('ownership_lost', 'RP disposed before publication') }
-    await fs.rename(tmp, target)
-  })
-  const queue = (b: Bound, work: () => Promise<void>) => { const p = b.queue.catch(() => {}).then(async () => { if (closed) return; await work() }); b.queue = p; void p.catch(() => { b.data.blocked = true }); return p }
-  const drain = async (b: Bound) => { await b.queue; if (closed || !live(b.agent) || b.data.blocked) throw new RpError('ownership_lost', 'RP session is unavailable') }
+    try { await h.writeFile(encoded); await h.sync() } finally { await h.close() }
+    try {
+      if (closed && !final) throw new RpError('ownership_lost', 'RP disposed before publication')
+      beforeRename?.(); await fs.rename(tmp, target)
+    } catch (e) { await fs.rm(tmp, { force: true }).catch(() => {}); throw e }
+  }
+  const save = (b: Bound, final = false): Promise<void> => b.saveQueue = b.saveQueue.catch(() => {}).then(() => writeJournal(b, final)).catch(e => { b.data.blocked = true; b.lastError = e instanceof RpError ? e.code : 'persistence_failed'; throw e })
+  const queue = (b: Bound, work: () => Promise<void>) => { const p = b.queue.catch(() => {}).then(async () => { if (closed) throw new RpError('ownership_lost', 'RP owner closing'); await work() }); b.queue = p; void p.catch(e => { b.data.blocked = true; b.lastError = e instanceof RpError ? e.code : 'persistence_failed' }); return p }
+  const drain = async (b: Bound) => { const queueTail = b.queue; await queueTail; const saveTail = b.saveQueue; await saveTail; if (queueTail !== b.queue || saveTail !== b.saveQueue) throw new RpError('stale_input', 'RP queues changed while settling'); if (closed || !live(b.agent) || b.data.blocked) throw new RpError('ownership_lost', 'RP session is unavailable') }
+  const settle = async (b: Bound) => { const results = await Promise.allSettled([b.queue, b.saveQueue]); if (results.some(r => r.status === 'rejected')) { b.data.blocked = true; b.lastError ??= 'persistence_failed' } }
+  const diagnostic = (sessionId: string) => { const b = bound.get(sessionId); return { enabled: !closed, lifecycle: closed ? 'closing' : 'open', contextCompression: false, strictPov: false, nativeVersions, policy: policy.status(sessionId), branchId: b?.data.request.branchId, blocked: b?.data.blocked ?? true, lastError: b?.lastError, candidateIds: b ? Object.values(b.data.hostSources).filter(s => !b.data.inputs.some(i => i.sourceId === s)) : [], pendingInputIds: b?.data.inputs.filter(i => i.phase === 'observed' || i.phase === 'accepted').map(i => i.sourceId) ?? [], ambiguousInputIds: b?.data.inputs.filter(i => i.phase === 'dispatching' || i.phase === 'dispatched').map(i => i.sourceId) ?? [], snapshots: b ? Object.keys(b.data.snapshots).length : 0 } }
   const assertIdle = (agent: Agent) => { if (!live(agent) || agent.status !== 'idle') throw new RpError('scope_denied', 'RP controls require the exact live idle root session') }
   const requestFor = (session: string, branchId: string): AuthorityRequest => ({ workspaceId: binding.workspaceId, campaignId: config.campaignId ?? 'rp_campaign', branchId, sessionId: session, sceneId: 'rp_scene', viewpoint: { kind: 'narrator' }, visibility, audienceSetIds: ['rp_user'], permissions: ['read', 'observe', 'commit', 'control'] })
   const safe = (agent: Agent) => agent.session.deriveMessages().length === 0 && !agent.session.header.parentSession && !agent.session.header.isSeeded && !(root.get('compaction')) && !(root.get('ultraEvidenceSupport') as any)?.memory?.hasActiveSession(agent.id)
@@ -121,15 +132,49 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     if (!beforePublication) assertIdle(agent)
     if (!existing && !safe(agent)) throw new RpError('scope_denied', 'RP activation needs a fresh drained root session without engineering history or archive readers')
     const branch = branchId ?? unwrap(await memory.control.createBranch(binding.workspaceId, config.campaignId ?? 'rp_campaign')).id
-    const data = existing ?? { schemaVersion: 1 as const, sessionId: agent.id, request: requestFor(agent.id, branch), inputs: [...(inputHistory.get(branch)?.values() ?? [])].map(i => ({ ...i, dispatched: true, phase: 'dispatched' as const })), hostSources: {}, snapshots: {}, frames: {}, receipts: {}, pending: {}, messageHashes: {} }
+    const data = existing ?? { schemaVersion: 2 as const, sessionId: agent.id, request: requestFor(agent.id, branch), inputs: [...(inputHistory.get(branch)?.values() ?? [])].map(i => ({ ...i, dispatched: true, phase: 'dispatched' as const })), hostSources: {}, snapshots: {}, frames: {}, receipts: {}, pending: {}, messageHashes: {} }
     const authority = unwrap(await memory.control.authorize(data.request))
+    const legacy = existing?.schemaVersion === 1
+    const recoveryOnly = legacy && (Object.keys(data.frames).length > 0 || Object.keys(data.receipts).length > 0 || agent.session.deriveMessages().some((m: any) => m.role === 'tool' || m.content?.some((c: any) => c.type === 'tool-call')))
+    if (legacy && !recoveryOnly) {
+      // Preserve exactly the checksum-verified original before the atomic upgrade.
+      const original = await fs.readFile(file(agent.id)); const backup = file(agent.id) + '.v1-backup'
+      try { await fs.writeFile(backup, original, { flag: 'wx', mode: 0o600 }) } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'EEXIST' || !original.equals(await fs.readFile(backup))) throw e }
+      data.schemaVersion = 2; for (const s of [...Object.values(data.snapshots), ...Object.values(data.pending)]) s.provenance = 'packet'
+    }
     if (!existing) { const accepted = new Set(unwrap(await memory.store.readAcceptedSources(authority)).map(s => s.id)), inherited = new Map<string, Input>(); for (const map of inputHistory.values()) for (const i of map.values()) if (accepted.has(i.sourceId)) inherited.set(i.sourceId, { ...i, dispatched: true, phase: 'dispatched' }); data.inputs = [...inherited.values()] }
     const markerRoot = path.join(workspaceRoot, '.dsh-rp-policy', 'v1'); await fs.mkdir(markerRoot, { recursive: true })
     // Written before agent publication or activation; engineering only treats
     // this as a fail-closed ownership marker, never as authority to read RP.
     await fs.writeFile(path.join(markerRoot, sha(agent.id) + '.json'), canonical({ protocol: 'dsh.session-memory-policy/v1', sessionId: agent.id, workspaceId: binding.workspaceId }), { flag: 'w', mode: 0o600 })
-    await policy.activate(agent.id, 'rp', { idle: beforePublication || agent.status === 'idle', safe: true })
-    const b: Bound = { agent, authority, data, queue: Promise.resolve(), saveQueue: Promise.resolve(), generation: 0 }; bound.set(agent.id, b); memory.registerInputBindings(branch, data.inputs); await save(b); return b
+    if (admission.has(agent.id)) throw new RpError('ownership_lost', 'Prior RP binding has not been released')
+    if (recoveryOnly) await policy.block(agent.id); else await policy.activate(agent.id, 'rp', { idle: beforePublication || agent.status === 'idle', safe: true })
+    const b: Bound = { agent, authority, data, queue: Promise.resolve(), saveQueue: Promise.resolve(), generation: 0, recoveryOnly, ...(recoveryOnly ? { lastError: 'legacy_tools_recovery_only' } : {}) }
+    if (recoveryOnly) b.data.blocked = true
+    admission.bind(owner, agent.id, () => ({ epoch: policy.status(agent.id).epoch, generation: b.generation, active: live(agent) && !b.data.blocked }))
+    bound.set(agent.id, b); memory.registerInputBindings(branch, data.inputs)
+    try { await save(b); return b } catch (e) { b.data.blocked = true; admission.retireBinding(owner, agent.id); await policy.block(agent.id); admission.release(owner, agent.id); bound.delete(agent.id); throw e }
+  }
+  const continueClean = async (agent: Agent, b: Bound | undefined, arg: string, signal: AbortSignal) => {
+    const branchId = arg || b?.data.request.branchId
+    if (!branchId) throw new RpError('scope_denied', 'Unverified history requires an explicit independently authorized branchId')
+    id(branchId)
+    const authority = unwrap(await memory.control.authorize(requestFor(agent.id, branchId))), expected = unwrap(await memory.store.readFence(authority))
+    admission.retireBinding(owner, agent.id); if (b) { b.generation++; b.packet = undefined; b.data.blocked = true }
+    agent.cancel({ kind: 'hook', reason: 'RP clean continuation' }); await agent.whenIdle(); if (b) await settle(b)
+    await policy.block(agent.id); if (b) { try { await save(b) } catch { b.lastError = 'persistence_failed' } }
+    const epoch = policy.status(agent.id).epoch
+    let created: any, newAgent: Agent | undefined
+    try {
+      created = await (root.get('agents') as any).create({ sessionId: uid('rp_clean'), meta: { cwd: workspaceRoot }, agentOptions: { ...agent.options }, signal,
+        setup: async (_ctx: Context, next: Agent) => { newAgent = next; await installBound(next, branchId, undefined, true); return { commit() { signal.throwIfAborted(); if (closed || !live(agent) || policy.status(agent.id).epoch !== epoch) throw new RpError('stale_input', 'Clean continuation owner changed') } } } })
+      signal.throwIfAborted()
+      if (closed || !live(agent) || canonical(unwrap(await memory.store.readFence(authority))) !== canonical(expected)) throw new RpError('stale_input', 'Branch changed during clean continuation')
+      handles.push(created); return { kind: 'success' as const, text: 'Clean RP root session created: ' + created.agent.id + '. Select that session in the host; the UI tab was not switched.' }
+    } catch (e) {
+      if (newAgent) { admission.retireBinding(owner, newAgent.id); const n = bound.get(newAgent.id); if (n) n.data.blocked = true; await policy.block(newAgent.id); admission.release(owner, newAgent.id); bound.delete(newAgent.id) }
+      await created?.dispose(); throw e
+    }
   }
   const controlSource = (b: Bound, commandId: string, value: string) => memory.store.observeSource(b.authority, { idempotencyKey: 'command_' + sha(commandId), origin: 'user_control', role: 'user_control', publicText: value, turnId: uid('control') })
   const canonicalControl = async (b: Bound, commandId: string, operation: any) => {
@@ -164,6 +209,8 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       signal.throwIfAborted(); shutdown.signal.throwIfAborted(); assertIdle(agent)
       const match = /^\s*(\S+)?(?:\s+([\s\S]*))?$/u.exec(invocation.rawInput)!, action = match[1] ?? 'status', arg = match[2] ?? ''
       let b = bound.get(agent.id)
+      if (action === 'status') { if (b) await settle(b); return { kind: 'success', text: JSON.stringify(diagnostic(agent.id)) } }
+      if (action === 'continue-clean') return await continueClean(agent, b, arg, signal)
       if (action === 'global') {
         const parsed = /^(\S+)\s+([\s\S]+)$/u.exec(arg); if (!parsed) throw new RpError('invalid_record', 'Use /rp global preference|publish|list|adopt <JSON>')
         const op = JSON.parse(parsed[2]), sub = parsed[1]; object(op, [], ['worldId', 'entityId', 'key', 'body', 'privateSourceIds', 'supersedes', 'publicationId'])
@@ -210,17 +257,10 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       else if (action === 'delete') { const op = JSON.parse(arg); if (!['retain', 'delete'].includes(op.publicationDisposition)) throw new RpError('invalid_record', 'Choose publicationDisposition retain/delete explicitly'); for (const ga of globalAuthorities) unwrap(await memory.global.control.privateDeletion(ga, memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }), { idempotencyKey: commandId, expected: unwrap(await memory.global.store.readFence(ga)), privateSourceIds: op.sourceRevisionIds, publicationDisposition: op.publicationDisposition })); unwrap<unknown>(await canonicalControl(b, commandId, { kind: 'privacy_delete', sourceRevisionIds: op.sourceRevisionIds, affectedBranchIds: [b.data.request.branchId] })) }
       else if (action === 'publish') { const op = JSON.parse(arg), ga = globalAuthorities[op.grantIndex]; if (!ga) throw new RpError('scope_denied', 'Unknown global grant'); const approval = memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }); unwrap(await memory.global.control.publish(ga, approval, { idempotencyKey: commandId, expected: unwrap(await memory.global.store.readFence(ga)), key: op.key, body: op.body, privateSourceIds: op.privateSourceIds, ...(op.supersedes ? { supersedes: op.supersedes } : {}) })) }
       else if (action === 'adopt-canon') { const op = JSON.parse(arg), ga = globalAuthorities[op.grantIndex]; if (!ga) throw new RpError('scope_denied', 'Unknown global grant'); unwrap(await memory.adoptCanon(b.authority, ga, memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }), op.publicationId, commandId)) }
-      else if (action === 'continue-clean') {
-        agent.cancel({ kind: 'hook', reason: 'RP clean continuation' }); await agent.whenIdle(); await drain(b)
-        const branchId = arg || b.data.request.branchId, expected = unwrap(await memory.store.readFence(b.authority)), state = policy.status(agent.id), created = await (root.get('agents') as any).create({ sessionId: uid('rp_clean'), meta: { cwd: workspaceRoot }, agentOptions: { ...agent.options }, signal,
-          setup: async (_agentCtx: Context, newAgent: Agent) => { await installBound(newAgent, branchId, undefined, true); return { commit() { signal.throwIfAborted(); if (closed || policy.status(agent.id).epoch !== state.epoch) throw new Error('Clean continuation policy changed') } } } })
-        if (canonical(unwrap(await memory.store.readFence(b.authority))) !== canonical(expected)) { await created.dispose(); throw new RpError('stale_input', 'Branch changed during clean continuation') }
-        handles.push(created); return { kind: 'success', text: 'Clean RP root session created: ' + created.agent.id + '. Select that session in the host; the UI tab was not switched.' }
-      }
       else if (action !== 'accept' && action !== 'reject') throw new RpError('invalid_record', 'Use start/status/input/accept/reject/delete/retcon/publish/adopt-canon/continue-clean/resume-input')
       signal.throwIfAborted(); if (!await (root.get('sessions') as any).flush(agent.session)) throw new RpError('persistence_uncertain', 'Native session flush unconfirmed')
       return { kind: 'success', text: 'RP control committed. Historical native content may require continue-clean.' }
-    } catch (e) { return { kind: 'error', text: e instanceof RpError ? e.code + ': ' + e.message : 'RP control failed; inspect status before retry.' } }
+    } catch (e) { const b = bound.get(agent.id); if (b && !(e instanceof RpError)) { b.data.blocked = true; b.lastError = 'persistence_failed' }; return { kind: 'error', text: e instanceof RpError ? e.code + ': ' + e.message : 'RP control failed; inspect status before retry.' } }
   }
   const commandsFiber = root.inject(['commands'], (owner: any) => { effects.push(owner.get('commands').register({ name: 'rp', description: 'Explicit narrator Memory controls; generated replies remain candidates.', input: { hint: 'start|status|input <text>|accept <sourceId>|summary <JSON>|candidates|adopt <candidateId>|jobs|continue-clean', attachments: false }, recordInput: false, handler: command })) })
   effects.push(() => commandsFiber.dispose())
@@ -235,7 +275,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     }
     if (event.type === 'assistant/message' && message?.content?.some((c: any) => c.type === 'tool-call')) {
       if (!b.packet || !message.content.every((c: any) => c.type === 'tool-call' && ['rp_memory_search', 'rp_memory_get', 'rp_memory_status'].includes(c.name))) { b.data.blocked = true; return }
-      b.data.frames[message.id] = { bodyHash: sha(body(message)), packetId: b.packet.id, fence: b.packet.inputFence, globals: [...b.packet.globalFences], globalDependencies: [...b.packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...b.packet.dependencyIds], eventIds: [], modeEpoch: policy.status(session.id).modeEpoch }
+      b.data.frames[message.id] = { provenance: 'tool-call', bodyHash: sha(body(message)), packetId: b.packet.id, fence: b.packet.inputFence, globals: [...b.packet.globalFences], globalDependencies: [...b.packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...b.packet.dependencyIds], eventIds: [], modeEpoch: policy.status(session.id).modeEpoch }
       b.data.messageHashes[message.id] = sha(normalizedMessage(message)); void queue(b, () => save(b)); return
     }
     if (message?.source?.kind === 'runtime-context') {
@@ -262,13 +302,12 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     const envelope = () => ({ provider: agent!.options.provider, model: agent!.options.model, maxTokens: agent!.options.maxTokens, system: renderPrompt(completed), tools: completed.tools, toolHistory: { tools: completed.tools, updates: [] }, messages: [...agent!.session.deriveMessages(), { role: 'user', content: [{ type: 'text', text: joinContextSections(renderContextSections(completed)) }] }] })
     const reserve = Math.max(config.budget!.outputReserveTokens, agent!.options.maxTokens ?? 0) + config.budget!.toolReserveTokens
     if (estimateFinalRequest(envelope()) > Math.min(config.budget!.inputLimit, config.budget!.contextWindow - reserve)) { packet = unwrap(await memory.packets.prepare(b.authority, { budget: config.budget!, globalAuthorities, inputBindings: b.data.inputs, optionalTokens: 0 })); completed = compose(packet) }
-    const fullContext = joinContextSections(renderContextSections(completed)), events = unwrap(await memory.store.readEvents(b.authority)), snapshot: Snapshot = { bodyHash: sha(fullContext), packetId: packet.id, fence: packet.inputFence, globals: [...packet.globalFences], globalDependencies: [...packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...packet.dependencyIds], eventIds: events.map(e => e.id), modeEpoch: policy.status(b.agent.id).modeEpoch }
+    const fullContext = joinContextSections(renderContextSections(completed)), events = unwrap(await memory.store.readEvents(b.authority)), snapshot: Snapshot = { provenance: 'packet', bodyHash: sha(fullContext), packetId: packet.id, fence: packet.inputFence, globals: [...packet.globalFences], globalDependencies: [...packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...packet.dependencyIds], eventIds: events.map(e => e.id), modeEpoch: policy.status(b.agent.id).modeEpoch }
     b.packet = packet; b.staticSystem = sha(renderPrompt(completed)); b.staticTools = sha(canonical(completed.tools)); b.data.pending[snapshot.bodyHash] = snapshot
     await save(b); return completed
   }) as never))
   const certify = async (b: Bound, options: any) => {
     verifyNative()
-    await drain(b)
     if (!b.packet || policy.status(b.agent.id).mode !== 'rp') throw new RpError('scope_denied', 'No prepared RP assembly')
     const sources = unwrap(await memory.store.readAcceptedSources(b.authority)), sourceMap = new Map(sources.map(s => [s.id, s])), fence = unwrap(await memory.store.readFence(b.authority)), events = new Set(unwrap(await memory.store.readEvents(b.authority)).map(e => e.id))
     let systemSeen = b.staticSystem === sha(''), packetSeen = false
@@ -277,6 +316,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       if (b.data.messageHashes[message.id] !== sha(normalizedMessage(message))) throw new RpError('scope_denied', 'Unknown or changed native history/metadata; use clean continuation')
       const snapshot = b.data.snapshots[message.id] ?? b.data.frames[message.id]
       if (snapshot) {
+        if (snapshot.records) await verifyRetrievalEvidence(memory.store, b.authority, { inputFence: snapshot.fence, records: snapshot.records, resultSha256: snapshot.resultSha256! }, new Set(b.data.inputs.map(i => i.sourceId)))
         if (snapshot.bodyHash !== sha(body(message)) || snapshot.modeEpoch !== policy.status(b.agent.id).modeEpoch || snapshot.fence.branchId !== fence.branchId || snapshot.fence.canonBindingsHash !== fence.canonBindingsHash || snapshot.fence.visibilityRevision !== fence.visibilityRevision || snapshot.fence.deletionGeneration !== fence.deletionGeneration || snapshot.fence.policyVersion !== fence.policyVersion || snapshot.dependencyIds.some(id => !sourceMap.has(id)) || snapshot.eventIds.some(id => !events.has(id))) throw new RpError('stale_input', 'Historical RP snapshot is invalid; use clean continuation')
         if (snapshot.globalPolicyHash !== globalPolicyHash() || snapshot.globals.length !== globalAuthorities.length) throw new RpError('scope_denied', 'Historical global grants changed')
         for (const dep of snapshot.globalDependencies) {
@@ -308,44 +348,99 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
   effects.push(root.on('llm/stream', (async function* (options: any, next: () => AsyncIterable<any>) {
     const b = options.sessionId && bound.get(options.sessionId)
     if (!b) {
-      if (policy.status(options.sessionId ?? '').mode === 'rp' || policy.status(options.sessionId ?? '').mode === 'blocked') throw new LlmError('RP session is unavailable', 'RP_ADMISSION')
       yield* next(); return
     }
+    await drain(b)
+    const queueTail = b.queue, saveTail = b.saveQueue, generation = b.generation
     const state = policy.status(b.agent.id), release = await policy.request(b.agent.id, state.epoch)
-    try { await certify(b, options); shutdown.signal.throwIfAborted(); yield* next() }
+    let revoke: (() => void) | undefined
+    try { if (queueTail !== b.queue || saveTail !== b.saveQueue || generation !== b.generation) throw new RpError('stale_input', 'RP queues changed before request'); await certify(b, options); shutdown.signal.throwIfAborted(); if (queueTail !== b.queue || saveTail !== b.saveQueue || generation !== b.generation) throw new RpError('stale_input', 'RP queues changed during request certification'); revoke = admission.issue(owner, b.agent.id, options, { epoch: state.epoch, generation, active: true }); yield* next() }
     catch (e) { throw new LlmError(e instanceof RpError ? e.code + ': ' + e.message : 'RP request blocked', 'RP_ADMISSION') }
-    finally { release() }
+    finally { revoke?.(); release() }
   }) as never, { prepend: true }))
   effects.push(root.on('agent/created', (async ({ agent, source }: any) => {
     if (closed || bound.has(agent.id) || source !== 'resume') return
     try {
       const envelope = object(await readRpJson(file(agent.id)), ['data', 'sha256']); hash(envelope.sha256); if (sha(canonical(envelope.data)) !== envelope.sha256) throw new Error('RP host journal hash mismatch'); const raw = validateJournal(envelope.data)
-      if (raw.schemaVersion !== 1 || raw.sessionId !== agent.id || raw.request.sessionId !== agent.id || raw.request.workspaceId !== binding.workspaceId) throw new Error('RP persisted binding identity mismatch')
+      if (raw.sessionId !== agent.id || raw.request.sessionId !== agent.id || raw.request.workspaceId !== binding.workspaceId) throw new Error('RP persisted binding identity mismatch')
       await installBound(agent, raw.request.branchId, raw, true)
-    } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') { policy.block(agent.id); throw e } }
+    } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') { await policy.block(agent.id) } }
   }) as never))
-  effects.push(root.on('agent/disposed', (({ agent }: any) => { const b = bound.get(agent.id); if (b) { b.generation++; policy.block(agent.id); bound.delete(agent.id) } }) as never))
+  effects.push(root.on('agent/disposed', (({ agent }: any) => { const b = bound.get(agent.id); if (b) { b.generation++; admission.retireBinding(owner, agent.id); void policy.block(agent.id).then(() => { admission.release(owner, agent.id); bound.delete(agent.id) }).catch(() => { b.data.blocked = true }) } }) as never))
   // Only read/status tools. They cannot reach commands, approvals, stores or grants.
   const tools: any = root.get('tools'), output = { schema: { type: 'object' as const, additionalProperties: false as const, properties: { text: { type: 'string' as const, required: true as const } } }, render: (_args: unknown, result: { text: string }) => [{ type: 'text' as const, text: result.text }] }
   effects.push(root.on('tools/execute', (async (exec: any, next: () => Promise<any>) => {
-    const b = exec.agent && bound.get(exec.agent.id)
+    const b: Bound | undefined = exec.agent && bound.get(exec.agent.id)
     if (!b || !['rp_memory_search', 'rp_memory_get', 'rp_memory_status'].includes(exec.name)) return next()
-    const result = await next(); await drain(b)
-    if (!b.packet || closed) throw new RpError('ownership_lost', 'RP tool owner disposed')
-    const fence = unwrap(await memory.store.readFence(b.authority)), sources = unwrap(await memory.store.readAcceptedSources(b.authority)), events = unwrap(await memory.store.readEvents(b.authority)), globals = []
-    for (const grant of globalAuthorities) globals.push(unwrap(await memory.global.store.readFence(grant)))
-    const snapshot: Snapshot = { bodyHash: sha(result.content.filter((x: any) => x.type === 'text').map((x: any) => x.text).join('\n')), packetId: b.packet.id, fence, globals, globalDependencies: [...b.packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: sources.map(s => s.id), eventIds: events.map(e => e.id), modeEpoch: policy.status(b.agent.id).modeEpoch }
-    b.data.receipts[exec.callId] = { contentHash: sha(canonical(result.content)), snapshot }; await save(b); return result
+    try {
+      const result = await next(); await drain(b)
+      const pending = pendingTools.get(exec.token), queueTail = b.queue
+      if (!pending || pending.agent !== exec.agent || pending.agent !== b.agent || pending.callId !== exec.callId || pending.generation !== b.generation || pending.packetId !== b.packet?.id || canonical(result.content) !== canonical([{ type: 'text', text: pending.text }])) throw new RpError('scope_denied', 'Uncertified rendered tool result')
+      // Reserve this session's journal tail before taking the coordinator. New
+      // ordinary saves queue behind it; this critical section never awaits it.
+      let finish!: () => void
+      const publication = new Promise<void>(resolve => { finish = resolve }); b.saveQueue = publication
+      const checkPublication = () => {
+        exec.signal.throwIfAborted()
+        if (closed || !live(b.agent) || b.data.blocked || policy.status(b.agent.id).mode !== 'rp' || pending.generation !== b.generation || queueTail !== b.queue || publication !== b.saveQueue || pending.packetId !== b.packet?.id) throw new RpError('ownership_lost', 'Tool receipt owner changed')
+      }
+      try { await policy.coordinator.mutate(async () => {
+        checkPublication()
+        await verifyRetrievalEvidence(memory.store, b.authority, pending.proof, new Set(b.data.inputs.map(i => i.sourceId)))
+        checkPublication()
+        const snapshot: Snapshot = { provenance: pending.provenance, records: pending.proof.records, resultSha256: pending.proof.resultSha256, bodyHash: sha(pending.text), packetId: pending.packetId, fence: pending.proof.inputFence, globals: [...b.packet!.globalFences], globalDependencies: [...b.packet!.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [], eventIds: [], modeEpoch: policy.status(b.agent.id).modeEpoch }
+        const data = { ...b.data, receipts: { ...b.data.receipts, [exec.callId]: { contentHash: sha(canonical(result.content)), snapshot } } }
+        try { await writeJournal(b, false, data, checkPublication); checkPublication(); b.data = data } catch (e) { b.data.blocked = true; b.lastError = e instanceof RpError ? e.code : 'persistence_failed'; throw e }
+      }) } finally { finish() }; return result
+    } finally { pendingTools.delete(exec.token) }
   }) as never, { prepend: true }))
   for (const name of ['rp_memory_search', 'rp_memory_get', 'rp_memory_status']) {
     effects.push(tools.register(defineTool({ name, description: 'Read-only RP data. Cannot accept sources, execute commands, approve publications or grant authority.', parameters: name.endsWith('status') ? {} : name.endsWith('get') ? { id: { type: 'string' }, cursor: { type: 'string' }, maxChars: { type: 'integer' } } : { query: { type: 'string' }, cursor: { type: 'string' }, limit: { type: 'integer' } }, output, isConcurrencySafe: () => true,
-      async execute(args: any, exec: any) { const b: Bound | undefined = exec.agent && bound.get(exec.agent.id); if (!b || !live(exec.agent) || policy.status(exec.agent.id).mode !== 'rp') throw new Error('RP read requires exact bound live caller'); await drain(b); const result = name.endsWith('status') ? { mode: 'memory', branchId: b.data.request.branchId, candidateIds: Object.values(b.data.hostSources).filter(s => !b.data.inputs.some(i => i.sourceId === s)), pendingInputIds: b.data.inputs.filter(i => !i.dispatched).map(i => i.sourceId) } : name.endsWith('get') ? await memory.retrieval.get(b.authority, args) : await memory.retrieval.search(b.authority, args); exec.signal.throwIfAborted(); return { text: canonical(result) } },
+      async execute(args: any, exec: any) {
+        const b: Bound | undefined = exec.agent && bound.get(exec.agent.id)
+        if (!b || b.agent !== exec.agent || !live(exec.agent) || policy.status(exec.agent.id).mode !== 'rp') throw new Error('RP read requires exact bound live caller')
+        await drain(b); const generation = b.generation, packetId = b.packet?.id
+        if (!packetId || typeof exec.token !== 'symbol') throw new RpError('scope_denied', 'No native execution identity or packet')
+        let result: any, proof: RetrievalEvidence, provenance: 'retrieval-result' | 'status' | 'error'
+        if (name.endsWith('status')) { const inputFence = unwrap(await memory.store.readFence(b.authority)); result = { mode: 'memory', branchId: inputFence.branchId, pendingInputIds: b.data.inputs.filter(i => !i.dispatched).map(i => i.sourceId) }; proof = { inputFence, records: [], resultSha256: sha(canonical(result)) }; provenance = 'status' }
+        else {
+          result = name.endsWith('get') ? await memory.retrieval.get(b.authority, args) : await memory.retrieval.search(b.authority, args)
+          if (result.ok) { proof = retrievalEvidence(result, b.authority); provenance = 'retrieval-result' }
+          else { result = { ok: false, code: result.code }; proof = { inputFence: unwrap(await memory.store.readFence(b.authority)), records: [], resultSha256: sha(canonical(result)) }; provenance = 'error' }
+        }
+        exec.signal.throwIfAborted(); if (closed || b.generation !== generation) throw new RpError('ownership_lost', 'Late tool result')
+        const text = canonical(result); pendingTools.set(exec.token, { agent: b.agent, callId: exec.callId, generation, packetId, text, proof, provenance }); return { text }
+      },
     } as any)))
   }
   return Object.freeze({ enabled: true, memory, policy,
     async ready(sessionId: string) { const b = bound.get(sessionId); if (b) await drain(b) },
-    status(sessionId: string) { const b = bound.get(sessionId); return { enabled: !closed, contextCompression: false, strictPov: false, nativeVersions, policy: policy.status(sessionId), branchId: b?.data.request.branchId, candidateIds: b ? Object.values(b.data.hostSources).filter(s => !b.data.inputs.some(i => i.sourceId === s)) : [], pendingInputIds: b?.data.inputs.filter(i => i.phase === 'observed' || i.phase === 'accepted').map(i => i.sourceId), ambiguousInputIds: b?.data.inputs.filter(i => i.phase === 'dispatching').map(i => i.sourceId), snapshots: b ? Object.keys(b.data.snapshots).length : 0 } },
-    async close() { if (closed) return; shutdown.abort(new Error('RP plugin disposed')); for (const b of bound.values()) { b.generation++; b.agent.cancel({ kind: 'hook', reason: 'RP owner disposed' }) }; await memory.jobs.close(); await Promise.allSettled([...bound.values()].map(async b => { await b.agent.whenIdle(); await b.queue; await policy.block(b.agent.id) })); closed = true; for (const dispose of effects.reverse()) if (typeof dispose === 'function') await dispose(); memory.retrieval.dispose(); for (const h of handles.reverse()) await h.dispose(); await lease.release() },
+    status: diagnostic,
+    close() {
+      if (closePromise) return closePromise
+      closed = true; admission.retire(owner); pendingTools.clear(); shutdown.abort(new Error('RP plugin disposed'))
+      const errors: unknown[] = [], attempt = async (work: () => unknown) => { try { await work() } catch (e) { errors.push(e) } }
+      for (const b of bound.values()) { b.generation++; b.packet = undefined; try { b.agent.cancel({ kind: 'hook', reason: 'RP owner disposed' }) } catch (e) { errors.push(e) } }
+      closePromise = (async () => {
+        await attempt(() => memory.jobs.close())
+        for (const b of bound.values()) {
+          await attempt(() => b.agent.whenIdle()); await attempt(() => b.queue); await attempt(() => b.saveQueue)
+          await attempt(async () => { await policy.block(b.agent.id); admission.release(owner, b.agent.id) })
+          b.data.blocked = true; await attempt(() => save(b, true))
+        }
+        for (const dispose of effects.reverse()) if (typeof dispose === 'function') await attempt(dispose)
+        await attempt(() => memory.retrieval.dispose()); for (const h of handles.reverse()) await attempt(() => h.dispose()); await attempt(() => lease.release()); admission.unreserve(owner)
+        if (errors.length) throw new AggregateError(errors, 'RP close failed; request ownership remains retired')
+      })(); return closePromise
+    },
   })
+  } catch (cause) {
+    admission.retire(owner)
+    const failures: unknown[] = []
+    for (const dispose of startupCleanups.reverse()) { try { await dispose() } catch (e) { failures.push(e) } }
+    admission.unreserve(owner)
+    if (failures.length) throw new AggregateError([cause, ...failures], 'RP initialization failed; ownership remains retired')
+    throw cause
+  }
 }
 export default installRpPlugin

@@ -5,7 +5,7 @@ export type Revision = number
 export type JsonValue = null | boolean | number | string | readonly JsonValue[] | { readonly [key: string]: JsonValue }
 export type ErrorCode = 'scope_denied' | 'invalid_record' | 'invalid_candidate' | 'source_unavailable' | 'stale_input'
   | 'idempotency_conflict' | 'persistence_failed' | 'persistence_uncertain' | 'store_locked' | 'capability_missing' | 'store_corrupt'
-  | 'snapshot_changed' | 'context_budget_exceeded' | 'ownership_lost'
+  | 'snapshot_changed' | 'context_budget_exceeded' | 'ownership_lost' | 'capacity_exceeded'
 export type Result<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly code: ErrorCode; readonly message: string }
 export type Scope = { readonly kind: 'profile'; readonly profileId: Id }
   | { readonly kind: 'world'; readonly profileId: Id; readonly worldId: Id; readonly entityId?: Id }

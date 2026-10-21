@@ -839,10 +839,17 @@ export class RpStore {
         for (const event of batch.events) { event.supersedes.forEach(id => invalidated.add(id)); if (event.payload.kind === 'correction') event.payload.targetEventIds.forEach(id => { if (!current.records.has(id)) invalid('correction target'); invalidated.add(id) }) }
         for (const old of current.bindings.values()) if (old.disposition === 'accepted' && next.bindings.get(old.sourceRevisionId)?.disposition !== 'accepted') invalidated.add(old.sourceRevisionId)
         for (const change of changes) if (change.kind === 'deletion') { change.record.sourceRevisionIds.forEach(id => invalidated.add(id)); change.record.blockedDerivedIds.forEach(id => invalidated.add(id)) }
+        // Old summaries can predate their supporting events. Invalidate their
+        // shared provenance without retracting the original historical source.
+        const affectedSources = new Set<string>(), activeBefore = this.#activeRecords(current)
         // Freeze the invalidated historical closure. Explicit replay can reuse
         // the source after confirmation, but never revive its old derived view.
         let grew = true
-        while (grew) { grew = false; for (const record of current.records.values()) if (!invalidated.has(record.id) && [...record.sourceRevisionIds, ...record.dependencyIds].some(id => invalidated.has(id))) { invalidated.add(record.id); grew = true } }
+        while (grew) {
+          grew = false
+          for (const eventId of invalidated) { const old = activeBefore.get(eventId); if (old?.active && old.kind === 'event') old.sourceRevisionIds.forEach(sourceId => affectedSources.add(sourceId)) }
+          for (const record of current.records.values()) if (!invalidated.has(record.id) && ([...record.sourceRevisionIds, ...record.dependencyIds].some(id => invalidated.has(id)) || (activeBefore.get(record.id)?.active && record.kind === 'summary' && record.sourceRevisionIds.some(id => affectedSources.has(id))))) { invalidated.add(record.id); grew = true }
+        }
         await this.#authorize(authority, 'commit')
         const operation: Operation = { kind: 'commit', branchId: grant.request.branchId, expected: batch.expected, result, sourceBindings: batch.sourceBindings,
           records, jobs, invalidatedIds: [...invalidated], authorityChanges: changes, ...(batch.expectedJobs ? { expectedJobs: batch.expectedJobs } : {}) }
