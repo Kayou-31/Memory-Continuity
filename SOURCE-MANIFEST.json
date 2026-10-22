@@ -94,8 +94,8 @@
     },
     {
       "path": "src/rp/store.ts",
-      "bytes": 107906,
-      "sha256": "421e6088601349d906c32353c42ac6fab76afdea6144e0d18dc70cffc0f16fe9"
+      "bytes": 109103,
+      "sha256": "611eb183b8c3defd5ac8e0d554b3e4b9224ff4e49f416d88f4dc693e048a41ec"
     },
     {
       "path": "src/rp/summarizer.ts",
@@ -114,13 +114,13 @@
     },
     {
       "path": "lib/index.js",
-      "bytes": 271148,
-      "sha256": "35741f7cd77485319220c71b6e051449fadfde34d21c27a830a70bf6953af72e"
+      "bytes": 272298,
+      "sha256": "aab43cc38862e7fb80b281f30c5f34b4972716eb2fd4e30acbbb80524c748d6d"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 495311,
-      "sha256": "98796a9ebd8eba27edc58c3b0dcd9051ce0be6bb551440276c6bc09a37e8c7f1"
+      "bytes": 497213,
+      "sha256": "114f23e142a70859ea79d3b9274520427aa0f1ee4570936b52b93cb298d74fd7"
     },
     {
       "path": "lib/types/rp/admission.d.ts",

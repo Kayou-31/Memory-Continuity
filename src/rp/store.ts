@@ -4,7 +4,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createHash, randomUUID } from 'node:crypto'
 import type { Branch, BranchScope, BranchSourceBinding, CommitBatch, HostAuthority, InputFence, Job, LedgerSnapshot, Result, Scope, SemanticEvent, SourceObservation, SourceRevision, SourceSpan, StoredDerived, Summary, Visibility, Viewpoint, WorkspaceBinding, AuthorityChange, CanonBinding, ForkManifest, PayloadCopy, PrivacyDeletion, ProjectionResult } from './types.js'
-import { RpError, batch as validateBatch, binding as validateBinding, branch as validateBranch, cloneInput, denied, failure, fence as validateFence, hash, id, hostId, integer, invalid, job as validateJob, object, observation as validateObservation, parseRecord, scope as validateScope, sourceSpan as validateSpan, text, visibility as validateVisibility, authorityChange as validateChange, wellFormed } from './schema.js'
+import { RpError, batch as validateBatch, binding as validateBinding, branch as validateBranch, checkedRpJson, cloneInput, denied, failure, fence as validateFence, hash, id, hostId, integer, invalid, job as validateJob, object, observation as validateObservation, parseRecord, scope as validateScope, sourceSpan as validateSpan, text, visibility as validateVisibility, authorityChange as validateChange, wellFormed } from './schema.js'
 import { reduceEvents, eventsForView } from './reducer.js'
 export { parseRecord } from './schema.js'
 /** Trusted storage adapters reuse the same verified lock/read protocol. */
@@ -136,6 +136,9 @@ export class RpStore {
   readonly #grants = new WeakMap<object, Grant>()
   readonly #snapshots = new WeakMap<object, { authority: HostAuthority; span: SourceSpan; bodySha256: string; snapshotId: string }>()
   readonly #options: StoreOptions
+  // Scoped to one verified load, never reused across disk reads or authorities.
+  // Sequence bounds prevent a nested prefix replay from borrowing a future state.
+  readonly #history = new WeakMap<WorkspaceState, Map<string, { sequence: number; branch: BranchState }>>()
   readonly #root: string
   readonly #profileRoot: string
   readonly #profileId: string
@@ -284,7 +287,7 @@ export class RpStore {
     const initialSeals = (await fs.readdir(sealDirectory)).filter(file => !file.includes('.tmp-')).sort()
     const files = await fs.readdir(directory)
     await this.#options.fault?.('metadata_listed')
-    const state = emptyState()
+    const state = emptyState(), effects = new Set<string>()
     for (const file of files.sort()) {
       if (file.includes('.tmp-')) continue
       if (!/^\d{16}\.json$/u.test(file) || file !== String(state.transactions.length + 1).padStart(16, '0') + '.json') error('store_corrupt', 'RP transaction sequence gap')
@@ -293,8 +296,9 @@ export class RpStore {
         const tx = object(envelope.transaction, ['schemaVersion', 'workspaceId', 'sequence', 'previousHash', 'idempotencyKey', 'effectHash', 'operation'])
         if (tx.schemaVersion !== 1 || tx.workspaceId !== workspaceId || tx.sequence !== state.transactions.length + 1 || tx.previousHash !== (state.hashes.at(-1) ?? ZERO) || envelope.sha256 !== digest(tx)) invalid('transaction chain')
         text(tx.idempotencyKey, 512); hash(tx.effectHash); this.#validateOperation(tx.operation)
-        if (state.transactions.some(old => old.idempotencyKey === tx.idempotencyKey)) invalid('duplicate transaction effect')
+        if (effects.has(tx.idempotencyKey)) invalid('duplicate transaction effect')
         this.#apply(state, tx.operation)
+        effects.add(tx.idempotencyKey)
         state.transactions.push(tx as Transaction); state.hashes.push(envelope.sha256)
       } catch (cause) { error('store_corrupt', 'RP transaction corruption: ' + (cause instanceof Error ? cause.message : 'invalid record')) }
     }
@@ -381,15 +385,17 @@ export class RpStore {
     while (changed) { changed = false; for (const r of branch.records.values()) if (!blocked.has(r.id) && (!r.active || r.sourceRevisionIds.some(id => blocked.has(id) || branch.bindings.get(id)?.disposition !== 'accepted') || r.dependencyIds.some(id => blocked.has(id) || !branch.records.has(id)))) { blocked.add(r.id); changed = true } }
     return new Map([...branch.records].map(([id, r]) => [id, { ...r, active: !blocked.has(id) }]))
   }
-  async #append(workspaceId: string, state: WorkspaceState, key: string, effectHash: string, operation: Operation, useFault = true): Promise<void> {
+  async #append(workspaceId: string, state: WorkspaceState, key: string, effectHash: string, operation: Operation, useFault = true, publishPayloads?: () => Promise<void>): Promise<void> {
     const transaction: Transaction = { schemaVersion: 1, workspaceId, sequence: state.transactions.length + 1, previousHash: state.hashes.at(-1) ?? ZERO, idempotencyKey: key, effectHash, operation }
     this.#validateOperation(operation)
     // Run the same metadata replay validator before publishing.
     const copy: WorkspaceState = structuredClone(state); this.#apply(copy, operation)
+    const encoded = checkedRpJson({ transaction, sha256: digest(transaction) }, canonical)
     const file = path.join(this.#workspacePath(workspaceId), 'commits', String(transaction.sequence).padStart(16, '0') + '.json')
     // Complete the durable receipt for a prior interrupted publication first.
     if (state.transactions.length) await this.#seal(workspaceId, state.transactions.length, state.hashes.at(-1)!)
-    await this.#publish(file, canonical({ transaction, sha256: digest(transaction) }), 'transaction', useFault,
+    await publishPayloads?.()
+    await this.#publish(file, encoded, 'transaction', useFault,
       () => this.#seal(workspaceId, transaction.sequence, digest(transaction), useFault))
   }
   async #seal(workspaceId: string, sequence: number, transactionHash: string, useFault = false): Promise<void> {
@@ -765,7 +771,7 @@ export class RpStore {
         }
         const result: InputFence = { ...current.fence, contextRevision: batch.nextContextRevision, sourceManifestHash: this.#manifest(next), canonBindingsHash: canonHash, visibilityRevision, deletionGeneration }
         validateFence(result)
-        const records: Derived[] = [], identifiers = new Set([...next.records.keys(), ...next.jobs.keys()])
+        const records: Derived[] = [], payloads = new Map<string, string>(), identifiers = new Set([...next.records.keys(), ...next.jobs.keys()])
         for (const record of [...batch.events, ...batch.summaries]) {
           if (identifiers.has(record.id)) invalid('immutable derived identity'); identifiers.add(record.id)
           if ([...state.branches.values()].some(branch => branch.records.has(record.id)) || state.copies.has(record.id)) invalid('workspace derived identity')
@@ -793,7 +799,7 @@ export class RpStore {
               const target = next.records.get(id)
               if (!target || target.kind !== 'event') invalid('event correction target')
               if (!this.#visible(target.visibility, grant.request) || target.visibility.audienceSetId !== record.visibility.audienceSetId) denied('event correction target audience')
-              const original = parseRecord({ kind: 'event', record: JSON.parse(await this.#readBlob(grant.request.workspaceId, target.blobId, target.bodySha256)) })
+              const original = parseRecord({ kind: 'event', record: JSON.parse(payloads.get(target.blobId) ?? await this.#readBlob(grant.request.workspaceId, target.blobId, target.bodySha256)) })
               if (!original.ok || original.value.kind !== 'event') error('source_unavailable', 'RP correction target unavailable')
               if (original.value.record.payload.kind === 'canon_assertion' && original.value.record.payload.locked && !['explicit_ooc', 'user_canon'].includes(record.authority)) denied('locked canon requires explicit user correction')
             }
@@ -816,7 +822,8 @@ export class RpStore {
             const { text: _text, ...rest } = record; metadata = rest
           }
           this.#assertPayloadAvailable(state, digest(record))
-          const body = await this.#blob(grant.request.workspaceId, canonical(record))
+          const encoded = canonical(record), bodySha256 = sha(encoded), body = { blobId: 'blob_' + bodySha256, bodySha256 }
+          payloads.set(body.blobId, encoded)
           const stored: Derived = { id: record.id, kind: isEvent ? 'event' : 'summary', blobId: body.blobId, bodySha256: body.bodySha256, scope: record.scope,
             sourceRevisionIds: sourceIds, dependencyIds: dependencies, visibility: record.visibility, policyVersion: record.policyVersion, active: true, metadata }
           records.push(stored); next.records.set(record.id, stored)
@@ -853,18 +860,29 @@ export class RpStore {
         await this.#authorize(authority, 'commit')
         const operation: Operation = { kind: 'commit', branchId: grant.request.branchId, expected: batch.expected, result, sourceBindings: batch.sourceBindings,
           records, jobs, invalidatedIds: [...invalidated], authorityChanges: changes, ...(batch.expectedJobs ? { expectedJobs: batch.expectedJobs } : {}) }
-        await this.#append(grant.request.workspaceId, state, key, effect, operation)
+        await this.#append(grant.request.workspaceId, state, key, effect, operation, true, async () => {
+          for (const body of payloads.values()) await this.#blob(grant.request.workspaceId, body)
+          await this.#authorize(authority, 'commit')
+        })
         return ok(result)
       })
     } catch (cause) { return failure(cause) }
   }
   #historical(state: WorkspaceState, branchId: string, revision: number): BranchState {
+    let cache = this.#history.get(state)
+    if (!cache) { cache = new Map(); this.#history.set(state, cache) }
+    const key = branchId + ':' + revision, known = cache.get(key)
+    if (known && known.sequence <= state.transactions.length) return structuredClone(known.branch)
     const historical = emptyState()
+    this.#history.set(historical, cache)
     for (const transaction of state.transactions) {
       this.#apply(historical, transaction.operation)
       historical.transactions.push(transaction)
       const branch = historical.branches.get(branchId)
-      if (branch?.fence.contextRevision === revision) return branch
+      if (branch?.fence.contextRevision === revision) {
+        cache.set(key, { sequence: historical.transactions.length, branch: structuredClone(branch) })
+        return branch
+      }
     }
     return error('stale_input', 'RP parent revision unavailable')
   }
