@@ -15,6 +15,7 @@ import { openRpMemory } from './memory.js'
 import { acquireSessionPolicy, engineeringAllowed, type SessionMemoryPolicy } from './session-policy.js'
 import { acquireRpAdmission } from './admission.js'
 import { retrievalEvidence, verifyRetrievalEvidence, type RetrievalEvidence } from './retrieval-evidence.js'
+import { verifyPacketProof } from './packet-proof.js'
 import { observePublicHostSource } from './source-adapter.js'
 import { fullSpan, unwrap } from './retrieval.js'
 import { estimateFinalRequest, type GlobalDependency, type InputBinding, type MemoryPacket, type RuntimeBudget } from './packet.js'
@@ -135,7 +136,9 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     const data = existing ?? { schemaVersion: 2 as const, sessionId: agent.id, request: requestFor(agent.id, branch), inputs: [...(inputHistory.get(branch)?.values() ?? [])].map(i => ({ ...i, dispatched: true, phase: 'dispatched' as const })), hostSources: {}, snapshots: {}, frames: {}, receipts: {}, pending: {}, messageHashes: {} }
     const authority = unwrap(await memory.control.authorize(data.request))
     const legacy = existing?.schemaVersion === 1
-    const recoveryOnly = legacy && (Object.keys(data.frames).length > 0 || Object.keys(data.receipts).length > 0 || agent.session.deriveMessages().some((m: any) => m.role === 'tool' || m.content?.some((c: any) => c.type === 'tool-call')))
+    const legacyTools = legacy && (Object.keys(data.frames).length > 0 || Object.keys(data.receipts).length > 0 || agent.session.deriveMessages().some((m: any) => m.role === 'tool' || m.content?.some((c: any) => c.type === 'tool-call')))
+    const missingPacketProof = [...Object.values(data.snapshots), ...Object.values(data.pending), ...Object.values(data.frames)].some(s => (legacy || s.provenance === 'packet' || s.provenance === 'tool-call') && !s.packetProof)
+    const recoveryOnly = legacyTools || missingPacketProof
     if (legacy && !recoveryOnly) {
       // Preserve exactly the checksum-verified original before the atomic upgrade.
       const original = await fs.readFile(file(agent.id)); const backup = file(agent.id) + '.v1-backup'
@@ -149,7 +152,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     await fs.writeFile(path.join(markerRoot, sha(agent.id) + '.json'), canonical({ protocol: 'dsh.session-memory-policy/v1', sessionId: agent.id, workspaceId: binding.workspaceId }), { flag: 'w', mode: 0o600 })
     if (admission.has(agent.id)) throw new RpError('ownership_lost', 'Prior RP binding has not been released')
     if (recoveryOnly) await policy.block(agent.id); else await policy.activate(agent.id, 'rp', { idle: beforePublication || agent.status === 'idle', safe: true })
-    const b: Bound = { agent, authority, data, queue: Promise.resolve(), saveQueue: Promise.resolve(), generation: 0, recoveryOnly, ...(recoveryOnly ? { lastError: 'legacy_tools_recovery_only' } : {}) }
+    const b: Bound = { agent, authority, data, queue: Promise.resolve(), saveQueue: Promise.resolve(), generation: 0, recoveryOnly, ...(recoveryOnly ? { lastError: legacyTools ? 'legacy_tools_recovery_only' : 'legacy_packet_recovery_only' } : {}) }
     if (recoveryOnly) b.data.blocked = true
     admission.bind(owner, agent.id, () => ({ epoch: policy.status(agent.id).epoch, generation: b.generation, active: live(agent) && !b.data.blocked }))
     bound.set(agent.id, b); memory.registerInputBindings(branch, data.inputs)
@@ -275,7 +278,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     }
     if (event.type === 'assistant/message' && message?.content?.some((c: any) => c.type === 'tool-call')) {
       if (!b.packet || !message.content.every((c: any) => c.type === 'tool-call' && ['rp_memory_search', 'rp_memory_get', 'rp_memory_status'].includes(c.name))) { b.data.blocked = true; return }
-      b.data.frames[message.id] = { provenance: 'tool-call', bodyHash: sha(body(message)), packetId: b.packet.id, fence: b.packet.inputFence, globals: [...b.packet.globalFences], globalDependencies: [...b.packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...b.packet.dependencyIds], eventIds: [], modeEpoch: policy.status(session.id).modeEpoch }
+      b.data.frames[message.id] = { provenance: 'tool-call', packetProof: b.packet.proof, bodyHash: sha(body(message)), packetId: b.packet.id, fence: b.packet.inputFence, globals: [...b.packet.globalFences], globalDependencies: [...b.packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...b.packet.dependencyIds], eventIds: [], modeEpoch: policy.status(session.id).modeEpoch }
       b.data.messageHashes[message.id] = sha(normalizedMessage(message)); void queue(b, () => save(b)); return
     }
     if (message?.source?.kind === 'runtime-context') {
@@ -302,7 +305,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     const envelope = () => ({ provider: agent!.options.provider, model: agent!.options.model, maxTokens: agent!.options.maxTokens, system: renderPrompt(completed), tools: completed.tools, toolHistory: { tools: completed.tools, updates: [] }, messages: [...agent!.session.deriveMessages(), { role: 'user', content: [{ type: 'text', text: joinContextSections(renderContextSections(completed)) }] }] })
     const reserve = Math.max(config.budget!.outputReserveTokens, agent!.options.maxTokens ?? 0) + config.budget!.toolReserveTokens
     if (estimateFinalRequest(envelope()) > Math.min(config.budget!.inputLimit, config.budget!.contextWindow - reserve)) { packet = unwrap(await memory.packets.prepare(b.authority, { budget: config.budget!, globalAuthorities, inputBindings: b.data.inputs, optionalTokens: 0 })); completed = compose(packet) }
-    const fullContext = joinContextSections(renderContextSections(completed)), events = unwrap(await memory.store.readEvents(b.authority)), snapshot: Snapshot = { provenance: 'packet', bodyHash: sha(fullContext), packetId: packet.id, fence: packet.inputFence, globals: [...packet.globalFences], globalDependencies: [...packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...packet.dependencyIds], eventIds: events.map(e => e.id), modeEpoch: policy.status(b.agent.id).modeEpoch }
+    const fullContext = joinContextSections(renderContextSections(completed)), snapshot: Snapshot = { provenance: 'packet', packetProof: packet.proof, bodyHash: sha(fullContext), packetId: packet.id, fence: packet.inputFence, globals: [...packet.globalFences], globalDependencies: [...packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...packet.dependencyIds], eventIds: packet.proof.records.filter(r => r.kind === 'event').map(e => e.id), modeEpoch: policy.status(b.agent.id).modeEpoch }
     b.packet = packet; b.staticSystem = sha(renderPrompt(completed)); b.staticTools = sha(canonical(completed.tools)); b.data.pending[snapshot.bodyHash] = snapshot
     await save(b); return completed
   }) as never))
@@ -316,6 +319,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       if (b.data.messageHashes[message.id] !== sha(normalizedMessage(message))) throw new RpError('scope_denied', 'Unknown or changed native history/metadata; use clean continuation')
       const snapshot = b.data.snapshots[message.id] ?? b.data.frames[message.id]
       if (snapshot) {
+        if (snapshot.provenance === 'packet' || snapshot.provenance === 'tool-call') await verifyPacketProof(memory.store, b.authority, snapshot.packetProof)
         if (snapshot.records) await verifyRetrievalEvidence(memory.store, b.authority, { inputFence: snapshot.fence, records: snapshot.records, resultSha256: snapshot.resultSha256! }, new Set(b.data.inputs.map(i => i.sourceId)))
         if (snapshot.bodyHash !== sha(body(message)) || snapshot.modeEpoch !== policy.status(b.agent.id).modeEpoch || snapshot.fence.branchId !== fence.branchId || snapshot.fence.canonBindingsHash !== fence.canonBindingsHash || snapshot.fence.visibilityRevision !== fence.visibilityRevision || snapshot.fence.deletionGeneration !== fence.deletionGeneration || snapshot.fence.policyVersion !== fence.policyVersion || snapshot.dependencyIds.some(id => !sourceMap.has(id)) || snapshot.eventIds.some(id => !events.has(id))) throw new RpError('stale_input', 'Historical RP snapshot is invalid; use clean continuation')
         if (snapshot.globalPolicyHash !== globalPolicyHash() || snapshot.globals.length !== globalAuthorities.length) throw new RpError('scope_denied', 'Historical global grants changed')

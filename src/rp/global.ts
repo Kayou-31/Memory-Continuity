@@ -26,9 +26,12 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
   const grant = async (authority: object, write = false) => { await check(); const g = grants.get(authority); if (!g || (write && !g.write)) denied('global authority'); return g! }
   const directory = (scope: GlobalScope) => path.join(globalRoot, sha(canonical(scope)))
   const atomic = async (file: string, body: string) => {
-    await fs.mkdir(path.dirname(file), { recursive: true }); const tmp = file + '.tmp-' + uid('write'), h = await fs.open(tmp, 'wx', 0o600)
-    try { await h.writeFile(body); await h.sync() } finally { await h.close() }
-    await fs.rename(tmp, file)
+    await fs.mkdir(path.dirname(file), { recursive: true }); const tmp = file + '.tmp-' + uid('write')
+    try {
+      const h = await fs.open(tmp, 'wx', 0o600)
+      try { await h.writeFile(body); await h.sync() } finally { await h.close() }
+      await fs.rename(tmp, file)
+    } catch (e) { await fs.rm(tmp, { force: true }).catch(() => {}); throw e }
   }
   const validateState = (input: unknown, g: Grant): State => {
         const r = object(input, ['fence', 'publications', 'keys', 'previousHash', 'seq']), f = object(r.fence, ['scope', 'scopeRevision', 'visibilityRevision', 'deletionGeneration'])
@@ -62,6 +65,29 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
     return state
   }
   const allowed = (g: Grant, p: Meta) => same(p.scope, g.scope) && p.source.visibility.policyId === g.visibility.policyId && p.source.visibility.revision === g.visibility.revision && g.audienceSetIds.includes(p.source.visibility.audienceSetId)
+  // Called only with the scope writer lock and a completely validated history.
+  // Every committed publication remains in state, including retained/revoked ones.
+  // An unregistered source directory therefore cannot be an accepted publication.
+  const reclaimUnpublished = async (state: State, g: Grant) => {
+    const root = path.join(directory(g.scope), 'blobs'), registered = new Map(state.publications.map(p => [p.source.id, p.source.blobId + '.txt']))
+    let entries: import('node:fs').Dirent[]
+    try { const stat = await fs.lstat(root); if (!stat.isDirectory() || stat.isSymbolicLink()) throw new RpError('store_corrupt', 'Invalid global blob directory'); entries = await fs.readdir(root, { withFileTypes: true }) } catch (e) { if ((e as NodeJS.ErrnoException).code === 'ENOENT') return; throw e }
+    const remove: string[] = [], empty: string[] = []
+    for (const entry of entries) {
+      if (!/^approved_[A-Za-z0-9_-]+$/u.test(entry.name) || !entry.isDirectory() || entry.isSymbolicLink()) throw new RpError('store_corrupt', 'Unknown global blob source')
+      const dir = path.join(root, entry.name), expected = registered.get(entry.name)
+      for (const file of await fs.readdir(dir, { withFileTypes: true })) {
+        if (!file.isFile() || file.isSymbolicLink() || !/^blob_[a-f0-9]{64}\.txt(?:\.tmp-write_[a-f0-9]{32})?$/u.test(file.name)) throw new RpError('store_corrupt', 'Unknown global blob file')
+        const temporary = file.name.includes('.tmp-')
+        if (expected && file.name.split('.tmp-')[0] !== expected) throw new RpError('store_corrupt', 'Global publication blob mismatch')
+        if (!expected || temporary) remove.push(path.join(dir, file.name))
+      }
+      if (!expected) empty.push(dir)
+    }
+    // Validate the entire candidate set before deleting any transient file.
+    for (const file of remove) await fs.unlink(file)
+    for (const dir of empty) await fs.rmdir(dir)
+  }
   const purge = async (state: State, g: Grant, value: any) => {
     const affected = state.publications.filter(p => p.deleted && (value.privateSourceIds ? p.privateSourceIds.some(x => value.privateSourceIds.includes(x)) : allowed(g, p)))
     if (affected.some(p => !allowed(g, p))) denied('approved purge audience')
@@ -97,7 +123,7 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
             let existing: unknown; try { existing = await readRpJson(target) } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e }
             if (!same(existing ?? null, expected)) await atomic(target, canonical(expected))
           }
-          if (prior) { if (prior.effect !== effect) throw new RpError('idempotency_conflict', 'Global command differs'); published = true; await sealHead(); await purge(current, g, value); return prior.result ? read(authority, prior.result) : ok(current.fence) }
+          if (prior) { if (prior.effect !== effect) throw new RpError('idempotency_conflict', 'Global command differs'); published = true; await sealHead(); await reclaimUnpublished(current, g); await purge(current, g, value); return prior.result ? read(authority, prior.result) : ok(current.fence) }
           if (!same(current.fence, value.expected)) throw new RpError('stale_input', 'Global fence changed')
           await sealHead()
           const next = structuredClone(current), blobs: { file: string; body: string }[] = [], result = await update(next, g, value, blobs)
@@ -106,6 +132,7 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
           validateState(next, g)
           const encoded = checkedRpJson({ state: next, sha256: sha(canonical(next)) }, canonical, publication ? MAX_RP_PUBLISH_BYTES : MAX_RP_JSON_BYTES)
           await grant(authority, true); if (!approvals.has(approval)) denied('global command approval revoked before publication')
+          await reclaimUnpublished(current, g)
           for (const blob of blobs) await atomic(blob.file, blob.body)
           const commitFile = path.join(dir, 'commits', String(next.seq).padStart(16, '0') + '.json')
           try { await atomic(commitFile, encoded); published = true } catch (e) {

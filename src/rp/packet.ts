@@ -5,11 +5,12 @@ import type { openRpGlobalStore, GlobalFence, GlobalPublication } from './global
 import { canonical } from './store.js'
 import { fullSpan, unwrap } from './retrieval.js'
 import { failure, integer, object, RpError } from './schema.js'
+import { capturePacketProof, type PacketProof } from './packet-proof.js'
 export interface RuntimeBudget { recentCompleteTurns: number; targetTotalTokens: number; triggerTotalTokens: number; outputReserveTokens: number; toolReserveTokens: number; packetSoftTokens: number; contextWindow: number; inputLimit: number }
 /** Trusted driver bindings distinguish accepted story input from OOC controls. */
 export interface InputBinding { kind: 'input'; sourceId: string; turnId: string; messageId: string }
 export interface GlobalDependency { publicationId: string; sourceId: string; bodySha256: string; scope: GlobalFence['scope']; key: string }
-export interface MemoryPacket { id: string; inputFence: InputFence; globalFences: readonly GlobalFence[]; globalDependencies: readonly GlobalDependency[]; recentSourceIds: readonly string[]; recent: readonly { id: string; role: string; text: string }[]; text: string; dependencyIds: readonly string[]; droppedOptionalIds: readonly string[]; budget: RuntimeBudget }
+export interface MemoryPacket { id: string; inputFence: InputFence; globalFences: readonly GlobalFence[]; globalDependencies: readonly GlobalDependency[]; recentSourceIds: readonly string[]; recent: readonly { id: string; role: string; text: string }[]; text: string; dependencyIds: readonly string[]; droppedOptionalIds: readonly string[]; budget: RuntimeBudget; proof: PacketProof }
 const sha = (s: string) => createHash('sha256').update(s).digest('hex')
 export function validateBudget(b: RuntimeBudget) {
   if (!Number.isSafeInteger(b.contextWindow) || !Number.isSafeInteger(b.inputLimit)) throw new RpError('capability_missing', 'Explicit verified contextWindow and inputLimit are required')
@@ -50,7 +51,7 @@ export function createPacketService(store: RpStore, global: Awaited<ReturnType<t
         const text = canonical({ ...mandatory, history: optional.map(s => ({ id: s.id, text: s.text })) }), dependencyIds = [...new Set([...chosen.map(s => s.id), ...events.flatMap(e => e.sources.map(s => s.sourceRevisionId)), ...summaries.filter(s => optional.includes(s)).flatMap(s => s.sourceRevisionIds)])]
         if (canonical(unwrap(await store.readFence(authority))) !== canonical(fence)) throw new RpError('stale_input', 'Packet input changed during assembly')
         const globalDependencies = canon.map(p => ({ publicationId: p.id, sourceId: p.source.id, bodySha256: p.bodySha256, scope: p.scope, key: p.key }))
-        const data = { inputFence: fence, globalFences, globalDependencies, recentSourceIds: chosen.map(s => s.id), recent, text, dependencyIds, droppedOptionalIds, budget: structuredClone(input.budget) }, packet: MemoryPacket = Object.freeze({ id: 'packet_' + sha(canonical(data)), ...data })
+        const data = { inputFence: fence, globalFences, globalDependencies, recentSourceIds: chosen.map(s => s.id), recent, text, dependencyIds, droppedOptionalIds, budget: structuredClone(input.budget), proof: capturePacketProof(events, optional, projection) }, packet: MemoryPacket = Object.freeze({ id: 'packet_' + sha(canonical(data)), ...data })
         handles.set(packet, { authority, globals: [...input.globalAuthorities], fingerprint: sha(canonical(packet)) }); return { ok: true, value: packet }
       } catch (e) { return failure(e) }
     },
