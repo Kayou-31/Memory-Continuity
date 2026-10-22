@@ -54,6 +54,7 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
         const prior = unwrap(await store.readControlCommit(authority, value.idempotencyKey))
         if (prior) {
           if (!prior.authorityChanges.some(c => c.kind === 'candidate_adoption' && c.recordId === commandId && c.record.candidateId === commandHash)) return { ok: false as const, code: 'idempotency_conflict' as const, message: 'RP control idempotency key has different effects' }
+          unwrap(await store.ensureDurable(authority, ledger.fence))
           return { ok: true as const, value: prior.fence }
         }
         if (encode(ledger.fence) !== encode(value.expected)) return { ok: false as const, code: 'stale_input' as const, message: 'RP canonical input changed' }

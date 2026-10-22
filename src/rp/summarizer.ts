@@ -88,7 +88,7 @@ export function createSummaryService(input: { store: RpStore; global: Awaited<Re
       try { return await coordinator.mutate(async () => {
         options.signal?.throwIfAborted()
         const ledger = unwrap(await store.readLedger(authority)), decided = ledger.authorityChanges.find(c => c.kind === 'candidate_adoption' && c.record.candidateId === candidateId)
-        if (decided) return { ok: true as const, value: { alreadyDecided: true as const } }
+        if (decided) { unwrap(await store.ensureDurable(authority, ledger.fence)); return { ok: true as const, value: { alreadyDecided: true as const } } }
         const { candidate, snapshot } = await read(authority, candidateId, options)
         const ctl = ledger.sources.find(s => s.id === controlSource.id)
         if (!ctl || ctl.origin !== 'user_control' || ctl.publicTextSha256 !== controlSource.publicTextSha256 || ctl.scope.kind !== 'session' && ctl.scope.kind !== 'branch' || ctl.scope.branchId !== ledger.branch.id) fail('scope_denied', 'Actual user adoption control required')
@@ -115,7 +115,7 @@ export function createSummaryService(input: { store: RpStore; global: Awaited<Re
         const ledger = unwrap(await store.readLedger(authority)), ctl = ledger.sources.find(s => s.id === controlSource.id)
         if (!ctl || ctl.origin !== 'user_control' || ctl.publicTextSha256 !== controlSource.publicTextSha256) fail('scope_denied', 'Actual user rejection control required')
         if (!unwrap(await store.readPayloadCopies(authority)).some(c => c.id === candidateId && c.kind === 'job_input')) fail('source_unavailable', 'Unknown candidate')
-        if (ledger.authorityChanges.some(c => c.kind === 'candidate_adoption' && c.record.candidateId === candidateId)) return { ok: true as const, value: { alreadyDecided: true } }
+        if (ledger.authorityChanges.some(c => c.kind === 'candidate_adoption' && c.record.candidateId === candidateId)) { unwrap(await store.ensureDurable(authority, ledger.fence)); return { ok: true as const, value: { alreadyDecided: true } } }
         const old = ledger.sourceBindings.find(b => b.sourceRevisionId === ctl.id), seq = Math.max(0, ...ledger.sourceBindings.map(b => b.acceptedSeq ?? 0)) + 1
         unwrap(await store.commit(authority, { schemaVersion: 1, idempotencyKey: key, expected: ledger.fence, sourceBindings: old?.disposition === 'accepted' ? [] : [{ sourceRevisionId: ctl.id, branchId: ledger.branch.id, turnId: ctl.turnId!, disposition: 'accepted', acceptedSeq: seq }], events: [], summaries: [], jobs: [], invalidatedIds: [], authorityChanges: [{ kind: 'candidate_adoption', recordId: 'adoption_' + sha(candidateId), record: { candidateId, sourceRevisionIds: [], eventIds: [], summaryIds: [], decision: 'rejected', controlSourceId: ctl.id } }], nextContextRevision: ledger.fence.contextRevision + 1 }))
         return { ok: true as const, value: { alreadyDecided: false } }

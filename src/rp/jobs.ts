@@ -32,6 +32,7 @@ export function createJobService(input: { store: RpStore; summaries: SummaryServ
         if (existing) {
           const copy = unwrap(await store.readPayloadCopies(authority)).find(c => c.id === existing.inputCopyId)
           if (!copy || canonical(JSON.parse(copy.body).selection) !== canonical(selection)) throw new RpError('idempotency_conflict', 'Job selection changed')
+          unwrap(await store.ensureDurable(authority, unwrap(await store.readFence(authority))))
           return { ok: true as const, value: existing }
         }
         const snapshot = await summaries.capture(authority, selection, options), inputCopyId = 'input_' + sha(id)

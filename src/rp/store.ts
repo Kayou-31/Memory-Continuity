@@ -404,6 +404,28 @@ export class RpStore {
     try { if (!same(await readJson(file), body)) error('store_corrupt', 'RP publication seal mismatch') }
     catch (cause) { if ((cause as NodeJS.ErrnoException).code !== 'ENOENT') throw cause; await this.#publish(file, canonical(body), 'seal', useFault) }
   }
+  async #confirmPublished(workspaceId: string, state: WorkspaceState): Promise<void> {
+    if (!state.transactions.length) return
+    try { await this.#seal(workspaceId, state.transactions.length, state.hashes.at(-1)!, true) }
+    catch (cause) {
+      if (cause instanceof RpError && !['persistence_failed', 'persistence_uncertain'].includes(cause.code)) throw cause
+      error('persistence_uncertain', 'RP effect is published but its durable receipt is incomplete; retry the same operation')
+    }
+  }
+  /** Upper-level idempotent acknowledgements must finish the same seal protocol. */
+  async ensureDurable(authority: HostAuthority, expected: InputFence): Promise<Result<InputFence>> {
+    try {
+      const { grant } = await this.#authorize(authority, 'commit'), fence = cloneInput(expected); validateFence(fence)
+      return await lock(this.#workspacePath(grant.request.workspaceId), async () => {
+        await this.#authorize(authority, 'commit')
+        const state = await this.#load(grant.request.workspaceId), branch = this.#branch(state, grant.request)
+        this.#assertAuditAudience(state, branch, grant.request)
+        if (!same(fence, branch.fence)) error('stale_input', 'RP branch changed before durable acknowledgement')
+        await this.#confirmPublished(grant.request.workspaceId, state)
+        return ok(branch.fence)
+      })
+    } catch (cause) { return failure(cause) }
+  }
   async #blob(workspaceId: string, body: string): Promise<{ blobId: string; bodySha256: string }> {
     const bodySha256 = sha(Buffer.from(body, 'utf8')), blobId = 'blob_' + bodySha256
     const file = path.join(this.#workspacePath(workspaceId), 'blobs', blobId + '.blob')
@@ -609,7 +631,7 @@ export class RpStore {
         await this.#authorize(authority, 'commit')
         const state = await this.#load(grant.request.workspaceId), branch = this.#branch(state, grant.request), key = 'copy:' + grant.request.branchId + ':' + sha(value.idempotencyKey), effect = digest(value)
         const existing = state.transactions.find(tx => tx.idempotencyKey === key)
-        if (existing) { if (existing.effectHash !== effect || existing.operation.kind !== 'copy') error('idempotency_conflict', 'RP copy idempotency conflict'); if (!this.#activeCopies(state, branch).has(existing.operation.copy.id)) error('source_unavailable', 'RP copy no longer active'); return ok(existing.operation.copy) }
+        if (existing) { if (existing.effectHash !== effect || existing.operation.kind !== 'copy') error('idempotency_conflict', 'RP copy idempotency conflict'); if (!this.#activeCopies(state, branch).has(existing.operation.copy.id)) error('source_unavailable', 'RP copy no longer active'); await this.#confirmPublished(grant.request.workspaceId, state); return ok(existing.operation.copy) }
         const copy: PayloadCopy = { id: value.id, kind: value.kind, branchId: branch.branch.id, sourceRevisionIds: value.sourceRevisionIds, dependencyIds: value.dependencyIds, visibility: authority.visibility, blobId: 'blob_' + sha(value.body), bodySha256: sha(value.body) }
         this.#validateOperation({ kind: 'copy', copy })
         this.#assertPayloadAvailable(state, copy.bodySha256)

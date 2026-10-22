@@ -16,7 +16,7 @@
 
 - [x] F1 / A2：packet.ts 绑定实际注入 records 与投影哈希；host-journal.ts 校验扩展证明；rp-plugin.ts 认证及旧记录 recovery-only。将原生旧摘要复现纳入 test；增加缺证明恢复/证明损坏/无关追加测试。先红后绿，不能靠删除历史 source 修复。
 - [x] F2 / A3：global.ts 使发布前失败的 tmp/孤立正文具备确定可回收身份；删除覆盖所有属于失败操作的遗留正文，保留独立 retain 发布。故障注入两阶段、冷启动、错误 manifest、独立副本不误删。
-- [ ] F3 / A4：store 提供锁内校验并补 seal 的已提交效果确认；canonical/summarizer/jobs/payload copy 快捷返回共用确认路径。连续失败分类、冷重试、同键冲突、不得多发布。
+- [x] F3 / A4：store 提供锁内校验并补 seal 的已提交效果确认；canonical/summarizer/jobs/payload copy 快捷返回共用确认路径。连续失败分类、冷重试、同键冲突、不得多发布。
 - [ ] F4 / A5：允许合法 assistant text 与授权 read tool-call 混合，仍校验每个 block、call 和最终请求；真实 AgentLoop 两轮正反例。
 - [ ] F5 / A6：统一命令 JSON 解析，将语法/结构错误转 invalid_record，不封锁健康会话；真实 I/O 故障仍 fail-closed。
 - [ ] F6 / A7：命令 grant 先持久化草案再激活内存；失败清理/撤销临时授权，重试与冷重启验证。不在 coordinator 内嵌套 coordinator。
@@ -39,3 +39,5 @@
 - F2 Ruling：完整已验证全局历史 + scope writer lock 足以区分已登记发布和从未发布的正文；回收未发布文件及临时文件，不增加第二本操作日志，不删除任何仍登记的 retain/active 副本。异常目录/符号链接拒绝而非跟随。
 
 - F2：原两阶段故障回归先红 exit1；实现后 global recovery/orphans 7/7 exit0。进一步补冷启动、有/无发布重试及相同正文独立 retain 副本，连同 F1 损坏证明恢复，7/7 exit0（f1-f2-boundaries.log）。类型检查初次遇到 Map 联合值推断错误，明确泛型后 exit0（f1-f2-typecheck.log）。
+
+- F3：五个高层幂等路径均先红（f3-red.log，0/5，exit1）；增加 store.ensureDurable 和 payload copy 补 seal，第二次故障仍返回 persistence_uncertain，冷恢复不多发事务。相关 store/summary/seal 45/45 exit0；typecheck exit0。
