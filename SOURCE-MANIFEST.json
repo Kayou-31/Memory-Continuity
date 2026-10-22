@@ -109,18 +109,18 @@
     },
     {
       "path": "src/rp-plugin.ts",
-      "bytes": 1187,
-      "sha256": "232974aaac545dd4a373bb0d0db1bb6160dad2d3f37b16e5428fb0ab80eb4d08"
+      "bytes": 1199,
+      "sha256": "92a0a6a0b86bedeba4874ac9737082780251bccd43de4a115717225a68d03deb"
     },
     {
       "path": "lib/index.js",
-      "bytes": 272298,
-      "sha256": "aab43cc38862e7fb80b281f30c5f34b4972716eb2fd4e30acbbb80524c748d6d"
+      "bytes": 272310,
+      "sha256": "d22c41d24b5de09bf431596800a05cea1e00b6a97f13a4f57ba47c6cd636f9b8"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 497213,
-      "sha256": "114f23e142a70859ea79d3b9274520427aa0f1ee4570936b52b93cb298d74fd7"
+      "bytes": 497225,
+      "sha256": "26464a402ed6eb4e6e4fd65742af5358a55726d0ca69aaf89003789012bd50e8"
     },
     {
       "path": "lib/types/rp/admission.d.ts",
@@ -229,8 +229,8 @@
     },
     {
       "path": "lib/types/rp-plugin.d.ts",
-      "bytes": 1567,
-      "sha256": "c7e3f7a7dba96fbe3aafe6ffee2ed616bc97f9a686f788d2e14b5b7f9f63b649"
+      "bytes": 1573,
+      "sha256": "4e4ad3a25bf02151edce266ae7a4b636275a07765b5976491aff37b190a6d5a9"
     }
   ]
 }

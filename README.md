@@ -1,4 +1,10 @@
-# DSH RP Memory · 0.1.0-dev.3
+# Ultra RP Memory · 0.1.0-dev.3
+
+**独立使用，可选适配 Ultra Mode。** 技术名称 `dsh-ultra-rp-memory`，npm 包名 `@dsh-external/dsh-ultra-rp-memory`。无需安装 Ultra Mode、Ultra Memory 或 Ultra Decision 即可使用 RP 的记忆、检索、分支和人工采纳功能；运行时仅依赖下文列出的 DSH 原生 peers。
+
+产品方向是**长期 Agent 的记忆与成长基础**：支持用户持续培养同一个 Agent，让经历、关系、承诺和做事经验在后续互动中延续；角色扮演是使用场景之一。当前交付仍为人工 narrator Memory 预览，长期目标/技能/习惯的成长机制、自动行动与 Ultra 同会话深度适配尚未实现，不能由命名推断已经具备。已有能力与未完成项见审查报告。
+
+此名称已在本地包元数据、入口和 Cordis patch 中统一；已发布 dev.3 仍使用旧包名 `@dsh-external/dsh-rp-memory`，仓库 URL 与历史附件名保持实际值。替换旧入口时更新配置的包名，保留 `rp-memory` 配置节点与原数据目录，避免同时启用新旧两个入口；没有为命名调整执行数据迁移。可选 Ultra 适配当前有固定版本共存证据，同一 RP 会话复用 Ultra 的检索/预算算法仍属后续工作，不能把改名当作叠加已实现。
 
 dev.3 修复请求准入、异常诊断/干净续接、retcon 摘要依赖、稳定检索与实际记录回执、全局容量和 seal 恢复、锚点合并及批量撤回。仅 host journal 升级为 v2，branch/global 存储继续使用 v1。升级前阅读 [迁移与恢复规则](docs/rp-memory-dev3/MIGRATION.md)；本轮执行结果及未测边界见 [RESULTS](docs/rp-memory-dev3/RESULTS.md)。历史 dev.1/dev.2 的证据不代替 dev.3 验证。人工采纳、自动功能关闭和默认禁用保持原有约束。
 

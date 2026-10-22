@@ -4,7 +4,7 @@ import z from '@deepseek-ai/schemastery'
 import { installRpPlugin, type RpPluginConfig } from './rp/rp-plugin.js'
 export { installRpPlugin }
 export type { RpPluginConfig }
-export const name = '@dsh-external/dsh-rp-memory'
+export const name = '@dsh-external/dsh-ultra-rp-memory'
 // Disabled installation needs no native services; enabled installation verifies them itself.
 export const inject: string[] = []
 export const Config = z.object({
@@ -22,5 +22,5 @@ export const Config = z.object({
 export type Config = RpPluginConfig
 export async function apply(ctx: Context, config: Config): Promise<void> {
   const handle = await installRpPlugin(ctx, config)
-  ctx.effect(() => () => handle.close(), 'dsh-rp-memory: owner')
+  ctx.effect(() => () => handle.close(), 'dsh-ultra-rp-memory: owner')
 }

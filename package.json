@@ -1,7 +1,7 @@
 {
-  "name": "@dsh-external/dsh-rp-memory",
+  "name": "@dsh-external/dsh-ultra-rp-memory",
   "version": "0.1.0-dev.3",
-  "description": "DSH 人工 narrator RP Memory 预览：有效剧情、来源检索和显式候选采纳",
+  "description": "DSH 独立 RP 记忆插件：有效剧情、来源检索和显式候选采纳，可与兼容 Ultra Mode 共存",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/types/rp-plugin.d.ts",
