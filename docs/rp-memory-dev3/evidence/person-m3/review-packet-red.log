@@ -8,9 +8,9 @@ not ok 1 - in-flight module verification and packet admission recheck capabiliti
   failureType: 'testCodeFailure'
   error: |-
     Expected values to be strictly equal:
-    
+
     true !== false
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: false

@@ -8,9 +8,9 @@ not ok 1 - packet preparation captures the original runtime capability before aw
   failureType: 'testCodeFailure'
   error: |-
     Expected values to be strictly equal:
-    
+
     true !== false
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: false

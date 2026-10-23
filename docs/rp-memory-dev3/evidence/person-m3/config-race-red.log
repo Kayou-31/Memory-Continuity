@@ -8,9 +8,9 @@ not ok 1 - overlapping runtime configuration commands reject the second mutation
   failureType: 'testCodeFailure'
   error: |-
     Expected values to be strictly equal:
-    
+
     'success' !== 'error'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'error'

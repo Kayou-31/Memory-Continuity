@@ -8,9 +8,9 @@ not ok 1 - cold M3 resume after multiple empty-root configuration changes can se
   failureType: 'testCodeFailure'
   error: |-
     {"enabled":true,"lifecycle":"open","contextCompression":false,"strictPov":false,"nativeVersions":{"cordis":"4.0.5","dsh-agent":"0.2.1-rc.2","dsh-llm":"0.2.1-rc.2","dsh-session":"0.2.1-rc.2","dsh-system-prompt":"0.2.1-rc.2","dsh-tools":"0.2.1-rc.2","schemastery":"3.18.5"},"memoryOptimization":{"available":"standalone","packet":"standalone"},"policy":{"mode":"rp","epoch":1,"modeEpoch":1},"branchId":"branch_68ceebdae3134c8c9eb8c22724703e75","purpose":{"constraints":{"deniedCapabilities":[],"guidance":[],"maxOutputBytes":16384,"maxReadRecords":16,"protectedFieldIds":[]},"enabledModules":["recall"],"mode":"creation"},"blocked":false,"candidateIds":[],"pendingInputIds":[],"ambiguousInputIds":["source_750c77e2f0f74176b26149e54c9475cf","source_10f3635a32d241b3b02c5a19aa365b21"],"snapshots":2}
-    
+
     0 !== 1
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 1

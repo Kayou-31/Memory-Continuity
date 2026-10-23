@@ -8,9 +8,9 @@ not ok 1 - failed module revocation journal cannot revive enabled capabilities f
   failureType: 'testCodeFailure'
   error: |-
     Expected values to be strictly equal:
-    
+
     false !== true
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: true
@@ -30,9 +30,9 @@ not ok 2 - module disable revokes new requests while an actual SDK stream is pau
   failureType: 'testCodeFailure'
   error: |-
     Expected values to be strictly equal:
-    
+
     false !== true
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: true

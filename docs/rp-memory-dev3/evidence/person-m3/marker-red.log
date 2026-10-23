@@ -8,9 +8,9 @@ not ok 1 - failed revocation marker falls back to a blocked journal across cold 
   failureType: 'testCodeFailure'
   error: |-
     Expected values to be strictly equal:
-    
+
     false !== true
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: true

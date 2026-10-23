@@ -8,9 +8,9 @@ not ok 1 - native M3 modes and constraints reach terminal; switching history fai
   failureType: 'testCodeFailure'
   error: |-
     invalid_record: Use start/status/input/agent/goals/relationships/self/accept/reject/delete/retcon/publish/adopt-canon/continue-clean/resume-input
-    
+
     'error' !== 'success'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'success'
@@ -31,9 +31,9 @@ not ok 2 - native M3 journal restores exact binding and missing proof enters rec
   failureType: 'testCodeFailure'
   error: |-
     invalid_record: Use start/status/input/agent/goals/relationships/self/accept/reject/delete/retcon/publish/adopt-canon/continue-clean/resume-input
-    
+
     'error' !== 'success'
-    
+
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: 'success'
