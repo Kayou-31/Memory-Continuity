@@ -80,3 +80,21 @@ test('raw canonical controls cannot create a fieldless person or append a second
     deny(await f.canonical.applyControl(f.authority,extra,{kind:'accept',idempotencyKey:'extra',expected:await f.fence(),sourceRevisionIds:[extra.id],events:[{id:'late_init',personProtocol:'person-core/v1',epistemic:'world',sourceRevisionIds:[extra.id,...original.sources.map(s=>s.sourceRevisionId)],payload:{kind:'state_change',subjectId:'erin',key:'voice',after:{protocol:'person-core/v1',operation:'init',fieldId:'late_voice',kind:'voice',value:'Late definition',policy:'stable',previousEventId:null,causeEventIds:[original.id],note:'Second initialization'}}}]}),'invalid_record')
   } finally {await f.close()}
 })
+
+test('raw canonical person protocols cannot introduce entities outside the configured registry', async () => {
+  const f=await setup()
+  try {
+    for(const [key,actor,subject] of [['unknown_origin','outsider','outsider'],['unknown_field','erin','outsider']]) {
+      const ctl=await f.controlSource(key),before=await f.fence(),originId=key+'_origin'
+      const result=await f.canonical.applyControl(f.authority,ctl,{kind:'accept',idempotencyKey:key,expected:before,sourceRevisionIds:[ctl.id],events:[
+        {id:originId,personProtocol:'person-origin/v1',epistemic:'world',payload:{kind:'occurrence',actorIds:[actor],description:'Explicit person origin'}},
+        {id:key+'_field',personProtocol:'person-core/v1',epistemic:'world',payload:{kind:'state_change',subjectId:subject,key:'identity',after:{protocol:'person-core/v1',operation:'init',fieldId:'name',kind:'identity',value:'Unknown person',policy:'stable',previousEventId:null,causeEventIds:[originId],note:'Explicit initial field'}}}
+      ]})
+      deny(result,'scope_denied')
+      assert.deepEqual(await f.fence(),before)
+      assert.equal(must(await f.store.readEvents(f.authority)).length,0)
+    }
+    await create(f)
+    assert.equal(must(await f.person.read(f.authority,'erin')).fields.find(field=>field.fieldId==='name').value,'林澈')
+  } finally {await f.close()}
+})

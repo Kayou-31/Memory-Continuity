@@ -1,5 +1,11 @@
 # dev.3 兼容、容量与恢复
 
+## 0.2 预览版当前说明（2026-10-23）
+
+当前项目和入口已正式更名为 **Ultra-RP-Memory**，仓库为 `Kayou-31/dsh-ultra-rp-memory`，包为 `@dsh-external/dsh-ultra-rp-memory@0.2.0-dev.1`。下文按日期保留的“尚未发布”“本地未修复”等描述属于当时状态；本次发布审查及实际结果以 [RESULTS.md](RESULTS.md) 和 [发布审查报告](RELEASE-0.2-REVIEW-2026-10-23.md) 为准。
+
+升级请先备份日常使用配置及全部相关数据；替换包名，保留 `rp-memory` 配置节点、`/rp` 命令、`.dsh-rp` 和 `.dsh-rp-policy` 数据目录，不同时激活新旧入口。人物工作区启用前备份且要求新版读取；全局分段存储需另行手动启用，默认布局不变。宿主日志继续 v2，无法认证的旧工具／记忆包历史只允许恢复和干净续接，不补造证明。具体备份与回退步骤见[人物工作室与存储说明](../person-studio-storage.zh.md)。本轮没有对日常使用数据执行迁移。
+
 2026-10-22 本地命名调整：产品名 Ultra RP Memory，包入口由 `@dsh-external/dsh-rp-memory` 改为 `@dsh-external/dsh-ultra-rp-memory`。Ultra Mode 为可选适配对象，不是依赖；保留独立使用能力。安装新命名包时替换旧配置中的包名，保留 Cordis 节点 id `rp-memory`、`/rp` 命令、`rp_memory_*` 工具、`.dsh-rp` / `.dsh-rp-policy` 目录及原配置；不要同时激活两个入口。目录和协议没有因改名而迁移，真实用户 profile 的包替换尚未实测。已有发布包、GitHub 仓库 URL 和历史来源记录保持原名，新命名包尚未发布。
 
 运行 peers 保持精确 DSH 0.2.1-rc.2、Cordis 4.0.5、Schemastery 3.18.5 / session format 4。新增的 loader 1.0.6、agent-loop/commands/session-projection/session-persistence-jsonl 开发依赖仅用于离线原生集成测试；没有新增运行时外部服务。branch/global 的 v1 目录、事务和幂等历史保留。sessionMemoryPolicy/v1 和唯一 coordinator 保留，根服务 rpSessionAdmission 使用进程内 owner 和实际 SDK options 身份，不能用 JSON 票据授权。

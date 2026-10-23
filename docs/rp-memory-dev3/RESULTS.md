@@ -1,5 +1,44 @@
 # Ultra-RP-Memory 实际执行报告（dev.3 至 0.2.0-dev.1）
 
+## 2026-10-23：0.2 预览版发布前完整复审
+
+用户已明确授权：重新完整审查 0.2，确认无阻塞问题后合并并发布预览版，附插件及完整源码，中文说明并保留已知问题和未验证项。下文历史“未合并／未发布”仅描述当时状态。
+
+基线 main `d114b91ad8942742717a3c21890caba9658e3a93`，审核起点 `fabf9b65757f62ea39b77cb913bc34294e99920e`。一个修改执行者、一个只读审阅者，未递归代理，重型任务串行；没有安装依赖、付费模型调用或日常数据迁移。GitHub 当时无 CI 检查，PR 可合并。具体审阅范围、发现、裁定见 [发布审查报告](RELEASE-0.2-REVIEW-2026-10-23.md)。
+
+新增确认并修复 **1 个 P2**：公开 `canonical.applyControl` 的人物协议入口可绕过人物草稿的已配置实体检查。`src/rp/canonical.ts` 对人物起点 actor 与字段 subject 检查同一实体集合；普通旧事件与存储格式不变。`test/rp-person.test.mjs` 新回归先失败（未知人物返回 `ok:true`，退出码 1），修复后整文件 **5/5、退出码 0**；拒绝时 fence 和有效事件均不变。`SOURCE-MANIFEST.json` 由重新构建生成。唯一只读审阅者复核修复后无剩余已确认的 Critical／Important 阻塞；这是预览范围的审查意见，不是无缺陷证明。
+
+修复前已经串行跑过一轮完整 213/213 与旧包 31/31，保存在 `evidence/release-0.2-preview/before-fix/`，**不作为修复后验收**。修复后重新从头执行全部六命令，开始于 **2026-10-23 14:11:09 UTC**，本轮日志在 `evidence/release-0.2-preview/final/`：
+
+| 实际命令 | 退出码 | 本轮结果 |
+| --- | ---: | --- |
+| `npm run typecheck` | 0 | TypeScript 类型检查 |
+| `npm run build` | 0 | 独立构建、声明、离线编辑器、源码清单 |
+| `npm test` | 0 | **214/214，0 失败／跳过／取消，112.12 秒；单次完整运行** |
+| `npm run evaluate:fixture` | 0 | 固定标注规则，无模型调用 |
+| `npm run evaluate:life` | 0 | 四类故事 4/4，120 段干扰，两个证据对照；75.06 秒，进程 maxRSS 107768 KiB |
+| `npm pack --dry-run` | 0 | 215 文件；后续实际包加入发布审查报告和公开证据，另作实际解包验收 |
+
+环境：Node **22.23.3**（V8 **12.4.254.21-node.57**）、npm **11.16.0**、TypeScript **5.9.3**、esbuild **0.25.12**；DSH **0.2.1-rc.2 / session format 4**、Cordis **4.0.5**、Schemastery **3.18.5**。可选工程组合仅为 Ultra **0.6.1-dev.rp.1**、Memory／Decision **0.1.1-dev.rp.1**。
+
+最终实际包由 `node work/person-m4-2026-10-23/pack-artifacts.mjs release-reviewed` 生成，退出码 **0**；实际 npm pack、目录列表、解包、96 项清单与当前源码／lib／ui 的逐项校验均成功。包为 **236 文件、826602 字节、解包 3044411 字节**，SHA-256 **30caccebceabc8c42dcf64c04219c96598bfb1f44f396da86754874286f07f8d**。先前 790429 字节审核包不作为本次发布包；新包包含实体白名单修复。打包后新增的最终说明与日志另附，不为更新包内报告再次压包。
+
+设置 `RP_BUNDLES_ROOT=work/person-m4-2026-10-23/release-reviewed`、`RP_PERSON_BUNDLE=work/person-m4-2026-10-23/release-reviewed/rp/package/lib/index.js`，运行：
+
+```text
+node --test --test-concurrency=1 scripts/host-acceptance/dev3-companion.test.mjs test/rp-person-host.test.mjs test/rp-modules-host.test.mjs test/rp-management-host.test.mjs test/rp-storage-host.test.mjs
+```
+
+实际 **退出码 0，31/31，0 失败／跳过／取消，16.12 秒**。覆盖独立运行、Ultra 双顺序及关闭优化、Memory／Decision 共存、原生会话和 JSONL 冷恢复、人物成长、模块约束、管理写入／关闭竞态、指定全局范围升级。实际 SDK 配合本地合成终端；仅管理测试允许回环 HTTP，其余网络仍拦截。另运行 `node work/release-02-2026-10-23/package-authority.mjs work/person-m4-2026-10-23/release-reviewed/rp/package/lib/index.js`，**退出码 0，1/1**，直接导入最终包的公开 `openRpMemory`，确认未知人物提交返回 `scope_denied`，分支及有效事件保持不变。此 1 项不拼入前述 31 项或完整 214 项。
+
+发布目标为合并 PR #1 到 main 后的 **v0.2.0-dev.1 预览版**，中文发布说明、插件 TGZ、完整源码 ZIP、审查／验证／迁移报告、日志和校验值一并提供；不发布 npm、不覆盖历史发行附件。最终合并提交、上传校验与发布状态以 GitHub 页面和发行附件 `release-verification.json` 为准。
+
+兼容与迁移：继续独立包和 `sessionMemoryPolicy/v1`；branch/global 语义记录 v1、journal v2 保留。人物工作区启用前备份并要求新版；全局分段需人工明确启用、先备份校验，旧读取器拒绝新布局，禁止混用旧写入者。不对未经认证工具历史补造证明；更名不自动迁移数据，替换入口时避免新旧包同时启用。
+
+**保留的已知问题：** 历史首次完整测试 212/213 的对象描述符异常根因仍未确定，本轮未复现、不宣称已修复；全历史扫描仍有成本，游标尚无容量淘汰，未引用分段页不自动回收，独立备份不随在线隐私删除清理。控制硬上限也会拒绝新事务。没有自动摘要、压缩、自动采纳或自主行动。
+
+**未完成／未验证：** 完整用途产品、技能学习、多人物社会、自主生活、分支持久索引及更长历史界面仍未完成。最终界面长 ID 换行／清空选择器的浏览器复查仍受历史崩溃阻断；真实模型长期语义、多日运行、真实断电、生产配置迁移、其他 OS／Node 和其他 Ultra 版本仍未验证。M4 标注成绩不是模型语义质量。
+
 ## 当前追加：2026-10-23 M4 与产品化
 
 以下历史段落按执行时点保留。M0–M3 已推送 PR #1（9eda3d0）；后文历史“未 push”不是当前 GitHub 状态。

@@ -19,8 +19,8 @@
     },
     {
       "path": "src/rp/canonical.ts",
-      "bytes": 16957,
-      "sha256": "3fb363ab23e402f154ced6bb0187f827a2920735ac6a5b30d27351d6149119bc"
+      "bytes": 17342,
+      "sha256": "f01fd940582d616d679d0b7fa1aa6c07b61e8f28de2e7e0040abc2c6743974a2"
     },
     {
       "path": "src/rp/capabilities.ts",
@@ -234,13 +234,13 @@
     },
     {
       "path": "lib/index.js",
-      "bytes": 414260,
-      "sha256": "6d788a4977141d50e733e740db239d26e258bce92cf2326e36d5812fc287f046"
+      "bytes": 414558,
+      "sha256": "9c847ede528676d99d548c10604b88db47df4858ef9055bd117d4fae883a89be"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 746344,
-      "sha256": "0aacab1070ad1f8f76f540f702216ea2f6f4b487413437937a73e3dabee5b571"
+      "bytes": 746923,
+      "sha256": "7846e924caf713b0fdd8f72854d4e2ce2af6325e11b9709f58c2f61b67175f16"
     },
     {
       "path": "lib/types/rp/admission.d.ts",

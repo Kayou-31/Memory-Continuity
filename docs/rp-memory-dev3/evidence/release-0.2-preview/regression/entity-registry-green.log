@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: person preview confirms one atomic origin, fields, relationship and goal with durable retry
+ok 1 - person preview confirms one atomic origin, fields, relationship and goal with durable retry
+  ---
+  duration_ms: 267.2344
+  type: 'test'
+  ...
+# Subtest: person import rejects unknown entities, untrusted fields, excessive text and stale or forged previews
+ok 2 - person import rejects unknown entities, untrusted fields, excessive text and stale or forged previews
+  ---
+  duration_ms: 155.9837
+  type: 'test'
+  ...
+# Subtest: legacy identity conflicts are explicit and all canonical routes reject unmarked person fields
+ok 3 - legacy identity conflicts are explicit and all canonical routes reject unmarked person fields
+  ---
+  duration_ms: 258.0464
+  type: 'test'
+  ...
+# Subtest: raw canonical controls cannot create a fieldless person or append a second initialization later
+ok 4 - raw canonical controls cannot create a fieldless person or append a second initialization later
+  ---
+  duration_ms: 219.0505
+  type: 'test'
+  ...
+# Subtest: raw canonical person protocols cannot introduce entities outside the configured registry
+ok 5 - raw canonical person protocols cannot introduce entities outside the configured registry
+  ---
+  duration_ms: 211.0092
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1318.551

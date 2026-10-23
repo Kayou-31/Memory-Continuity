@@ -1,0 +1,79 @@
+
+> @dsh-external/dsh-ultra-rp-memory@0.2.0-dev.1 evaluate:life
+> node scripts/benchmarks/person-life.mjs
+
+{
+  "schemaVersion": 1,
+  "kind": "person-life-offline",
+  "created": "2026-10-23T14:06:49.322Z",
+  "node": "v22.23.3",
+  "scenarioCount": 4,
+  "historyDistractors": 120,
+  "observations": [
+    {
+      "name": "identity-growth-and-expiring-context",
+      "passed": true,
+      "ms": 66242.0159
+    },
+    {
+      "name": "directional-relationship-and-promise",
+      "passed": true,
+      "ms": 3757.031700000007
+    },
+    {
+      "name": "retcon-privacy-and-life-branch-isolation",
+      "passed": true,
+      "ms": 2639.3160999999964
+    },
+    {
+      "name": "module-revocation-and-cold-reconstruction",
+      "passed": true,
+      "ms": 1349.9340999999986
+    }
+  ],
+  "comparison": {
+    "label": "annotated evidence availability, not generated answers",
+    "sameInput": true,
+    "arms": {
+      "verifiedMemory": {
+        "total": 3,
+        "supported": 3,
+        "unsupported": 0,
+        "missing": 0,
+        "duplicates": 0,
+        "unknown": 0,
+        "semanticQuality": "unverified",
+        "revokedEvidenceExposed": false
+      },
+      "recentWindow": {
+        "total": 3,
+        "supported": 0,
+        "unsupported": 0,
+        "missing": 3,
+        "duplicates": 0,
+        "unknown": 0,
+        "semanticQuality": "unverified",
+        "revokedEvidenceExposed": false
+      },
+      "unfilteredArchive": {
+        "total": 3,
+        "supported": 3,
+        "unsupported": 0,
+        "missing": 0,
+        "duplicates": 0,
+        "unknown": 0,
+        "semanticQuality": "unverified",
+        "revokedEvidenceExposed": true
+      }
+    }
+  },
+  "durationMs": 75134.22249999999,
+  "maxRssKiB": 104544,
+  "paidCalls": 0,
+  "modelQuality": "unverified",
+  "limits": [
+    "Single synthetic story, no statistical or production latency claims",
+    "No real model or multi-day run",
+    "Archive control retains synthetic benchmark observations only; not a production recovery path"
+  ]
+}
