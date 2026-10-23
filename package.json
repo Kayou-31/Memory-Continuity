@@ -1,7 +1,7 @@
 {
   "name": "@dsh-external/dsh-ultra-rp-memory",
-  "version": "0.1.0-dev.3",
-  "description": "DSH 独立 RP 记忆插件：有效剧情、来源检索和显式候选采纳，可与兼容 Ultra Mode 共存",
+  "version": "0.2.0-dev.1",
+  "description": "Ultra-RP-Memory：独立人物、长期记忆与人工成长审阅，可与兼容 Ultra Mode 叠加",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/types/rp-plugin.d.ts",
@@ -44,7 +44,7 @@
   "author": "Kayou",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Kayou-31/dsh-rp-memory.git"
+    "url": "git+https://github.com/Kayou-31/dsh-ultra-rp-memory.git"
   },
   "engines": {
     "node": ">=22",

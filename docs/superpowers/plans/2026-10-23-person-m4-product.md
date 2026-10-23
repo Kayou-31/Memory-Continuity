@@ -43,6 +43,8 @@
 
 ## 执行账本
 
+- Task 3 implemented: 显式全局分段8/12MiB，旧v1默认不动，真实旧reader拒绝/备份恢复通过；3条初始RED、备份和4097边界RED后修复。宿主+旧global回归15/15；容量/旧reader/4097各1/1。详见RESULTS。单只读审阅已关闭已确认备份问题，数组限制最后补RED/GREEN。开始Task 4集中验收。
+
 - Task 2 complete: 实际浏览器手动全流程，原生SDK管理闭环；只读审阅5项先RED后修复，管理9/9、相关回归37/37、类型检查exit0。截图与命令在同一work证据目录。允许进入Task 3。
 
 - Task 1 complete: scorer RED→2/2 GREEN；四类 core 故事和120干扰4/4；原生SDK12次clean+重建+撤权1/1。首轮脚本/fixture错误保留日志，不是生产回归。实际命令在 work/person-m4-2026-10-23/commands.jsonl。

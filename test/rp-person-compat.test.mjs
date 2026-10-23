@@ -15,6 +15,19 @@ const old = await import(pathToFileURL(path.join(dir, 'old.mjs')).href)
 const draft = { schemaVersion: 1, kind: 'person-draft', personId: 'erin', fields: [{ fieldId: 'name', kind: 'identity', value: '林澈', policy: 'stable' }], relationships: [], goals: [] }
 const hash = v => createHash('sha256').update(v).digest('hex')
 
+test('actual v1 global reader/writer rejects segmented scope and verified complete backup restores it',async()=>{
+ const f=await setup();let reader
+ try{
+  const profile=path.join(f.directory,'profile'),root=path.join(profile,'.dsh-rp/v1'),identity=JSON.parse(await fs.readFile(path.join(root,'identity.json'),'utf8')),scope={kind:'world',profileId:identity.profileId,worldId:'storage'},spec={scope,visibility:{policyId:'policy',revision:0,audienceSetId:'public'},audienceSetIds:['public'],write:true},a=must(await f.global.control.authorize(spec)),approval=f.global.control.approval({commandId:'upgrade',sessionId:'upgrade'}),input={idempotencyKey:'first',expected:must(await f.global.store.readFence(a)),key:'lore',body:'Original history',privateSourceIds:[]},p=must(await f.global.control.publish(a,approval,input))
+  reader=await old.openRpMemory({profileRoot:profile,entityIds:[]});const oa=must(await reader.global.control.authorize(spec)),op=reader.global.control.approval({commandId:'old',sessionId:'old'});must(await reader.global.store.readFence(oa))
+  must(await f.global.control.enableSegments(a,approval,{idempotencyKey:'segments',expected:must(await f.global.store.readFence(a))}));deny(await reader.global.store.readFence(oa),'store_corrupt');deny(await reader.global.control.publish(oa,op,input),'store_corrupt')
+  const status=must(await f.global.store.storageStatus(a)),backup=path.join(root,'backups/global',status.backupId),manifest=JSON.parse(await fs.readFile(path.join(backup,'manifest.json'),'utf8'));for(const file of manifest.files)assert.equal(hash(await fs.readFile(path.join(backup,file.path))),file.sha256)
+  const scopeDir=path.join(root,'global',hash(api.canonical(scope)));await fs.rename(scopeDir,path.join(f.directory,'segmented-quarantine'));await fs.mkdir(scopeDir)
+  for(const name of ['commits','blobs','seal.json'])await fs.cp(path.join(backup,name),path.join(scopeDir,name),{recursive:true,errorOnExist:true,force:false})
+  assert.equal(must(await reader.global.store.readPublication(oa,p.id)).body,'Original history')
+ }finally{reader?.retrieval.dispose();await reader?.jobs.close();await f.close()}
+})
+
 test('raw fixed-prefix commit checks inherited person ownership before added events', async () => {
   const f=await setup()
   try {

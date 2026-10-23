@@ -23,4 +23,12 @@
 
 M4 与管理验收后才修改存储。先记录当前长历史容量与成本，选择有界、显式启用、可备份回退的存储扩展。语义记录和分支/global v1 保持；新物理布局必须使旧 reader 明确拒绝，不能让旧程序读取落后的双份数据。迁移原件和完整事务历史必须保留并校验，恢复不跳过 hash/seal。禁止为了容量截断事务，禁止把有限测试称为无限历史。
 
-存储具体布局在阶段开始时补充；如果现有宿主/安全条件无法保证，记录证据和阻塞，不偷偷降低门槛。
+### 2026-10-23 存储阶段裁决
+
+原 branch 已按事务追加，首先扩展全局累计 envelope 的物理容量。默认 v1 保持3 MiB发布/4 MiB控制上限；仅可信人工命令 `global storage-enable` 可升级当前明确 scope。升级在同一 writer lock 下校验完整历史、补齐旧seal、复制并逐文件SHA256核验 commits/blobs/seal/identity 到独立 backups 目录，最后写完成manifest；备份失败不发布升级commit。备份含私密历史，不随在线隐私删除自动清除。
+
+新 commit 使用 `rp.global-segments/v1` 描述符：相同语义 State 按 publications 和 keys 分页，每页最多256 KiB，页面按SHA256寻址并重用；descriptor保留 fence/seq/previousHash、页引用、重建State哈希和备份标识。原v1 commit完全保留。每次读取仍验证全部事务链、全部被引用页、State和seal；不信任缓存。旧reader面对descriptor明确拒绝；新reader拒绝升级后降回旧envelope。没有旧副本可供旧reader误读新状态。
+
+新布局完整逻辑envelope限制8 MiB发布/12 MiB控制，最多8192 publications、8192发布keys/12288控制keys，每种页引用最多128；单页和descriptor继续有独立上限。容量预检在写入blob/page前完成，幂等和seal恢复顺序不变。新页只在完整commit发布后可见，孤儿页暂保留、不自动清理。升级后回退只能在停用插件后恢复整个已核验备份，升级后写入需另外保全。
+
+这是有界全局容量与磁盘重复量改进，不是无限存储。完整历史扫描仍随历史增加；分支索引、分页UI更久历史和长期压测留作后续，实际测量不能外推多年运行。

@@ -278,9 +278,11 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       if (action === 'global') {
         const parsed = /^(\S+)\s+([\s\S]+)$/u.exec(arg); if (!parsed) throw new RpError('invalid_record', 'Use /rp global preference|publish|list|adopt <JSON>')
         const sub = parsed[1]
-        if (!['publish', 'preference', 'list', 'adopt'].includes(sub)) throw new RpError('invalid_record', 'Unknown global control')
+        if (!['publish', 'preference', 'list', 'adopt', 'storage-status', 'storage-enable'].includes(sub)) throw new RpError('invalid_record', 'Unknown global control')
         const op = commandObject(parsed[2], sub === 'publish' || sub === 'preference' ? ['key', 'body'] : sub === 'adopt' ? ['publicationId'] : [], ['worldId', 'entityId', 'privateSourceIds', 'supersedes'])
         const ga = await commandGrant(sub === 'preference' ? undefined : op.worldId, op.entityId), approval = memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id })
+        if (sub === 'storage-status') return { kind: 'success', text: JSON.stringify(unwrap(await memory.global.store.storageStatus(ga))) }
+        if (sub === 'storage-enable') { unwrap(await memory.global.control.enableSegments(ga, approval, { idempotencyKey: commandId, expected: unwrap(await memory.global.store.readFence(ga)) })); return { kind: 'success', text: JSON.stringify(unwrap(await memory.global.store.storageStatus(ga))) } }
         if (sub === 'publish' || sub === 'preference') { if (sub === 'publish' && !op.worldId) throw new RpError('invalid_record', 'Explicit worldId is required'); const publication = unwrap(await memory.global.control.publish(ga, approval, { idempotencyKey: commandId, expected: unwrap(await memory.global.store.readFence(ga)), key: op.key, body: op.body, privateSourceIds: op.privateSourceIds ?? [], ...(op.supersedes ? { supersedes: op.supersedes } : {}) })); return { kind: 'success', text: 'Approved publication ' + publication.id + ' revision ' + publication.revision } }
         if (sub === 'list') return { kind: 'success', text: 'Approved publication IDs: ' + unwrap(await memory.global.store.list(ga)).map(p => p.id + '@' + p.revision).join(', ') }
         if (sub === 'adopt') { if (!b) throw new RpError('scope_denied', 'Start the story branch before adopting canon'); unwrap(await memory.adoptCanon(b.authority, ga, approval, op.publicationId, commandId)); return { kind: 'success', text: 'Pinned canon revision adopted.' } }

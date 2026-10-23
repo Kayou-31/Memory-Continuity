@@ -132,14 +132,14 @@ export function observation(v: unknown): asserts v is SourceObservation {
 /** Before serialization: bounded recursive inspection rejects lossy values and accessors. */
 export const MAX_RP_JSON_BYTES = 4_194_304
 export const MAX_RP_PUBLISH_BYTES = 3_145_728
-export function cloneInput<T>(input: T, maxBytes = MAX_RP_JSON_BYTES, capacityError = false): T {
+export function cloneInput<T>(input: T, maxBytes = MAX_RP_JSON_BYTES, capacityError = false, maxArrayLength = 4096): T {
   const visit = (v: unknown, depth: number): void => {
     if (depth > 24) invalid('record depth')
     if (v === null || typeof v === 'boolean') return
     if (typeof v === 'string') { if (v.length > 1048576 || !wellFormed(v)) invalid('record string'); return }
     if (typeof v === 'number') { if (!Number.isFinite(v) || (Number.isInteger(v) && !Number.isSafeInteger(v))) invalid('number'); return }
     if (!v || typeof v !== 'object') invalid('JSON value')
-    if (Array.isArray(v)) { if (v.length > 4096) invalid('array size'); v.forEach(entry => visit(entry, depth + 1)); return }
+    if (Array.isArray(v)) { if (v.length > maxArrayLength) invalid('array size'); v.forEach(entry => visit(entry, depth + 1)); return }
     if (Object.getPrototypeOf(v) !== Object.prototype && Object.getPrototypeOf(v) !== null) invalid('prototype')
     for (const key of Object.keys(v)) { const d = Object.getOwnPropertyDescriptor(v, key)!; if (!('value' in d)) invalid('accessor'); visit(d.value, depth + 1) }
   }
@@ -148,8 +148,8 @@ export function cloneInput<T>(input: T, maxBytes = MAX_RP_JSON_BYTES, capacityEr
   return JSON.parse(encoded) as T
 }
 /** Inspect the entire envelope, then write exactly these preflighted bytes. */
-export function checkedRpJson(input: unknown, encode: (value: unknown) => string, maxBytes = MAX_RP_JSON_BYTES): string {
-  const encoded = encode(cloneInput(input, maxBytes, true))
+export function checkedRpJson(input: unknown, encode: (value: unknown) => string, maxBytes = MAX_RP_JSON_BYTES, maxArrayLength = 4096): string {
+  const encoded = encode(cloneInput(input, maxBytes, true, maxArrayLength))
   if (Buffer.byteLength(encoded, 'utf8') > maxBytes) throw new RpError('capacity_exceeded', 'RP complete envelope byte limit')
   return encoded
 }

@@ -1,4 +1,4 @@
-# DSH RP Memory 0.1.0-dev.3 实际执行报告
+# Ultra-RP-Memory 实际执行报告（dev.3 至 0.2.0-dev.1）
 
 ## 当前追加：2026-10-23 M4 与产品化
 
@@ -18,7 +18,15 @@ M4 已完成离线范围：`scripts/benchmarks/person-life.mjs` 复用实际 cor
 
 实际浏览器在临时测试profile完成：创建林澈、钟楼救援经历、成长提案与人工采纳、erin→bea定向关系、承诺建立/暂停、关闭入口。证据为 `manager-browser.png`、`manager-browser.txt`；服务已经关闭。所有故事为合成测试数据，没有付费调用。
 
-未验证：真实模型长期语义、连续多日使用、真实断电、日常profile迁移；旧Luna/fixture不补足这些缺口。长期存储尚待本阶段实施和验证。
+长期存储首期完成：`global-segments.ts` 与 `global.ts` 新增显式升级、先校验/备份/sync、按内容寻址的256KiB页、重建完整状态与全部历史校验；`rp-plugin.ts` 增加人工 storage-status/storage-enable。默认3/4MiB布局不变，升级后8/12MiB完整逻辑envelope；8192 publications、8192发布keys/12288控制keys。`schema.ts` 仅允许分段完整状态检查显式指定8192数组上限，其他输入默认4096不变。
+
+`rp-global-segments.test.mjs` 先RED缺入口，后覆盖旧历史原件/备份、页重用、缺失/损坏/降级拒绝、备份故障、连续seal故障、8/12MiB边界、4097条记录与冷读。`rp-storage-host.test.mjs` 验证原生宿主按scope手动升级、不调用模型；`rp-person-compat.test.mjs` 使用实际旧源码构建reader，升级后读写拒绝，完整备份恢复后可读。只读审阅及自查补出备份未校验正文、文件sync、子文件ENOENT误吞、旧4096数组限制，均已修复；可触发问题保留RED日志，未更改v1的默认容量行为。
+
+定向证据：`segments-related` 15/15 exit0（含旧global恢复/孤儿回归）；`segments-boundary` 1/1 exit0；`segments-old-reader` 1/1 exit0；`segments-count-red` exit1 → `segments-count-green` 1/1 exit0。最初3.345MiB边界单样本升级/追加/撤销约1.26秒、进程maxRSS201244KiB，17个页文件；这是隔离夹具且历史短，不是长期压测或保证。最终全量另列。
+
+使用和回退说明见 `docs/person-studio-storage.zh.md`。备份含旧正文且不受在线隐私删除管理；没有完成manifest的目录不可信。孤儿页保留，不自动GC；全历史扫描仍存在。本轮没有触及日常profile、后台功能或付费API。版本正式提升0.2.0-dev.1，包名已为 @dsh-external/dsh-ultra-rp-memory；协议、配置节点与数据路径保留兼容名称。
+
+未完成：完整用途产品、技能学习、多人物社会、自主生活、分支持久检索索引及更长历史UI。未验证：真实模型长期语义、连续多日使用、真实断电、日常profile迁移、任意Ultra版本；旧Luna/fixture不补足这些缺口。最后集中验收、实际包和GitHub状态将在本节后续追加。
 
 执行日期：2026-10-20（America/Tijuana）；日志保留 UTC 时间戳。此文件记录实际执行，不把方案文件当作通过证据。
 
