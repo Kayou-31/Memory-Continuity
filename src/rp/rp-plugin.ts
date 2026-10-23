@@ -112,9 +112,20 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     const scope = worldId ? { kind: 'world', profileId: binding.profileId, worldId, ...(entityId ? { entityId } : {}) } : { kind: 'profile', profileId: binding.profileId }
     const old = globalSpecs.findIndex(g => canonical(g.scope) === canonical(scope)); if (old >= 0) return globalAuthorities[old]
     if (config.globalGrants !== undefined) throw new RpError('scope_denied', 'Explicit configuration is the global scope allowlist; persisted commands cannot widen it')
-    const spec = { scope, visibility, audienceSetIds: ['rp_user'], write: true }, authority = unwrap(await memory.global.control.authorize(spec as any)); globalSpecs.push(spec); globalAuthorities.push(authority)
-    commandSpecs.push(spec)
-    const tmp = grantFile + '.tmp-' + uid('write'), h = await fs.open(tmp, 'wx', 0o600); try { await h.writeFile(canonical({ schemaVersion: 1, grants: commandSpecs, sha256: sha(canonical(commandSpecs)) })); await h.sync() } finally { await h.close() }; await fs.rename(tmp, grantFile); return authority
+    const spec = { scope, visibility, audienceSetIds: ['rp_user'], write: true }, nextSpecs = [...commandSpecs, spec]
+    const encoded = checkedRpJson({ schemaVersion: 1, grants: nextSpecs, sha256: sha(canonical(nextSpecs)) }, canonical)
+    const tmp = grantFile + '.tmp-' + uid('write')
+    try {
+      const h = await fs.open(tmp, 'wx', 0o600)
+      try { await h.writeFile(encoded); await h.sync() } finally { await h.close() }
+      shutdown.signal.throwIfAborted(); await fs.rename(tmp, grantFile)
+    } catch (e) { await fs.rm(tmp, { force: true }).catch(() => {}); throw e }
+    // Only publish an in-memory capability after its recovery record is durable.
+    // authorize itself does not acquire the coordinator; no nested mutation lock.
+    shutdown.signal.throwIfAborted()
+    const authority = unwrap(await memory.global.control.authorize(spec as any))
+    commandSpecs.push(spec); globalSpecs.push(spec); globalAuthorities.push(authority)
+    return authority
   })
   let closed = false, closePromise: Promise<void> | undefined
   const inputHistory = new Map<string, Map<string, Input>>()

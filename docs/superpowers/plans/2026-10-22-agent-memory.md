@@ -19,7 +19,7 @@
 - [x] F3 / A4：store 提供锁内校验并补 seal 的已提交效果确认；canonical/summarizer/jobs/payload copy 快捷返回共用确认路径。连续失败分类、冷重试、同键冲突、不得多发布。
 - [x] F4 / A5：允许合法 assistant text 与授权 read tool-call 混合，仍校验每个 block、call 和最终请求；真实 AgentLoop 两轮正反例。
 - [x] F5 / A6：统一命令 JSON 解析，将语法/结构错误转 invalid_record，不封锁健康会话；真实 I/O 故障仍 fail-closed。
-- [ ] F6 / A7：命令 grant 先持久化草案再激活内存；失败清理/撤销临时授权，重试与冷重启验证。不在 coordinator 内嵌套 coordinator。
+- [x] F6 / A7：命令 grant 先持久化草案再激活内存；失败清理/撤销临时授权，重试与冷重启验证。不在 coordinator 内嵌套 coordinator。
 - [ ] F7 / A8：诊断状态区分未绑定、健康绑定和故障绑定；原生 ready/status 一致性回归。
 - [ ] L1：细化并实现有界长期经历检索、中文词项/命中摘录与上下文选择，保留固定分页、来源证明和并发前后版本检查；先写跨章节固定语料。
 - [ ] L2：实现有来源的正常状态/关系迁移，保留前史与因果，拒绝陈旧前提/跨分支/无依据覆盖，retcon/删除后能重新构建。
@@ -45,3 +45,5 @@
 - F4：纯 tool 对照通过、混合文本基线失败（f4-red.log exit1）；完整 block 白名单验证后，实际 AgentLoop 纯工具/文本+工具通过，未知工具/推理内容拒绝，4/4 exit0（f4-green.log）。该次命令的错误文件名未选中既有 receipts 文件；不把它计入此轮覆盖，最终全量仍会运行。
 
 - F5：7 个命令入口先红（exit1），统一 JSON 语法与对象必需字段验证后，畸形 JSON/primitive/缺字段不污染健康状态。命令与宿主生命周期 16/16 exit0（f5-green.log），I/O/队列失败仍拒绝准入。
+
+- F6：重试成功但 grant journal 不存在的基线先红 exit1。改为持久化草案后才 authorize 并发布内存句柄，失败移除临时文件；原生冷重启重新授权并读到已发布记录。grant/receipts 10/10 exit0（f6-green.log），不嵌套 coordinator。
