@@ -4,10 +4,11 @@ import type { HostAuthority, InputFence, Result, SourceRevision } from './types.
 import { failure, denied, integer, object, RpError, text } from './schema.js'
 import { readConsistentRecords, type RetrievalRecord } from './retrieval-index.js'
 import { bindRetrievalEvidence } from './retrieval-evidence.js'
+import { hitExcerpt, lexicalScore, queryGroups } from './lexical.js'
 const sha = (s: string) => createHash('sha256').update(s).digest('hex')
 export const fullSpan = (s: SourceRevision) => ({ sourceRevisionId: s.id, publicTextSha256: s.publicTextSha256, startUtf16: 0, endUtf16: s.publicTextLengthUtf16, quoteSha256: s.publicTextSha256 })
 export function unwrap<T>(r: Result<T>): T { if (!r.ok) throw new RpError(r.code, r.message); return r.value }
-interface Fixed { authority: HostAuthority; fence: InputFence; ids: readonly { id: string; revision: string }[]; snapshotId: string; queryHash: string }
+interface Fixed { authority: HostAuthority; fence: InputFence; ids: readonly { id: string; revision: string }[]; snapshotId: string; queryHash: string; query?: string }
 export function createRetrieval(store: RpStore, options: { inputSourceIds?: (authority: HostAuthority) => ReadonlySet<string>; entityIds?: readonly string[]; verification?: (recordId: string) => Promise<'source-match' | 'unavailable' | 'hash-mismatch'> } = {}) {
   const searches = new Map<string, { fixed: Fixed; offset: number }>(), bodies = new Map<string, { fixed: Fixed; source: Pick<RetrievalRecord, 'id' | 'revision'>; offset: number }>()
   const records = (authority: HostAuthority) => readConsistentRecords(store, authority, options.inputSourceIds?.(authority) ?? new Set())
@@ -30,22 +31,22 @@ export function createRetrieval(store: RpStore, options: { inputSourceIds?: (aut
           const saved = searches.get(input.cursor); if (!saved) denied('unknown search cursor'); fixed = saved!.fixed; offset = saved!.offset
         } else {
           text(input.query ?? '', 4096, true)
-          const { fence, records: sources } = await records(authority), terms = (input.query ?? '').normalize('NFKC').toLowerCase().match(/[\p{L}\p{N}_]+/gu) ?? []
+          const terms = queryGroups(input.query ?? ''), { fence, records: sources } = await records(authority)
           const hits: { id: string; revision: string; score: number }[] = []
           for (const source of sources) {
             if (input.entityId && (!(options.entityIds ?? []).includes(input.entityId) || !source.entities.includes(input.entityId))) continue
             if (input.kind && source.kind !== input.kind) continue
-            const normalized = source.body.normalize('NFKC').toLowerCase()
-            if (terms.every(term => normalized.includes(term))) hits.push({ id: source.id, revision: source.revision, score: terms.reduce((n, t) => n + normalized.split(t).length - 1, 0) })
+            const score = lexicalScore(source.body, terms)
+            if (score !== null) hits.push({ id: source.id, revision: source.revision, score })
           }
           hits.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id, 'en'))
-          fixed = { authority, fence, ids: hits.map(({ id, revision }) => ({ id, revision })), snapshotId: token(), queryHash: sha(input.query ?? '') }
+          fixed = { authority, fence, ids: hits.map(({ id, revision }) => ({ id, revision })), snapshotId: token(), queryHash: sha(input.query ?? ''), query: input.query ?? '' }
         }
         const { map, fence } = await validate(authority, fixed), items = []
-        for (const hit of fixed.ids.slice(offset, offset + limit)) { const source = map.get(hit.id)!; items.push({ id: source.id, revision: source.revision, kind: source.kind, excerpt: source.body.slice(0, 256) }) }
+        for (const hit of fixed.ids.slice(offset, offset + limit)) { const source = map.get(hit.id)!; items.push({ id: source.id, revision: source.revision, kind: source.kind, excerpt: hitExcerpt(source.body, fixed.query ?? '') }) }
         let nextCursor: string | null = null
         if (offset + limit < fixed.ids.length) { nextCursor = token(); searches.set(nextCursor, { fixed, offset: offset + limit }) }
-        return bindRetrievalEvidence({ ok: true as const, value: { snapshotId: fixed.snapshotId, queryHash: fixed.queryHash, resultManifestHash: sha(JSON.stringify(fixed.ids)), sortVersion: 'rp-terms/v1', items, nextCursor } }, authority, fence, items.map(({ id, revision, kind }) => ({ id, revision, kind })))
+        return bindRetrievalEvidence({ ok: true as const, value: { snapshotId: fixed.snapshotId, queryHash: fixed.queryHash, resultManifestHash: sha(JSON.stringify(fixed.ids)), sortVersion: 'rp-terms/v2', items, nextCursor } }, authority, fence, items.map(({ id, revision, kind }) => ({ id, revision, kind })))
       } catch (e) { return failure(e) }
     },
     async get(authority: HostAuthority, input: { id?: string; cursor?: string; maxChars?: number }) {

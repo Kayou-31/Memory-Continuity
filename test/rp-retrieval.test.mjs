@@ -247,3 +247,16 @@ test('canon adoption rechecks revoked command approval inside the queued store c
   await queued; f.global.control.revokeApproval(approval); release()
   deny(await adoption, 'scope_denied'); assert.deepEqual(must(await f.store.readFence(f.authority)), before)
 })
+
+test('long-lived Chinese experience search separates joined terms and shows the exact distant hit', async () => {
+  const f = await setup(), s = await source(f, '背景。'.repeat(140) + '艾琳在钟楼完成救援，后来把钥匙交给国王。' + '尾声。'.repeat(100), 'years_ago')
+  await accept(f, s, 'years_ago')
+  const page = must(await f.retrieval.search(f.authority, { query: '艾琳钟楼救援', kind: 'source', limit: 1 }))
+  assert.equal(page.items.length, 1)
+  assert.equal(page.items[0].id, s.id)
+  assert.match(page.items[0].excerpt, /艾琳在钟楼完成救援/)
+  assert.equal(page.sortVersion, 'rp-terms/v2')
+  assert.ok(page.items[0].excerpt.length <= 256)
+  const original = must(await f.retrieval.get(f.authority, { id: s.id }))
+  assert.ok(original.text.includes(page.items[0].excerpt))
+})

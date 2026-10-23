@@ -49,3 +49,6 @@
 - F6：重试成功但 grant journal 不存在的基线先红 exit1。改为持久化草案后才 authorize 并发布内存句柄，失败移除临时文件；原生冷重启重新授权并读到已发布记录。grant/receipts 10/10 exit0（f6-green.log），不嵌套 coordinator。
 
 - F7：健康 ready/status 不一致先红 exit1；状态现在显式区分未绑定/健康/故障/关闭，diagnostic+lifecycle 10/10 exit0（f7-green.log）。七项修复定向验证完成，最终全量尚待新功能完成后统一执行。
+
+- L1 检索阶段：中文连写查询/远端原文摘录先红；rp-terms/v2 使用有界字符双元组、逐词匹配与原文摘录，不声称语义理解。首轮 17/18 暴露 F2 清理对已登记正文的物理删除障碍处理过早；将已登记正文交回 read/purge 协议，复跑 retrieval+orphans 22/22 exit0。保留两轮完整日志，不合并宣称首轮通过。
+- L2 设计裁决：在既有 v1 state_change/relationship_change 的 JSON value 中使用 protocol=agent-memory/v1 包装，包含 previousEventId、causeEventIds、note、value；不改变普通 before 元数据行为，不以时间或最后写入解决冲突。store 提交时校验当前前驱和来源覆盖；依赖使用已有 dependencyIds，因此 retcon/删除递归失效、固定分支继承仍适用。新 reader 展开当前值，旧 reader 可读格式但不具备成长投影语义，不承诺语义降级兼容。

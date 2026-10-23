@@ -77,6 +77,9 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
       if (!/^approved_[A-Za-z0-9_-]+$/u.test(entry.name) || !entry.isDirectory() || entry.isSymbolicLink()) throw new RpError('store_corrupt', 'Unknown global blob source')
       const dir = path.join(root, entry.name), expected = registered.get(entry.name)
       for (const file of await fs.readdir(dir, { withFileTypes: true })) {
+        // Registered bodies belong to read/purge. A physical purge obstruction
+        // must not prevent the durable deletion tombstone from being published.
+        if (file.name === expected) continue
         if (!file.isFile() || file.isSymbolicLink() || !/^blob_[a-f0-9]{64}\.txt(?:\.tmp-write_[a-f0-9]{32})?$/u.test(file.name)) throw new RpError('store_corrupt', 'Unknown global blob file')
         const temporary = file.name.includes('.tmp-')
         if (expected && file.name.split('.tmp-')[0] !== expected) throw new RpError('store_corrupt', 'Global publication blob mismatch')
