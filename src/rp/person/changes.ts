@@ -49,6 +49,26 @@ function compile(view:RpReadView,changes:Saved['changes'],known:ReadonlySet<stri
   }
   return proposals
 }
+export function createPersonProposal(store:RpStore,entityIds:readonly string[]) {
+  const known=new Set(entityIds)
+  return async (authority:HostAuthority,input:unknown,key:string) => {
+      try {
+        text(key,220);const raw=object(cloneInput(input),['changes']);if(!Array.isArray(raw.changes)||!raw.changes.length||raw.changes.length>16)invalid('growth batch count');raw.changes.forEach(validateChange)
+        const changes=raw.changes as Change[];if(new Set(changes.map(c=>c.changeId)).size!==changes.length)invalid('duplicate change IDs')
+        return await store.withReadView(authority,async view=>{
+          const candidateId='person_candidate_'+digest([view.fence.branchId,key,changes.slice().sort((a,b)=>a.changeId.localeCompare(b.changeId))]).slice(0,48)
+          const ids=new Map(changes.map(c=>[c.changeId,'person_'+digest([candidateId,c.changeId]).slice(0,48)]))
+          const compiled=changes.map(c=>{const {previousChangeId,...rest}=c;if(previousChangeId&&!ids.has(previousChangeId))invalid('unknown proposed predecessor');return {...rest,previousEventId:previousChangeId?ids.get(previousChangeId)!:c.previousEventId,eventId:ids.get(c.changeId)!}})
+          compile(view,compiled,known)
+          const dependencies=[...new Set(compiled.flatMap(c=>[...c.causeEventIds,...(view.events.some(e=>e.id===c.previousEventId)?[c.previousEventId!]:[])]))].sort()
+          const sources=[...new Set(dependencies.flatMap(id=>view.events.find(e=>e.id===id)!.sources.map(s=>s.sourceRevisionId)))].sort()
+          const saved:Saved={protocol:'person-growth/v1',id:candidateId,inputFence:view.fence,changes:ordered(compiled)}
+          unwrap(await store.savePayloadCopy(authority,{idempotencyKey:'person_candidate:'+key,id:candidateId,kind:'job_input',sourceRevisionIds:sources,dependencyIds:dependencies,body:canonical(saved)}))
+          return saved
+        })
+      }catch(e){return failure(e)}
+    }
+}
 export function createPersonChanges(store:RpStore,service:ReturnType<typeof createCanonicalService>,entityIds:readonly string[]) {
   const known=new Set(entityIds)
   const load=async(authority:HostAuthority,view:RpReadView)=>{
@@ -88,23 +108,7 @@ export function createPersonChanges(store:RpStore,service:ReturnType<typeof crea
         return {ok:true as const,value:{eventId,fence}}
       }catch(e){return failure(e)}
     },
-    async propose(authority:HostAuthority,input:unknown,key:string) {
-      try {
-        text(key,220);const raw=object(cloneInput(input),['changes']);if(!Array.isArray(raw.changes)||!raw.changes.length||raw.changes.length>16)invalid('growth batch count');raw.changes.forEach(validateChange)
-        const changes=raw.changes as Change[];if(new Set(changes.map(c=>c.changeId)).size!==changes.length)invalid('duplicate change IDs')
-        return await store.withReadView(authority,async view=>{
-          const candidateId='person_candidate_'+digest([view.fence.branchId,key,changes.slice().sort((a,b)=>a.changeId.localeCompare(b.changeId))]).slice(0,48)
-          const ids=new Map(changes.map(c=>[c.changeId,'person_'+digest([candidateId,c.changeId]).slice(0,48)]))
-          const compiled=changes.map(c=>{const {previousChangeId,...rest}=c;if(previousChangeId&&!ids.has(previousChangeId))invalid('unknown proposed predecessor');return {...rest,previousEventId:previousChangeId?ids.get(previousChangeId)!:c.previousEventId,eventId:ids.get(c.changeId)!}})
-          compile(view,compiled,known)
-          const dependencies=[...new Set(compiled.flatMap(c=>[...c.causeEventIds,...(view.events.some(e=>e.id===c.previousEventId)?[c.previousEventId!]:[])]))].sort()
-          const sources=[...new Set(dependencies.flatMap(id=>view.events.find(e=>e.id===id)!.sources.map(s=>s.sourceRevisionId)))].sort()
-          const saved:Saved={protocol:'person-growth/v1',id:candidateId,inputFence:view.fence,changes:ordered(compiled)}
-          unwrap(await store.savePayloadCopy(authority,{idempotencyKey:'person_candidate:'+key,id:candidateId,kind:'job_input',sourceRevisionIds:sources,dependencyIds:dependencies,body:canonical(saved)}))
-          return saved
-        })
-      }catch(e){return failure(e)}
-    },
+    propose:createPersonProposal(store,entityIds),
     async list(authority:HostAuthority) {
       return store.withReadView(authority,async view=>(await load(authority,view)).map(p=>({ ...p,state:(decision(view,p.id) as any)?.record.decision??(canonical(p.inputFence)===canonical(view.fence)?'pending':'stale') })),{audit:true})
     },

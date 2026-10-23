@@ -60,3 +60,49 @@ Journal v2 新增可选人物绑定及每个历史 packet 的原始绑定证明�
 `policy:"situational"` 必须带 `validity:{"kind":"scene","sceneId":"rp_scene"}` 或 `validity:{"kind":"sequence","from":1,"through":20}`。有效区间两端均包含，接受序号是插件已接受来源的顺序（包含用户控制），不是消息轮数、电脑日期或年龄；可在 timeline/账本查看。过期后从当前人物和通用 state 投影移除，事件保留，不能回退到前驱值。编辑情境字段时可以明确给出新的 validity。普通关系/目标仍使用已有 `/rp agent` 显式操作和 `/rp relationships`、`/rp goals` 查询，方向与前驱不变；首期新增的成长候选队列专用于人物字段。
 
 静态编辑器可创建情境字段、性格和阶段，生成新草稿；现有人物更新、成长审阅和时间线采用上述可信命令。实时在线页面、自动候选生成、自动采纳、自动推进年龄和后台摘要未开启。旧会话包含已失效检索结果或字段时，门禁可能要求 continue-clean。
+
+## 用途与能力模块（M3）
+
+用途 `rp`、`companion`、`creation`、`project` 共用人物与人生线。用途改变上下文中的模式信息，供以后添加自有功能分支；当前并不是四套完整产品，也不会自动创建 Git 分支或复制剧情。没有 Ultra Mode 仍可使用全部人物核心与三个内置模块。有已验证兼容版 Ultra 时，仅叠加 `ultra-rp/v1` 可选排序，不调用工程归档或压缩。
+
+新会话默认 `rp`，所有模块默认关闭。可信用户命令示例：
+
+```text
+/rp start
+/rp mode set companion
+/rp modules list
+/rp modules enable person-view
+/rp modules enable recall
+/rp modules run {"moduleId":"person-view","input":{"personId":"erin"}}
+/rp modules run {"moduleId":"recall","input":{"query":"钟楼","limit":3}}
+```
+
+`person-view` 返回授权人物视图；`recall` 每次返回有界结果，完整分页仍使用现有 `rp_memory_search` 工具；`growth-review` 提交人工审阅候选。模块命令不会自动加入模型历史。不会加载用户输入的脚本，不授予真实工具执行、模型调用或正式写入能力。同进程 npm 插件仍属于可信宿主代码，这套接口不是操作系统沙箱。
+
+```text
+/rp modules enable growth-review
+/rp modules run {"moduleId":"growth-review","input":{"changes":[{"changeId":"care1","personId":"erin","fieldId":"care","previousEventId":"当前字段事件ID","value":"愿意托付","causeEventIds":["已接受经历ID"],"note":"共同经历支持这次变化"}]}}
+/rp person candidates
+/rp person adopt {"candidateIds":["模块返回的候选ID"]}
+```
+
+最后一步仍需用户明确决定。模块输出有调用 ID、模块版本、原始 fence、实际记录 revision 和内容哈希；回执只证明核心读取或候选操作，不能证明某个外部行动真正执行。独立 API 的 `runtime.verify(result)` 只认证原返回对象；复制 JSON、修改内容、跨 runtime 或版本变化均拒绝。回执不是跨进程通行证。
+
+## 双层约束
+
+系统硬约束一直生效：权限和来源验证、请求总预算、固定能力白名单、不自动采纳、不后台执行、不授予外部执行权。用户规则可进一步收紧模块操作：
+
+```text
+/rp constraints set {"maxReadRecords":8,"maxOutputBytes":16384,"deniedCapabilities":["propose-growth"],"protectedFieldIds":["boundary"],"guidance":[{"id":"honesty","text":"保留不确定性，不把推测说成已经发生的事实"}]}
+/rp constraints show
+```
+
+`set` 完整替换本会话用户约束，未给出的字段恢复默认值；因此检查返回的完整配置。模块权限限制只约束模块通道，用户的明确 person edit/adopt 控制仍遵守人物核心的原有权限规则。保护字段按 fieldId 匹配。
+
+`maxReadRecords` 为单次模块检索上限 1–32（默认16）；`maxOutputBytes` 为实际返回值、认证回执和说明合计 UTF-8 字节上限 1024–32768（默认16384）。写候选前先检查，超限明确拒绝，不截断。用户行为指引最多16条、每条512个UTF-16单元；它们进入 mandatory context 并占用总请求预算，但自然语言遵守程度需要模型评测，不能作为权限或真实行动证明。
+
+模式、启用模块和规则变更要求空 root，有历史时先 `/rp continue-clean`。`/rp modules disable recall` 可在请求进行时撤销后续准入并取消当前请求；有历史的原会话会被封锁，续接到干净会话后保留停用配置。已经输出的内容不会被撤回，取消遵循宿主适配器的响应行为。
+
+M3 使用 journal v2 的可选 `runtimeBinding` 扩展，并在工作区 ownership marker 保存配置 hash 与撤销状态；branch/global v1 未变。旧会话不补造历史证明，启用 M3 需干净续接；旧版不能解释新增 journal 扩展时会拒绝。升级前保留 profile、项目 marker 和原生 session 数据备份；本次没有自动迁移生产目录。恢复-only 续接关闭所有模块并回到默认 RP，用户再显式配置。
+
+撤销 marker 写入失败时会尝试保存 blocked journal；两条持久化路径任一成功，冷恢复会保持封锁。若二者都不能写入并异常退出，无法保证未落盘状态跨崩溃保留，会报告 `persistence_uncertain`；当前进程保持撤销。已开始的候选持久化也可能完成，但不会自动成为事实，用户可查看候选队列。无真实断电保证。

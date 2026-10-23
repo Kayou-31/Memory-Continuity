@@ -5,6 +5,8 @@ import { installRpPlugin, type RpPluginConfig } from './rp/rp-plugin.js'
 export { installRpPlugin }
 export { openRpMemory, createUltraRpOptimizer } from './rp/memory.js'
 export type { AgentMemoryControl } from './rp/agent-memory.js'
+export type { RuntimeConfig, RuntimeBinding, ModuleManifest, Capability, Constraints, Purpose } from './rp/modules/contract.js'
+export type { ModuleRuntime, ModuleReceipt, ModuleContext } from './rp/modules/runtime.js'
 export type { RpPluginConfig }
 export const name = '@dsh-external/dsh-ultra-rp-memory'
 // Disabled installation needs no native services; enabled installation verifies them itself.

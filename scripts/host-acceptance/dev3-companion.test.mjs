@@ -52,6 +52,28 @@ for (const [order, optimize] of [['standalone', true], ['engineering-first', fal
 
 test.after(async () => fs.writeFile(path.join(base, 'report.json'), JSON.stringify({ node: process.version, sdk: { packageVersions }, manifests, observations, scope: 'native SDK with local synthetic terminal; no real provider, desktop UI, or power-loss proof' }, null, 2)))
 
+for(const [order,mode] of [['standalone','companion'],['engineering-first','project'],['rp-first','creation']])test('M3 module candidates and constraints in actual TGZ '+order,async()=>{
+  const load=async({ctx})=>{await ctx.plugin(modules.ultra,{contextCompression:false,memoryMaxRequests:0,memoryMaxTokens:0}).await()}
+  const f=await host({entityIds:['erin']},{install:rpModule.installRpPlugin,...(order==='standalone'?{}:{[order==='engineering-first'?'before':'after']:load})}),requests=[]
+  class Terminal extends LlmAdapter{async *stream(request){requests.push(request);yield {type:'text-delta',index:0,text:'Offline M3'};yield {type:'finish',reason:{kind:'stop'}}}}
+  const cmd=async(a,input)=>{const r=await f.command(a,input);assert.equal(r.kind,'success',r.text);return r}
+  try{f.ctx.llm.registerAdapter(['m3-bundle'],new Terminal());const a=await f.create();a.options.provider='m3-bundle';await cmd(a,'start');await cmd(a,'mode set '+mode)
+    await cmd(a,'modules enable person-view');await cmd(a,'modules enable growth-review');await cmd(a,'constraints set '+JSON.stringify({guidance:[{id:'boundary',text:'保留不确定性，尊重人物边界'}]}))
+    const d={schemaVersion:1,kind:'person-draft',personId:'erin',fields:[{fieldId:'name',kind:'identity',value:'林澈',policy:'stable'},{fieldId:'care',kind:'trait',value:'谨慎',policy:'growable'}],relationships:[],goals:[]}
+    const p=JSON.parse((await cmd(a,'person preview '+JSON.stringify(d))).text);await cmd(a,'person confirm '+p.previewId);await cmd(a,'person use erin')
+    const read=JSON.parse((await cmd(a,'modules run '+JSON.stringify({moduleId:'person-view',input:{personId:'erin'}}))).text);assert.equal(read.receipt.execution,'core-only');assert.ok(read.receipt.records.length)
+    const cause=JSON.parse((await cmd(a,'agent '+JSON.stringify({kind:'experience',actorIds:['erin'],description:'完成一次可靠的探索',sourceRevisionIds:[]}))).text)
+    const changes=[{changeId:'care',personId:'erin',fieldId:'care',previousEventId:read.result.fields.find(f=>f.fieldId==='care').eventId,value:'敢于探索',causeEventIds:[cause.eventId],note:'有依据的变化'}]
+    const proposal=JSON.parse((await cmd(a,'modules run '+JSON.stringify({moduleId:'growth-review',input:{changes}}))).text)
+    assert.equal(JSON.parse((await cmd(a,'person show erin')).text).fields.find(f=>f.fieldId==='care').value,'谨慎')
+    await cmd(a,'person adopt '+JSON.stringify({candidateIds:[proposal.result.id]}));await cmd(a,'input 开始');await a.whenIdle();await f.rp.ready(a.id)
+    assert.equal(requests.length,1);assert.match(JSON.stringify(requests[0]),/敢于探索/);assert.match(JSON.stringify(requests[0]),/保留不确定性/)
+    assert.equal(f.rp.status(a.id).purpose.mode,mode);assert.equal(f.rp.status(a.id).memoryOptimization.packet,order==='standalone'?'standalone':'ultra-rp/v1')
+    await cmd(a,'modules disable growth-review');await assert.rejects(f.stream(a));assert.equal(requests.length,1)
+    observations.push({m3:true,order,mode,explicitCandidateOnly:true,actualRequests:1,automaticSummary:false})
+  }finally{await f.dispose()}
+})
+
 for (const order of ['standalone', 'engineering-first', 'rp-first']) test('Person binding in actual TGZ '+order, async () => {
   const load = async ({ctx}) => { await ctx.plugin(modules.ultra, {contextCompression:false,memoryMaxRequests:0,memoryMaxTokens:0}).await() }
   const f = await host({entityIds:['erin']}, {install:rpModule.installRpPlugin,...(order==='standalone'?{}:{[order==='engineering-first'?'before':'after']:load})}), requests=[]

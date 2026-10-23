@@ -83,7 +83,12 @@ test('R21 v1 with no tools upgrades with exact byte backup; tool history stays r
   for (const tools of [false, true]) {
     const f = await host()
     try {
-      const a = tools ? await prepared(f) : await f.create(); if (!tools) await f.command(a, 'start'); else await execute(f, a, 'rp_memory_status')
+      // Construct an actual pre-M3 session before generating historical packets.
+      // Merely changing schemaVersion on new runtime-bound history is not v1 data.
+      let a = await f.create(); await f.command(a,'start')
+      const legacy = await journal(f,a); await f.drop(a); delete legacy.data.runtimeBinding
+      legacy.sha256=sha(canonical(legacy.data));await fs.writeFile(journalPath(f,a),canonical(legacy));a=await f.resume(a)
+      if(tools){assert.equal((await f.command(a,'input MEMORY_FACT')).kind,'success');await a.whenIdle();await f.rp.ready(a.id);await execute(f,a,'rp_memory_status')}
       const j = await journal(f, a); await f.drop(a); j.data.schemaVersion = 1
       for (const s of [...Object.values(j.data.pending), ...Object.values(j.data.snapshots), ...Object.values(j.data.frames), ...Object.values(j.data.receipts).map(r => r.snapshot)]) { delete s.provenance; delete s.records; delete s.resultSha256 }
       j.sha256 = sha(canonical(j.data)); const bytes = canonical(j); await fs.writeFile(journalPath(f, a), bytes)

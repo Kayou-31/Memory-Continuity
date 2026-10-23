@@ -454,3 +454,86 @@ M0/M1 验证后继续 M2，仍为一个写入执行者、一个只读审阅者�
 M2 实际TGZ补验：`m2-actual-host.log` 退出0，**18/18**；运行命令为设置 RP_BUNDLES_ROOT=work/person-core-2026-10-23/m2-acceptance、RP_PERSON_BUNDLE=该目录/rp/package/lib/index.js 后执行 `node --test --test-concurrency=1 scripts/host-acceptance/dev3-companion.test.mjs test/rp-person-host.test.mjs`。新增人物成长在 standalone / Ultra先加载 / RP先加载均进入实际请求；工程归档未取得RP会话，自动摘要与压缩关闭。原始包哈希、SDK版本、每项观察与冷进程退出码在该目录 bundles.json、report.json、cold-*.log。审阅记录见 `PERSON-REVIEW-2026-10-23.md`。
 
 交付状态：**已完成 M0、M1、M2**（按上述首期范围）；**未完成 M3/M4及实时UI/技能/多人物社会/分段容量**；**未验证真实模型语义、生产长期运行、整套桌面交互与真实断电/日常profile迁移**。没有push、Release/npm发布或替换稳定包。
+
+## 2026-10-23 M3：用途、能力模块与双层约束
+
+本节更新上节的阶段状态。实际基线 `326f3dbf2d519357c5c21958f0d2170e3b13bb0c`；用户确认同时实施系统硬约束和用户人物/用途规则。一个代码执行者、一个只读审阅者，没有递归代理；构建、测试、打包全部串行。包名与版本仍为 `@dsh-external/dsh-ultra-rp-memory@0.1.0-dev.3`，本地开发结果未推送或发布。
+
+### 已实现与文件
+
+| 文件 | 修改原因与效果 |
+|---|---|
+| `src/rp/modules/contract.ts` | 四种用途 rp/companion/creation/project；固定内置模块声明、版本/核心协议/能力/输出类型/关闭行为；严格配置与完整 binding hash |
+| `src/rp/modules/runtime.ts` | 独立 runtime、调用内授权、同步撤销、有界读取与候选提交；实际返回对象+内容+原始 fence/记录 revision 认证，跨对象/跨 runtime/版本变化拒绝 |
+| `src/rp/modules/commands.ts` | mode/modules/constraints 用户命令；配置和执行分开，模块结果不自动进入模型历史 |
+| `src/rp/modules/marker.ts` | 独立配置撤销 marker；journal 保存失败保持冷恢复封锁，marker 失败后备写 blocked journal |
+| `src/rp/{memory,packet,host-journal,rp-plugin}.ts`、`src/rp-plugin.ts` | 独立 API 与类型导出；mandatory purposeRuntime；原始绑定贯穿 packet/工具帧；空 root 切换、取消与干净续接；保存失败不恢复活跃权限 |
+| `src/rp/person/changes.ts` | 抽出已有 propose 为窄接口，模块不接触采纳控制；复用原候选依赖/删除/前驱校验，没有新增事实库 |
+| `test/rp-modules.test.mjs`、`test/rp-modules-host.test.mjs` | 8项核心及7项真实SDK离线回归；覆盖配置、权限、回执、并发、完整预算、候选、冷恢复与故障 |
+| `test/rp-host-receipts.test.mjs` | v1夹具先建立真实无M3绑定的旧会话，避免把v2扩展伪装为v1；生产校验未放宽 |
+| `scripts/host-acceptance/dev3-companion.test.mjs` | 实际TGZ增加三种加载顺序下的用途/约束/模块候选/人工采纳与停用路径 |
+| README、人物用法、M3设计/计划/审阅记录、SOURCE-MANIFEST | 分发入口、操作说明、可复查证据与构建来源 |
+
+三个内置模块是 person-view、recall、growth-review，默认均关闭。用途是共享核心的配置框架，不代表四套完整产品。硬约束强制控制能力白名单、来源/版本、输出预算和候选边界；用户可进一步禁用能力、保护字段、限制记录数。自然语言人物规则明确为行为指引，不能放宽系统约束，不宣称已做语义冲突识别。
+
+### 回归与实际命令
+
+证据根目录：`work/person-m3-2026-10-23/`。下表均为真实退出码，失败日志保留。node 指固定 Node22 executable，npm 经本机 npm-cli.js 调用。
+
+| 实际命令/阶段 | 退出码与结果 | 日志 |
+|---|---|---|
+| `node --test --test-concurrency=1 test/rp-modules.test.mjs`，实现前 | 1，4/4缺少模块API | task1-red.log |
+| 同上，首轮实现 | 1，2通过2失败：测试误依赖字段顺序、raw store代理未绑定private receiver | task1-tests.log |
+| 同上，修正后 | 0，4/4 | task1-green.log |
+| `tsc -p tsconfig.json --noEmit --emitDeclarationOnly false` | 首次2（关系/目标实际使用supportEventIds），修正0 | task1-typecheck*.log |
+| `node --test --test-concurrency=1 test/rp-modules-host.test.mjs`，实现前 | 1，2/2缺宿主命令 | task2-red.log |
+| M3+person宿主定向 | 0，6/6；本轮typecheck首次2（randomUUID推断过窄），显式string后0 | task2-tests.log、task2-typecheck*.log |
+| 审阅回归：等待中篡改/撤销、冷恢复、完整回执预算 | RED退出1；修正后12/12退出0 | review-red.log、review-packet-red.log、review-cold-budget-red.log、review-green.log |
+| 配置竞争、marker自身失败、prepare替换runtime引用 | 各RED退出1，修复后定向退出0 | config-race-red.log、marker-red.log、prepare-race-red/green.log |
+| `node --test --test-concurrency=1 test/rp-modules-host.test.mjs test/rp-modules.test.mjs test/rp-host-lifecycle.test.mjs test/rp-person-host.test.mjs` | 0，27/27，之后另补prepare竞态1/1 | task2-green.log |
+| 首轮完整五命令 | typecheck/build/evaluate/pack均0；test为1，191/192；非法v1夹具已定位修正 | 根目录 final-commands.json及final-test.log |
+| `node --test --test-concurrency=1 --test-name-pattern='R21 v1 with no tools' test/rp-host-receipts.test.mjs` | 0，1/1；只证明修正夹具，非全量 | legacy-fixture-green.log |
+
+最终完整五命令由独立 runner 从头连续串行执行，开始于 **2026-10-23 12:24:35 UTC**。没有将定向重跑拼成全量：
+
+| 命令 | 退出码 | 实际结果 |
+|---|---:|---|
+| `npm run typecheck` | 0 | TypeScript类型检查 |
+| `npm run build` | 0 | JS bundle、声明、编辑器和源码manifest |
+| `npm test` | 0 | **192/192，0失败、0跳过、0取消**；测试报告70.73秒 |
+| `npm run evaluate:fixture` | 0 | 固定标注规则评测；没有运行模型，不是模型语义成绩 |
+| `npm pack --dry-run` | 0 | 独立npm包文件预检 |
+
+最终五命令原始日志与时间/退出码：`work/person-m3-2026-10-23/final-verification/final-commands.json`。Node **22.23.3**、npm **11.16.0**、TypeScript **5.9.3**、esbuild **0.25.12**；精确宿主 **DSH 0.2.1-rc.2/session format4、Cordis4.0.5、Schemastery3.18.5**。
+
+### 兼容与未验证边界
+
+- 独立运行；Ultra仍仅使用已有 `ultra-rp/v1` 排序适配。兼容范围限实际验收的 Ultra **0.6.1-dev.rp.1**、Memory/Decision **0.1.1-dev.rp.1**；其他版本不能据此宣称支持。
+- branch/global v1不变，人物workspace原reader屏障不变。journal保持v2，仅新增可选 runtimeBinding；旧会话不后补历史证明，需continue-clean启用M3。marker未知/缺失/撤销或绑定不匹配则封锁；recovery-only续接默认RP且模块关闭。无生产数据迁移或真实profile替换。
+- 用户规则是自然语言指引；硬约束不是模型语义质量保证。保护字段和禁用能力针对模块通道，可信用户原有手动人物操作仍由原核心规则控制。
+- marker与journal两条写入均失败且进程异常退出时，不能保证未落盘撤销跨崩溃保留；报告persistence_uncertain，当前进程保持封锁。已启动的候选持久化可能完成为未采纳候选，查看审阅队列处理；不会自动变成事实。无真实断电、磁盘损坏恢复或恶意本地代码隔离证明。
+- 模块回执是进程内原对象认证，不是可复制的授权令牌；原始fence变化即拒绝，需要重新调用。独立调用方须管理runtime.revoke与幂等key。有限检索模块不保存分页游标，完整分页继续用原检索API。
+- 未新增后台自动摘要、自动采纳、外部工具执行、原生压缩、strict POV或付费模型调用。项目用途不调用Ultra工程压缩；没有构造“真实执行过”的虚假经历。
+- M4长期体验、完整用途产品、任意第三方模块市场/代码加载器、实时管理UI、技能学习、多人物社会和分段容量仍未完成。M3没有新增浏览器UI；旧编辑器人工验证边界维持M2记录。真实模型人格/关系质量、生产长期性能和桌面端到端仍未验证；M0性能数据不能解释为M3新性能成绩。
+
+审阅过程见 `M3-REVIEW-2026-10-23.md`：单个只读审阅者；所有已确认P2补RED后修复，最后窄复核确认prepare引用竞态已关闭。包及SDK交付证据见本节后续实际TGZ验收记录。
+
+### M3 实际 TGZ 验收与最终状态
+
+`node work/person-m3-2026-10-23/pack-artifacts.mjs m3-final` 退出 **0**：实际 npm pack（不是发布）、tar 安全列表/解包、包文件数与 manifest 逐项 SHA-256 核验成功。产物 **128 文件**，manifest **86 条**；TGZ **575,708 bytes**，解包 **2,247,350 bytes**。运行代码、声明、编辑器与工作区当前 manifest 一致。
+
+实际包路径：`D:/Codex/2026-10-20/dsh-rp-memory-dev-3-https/outputs/person-m3-2026-10-23/m3-final/dsh-external-dsh-ultra-rp-memory-0.1.0-dev.3.tgz`
+
+SHA-256：`6b0de5a757f5e7fce47c4248bf6806ef860840b3ef07a49ecbfb66aeea6e7c16`。
+
+设置 `RP_BUNDLES_ROOT=work/person-m3-2026-10-23/m3-final` 和 `RP_PERSON_BUNDLE=work/person-m3-2026-10-23/m3-final/rp/package/lib/index.js` 后运行：
+
+```text
+node --test --test-concurrency=1 scripts/host-acceptance/dev3-companion.test.mjs test/rp-person-host.test.mjs test/rp-modules-host.test.mjs
+```
+
+退出 **0，28/28，0失败/跳过/取消，14.03秒**。日志 `work/person-m3-2026-10-23/actual-tgz-host.log`；同轮 `m3-final/report.json` 记录精确SDK、包哈希、加载顺序与观察，`cold-*.log` 为真实独立Node进程冷启动输出。原生session、命令、工具、journal和llm管线实际运行，终端是本地合成适配器；网络guard通过，不存在付费模型请求。
+
+新增实际包场景覆盖 companion standalone、project Ultra先加载、creation RP先加载；模块查看、完整来源回执、待审成长、用户采纳、用途/规则进入请求，以及停用后新请求拒绝。既有Ultra关闭优化、Memory/Decision各加载顺序、工程隔离、冷恢复和人物工具循环继续通过。
+
+**已完成：M3 首期用途与能力模块框架、双层约束、独立/兼容组合、恢复和并发回归。未完成：M4及完整用途产品、实时UI、第三方模块市场、技能/社会/分段容量。未验证：真实模型长期语义、生产长跑、完整桌面交互、真实断电及日常profile迁移。** 本地功能版本仍dev.3，未push、未发布Release/npm、未覆盖稳定版本。此验收段在包验证后追加；交付目录旁置RESULTS.md和证据ZIP包含最新报告，TGZ保持已测哈希不变。
