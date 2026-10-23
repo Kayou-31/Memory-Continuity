@@ -1,0 +1,33 @@
+TAP version 13
+# Subtest: native manual manager creates and edits real person, explicit proposal/adoption survives and disposal revokes HTTP
+not ok 1 - native manual manager creates and edits real person, explicit proposal/adoption survives and disposal revokes HTTP
+  ---
+  duration_ms: 102.5967
+  type: 'test'
+  location: '<REPO>\\test\\rp-management-host.test.mjs:9:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    invalid_record: Use person preview|confirm|show|use|edit|set-policy|propose|candidates|adopt|reject|timeline
+
+    'error' !== 'success'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'success'
+  actual: 'error'
+  operator: 'strictEqual'
+  stack: |-
+    ok (file:///<REPO>/test/rp-management-host.test.mjs:8:21)
+    TestContext.<anonymous> (file:///<REPO>/test/rp-management-host.test.mjs:14:82)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 479.203

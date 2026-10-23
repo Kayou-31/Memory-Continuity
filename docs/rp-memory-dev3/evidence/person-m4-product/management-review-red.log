@@ -1,0 +1,61 @@
+TAP version 13
+# Subtest: management requires original review, uses explicit writes, and shares person growth history
+ok 1 - management requires original review, uses explicit writes, and shares person growth history
+  ---
+  duration_ms: 1021.7211
+  type: 'test'
+  ...
+# Subtest: management refuses stale snapshots, request mutation, forged actions and revoked capabilities
+ok 2 - management refuses stale snapshots, request mutation, forged actions and revoked capabilities
+  ---
+  duration_ms: 505.852
+  type: 'test'
+  ...
+# Subtest: management snapshots cannot be rewritten by their caller
+not ok 3 - management snapshots cannot be rewritten by their caller
+  ---
+  duration_ms: 264.4874
+  type: 'test'
+  location: '<REPO>\\test\\rp-management.test.mjs:31:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected rejection.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'rejects'
+  stack: |-
+    async TestContext.<anonymous> (file:///<REPO>/test/rp-management.test.mjs:32:202)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: revocation during commit preparation prevents publication and a lost receipt can recover its original key
+not ok 4 - revocation during commit preparation prevents publication and a lost receipt can recover its original key
+  ---
+  duration_ms: 255.6282
+  type: 'test'
+  location: '<REPO>\\test\\rp-management.test.mjs:34:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    '撤权后' !== '林澈'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '林澈'
+  actual: '撤权后'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///<REPO>/test/rp-management.test.mjs:40:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 2
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2245.2463

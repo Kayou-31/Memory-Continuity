@@ -1,0 +1,23 @@
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: {"value":{"personId":"erin","originEventId":"person_8fab69fe690ccc14dd4a2009797ff5ef8e8091e303d9a3e9","fence":{"branchId":"branch_378f68084e444736a708341c1a2e982b","canonBindingsHash":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945","contextRevision":128,"deletionGeneration":1,"policyVersion":"rp.v1","sourceManifestHash":"fdf729a2ff6209e838eed970d977513defbe618f84cc0a819543f05bd2b7a943","visibilityRevision":0},"fields":[{"causeEventIds":["person_8fab69fe690ccc14dd4a2009797ff5ef8e8091e303d9a3e9"],"fieldId":"care","kind":"trait","note":"用户确认的初始人物定义","operation":"init","policy":"growable","previousEventId":null,"protocol":"person-core/v1","value":"谨慎信任","eventId":"person_274f6953686beebbc8cf15c07e837ec190168e1dd189bb89"},{"causeEventIds":["person_8fab69fe690ccc14dd4a2009797ff5ef8e8091e303d9a3e9"],"fieldId":"name","kind":"identity","note":"用户确认的初始人物定义","operation":"init","policy":"stable","previousEventId":null,"protocol":"person-core/v1","value":"林澈","eventId":"person_9ed589bec87221d1b168b7e67244a7069226cf27dbd1103c"},{"causeEventIds":["person_8fab69fe690ccc14dd4a2009797ff5ef8e8091e303d9a3e9"],"fieldId":"boundary","kind":"boundaries","note":"用户确认的初始人物定义","operation":"init","policy":"stable","previousEventId":null,"protocol":"person-core/v1","value":"不伪造经历","eventId":"person_d7a668919327696585f68e95ad49421d3bb9e9771c16eaaf"}],"relationships":[],"goals":[]}}
++ actual - expected
+
++ undefined
+- true
+
+    at must (file:///<REPO>/test/fixtures/rp/growth.mjs:11:35)
+    at file:///<REPO>/scripts/benchmarks/person-life.mjs:40:119
+    at async run (file:///<REPO>/scripts/benchmarks/person-life.mjs:8:58)
+    at async file:///<REPO>/scripts/benchmarks/person-life.mjs:39:2 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: true,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v22.23.3

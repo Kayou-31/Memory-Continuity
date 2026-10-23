@@ -1,0 +1,11 @@
+
+> @dsh-external/dsh-ultra-rp-memory@0.1.0-dev.3 typecheck
+> tsc -p tsconfig.json --noEmit --emitDeclarationOnly false
+
+src/rp/person/management.ts(34,131): error TS2352: Conversion of type 'EventPayload' to type '{ actorIds: string[]; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'actorIds' is missing in type '{ readonly kind: "preference_change"; readonly key: "language" | "person" | "dialogue_format" | "prose_style"; readonly value: string; }' but required in type '{ actorIds: string[]; }'.
+src/rp/person/management.ts(77,47): error TS2345: Argument of type '{ readonly ok: false; readonly code: ErrorCode; readonly message: string; } | { readonly ok: true; readonly value: InputFence; } | { readonly ok: true; readonly value: PrivacyDeletion; }' is not assignable to parameter of type 'Result<InputFence>'.
+  Type '{ readonly ok: true; readonly value: PrivacyDeletion; }' is not assignable to type 'Result<InputFence>'.
+    Type '{ readonly ok: true; readonly value: PrivacyDeletion; }' is not assignable to type '{ readonly ok: true; readonly value: InputFence; }'.
+      Types of property 'value' are incompatible.
+        Type 'PrivacyDeletion' is missing the following properties from type 'InputFence': branchId, contextRevision, sourceManifestHash, canonBindingsHash, and 3 more.

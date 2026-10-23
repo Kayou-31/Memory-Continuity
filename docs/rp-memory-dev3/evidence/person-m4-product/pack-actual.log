@@ -1,0 +1,34 @@
+{
+  "node": "v22.23.3",
+  "package": "@dsh-external/dsh-ultra-rp-memory",
+  "version": "0.2.0-dev.1",
+  "packageFiles": 210,
+  "manifestEntries": 96,
+  "bytes": 790429,
+  "unpackedBytes": 2849544,
+  "bundles": [
+    {
+      "id": "rp",
+      "path": "D:\\Codex\\2026-10-20\\dsh-rp-memory-dev-3-https\\outputs\\ultra-rp-memory-0.2.0-dev.1-2026-10-23\\final\\dsh-external-dsh-ultra-rp-memory-0.2.0-dev.1.tgz",
+      "sha256": "092f72405f447de312b993ab4417eb54b80030c9315da6476b18fa63ef0b450c"
+    },
+    {
+      "id": "ultra",
+      "sha256": "118e9f329e601b9841b6fa3b59004552ae4b2808b6a6ea54845bdf14b0c06dce",
+      "path": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\outputs\\rp-memory-0.1.0-dev.1\\dsh-external-dsh-ultra-mode-0.6.1-dev.rp.1.tgz"
+    },
+    {
+      "id": "memory",
+      "sha256": "9ddf227bdf9b5a52c4c7f7ae188a294c2c5805c274b9fe0f58b92b212c2397b9",
+      "path": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\outputs\\rp-memory-0.1.0-dev.1\\dsh-external-dsh-ultra-memory-0.1.1-dev.rp.1.tgz"
+    },
+    {
+      "id": "decision",
+      "sha256": "2db3afabeb6de27e6da7132e0c6bf776ac7485541b5752cb055025074c2c5bc8",
+      "path": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\outputs\\rp-memory-0.1.0-dev.1\\dsh-external-dsh-ultra-decision-0.1.1-dev.rp.1.tgz"
+    }
+  ],
+  "base": "<REPO>\\work\\person-m4-2026-10-23\\final",
+  "output": "D:\\Codex\\2026-10-20\\dsh-rp-memory-dev-3-https\\outputs\\ultra-rp-memory-0.2.0-dev.1-2026-10-23\\final",
+  "published": false
+}

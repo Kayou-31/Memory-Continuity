@@ -1,0 +1,224 @@
+{
+  "node": "v22.23.3",
+  "sdk": {
+    "packageVersions": {
+      "cordis": "4.0.5",
+      "schemastery": "3.18.5",
+      "dsh-agent": "0.2.1-rc.2",
+      "dsh-agent-loop": "0.2.1-rc.2",
+      "dsh-llm": "0.2.1-rc.2",
+      "dsh-session": "0.2.1-rc.2",
+      "dsh-system-prompt": "0.2.1-rc.2",
+      "dsh-tools": "0.2.1-rc.2",
+      "dsh-commands": "0.2.1-rc.2",
+      "dsh-session-projection": "0.2.1-rc.2",
+      "dsh-session-persistence-jsonl": "0.2.1-rc.2"
+    }
+  },
+  "manifests": [
+    {
+      "id": "rp",
+      "path": "D:\\Codex\\2026-10-20\\dsh-rp-memory-dev-3-https\\outputs\\ultra-rp-memory-0.2.0-dev.1-2026-10-23\\final\\dsh-external-dsh-ultra-rp-memory-0.2.0-dev.1.tgz",
+      "sha256": "092f72405f447de312b993ab4417eb54b80030c9315da6476b18fa63ef0b450c"
+    },
+    {
+      "id": "ultra",
+      "sha256": "118e9f329e601b9841b6fa3b59004552ae4b2808b6a6ea54845bdf14b0c06dce",
+      "path": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\outputs\\rp-memory-0.1.0-dev.1\\dsh-external-dsh-ultra-mode-0.6.1-dev.rp.1.tgz"
+    },
+    {
+      "id": "memory",
+      "sha256": "9ddf227bdf9b5a52c4c7f7ae188a294c2c5805c274b9fe0f58b92b212c2397b9",
+      "path": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\outputs\\rp-memory-0.1.0-dev.1\\dsh-external-dsh-ultra-memory-0.1.1-dev.rp.1.tgz"
+    },
+    {
+      "id": "decision",
+      "sha256": "2db3afabeb6de27e6da7132e0c6bf776ac7485541b5752cb055025074c2c5bc8",
+      "path": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\outputs\\rp-memory-0.1.0-dev.1\\dsh-external-dsh-ultra-decision-0.1.1-dev.rp.1.tgz"
+    }
+  ],
+  "observations": [
+    {
+      "agentStack": false,
+      "order": "standalone",
+      "actualRequests": 1,
+      "optimizer": "standalone",
+      "duplicateExperienceRemoved": false,
+      "engineeringCapture": false,
+      "nativeCompression": false
+    },
+    {
+      "agentStack": false,
+      "order": "engineering-first",
+      "actualRequests": 1,
+      "optimizer": "standalone",
+      "duplicateExperienceRemoved": false,
+      "engineeringCapture": false,
+      "nativeCompression": false
+    },
+    {
+      "agentStack": true,
+      "order": "engineering-first",
+      "actualRequests": 1,
+      "optimizer": "ultra-rp/v1",
+      "duplicateExperienceRemoved": true,
+      "engineeringCapture": false,
+      "nativeCompression": false
+    },
+    {
+      "agentStack": true,
+      "order": "rp-first",
+      "actualRequests": 1,
+      "optimizer": "ultra-rp/v1",
+      "duplicateExperienceRemoved": true,
+      "engineeringCapture": false,
+      "nativeCompression": false
+    },
+    {
+      "m3": true,
+      "order": "standalone",
+      "mode": "companion",
+      "explicitCandidateOnly": true,
+      "actualRequests": 1,
+      "automaticSummary": false
+    },
+    {
+      "m3": true,
+      "order": "engineering-first",
+      "mode": "project",
+      "explicitCandidateOnly": true,
+      "actualRequests": 1,
+      "automaticSummary": false
+    },
+    {
+      "m3": true,
+      "order": "rp-first",
+      "mode": "creation",
+      "explicitCandidateOnly": true,
+      "actualRequests": 1,
+      "automaticSummary": false
+    },
+    {
+      "personCore": true,
+      "personGrowth": true,
+      "order": "standalone",
+      "personId": "erin",
+      "actualRequests": 1,
+      "automaticSummary": false
+    },
+    {
+      "personCore": true,
+      "personGrowth": true,
+      "order": "engineering-first",
+      "personId": "erin",
+      "actualRequests": 1,
+      "automaticSummary": false
+    },
+    {
+      "personCore": true,
+      "personGrowth": true,
+      "order": "rp-first",
+      "personId": "erin",
+      "actualRequests": 1,
+      "automaticSummary": false
+    },
+    {
+      "companions": [
+        "memory"
+      ],
+      "order": "engineering-first",
+      "policyShared": true,
+      "disabled": true,
+      "authenticRequests": 1,
+      "bypassRejected": true,
+      "cleanEmptyHistory": true,
+      "sameBranch": true,
+      "closedBlocked": true
+    },
+    {
+      "companions": [
+        "memory"
+      ],
+      "order": "rp-first",
+      "policyShared": true,
+      "disabled": true,
+      "authenticRequests": 1,
+      "bypassRejected": true,
+      "cleanEmptyHistory": true,
+      "sameBranch": true,
+      "closedBlocked": true
+    },
+    {
+      "companions": [
+        "ultra",
+        "memory"
+      ],
+      "order": "engineering-first",
+      "policyShared": true,
+      "disabled": true,
+      "authenticRequests": 1,
+      "bypassRejected": true,
+      "cleanEmptyHistory": true,
+      "sameBranch": true,
+      "closedBlocked": true
+    },
+    {
+      "companions": [
+        "ultra",
+        "memory"
+      ],
+      "order": "rp-first",
+      "policyShared": true,
+      "disabled": true,
+      "authenticRequests": 1,
+      "bypassRejected": true,
+      "cleanEmptyHistory": true,
+      "sameBranch": true,
+      "closedBlocked": true
+    },
+    {
+      "companions": [
+        "decision",
+        "memory"
+      ],
+      "order": "engineering-first",
+      "policyShared": true,
+      "disabled": true,
+      "authenticRequests": 1,
+      "bypassRejected": true,
+      "cleanEmptyHistory": true,
+      "sameBranch": true,
+      "closedBlocked": true
+    },
+    {
+      "companions": [
+        "decision",
+        "memory"
+      ],
+      "order": "rp-first",
+      "policyShared": true,
+      "disabled": true,
+      "authenticRequests": 1,
+      "bypassRejected": true,
+      "cleanEmptyHistory": true,
+      "sameBranch": true,
+      "closedBlocked": true
+    },
+    {
+      "coldProcess": true,
+      "persistedAmbiguous": true,
+      "automaticResends": 0,
+      "results": [
+        {
+          "mode": "disabled",
+          "exitCode": 0
+        },
+        {
+          "mode": "enabled",
+          "exitCode": 0
+        }
+      ]
+    }
+  ],
+  "scope": "native SDK with local synthetic terminal; no real provider, desktop UI, or power-loss proof"
+}

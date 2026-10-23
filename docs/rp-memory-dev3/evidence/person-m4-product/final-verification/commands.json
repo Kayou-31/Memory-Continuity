@@ -1,0 +1,40 @@
+[
+  {
+    "name": "typecheck",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "node": "v22.23.3",
+    "start": "2026-10-23T13:33:17.807Z",
+    "end": "2026-10-23T13:33:19.628Z",
+    "exit": 0,
+    "signal": null
+  },
+  {
+    "name": "build",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "node": "v22.23.3",
+    "start": "2026-10-23T13:33:19.628Z",
+    "end": "2026-10-23T13:33:21.679Z",
+    "exit": 0,
+    "signal": null
+  },
+  {
+    "name": "test",
+    "command": [
+      "npm",
+      "test"
+    ],
+    "node": "v22.23.3",
+    "start": "2026-10-23T13:33:21.679Z",
+    "end": "2026-10-23T13:35:13.030Z",
+    "exit": 1,
+    "signal": null
+  }
+]

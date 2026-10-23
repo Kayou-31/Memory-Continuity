@@ -1,0 +1,48 @@
+TAP version 13
+# Subtest: management requires original review, uses explicit writes, and shares person growth history
+not ok 1 - management requires original review, uses explicit writes, and shares person growth history
+  ---
+  duration_ms: 71.6493
+  type: 'test'
+  location: '<REPO>\\test\\rp-management.test.mjs:6:1'
+  failureType: 'testCodeFailure'
+  error: 'management service missing'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///<REPO>/test/rp-management.test.mjs:8:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: management refuses stale snapshots, request mutation, forged actions and revoked capabilities
+not ok 2 - management refuses stale snapshots, request mutation, forged actions and revoked capabilities
+  ---
+  duration_ms: 50.1973
+  type: 'test'
+  location: '<REPO>\\test\\rp-management.test.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+
+      assert.ok(f.management)
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///<REPO>/test/rp-management.test.mjs:22:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 298.9028

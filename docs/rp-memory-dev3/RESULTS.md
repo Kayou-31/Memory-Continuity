@@ -26,7 +26,38 @@ M4 已完成离线范围：`scripts/benchmarks/person-life.mjs` 复用实际 cor
 
 使用和回退说明见 `docs/person-studio-storage.zh.md`。备份含旧正文且不受在线隐私删除管理；没有完成manifest的目录不可信。孤儿页保留，不自动GC；全历史扫描仍存在。本轮没有触及日常profile、后台功能或付费API。版本正式提升0.2.0-dev.1，包名已为 @dsh-external/dsh-ultra-rp-memory；协议、配置节点与数据路径保留兼容名称。
 
-未完成：完整用途产品、技能学习、多人物社会、自主生活、分支持久检索索引及更长历史UI。未验证：真实模型长期语义、连续多日使用、真实断电、日常profile迁移、任意Ultra版本；旧Luna/fixture不补足这些缺口。最后集中验收、实际包和GitHub状态将在本节后续追加。
+首次集中验收（2026-10-23 13:33:17 UTC）typecheck/build exit0，完整测试 **212/213、exit1**，无跳过/取消。唯一失败是4097条存储回归最后读取阶段，返回 `store_corrupt: Global metadata schema corrupt: Cannot use 'in' operator to search for 'value' in [object Unknown]`。同一代码独立跑存储整文件7/7、随后同规模状态连续20次读取exit0，未能复现。没有改校验、降低数据规模或切换Node去掩盖错误；根因未确定，不宣称已修复，不能推断为磁盘或V8故障。首轮日志完整保留在final-verification，单独复验在segments-suite-diagnosis/descriptor-diagnostic。
+
+GitHub仓库已正式更名 Kayou-31/dsh-ultra-rp-memory，仓库ID1427477600和PR #1保留；本地remote同步。没有修改main、发布npm/Release或覆盖旧附件。
+
+第二轮从头串行执行于 **2026-10-23 13:37:49–13:41:00 UTC**，没有修改生产校验或测试内容，准确命令/时间在 `work/person-m4-2026-10-23/final-verification-2/commands.json`：
+
+| 命令 | exit | 本次实际结果 |
+| --- | ---: | --- |
+| npm run typecheck | 0 | TypeScript检查 |
+| npm run build | 0 | 独立bundle、声明、离线编辑器、SOURCE-MANIFEST |
+| npm test | 0 | **213/213，0失败/跳过/取消，111.04秒**，单次完整运行 |
+| npm run evaluate:fixture | 0 | 固定标注规则，未调用模型 |
+| npm run evaluate:life | 0 | 四类4/4，120干扰，74秒，进程maxRSS103904KiB；3/3、0/3、3/3且带撤销证据的两个对照 |
+| npm pack --dry-run | 0 | 0.2.0-dev.1包预检，161文件；实际包另列 |
+
+最终浏览器复查尝试时内置标签页显示 `This page crashed`，其data:崩溃页被工具URL策略拦截；没有切换通道绕过。较早的真实浏览器创建/编辑/成长/关系/承诺流程和截图保留，但最后补的长ID换行与清空所有选择器未完成浏览器复查，不能标为已实测。临时演示Node进程已关闭，未留下自动服务。该崩溃根因未确定，不推断为插件或宿主缺陷。
+
+实际打包：`node work/person-m4-2026-10-23/pack-artifacts.mjs final` exit0，npm pack后tar列表/解包/逐项hash核验，**210文件、96条manifest、790429 bytes，解包2849544 bytes**。比集中dry-run的161文件多出本轮公开审核证据；src/lib/ui均与本次构建manifest一致。TGZ SHA256 **092f72405f447de312b993ab4417eb54b80030c9315da6476b18fa63ef0b450c**。已测包保持该哈希，不为补末尾验收结论重新压包；最终RESULTS与源码ZIP另附。
+
+设置 `RP_BUNDLES_ROOT=work/person-m4-2026-10-23/final`、`RP_PERSON_BUNDLE=work/person-m4-2026-10-23/final/rp/package/lib/index.js`，执行：
+
+```text
+node --test --test-concurrency=1 scripts/host-acceptance/dev3-companion.test.mjs test/rp-person-host.test.mjs test/rp-modules-host.test.mjs test/rp-management-host.test.mjs test/rp-storage-host.test.mjs
+```
+
+**exit0、31/31，0失败/跳过/取消，16.67秒**，日志actual-tgz-host.log。包括独立模式、Ultra前后加载、优化开关、Memory/Decision共存、实际原生会话/工具/JSONL冷恢复、人物/成长请求、管理创建编辑/采纳/关闭竞态、选定全局scope升级。为了确保关闭竞态用的是实际包，测试fixture增加已有RP_PERSON_BUNDLE环境选择分支；默认源测试行为不变，生产源码未改变。真实SDK搭配本地合成Terminal；仅管理页测试明确允许127.0.0.1，其他网络guard保持禁网。
+
+环境仍为Node22.23.3/npm11.16.0/TS5.9.3/esbuild0.25.12，DSH0.2.1-rc.2/session4、Cordis4.0.5、Schemastery3.18.5；Ultra仅0.6.1-dev.rp.1，Memory/Decision仅0.1.1-dev.rp.1。未安装新依赖。源码ZIP可独立构建；完整suite的旧reader测试需要完整Git历史，实际工程组合测试还需要精确TGZ附件。
+
+已测TGZ同时放入审核分支 `artifacts/0.2.0-dev.1/`，不发布Release/npm；最终交付在 `D:/Codex/2026-10-20/dsh-rp-memory-dev-3-https/outputs/ultra-rp-memory-0.2.0-dev.1-2026-10-23/final`，包含插件TGZ/ZIP、源码ZIP、证据ZIP、中文说明、最新RESULTS和SHA256。公开证据副本去除本机路径，原始失败记录保留，管理凭证/真实profile不上传。
+
+**已完成：M4离线/宿主范围、统一人物管理与成长审阅首期、显式全局分段存储、更名和开发包审核交付。未完成：完整用途产品、技能学习、多人物社会、自主生活、分支持久检索索引及更长历史UI。未验证：单次间歇对象检查异常根因、最终浏览器复查、真实模型长期语义、连续多日使用、真实断电、日常profile迁移、任意Ultra版本。** 旧Luna/fixture不补足这些缺口；历史章节的“尚未M4/实时UI/分段”按当时时点保留。
 
 执行日期：2026-10-20（America/Tijuana）；日志保留 UTC 时间戳。此文件记录实际执行，不把方案文件当作通过证据。
 

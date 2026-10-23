@@ -1,0 +1,196 @@
+TAP version 13
+# Subtest: Agent growth in actual TGZ standalone optimize=true
+ok 1 - Agent growth in actual TGZ standalone optimize=true
+  ---
+  duration_ms: 651.0751
+  type: 'test'
+  ...
+# Subtest: Agent growth in actual TGZ engineering-first optimize=false
+ok 2 - Agent growth in actual TGZ engineering-first optimize=false
+  ---
+  duration_ms: 572.9947
+  type: 'test'
+  ...
+# Subtest: Agent growth in actual TGZ engineering-first optimize=true
+ok 3 - Agent growth in actual TGZ engineering-first optimize=true
+  ---
+  duration_ms: 542.4503
+  type: 'test'
+  ...
+# Subtest: Agent growth in actual TGZ rp-first optimize=true
+ok 4 - Agent growth in actual TGZ rp-first optimize=true
+  ---
+  duration_ms: 542.783
+  type: 'test'
+  ...
+# Subtest: M3 module candidates and constraints in actual TGZ standalone
+ok 5 - M3 module candidates and constraints in actual TGZ standalone
+  ---
+  duration_ms: 606.9317
+  type: 'test'
+  ...
+# Subtest: M3 module candidates and constraints in actual TGZ engineering-first
+ok 6 - M3 module candidates and constraints in actual TGZ engineering-first
+  ---
+  duration_ms: 625.316
+  type: 'test'
+  ...
+# Subtest: M3 module candidates and constraints in actual TGZ rp-first
+ok 7 - M3 module candidates and constraints in actual TGZ rp-first
+  ---
+  duration_ms: 615.1402
+  type: 'test'
+  ...
+# Subtest: Person binding in actual TGZ standalone
+ok 8 - Person binding in actual TGZ standalone
+  ---
+  duration_ms: 523.9982
+  type: 'test'
+  ...
+# Subtest: Person binding in actual TGZ engineering-first
+ok 9 - Person binding in actual TGZ engineering-first
+  ---
+  duration_ms: 540.4503
+  type: 'test'
+  ...
+# Subtest: Person binding in actual TGZ rp-first
+ok 10 - Person binding in actual TGZ rp-first
+  ---
+  duration_ms: 531.6542
+  type: 'test'
+  ...
+# Subtest: R40 final TGZ memory engineering-first
+ok 11 - R40 final TGZ memory engineering-first
+  ---
+  duration_ms: 195.5989
+  type: 'test'
+  ...
+# Subtest: R40 final TGZ memory rp-first
+ok 12 - R40 final TGZ memory rp-first
+  ---
+  duration_ms: 181.1725
+  type: 'test'
+  ...
+# Subtest: R40 final TGZ ultra+memory engineering-first
+ok 13 - R40 final TGZ ultra+memory engineering-first
+  ---
+  duration_ms: 191.1799
+  type: 'test'
+  ...
+# Subtest: R40 final TGZ ultra+memory rp-first
+ok 14 - R40 final TGZ ultra+memory rp-first
+  ---
+  duration_ms: 189.2334
+  type: 'test'
+  ...
+# Subtest: R40 final TGZ decision+memory engineering-first
+ok 15 - R40 final TGZ decision+memory engineering-first
+  ---
+  duration_ms: 188.7175
+  type: 'test'
+  ...
+# Subtest: R40 final TGZ decision+memory rp-first
+ok 16 - R40 final TGZ decision+memory rp-first
+  ---
+  duration_ms: 189.2286
+  type: 'test'
+  ...
+# Subtest: R09 R40 cold process final bundles block disabled RP and recover ambiguous input without resend
+ok 17 - R09 R40 cold process final bundles block disabled RP and recover ambiguous input without resend
+  ---
+  duration_ms: 998.7886
+  type: 'test'
+  ...
+# Subtest: native manual manager creates and edits real person, explicit proposal/adoption survives and disposal revokes HTTP
+ok 18 - native manual manager creates and edits real person, explicit proposal/adoption survives and disposal revokes HTTP
+  ---
+  duration_ms: 1210.7394
+  type: 'test'
+  ...
+# Subtest: closing a manager while its listener opens prevents a late live endpoint
+ok 19 - closing a manager while its listener opens prevents a late live endpoint
+  ---
+  duration_ms: 63.9667
+  type: 'test'
+  ...
+# Subtest: native M3 modes and constraints reach terminal; switching history fails and module disable blocks old requests
+ok 20 - native M3 modes and constraints reach terminal; switching history fails and module disable blocks old requests
+  ---
+  duration_ms: 473.7037
+  type: 'test'
+  ...
+# Subtest: native M3 journal restores exact binding and missing proof enters recovery-only
+ok 21 - native M3 journal restores exact binding and missing proof enters recovery-only
+  ---
+  duration_ms: 244.3302
+  type: 'test'
+  ...
+# Subtest: failed module revocation journal cannot revive enabled capabilities from the old journal after cold restart
+ok 22 - failed module revocation journal cannot revive enabled capabilities from the old journal after cold restart
+  ---
+  duration_ms: 202.0119
+  type: 'test'
+  ...
+# Subtest: module disable revokes new requests while an actual SDK stream is paused
+ok 23 - module disable revokes new requests while an actual SDK stream is paused
+  ---
+  duration_ms: 179.3432
+  type: 'test'
+  ...
+# Subtest: cold M3 resume after multiple empty-root configuration changes can send with original proofs
+ok 24 - cold M3 resume after multiple empty-root configuration changes can send with original proofs
+  ---
+  duration_ms: 373.3555
+  type: 'test'
+  ...
+# Subtest: overlapping runtime configuration commands reject the second mutation before overwriting markers
+ok 25 - overlapping runtime configuration commands reject the second mutation before overwriting markers
+  ---
+  duration_ms: 79.0524
+  type: 'test'
+  ...
+# Subtest: failed revocation marker falls back to a blocked journal across cold restart
+ok 26 - failed revocation marker falls back to a blocked journal across cold restart
+  ---
+  duration_ms: 113.1596
+  type: 'test'
+  ...
+# Subtest: native person preview, confirmation and binding reach actual offline terminal; clean root retains one primary person
+ok 27 - native person preview, confirmation and binding reach actual offline terminal; clean root retains one primary person
+  ---
+  duration_ms: 828.1742
+  type: 'test'
+  ...
+# Subtest: native journal resumes original person proof; removed proof is recovery-only with no backfill
+ok 28 - native journal resumes original person proof; removed proof is recovery-only with no backfill
+  ---
+  duration_ms: 379.2655
+  type: 'test'
+  ...
+# Subtest: person binding survives actual SDK read-tool loop and cold resume
+ok 29 - person binding survives actual SDK read-tool loop and cold resume
+  ---
+  duration_ms: 889.6027
+  type: 'test'
+  ...
+# Subtest: native person growth review, policy and timeline reach the packaged request path
+ok 30 - native person growth review, policy and timeline reach the packaged request path
+  ---
+  duration_ms: 672.8742
+  type: 'test'
+  ...
+# Subtest: native manual storage upgrade changes only selected global scope with verified backup and no model calls
+ok 31 - native manual storage upgrade changes only selected global scope with verified backup and no model calls
+  ---
+  duration_ms: 143.4036
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 31
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 16672.2319

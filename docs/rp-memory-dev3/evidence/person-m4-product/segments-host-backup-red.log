@@ -1,0 +1,75 @@
+TAP version 13
+# Subtest: segmented global upgrade backs up verified v1, reuses pages, survives cold read and rejects corruption/downgrade
+ok 1 - segmented global upgrade backs up verified v1, reuses pages, survives cold read and rejects corruption/downgrade
+  ---
+  duration_ms: 116.0765
+  type: 'test'
+  ...
+# SEGMENT_SAMPLE {"ms":1226.9828,"maxRSSKiB":192640,"pages":17,"legacyBytes":3345108}
+# Subtest: segmented capacity allows cumulative metadata beyond legacy publish limit; cold controls preserve history
+ok 2 - segmented capacity allows cumulative metadata beyond legacy publish limit; cold controls preserve history
+  ---
+  duration_ms: 1401.3567
+  type: 'test'
+  ...
+# Subtest: backup failure cannot activate segments; consecutive seal failures recover idempotently after cold restart
+ok 3 - backup failure cannot activate segments; consecutive seal failures recover idempotently after cold restart
+  ---
+  duration_ms: 106.4618
+  type: 'test'
+  ...
+# Subtest: a source disappearing during backup cannot produce a completed migration
+not ok 4 - a source disappearing during backup cannot produce a completed migration
+  ---
+  duration_ms: 43.32
+  type: 'test'
+  location: '<REPO>\\test\\rp-global-segments.test.mjs:44:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"ok":true,"value":{"deletionGeneration":0,"scope":{"kind":"world","profileId":"profile_dd94f0d9b70b4021a9754168d631bb2b","worldId":"large"},"scopeRevision":2,"visibilityRevision":0}}
+
+    true !== false
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: false
+  actual: true
+  operator: 'strictEqual'
+  stack: |-
+    deny (file:///<REPO>/test/fixtures/rp/growth.mjs:12:43)
+    TestContext.<anonymous> (file:///<REPO>/test/rp-global-segments.test.mjs:47:6)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: native manual storage upgrade changes only selected global scope with verified backup and no model calls
+not ok 5 - native manual storage upgrade changes only selected global scope with verified backup and no model calls
+  ---
+  duration_ms: 96.7284
+  type: 'test'
+  location: '<REPO>\\test\\rp-storage-host.test.mjs:8:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    invalid_record: Unknown global control
+
+    'error' !== 'success'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'success'
+  actual: 'error'
+  operator: 'strictEqual'
+  stack: |-
+    ok (file:///<REPO>/test/rp-storage-host.test.mjs:7:21)
+    TestContext.<anonymous> (file:///<REPO>/test/rp-storage-host.test.mjs:10:152)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 3
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2314.4485

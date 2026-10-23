@@ -42,7 +42,7 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
     if (typeof v !== "number" || !Number.isSafeInteger(v) || v < min) invalid("safe integer");
   }
   var MAX_RP_JSON_BYTES = 4194304;
-  function cloneInput(input2, maxBytes = MAX_RP_JSON_BYTES, capacityError = false) {
+  function cloneInput(input2, maxBytes = MAX_RP_JSON_BYTES, capacityError = false, maxArrayLength = 4096) {
     const visit = (v, depth) => {
       if (depth > 24) invalid("record depth");
       if (v === null || typeof v === "boolean") return;
@@ -56,7 +56,7 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
       }
       if (!v || typeof v !== "object") invalid("JSON value");
       if (Array.isArray(v)) {
-        if (v.length > 4096) invalid("array size");
+        if (v.length > maxArrayLength) invalid("array size");
         v.forEach((entry2) => visit(entry2, depth + 1));
         return;
       }

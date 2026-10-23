@@ -23,7 +23,7 @@ test('native manual manager creates and edits real person, explicit proposal/ado
  }finally{await f.dispose()}
 })
 test('closing a manager while its listener opens prevents a late live endpoint',async()=>{
- const f=await host(),original=Server.prototype.listen;let release,enter;const gate=new Promise(r=>release=r),entered=new Promise(r=>enter=r)
+ const f=await host({},bundle?{install:bundle.installRpPlugin}:{}),original=Server.prototype.listen;let release,enter;const gate=new Promise(r=>release=r),entered=new Promise(r=>enter=r)
  try{const a=await f.create();ok(await f.command(a,'start'));Server.prototype.listen=function(...args){const done=args.pop();args.push(async()=>{enter();await gate;done()});return original.apply(this,args)}
   const pending=f.command(a,'person manage');await entered;ok(await f.command(a,'person manage-close'));release();assert.equal((await pending).kind,'error')
  }finally{release?.();Server.prototype.listen=original;await f.dispose()}

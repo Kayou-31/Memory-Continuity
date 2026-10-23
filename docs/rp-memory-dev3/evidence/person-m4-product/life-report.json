@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "kind": "person-life-offline",
+  "created": "2026-10-23T13:40:59.346Z",
+  "node": "v22.23.3",
+  "scenarioCount": 4,
+  "historyDistractors": 120,
+  "observations": [
+    {
+      "name": "identity-growth-and-expiring-context",
+      "passed": true,
+      "ms": 65424.4141
+    },
+    {
+      "name": "directional-relationship-and-promise",
+      "passed": true,
+      "ms": 3576.920199999993
+    },
+    {
+      "name": "retcon-privacy-and-life-branch-isolation",
+      "passed": true,
+      "ms": 2487.402900000001
+    },
+    {
+      "name": "module-revocation-and-cold-reconstruction",
+      "passed": true,
+      "ms": 1306.852899999998
+    }
+  ],
+  "comparison": {
+    "label": "annotated evidence availability, not generated answers",
+    "sameInput": true,
+    "arms": {
+      "verifiedMemory": {
+        "total": 3,
+        "supported": 3,
+        "unsupported": 0,
+        "missing": 0,
+        "duplicates": 0,
+        "unknown": 0,
+        "semanticQuality": "unverified",
+        "revokedEvidenceExposed": false
+      },
+      "recentWindow": {
+        "total": 3,
+        "supported": 0,
+        "unsupported": 0,
+        "missing": 3,
+        "duplicates": 0,
+        "unknown": 0,
+        "semanticQuality": "unverified",
+        "revokedEvidenceExposed": false
+      },
+      "unfilteredArchive": {
+        "total": 3,
+        "supported": 3,
+        "unsupported": 0,
+        "missing": 0,
+        "duplicates": 0,
+        "unknown": 0,
+        "semanticQuality": "unverified",
+        "revokedEvidenceExposed": true
+      }
+    }
+  },
+  "durationMs": 73920.8678,
+  "maxRssKiB": 103904,
+  "paidCalls": 0,
+  "modelQuality": "unverified",
+  "limits": [
+    "Single synthetic story, no statistical or production latency claims",
+    "No real model or multi-day run",
+    "Archive control retains synthetic benchmark observations only; not a production recovery path"
+  ]
+}

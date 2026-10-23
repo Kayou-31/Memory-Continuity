@@ -1,0 +1,81 @@
+- banner:
+  - text: 由你定义起点，让经历留下原因
+  - heading "Ultra-RP-Memory 人物工作室" [level=1]
+  - button "刷新记录"
+  - button "关闭管理入口"
+- main:
+  - status: 已写入。旧聊天如果提示上下文失效，请干净续接。
+  - text: 当前查看人物
+  - combobox "当前查看人物":
+    - option "林澈 · erin" [selected]
+  - button "创建人物"
+  - generic: 人生线 branch_c4c2871a4b594d3aa61defa8e61e502a · 版本 6 · companion
+  - navigation "人物管理":
+    - button "人物档案"
+    - button "经历与时间线"
+    - button "关系与目标" [pressed]
+    - button "成长审阅"
+    - button "用途与规则"
+  - heading "定向关系" [level=2]
+  - article:
+    - heading "erin → bea · trust" [level=3]
+    - generic: "\"愿意托付\""
+    - text: 支持事件 agent_d855355b59adcf96e27196dc8fa0a1e2911cf35f89321a3b
+  - article:
+    - text: 关系对象
+    - combobox "关系对象":
+      - option "bea" [selected]
+      - option "key"
+    - text: 关系类型
+    - combobox "关系类型":
+      - option "信任" [selected]
+      - option "亲近"
+      - option "忠诚"
+      - option "紧张"
+      - option "亏欠"
+      - option "承诺关系"
+      - option "亲属"
+      - option "同盟"
+      - option "竞争"
+    - text: 新的关系状态
+    - textbox "新的关系状态"
+    - text: 变化理由
+    - textbox "变化理由"
+    - generic "选择支持这次变化的经历（可多选）"
+    - button "预览关系变化"
+  - heading "目标与承诺" [level=2]
+  - article:
+    - heading "把钥匙归还阿岚" [level=3]
+    - generic: "{ \"category\": \"promise\", \"goalId\": \"goal_bc43aac7e1174bcfa0f3fbecce6f51e2\", \"nextAction\": \"前往钟楼\", \"objective\": \"把钥匙归还阿岚\", \"progress\": 0, \"status\": \"paused\", \"targetEntityId\": \"bea\" }"
+    - text: 新状态
+    - combobox "新状态":
+      - option "进行中"
+      - option "暂停" [selected]
+      - option "完成"
+      - option "放弃"
+    - text: 进度 0–100
+    - textbox "进度 0–100": "0"
+    - text: 下一步
+    - textbox "下一步": 前往钟楼
+    - text: 变化理由
+    - textbox "变化理由"
+    - generic "选择支持这次变化的经历（可多选）"
+    - button "预览目标变化"
+  - article:
+    - text: 新目标类别
+    - combobox "新目标类别":
+      - option "目标" [selected]
+      - option "对某人的承诺"
+    - text: 承诺对象
+    - combobox "承诺对象":
+      - option "bea" [selected]
+      - option "key"
+    - text: 想完成什么
+    - textbox "想完成什么"
+    - text: 下一步
+    - textbox "下一步"
+    - text: 建立理由
+    - textbox "建立理由"
+    - generic "选择支持这次变化的经历（可多选）"
+    - button "预览新目标"
+  - paragraph: 手动刷新 · 先预览后确认 · 无后台自动采纳。页面只展示当前授权人生线；最近经历与时间线各展示最多 200 条。
