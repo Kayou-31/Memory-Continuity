@@ -1,5 +1,17 @@
 # DSH RP Memory 0.1.0-dev.3 实际执行报告
 
+## 当前追加：2026-10-23 M4 与产品化
+
+以下历史段落按执行时点保留。M0–M3 已推送 PR #1（9eda3d0）；后文历史“未 push”不是当前 GitHub 状态。
+
+M4 已完成离线范围：`scripts/benchmarks/person-life.mjs` 复用实际 core，在120段干扰经历下运行人物/情境、定向关系/承诺、Retcon/隐私/分支、模块撤销/冷读四类故事，4/4断言通过。`life-report.json` 记录 72.28秒、maxRSS 117432 KiB（单样本整个进程），不是吞吐/p95。相同故事的三个证据窗口：有效记忆3/3、最近8条0/3、未过滤存档3/3但暴露撤销证据；这仅为3项标注证据可用性，不是模型回答或人格质量。
+
+`test/rp-life-evaluation.test.mjs` 先因缺scorer RED，完成后2/2；同source无关句子、错误revision、未返回证据、错误事实、重复断言分别处理。真实SDK新增 `test/rp-life-host.test.mjs`：12次干净续接保留人物、重建宿主、停用模块后下游不再收到请求，1/1。所有输出为本地合成Terminal，网络guard启用，无付费调用。
+
+证据：`work/person-m4-2026-10-23/commands.jsonl` 和对应日志。life-first exit1（评测脚本错误使用Result包装模块API），查实际接口后修正，life-corrected exit0；life-host首次exit1（测试fixture的drop不能释放插件创建的root），改用实际session flush和宿主销毁，life-host-corrected exit0。未降低生产校验。此处不代表最终全量通过，最终命令另记。
+
+未验证：真实模型长期语义、连续多日使用、真实断电、日常profile迁移；旧Luna/fixture不补足这些缺口。统一管理与长期存储进行中。
+
 执行日期：2026-10-20（America/Tijuana）；日志保留 UTC 时间戳。此文件记录实际执行，不把方案文件当作通过证据。
 
 **更新：** 本文保留首次实现和 Luna 补验的历史结果；2026-10-22 的审查与 store 重构见“第二代审查与局部重构”和 [审查报告](REVIEW-2026-10-22.md)。之后用户确认新名称与独立使用定位，最新入口命名及验证见末节“Ultra RP Memory 命名与独立使用”。Luna 补验当时没有修改生产源码；此后重构和入口命名修改各自记录，没有开启任何自动能力。

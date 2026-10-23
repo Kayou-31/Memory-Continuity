@@ -54,7 +54,8 @@
     "build": "node scripts/build.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit --emitDeclarationOnly false",
     "test": "node --test --test-concurrency=1 test/*.test.mjs",
-    "evaluate:fixture": "node scripts/benchmarks/rp-memory.mjs --mode fixture --corpus benchmarks/rp/golden.jsonl --output fixture-report.json"
+    "evaluate:fixture": "node scripts/benchmarks/rp-memory.mjs --mode fixture --corpus benchmarks/rp/golden.jsonl --output fixture-report.json",
+    "evaluate:life": "node scripts/benchmarks/person-life.mjs"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.5",
