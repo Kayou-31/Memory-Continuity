@@ -1,0 +1,43 @@
+{
+  "failedArchive": {
+    "producer": "git archive --format=zip (default compression)",
+    "gitVersion": "2.54.0.windows.1",
+    "commit": "40ea0eaf5844b15b9cde8611463ce88aa22d31b1",
+    "sha256": "365ec4574a72c3de880d32aed2f8bda608a52db6f1b9e1038e371776ae33b594",
+    "files": 264,
+    "affectedFile": "docs/rp-memory-dev3/LUNA-RESULTS.json",
+    "dotNetSha256CheckExit": 1,
+    "extractedFileSha256": "bc98c4158f92697a807f0c413b3fd812e30bbe9c20ac7db72aa7660c168be5f9",
+    "expectedFileSha256": "3944701e339d441ae55c8d3cdd25f53f10edff7c5a66a04dc15b58226e8f8cce",
+    "independentReader": "Python 3.13.15 zipfile",
+    "independentReaderExit": 1,
+    "independentReaderError": "Bad CRC-32 for file 'ultra-rp-memory-0.2.0-dev.1/docs/rp-memory-dev3/LUNA-RESULTS.json'",
+    "otherFiles": "No differences or CRC errors reported for the other 263 entries",
+    "excludedFromRelease": true,
+    "retainedLocally": "work/release-02-2026-10-23/source-mismatch-40ea0ea.zip"
+  },
+  "repositoryChecks": {
+    "workingTree": "clean",
+    "gitHashObjectAndHeadBlob": "c532b4df5eb3e188f010c009598c05509187695e",
+    "command": "git fsck --no-reflogs --full",
+    "exit": 0,
+    "result": "No corrupt objects; only dangling blobs"
+  },
+  "replacementAtSameCommit": {
+    "producer": "git archive --format=zip -0 (stored entries, no deflate)",
+    "sourceFiles": 264,
+    "dotNetFileSetAndSha256Exit": 0,
+    "pythonCrcAndSha256Exit": 0,
+    "sourceSha256": "15a9561fd563ba4890b3710144c7fc2cd2514cc853e9c33c0114af029cd99a6c",
+    "evidenceFiles": 90,
+    "evidencePythonCrcAndSha256Exit": 0,
+    "evidenceSha256": "a1163479086f270c2311a8b9ff8c3a7288cb84410e88d021df112c199c6a77bd"
+  },
+  "finalArchivePolicy": "Only documentation/evidence added after this check. Final source and evidence archives must pass complete file-set, CRC and SHA-256 verification again; final hashes are in release-verification.json and SHA256SUMS.txt.",
+  "rootCause": "Unresolved; no evidence links this failure to either the TypeScript process crash or the storage descriptor failure.",
+  "separatePreparationCommandError": {
+    "exit": 1,
+    "reason": "PowerShell passed an inline Join-Path expression incorrectly to git archive --output, so Git treated the destination path as an object name.",
+    "correction": "Evaluate the output path in a separate variable before passing it as an argument. No product code was changed."
+  }
+}
