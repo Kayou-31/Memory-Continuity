@@ -1,15 +1,27 @@
 import type { JsonValue, SemanticEvent } from './types.js'
-import { denied, id, invalid, object, RpError, text } from './schema.js'
+import { denied, id, integer, invalid, object, RpError, text } from './schema.js'
 
 export interface GrowthValue {
-  protocol: 'agent-memory/v1'; channel: 'state' | 'relationship'; value: JsonValue
+  protocol: 'agent-memory/v1'; channel: 'state' | 'relationship' | 'goal'; value: JsonValue
   previousEventId: string | null; causeEventIds: string[]; note: string
+}
+export interface GoalValue {
+  goalId: string; category: 'task' | 'promise'; objective: string; status: 'active' | 'paused' | 'completed' | 'abandoned'
+  progress: number; nextAction: string; targetEntityId?: string
+}
+export function goalValue(input: unknown): GoalValue {
+  const g = object(input, ['goalId', 'category', 'objective', 'status', 'progress', 'nextAction'], ['targetEntityId'])
+  id(g.goalId); text(g.objective, 2048); text(g.nextAction, 2048, true); integer(g.progress)
+  if (!['task', 'promise'].includes(g.category) || !['active', 'paused', 'completed', 'abandoned'].includes(g.status) || g.progress > 100 || (g.status === 'completed' && g.progress !== 100)) invalid('goal lifecycle')
+  if (g.category === 'promise') id(g.targetEntityId); else if (g.targetEntityId !== undefined) invalid('task promise target')
+  return g as GoalValue
 }
 export function growthValue(event: SemanticEvent): GrowthValue | null {
   const p = event.payload, raw = p.kind === 'state_change' ? p.after : p.kind === 'relationship_change' ? p.value : null
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !('protocol' in raw) || typeof raw.protocol !== 'string' || !raw.protocol.startsWith('agent-memory/')) return null
   const g = object(raw, ['protocol', 'channel', 'value', 'previousEventId', 'causeEventIds', 'note'])
-  if (g.protocol !== 'agent-memory/v1' || g.channel !== (p.kind === 'state_change' ? 'state' : 'relationship')) invalid('growth protocol/channel')
+  if (g.protocol !== 'agent-memory/v1' || (g.channel === 'goal' ? p.kind !== 'state_change' || !['task', 'promise'].includes(p.key) : g.channel !== (p.kind === 'state_change' ? 'state' : 'relationship'))) invalid('growth protocol/channel')
+  if (g.channel === 'goal' && p.kind === 'state_change' && goalValue(g.value).category !== p.key) invalid('goal category')
   if (g.previousEventId !== null) id(g.previousEventId)
   if (!Array.isArray(g.causeEventIds) || !g.causeEventIds.length || g.causeEventIds.length > 32 || new Set(g.causeEventIds).size !== g.causeEventIds.length) invalid('growth causes')
   g.causeEventIds.forEach(id); text(g.note, 2048)
@@ -18,8 +30,12 @@ export function growthValue(event: SemanticEvent): GrowthValue | null {
 }
 export function growthSlot(event: SemanticEvent): string | null {
   const p = event.payload
-  return p.kind === 'state_change' || p.kind === 'canon_assertion' ? JSON.stringify(['state', event.epistemic, event.beliefHolderId ?? null, p.subjectId, p.key])
+  return p.kind === 'state_change' || p.kind === 'canon_assertion' ? JSON.stringify(['state', event.epistemic, event.beliefHolderId ?? null, p.subjectId, projectedStateKey(event)])
     : p.kind === 'relationship_change' ? JSON.stringify(['relationship', event.epistemic, event.beliefHolderId ?? null, p.fromId, p.toId, p.relation]) : null
+}
+export function projectedStateKey(event: SemanticEvent): string {
+  const p = event.payload, g = growthValue(event)
+  return g?.channel === 'goal' ? goalValue(g.value).category + ':' + goalValue(g.value).goalId : 'key' in p ? p.key : ''
 }
 export function currentGrowthHeads(events: readonly SemanticEvent[]): SemanticEvent[] {
   const previous = new Set(events.map(e => growthValue(e)?.previousEventId).filter((id): id is string => !!id))
@@ -39,5 +55,15 @@ export function checkGrowthTransition(event: SemanticEvent, history: readonly Se
   for (const causeId of g.causeEventIds) {
     const cause = history.find(e => e.id === causeId)
     if (!cause || cause.payload.kind !== 'occurrence' || cause.epistemic !== 'world' || cause.acceptedSeq > event.acceptedSeq) invalid('growth requires accepted world experiences')
+  }
+  if (g.channel === 'goal') {
+    const next = goalValue(g.value), previous = heads[0] && growthValue(heads[0])
+    if (!previous) { if (next.status !== 'active' || next.progress !== 0) invalid('new goal must start active at zero') }
+    else {
+      const old = goalValue(previous.value)
+      if (['completed', 'abandoned'].includes(old.status)) invalid('terminal goal requires a distinct new goal')
+      if (old.objective !== next.objective || old.targetEntityId !== next.targetEntityId || next.progress < old.progress) invalid('goal identity or regressing progress')
+      if ((old.status === 'paused' || next.status === 'paused') && next.progress !== old.progress) invalid('resume goal before advancing progress')
+    }
   }
 }

@@ -1,7 +1,7 @@
 /** Pure reconstruction from already authorized, active events. No model, clock,
  * filesystem, implicit co-presence knowledge or last-timestamp conflict winner. */
 import type { ClaimAssessment, InputFence, JsonValue, ProjectionResult, SemanticEvent, SourceSpan, StateProjection, Viewpoint } from './types.js'
-import { currentGrowthHeads, projectedEventValue } from './growth-format.js'
+import { currentGrowthHeads, projectedEventValue, projectedStateKey } from './growth-format.js'
 
 const stable = (v: unknown): string => v === null || typeof v !== 'object' ? JSON.stringify(v) : Array.isArray(v) ? '[' + v.map(stable).join(',') + ']' : '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + stable((v as Record<string, unknown>)[k])).join(',') + '}'
 const unique = (items: readonly string[]) => [...new Set(items)].sort()
@@ -18,8 +18,8 @@ export function reduceEvents(input: readonly SemanticEvent[], fence: InputFence)
     const p = e.payload
     if (p.kind === 'state_change' || p.kind === 'canon_assertion' || p.kind === 'preference_change') {
       const subjectId = p.kind === 'preference_change' ? 'preference' : p.subjectId
-      const key = stable([e.epistemic, e.beliefHolderId ?? null, subjectId, p.key])
-      const group = groups.get(key) ?? { subjectId, key: p.key, events: [], values: [] }
+      const stateKey = projectedStateKey(e), key = stable([e.epistemic, e.beliefHolderId ?? null, subjectId, stateKey])
+      const group = groups.get(key) ?? { subjectId, key: stateKey, events: [], values: [] }
       group.events.push(e); group.values.push(projectedEventValue(e)); groups.set(key, group)
     } else if (p.kind === 'knowledge_change' && e.epistemic === 'world') {
       const key = stable([p.knowerId, p.claimId]); know.set(key, [...(know.get(key) ?? []), e])
@@ -57,7 +57,7 @@ export function reduceEvents(input: readonly SemanticEvent[], fence: InputFence)
   const claims = active.filter(e => e.payload.kind === 'state_change' || e.payload.kind === 'canon_assertion').map(e => {
     const p = e.payload
     if (p.kind !== 'state_change' && p.kind !== 'canon_assertion') throw new Error('unreachable claim')
-    return { claimEventId: e.id, ...assessClaim({ state }, { subjectId: p.subjectId, key: p.key, value: projectedEventValue(e), epistemic: e.epistemic, ...(e.beliefHolderId ? { beliefHolderId: e.beliefHolderId } : {}) }) }
+    return { claimEventId: e.id, ...assessClaim({ state }, { subjectId: p.subjectId, key: projectedStateKey(e), value: projectedEventValue(e), epistemic: e.epistemic, ...(e.beliefHolderId ? { beliefHolderId: e.beliefHolderId } : {}) }) }
   })
   return { state, claims, conflicts, knowledge, relationships }
 }

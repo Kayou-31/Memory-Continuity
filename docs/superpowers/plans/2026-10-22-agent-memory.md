@@ -21,9 +21,9 @@
 - [x] F5 / A6：统一命令 JSON 解析，将语法/结构错误转 invalid_record，不封锁健康会话；真实 I/O 故障仍 fail-closed。
 - [x] F6 / A7：命令 grant 先持久化草案再激活内存；失败清理/撤销临时授权，重试与冷重启验证。不在 coordinator 内嵌套 coordinator。
 - [x] F7 / A8：诊断状态区分未绑定、健康绑定和故障绑定；原生 ready/status 一致性回归。
-- [ ] L1：细化并实现有界长期经历检索、中文词项/命中摘录与上下文选择，保留固定分页、来源证明和并发前后版本检查；先写跨章节固定语料。
+- [x] L1：细化并实现有界长期经历检索、中文词项/命中摘录与上下文选择，保留固定分页、来源证明和并发前后版本检查；先写跨章节固定语料。
 - [x] L2：实现有来源的正常状态/关系迁移，保留前史与因果，拒绝陈旧前提/跨分支/无依据覆盖，retcon/删除后能重新构建。
-- [ ] L3：实现长期目标/承诺生命周期与经历关联，提供明确控制命令/查询，纳入 packet/检索和持久化恢复；模型只能提出建议，不能自行采纳。
+- [x] L3：实现长期目标/承诺生命周期与经历关联，提供明确控制命令/查询，纳入 packet/检索和持久化恢复；模型只能提出建议，不能自行采纳。
 - [ ] L4：实现可选 Ultra 适配层，以授权 RP 视图作为唯一输入，独立模式始终可用；精确 SDK 下验证有/无兼容 Ultra、加载顺序、预算和旧历史拒绝。
 - [ ] V：只读全分支复审、一次串行 typecheck/build/test/evaluate:fixture/pack dry-run、实际新包宿主验证、文档与 RESULTS 更新。声明真实模型、UI、长期运行及未覆盖范围。
 
@@ -54,3 +54,6 @@
 - L2 设计裁决：在既有 v1 state_change/relationship_change 的 JSON value 中使用 protocol=agent-memory/v1 包装，包含 previousEventId、causeEventIds、note、value；不改变普通 before 元数据行为，不以时间或最后写入解决冲突。store 提交时校验当前前驱和来源覆盖；依赖使用已有 dependencyIds，因此 retcon/删除递归失效、固定分支继承仍适用。新 reader 展开当前值，旧 reader 可读格式但不具备成长投影语义，不承诺语义降级兼容。
 
 - L2：服务缺失 0/3 先红；成长服务、锁内前驱/因果验证和 reducer 当前值展开后，growth+branch 29/29 exit0。补充隐私删除闭包与 null 边界 4/4 exit0，typecheck exit0。保留普通 before 不能解决冲突的原回归。
+
+- L3：goal 生命周期基线 0/2 先红；独立 task/promise 按 goalId 分组、完整状态机、显式进展后 goals+growth 6/6 exit0。原生 agent 命令先红，实现后 host+goals 3/3 exit0；真实 AgentLoop 请求包含目标与受限经历摘录，模型仍只有三个只读工具。packet 可选经历最多8条，共用 soft budget；当前目标始终属于可验证的状态投影。
+- L4 裁决：已验证 Ultra 0.6.1-dev.rp.1 无对 RP 开放的纯算法接口，工程 memory 明确跳过 RP。实现可选 ultra-rp/v1 排序适配协议，RP 提供已授权候选并验证返回 ID；兼容 Ultra 存在时启用本包纯排序/预算适配器，无 Ultra 时独立使用。不会声称调用了现有 Ultra 的归档或压缩器。用实际 companion TGZ 验证加载顺序、RP 请求、工程隔离。

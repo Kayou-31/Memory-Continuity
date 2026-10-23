@@ -259,6 +259,18 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       if (action === 'start') { if (b) return { kind: 'success', text: 'RP already active.' }; b = await installBound(agent, arg || undefined) }
       if (!b) throw new RpError('scope_denied', 'Start or restore the RP session first')
       await drain(b); signal.throwIfAborted()
+      if (action === 'agent') {
+        const op = commandObject(arg, ['kind'], ['actorIds', 'description', 'sourceRevisionIds', 'fictionalTime', 'entityId', 'key', 'value', 'fromId', 'toId', 'relation', 'previousEventId', 'causeEventIds', 'note', 'ownerId', 'goalId', 'category', 'objective', 'status', 'progress', 'nextAction', 'targetEntityId'])
+        const ctl = unwrap(await controlSource(b, commandId, arg)), result = unwrap(await memory.agentMemory.apply(b.authority, ctl, { ...op, idempotencyKey: commandId, expected: unwrap(await memory.store.readFence(b.authority)) } as any))
+        for (const session of bound.values()) if (session.data.request.branchId === b.data.request.branchId) session.packet = undefined
+        if (!await (root.get('sessions') as any).flush(agent.session)) throw new RpError('persistence_uncertain', 'Native Agent control flush unconfirmed')
+        return { kind: 'success', text: canonical(result) }
+      }
+      if (action === 'goals' || action === 'relationships' || action === 'self') {
+        const projection = unwrap(await memory.store.replayProjection(b.authority))
+        const value = action === 'relationships' ? projection.relationships : projection.state.filter(s => action === 'goals' ? /^(task|promise):/u.test(s.key) : ['identity', 'voice', 'background'].includes(s.key))
+        return { kind: 'success', text: canonical(value) }
+      }
       const summaryOptions = { globalAuthorities, policyEpoch: () => { shutdown.signal.throwIfAborted(); if (closed || !live(agent) || policy.status(agent.id).mode !== 'rp') throw new RpError('ownership_lost', 'RP candidate owner changed'); return policy.status(agent.id).epoch } }
       if (action === 'summarize-auto') throw new RpError('capability_missing', 'No trusted background candidate route; use /rp summary then /rp adopt')
       if (action === 'propose' || action === 'summary') {
@@ -293,7 +305,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       else if (action === 'delete') { const op = commandObject(arg, ['sourceRevisionIds', 'publicationDisposition']); if (!['retain', 'delete'].includes(op.publicationDisposition)) throw new RpError('invalid_record', 'Choose publicationDisposition retain/delete explicitly'); for (const ga of globalAuthorities) unwrap(await memory.global.control.privateDeletion(ga, memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }), { idempotencyKey: commandId, expected: unwrap(await memory.global.store.readFence(ga)), privateSourceIds: op.sourceRevisionIds, publicationDisposition: op.publicationDisposition })); unwrap<unknown>(await canonicalControl(b, commandId, { kind: 'privacy_delete', sourceRevisionIds: op.sourceRevisionIds, affectedBranchIds: [b.data.request.branchId] })) }
       else if (action === 'publish') { const op = commandObject(arg, ['grantIndex', 'key', 'body', 'privateSourceIds'], ['supersedes']), ga = globalAuthorities[op.grantIndex]; if (!ga) throw new RpError('scope_denied', 'Unknown global grant'); const approval = memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }); unwrap(await memory.global.control.publish(ga, approval, { idempotencyKey: commandId, expected: unwrap(await memory.global.store.readFence(ga)), key: op.key, body: op.body, privateSourceIds: op.privateSourceIds, ...(op.supersedes ? { supersedes: op.supersedes } : {}) })) }
       else if (action === 'adopt-canon') { const op = commandObject(arg, ['grantIndex', 'publicationId']), ga = globalAuthorities[op.grantIndex]; if (!ga) throw new RpError('scope_denied', 'Unknown global grant'); unwrap(await memory.adoptCanon(b.authority, ga, memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }), op.publicationId, commandId)) }
-      else if (action !== 'accept' && action !== 'reject') throw new RpError('invalid_record', 'Use start/status/input/accept/reject/delete/retcon/publish/adopt-canon/continue-clean/resume-input')
+      else if (action !== 'accept' && action !== 'reject') throw new RpError('invalid_record', 'Use start/status/input/agent/goals/relationships/self/accept/reject/delete/retcon/publish/adopt-canon/continue-clean/resume-input')
       signal.throwIfAborted(); if (!await (root.get('sessions') as any).flush(agent.session)) throw new RpError('persistence_uncertain', 'Native session flush unconfirmed')
       return { kind: 'success', text: 'RP control committed. Historical native content may require continue-clean.' }
     } catch (e) { const b = bound.get(agent.id); if (b && !(e instanceof RpError)) { b.data.blocked = true; b.lastError = 'persistence_failed' }; return { kind: 'error', text: e instanceof RpError ? e.code + ': ' + e.message : 'RP control failed; inspect status before retry.' } }
