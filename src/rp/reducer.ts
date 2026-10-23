@@ -1,6 +1,7 @@
 /** Pure reconstruction from already authorized, active events. No model, clock,
  * filesystem, implicit co-presence knowledge or last-timestamp conflict winner. */
 import type { ClaimAssessment, InputFence, JsonValue, ProjectionResult, SemanticEvent, SourceSpan, StateProjection, Viewpoint } from './types.js'
+import { currentGrowthHeads, projectedEventValue } from './growth-format.js'
 
 const stable = (v: unknown): string => v === null || typeof v !== 'object' ? JSON.stringify(v) : Array.isArray(v) ? '[' + v.map(stable).join(',') + ']' : '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + stable((v as Record<string, unknown>)[k])).join(',') + '}'
 const unique = (items: readonly string[]) => [...new Set(items)].sort()
@@ -13,13 +14,13 @@ export function reduceEvents(input: readonly SemanticEvent[], fence: InputFence)
   const active = events.filter(e => !superseded.has(e.id) && objective(e))
   const groups = new Map<string, { subjectId: string; key: string; events: SemanticEvent[]; values: JsonValue[] }>()
   const relations = new Map<string, SemanticEvent[]>(), know = new Map<string, SemanticEvent[]>()
-  for (const e of active) {
+  for (const e of currentGrowthHeads(active)) {
     const p = e.payload
     if (p.kind === 'state_change' || p.kind === 'canon_assertion' || p.kind === 'preference_change') {
       const subjectId = p.kind === 'preference_change' ? 'preference' : p.subjectId
       const key = stable([e.epistemic, e.beliefHolderId ?? null, subjectId, p.key])
       const group = groups.get(key) ?? { subjectId, key: p.key, events: [], values: [] }
-      group.events.push(e); group.values.push(p.kind === 'state_change' ? p.after : p.value); groups.set(key, group)
+      group.events.push(e); group.values.push(projectedEventValue(e)); groups.set(key, group)
     } else if (p.kind === 'knowledge_change' && e.epistemic === 'world') {
       const key = stable([p.knowerId, p.claimId]); know.set(key, [...(know.get(key) ?? []), e])
     } else if (p.kind === 'relationship_change') {
@@ -48,15 +49,15 @@ export function reduceEvents(input: readonly SemanticEvent[], fence: InputFence)
   for (const [, group] of [...relations].sort(([a], [b]) => a.localeCompare(b))) {
     const event = group.at(-1)!, p = event.payload
     if (p.kind !== 'relationship_change') continue
-    const conflict = new Set(group.map(e => stable(e.payload.kind === 'relationship_change' ? e.payload.value : null))).size > 1
-    relationships.push({ fromId: p.fromId, toId: p.toId, relation: p.relation, value: conflict ? null : p.value, resolution: conflict ? 'conflict' : 'known', epistemic: event.epistemic,
+    const conflict = new Set(group.map(e => stable(projectedEventValue(e)))).size > 1
+    relationships.push({ fromId: p.fromId, toId: p.toId, relation: p.relation, value: conflict ? null : projectedEventValue(event), resolution: conflict ? 'conflict' : 'known', epistemic: event.epistemic,
       ...(event.beliefHolderId ? { beliefHolderId: event.beliefHolderId } : {}), triggerEventIds: unique(group.flatMap(e => e.payload.kind === 'relationship_change' ? e.payload.triggerEventIds : [])),
       ...(p.unresolvedTension ? { unresolvedTension: p.unresolvedTension } : {}), supportEventIds: group.map(e => e.id), sources: sources(group) })
   }
   const claims = active.filter(e => e.payload.kind === 'state_change' || e.payload.kind === 'canon_assertion').map(e => {
     const p = e.payload
     if (p.kind !== 'state_change' && p.kind !== 'canon_assertion') throw new Error('unreachable claim')
-    return { claimEventId: e.id, ...assessClaim({ state }, { subjectId: p.subjectId, key: p.key, value: p.kind === 'state_change' ? p.after : p.value, epistemic: e.epistemic, ...(e.beliefHolderId ? { beliefHolderId: e.beliefHolderId } : {}) }) }
+    return { claimEventId: e.id, ...assessClaim({ state }, { subjectId: p.subjectId, key: p.key, value: projectedEventValue(e), epistemic: e.epistemic, ...(e.beliefHolderId ? { beliefHolderId: e.beliefHolderId } : {}) }) }
   })
   return { state, claims, conflicts, knowledge, relationships }
 }

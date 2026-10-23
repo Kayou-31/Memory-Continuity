@@ -6,6 +6,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import type { Branch, BranchScope, BranchSourceBinding, CommitBatch, HostAuthority, InputFence, Job, LedgerSnapshot, Result, Scope, SemanticEvent, SourceObservation, SourceRevision, SourceSpan, StoredDerived, Summary, Visibility, Viewpoint, WorkspaceBinding, AuthorityChange, CanonBinding, ForkManifest, PayloadCopy, PrivacyDeletion, ProjectionResult } from './types.js'
 import { RpError, batch as validateBatch, binding as validateBinding, branch as validateBranch, checkedRpJson, cloneInput, denied, failure, fence as validateFence, hash, id, hostId, integer, invalid, job as validateJob, object, observation as validateObservation, parseRecord, scope as validateScope, sourceSpan as validateSpan, text, visibility as validateVisibility, authorityChange as validateChange, wellFormed } from './schema.js'
 import { reduceEvents, eventsForView } from './reducer.js'
+import { checkGrowthTransition, growthValue } from './growth-format.js'
 export { parseRecord } from './schema.js'
 /** Trusted storage adapters reuse the same verified lock/read protocol. */
 export { lock as withRpWriterLock, recoverLock as recoverRpWriterLock, readJson as readRpJson }
@@ -24,7 +25,9 @@ const ok = <T>(value: T): Result<T> => ({ ok: true, value: structuredClone(value
 const same = (a: unknown, b: unknown) => canonical(a) === canonical(b)
 function eventDependencies(event: SemanticEvent): string[] {
   const payload = event.payload
-  return payload.kind === 'knowledge_change' ? [payload.claimId] : payload.kind === 'relationship_change' ? [...payload.triggerEventIds] : payload.kind === 'correction' ? [...payload.replacementEventIds] : []
+  const base = payload.kind === 'knowledge_change' ? [payload.claimId] : payload.kind === 'relationship_change' ? [...payload.triggerEventIds] : payload.kind === 'correction' ? [...payload.replacementEventIds] : []
+  const growth = growthValue(event)
+  return growth ? [...new Set([...base, ...growth.causeEventIds, ...(growth.previousEventId ? [growth.previousEventId] : [])])] : base
 }
 function error(code: import('./types.js').ErrorCode, message: string): never { throw new RpError(code, message) }
 const ZERO = '0'.repeat(64)
@@ -794,6 +797,7 @@ export class RpStore {
         const result: InputFence = { ...current.fence, contextRevision: batch.nextContextRevision, sourceManifestHash: this.#manifest(next), canonBindingsHash: canonHash, visibilityRevision, deletionGeneration }
         validateFence(result)
         const records: Derived[] = [], payloads = new Map<string, string>(), identifiers = new Set([...next.records.keys(), ...next.jobs.keys()])
+        let growthHistory: SemanticEvent[] | undefined
         for (const record of [...batch.events, ...batch.summaries]) {
           if (identifiers.has(record.id)) invalid('immutable derived identity'); identifiers.add(record.id)
           if ([...state.branches.values()].some(branch => branch.records.has(record.id)) || state.copies.has(record.id)) invalid('workspace derived identity')
@@ -826,10 +830,17 @@ export class RpStore {
               if (original.value.record.payload.kind === 'canon_assertion' && original.value.record.payload.locked && !['explicit_ooc', 'user_canon'].includes(record.authority)) denied('locked canon requires explicit user correction')
             }
             dependencies = eventDependencies(record)
+            const growth = growthValue(record)
+            if (growth) {
+              if (batch.invalidatedIds.length || batch.events.some(e => e.supersedes.length || e.payload.kind === 'correction')) invalid('growth and retcon must be separate controls')
+              growthHistory ??= await this.#readEventBodies(state, current, grant.request)
+              checkGrowthTransition(record, [...growthHistory, ...batch.events.slice(0, batch.events.indexOf(record))])
+            }
             if (dependencies.some(id => !next.records.has(id) || !this.#activeRecords(next).get(id)?.active)) invalid('semantic event dependency')
             for (const id of dependencies) {
               const dependency = next.records.get(id)!
               if (!this.#visible(dependency.visibility, grant.request) || dependency.visibility.audienceSetId !== record.visibility.audienceSetId) denied('semantic event dependency audience')
+              if (growth && dependency.sourceRevisionIds.some(id => !sourceIds.includes(id))) invalid('growth dependency source coverage')
             }
             const { payload: _payload, fictionalTime: _time, ...rest } = record; metadata = rest
           } else {
