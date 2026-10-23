@@ -6,7 +6,9 @@ import { createHash, randomUUID } from 'node:crypto'
 import type { Branch, BranchScope, BranchSourceBinding, CommitBatch, HostAuthority, InputFence, Job, LedgerSnapshot, Result, Scope, SemanticEvent, SourceObservation, SourceRevision, SourceSpan, StoredDerived, Summary, Visibility, Viewpoint, WorkspaceBinding, AuthorityChange, CanonBinding, ForkManifest, PayloadCopy, PrivacyDeletion, ProjectionResult } from './types.js'
 import { RpError, batch as validateBatch, binding as validateBinding, branch as validateBranch, checkedRpJson, cloneInput, denied, failure, fence as validateFence, hash, id, hostId, integer, invalid, job as validateJob, object, observation as validateObservation, parseRecord, scope as validateScope, sourceSpan as validateSpan, text, visibility as validateVisibility, authorityChange as validateChange, wellFormed } from './schema.js'
 import { reduceEvents, eventsForView } from './reducer.js'
-import { checkGrowthTransition, growthValue, hasGrowthMarker, inheritGrowthMarks, markGrowthEvent } from './growth-format.js'
+import { checkGrowthTransition, growthValue, inheritGrowthMarks, markGrowthEvent } from './growth-format.js'
+import { hasPersonOwner, markerProtocol, markSemantic, requiresPerson, semanticProtocol } from './semantic-registry.js'
+import { checkPersonTransition, personValue } from './person/format.js'
 export { parseRecord } from './schema.js'
 /** Trusted storage adapters reuse the same verified lock/read protocol. */
 export { lock as withRpWriterLock, recoverLock as recoverRpWriterLock, readJson as readRpJson }
@@ -27,7 +29,16 @@ function eventDependencies(event: SemanticEvent): string[] {
   const payload = event.payload
   const base = payload.kind === 'knowledge_change' ? [payload.claimId] : payload.kind === 'relationship_change' ? [...payload.triggerEventIds] : payload.kind === 'correction' ? [...payload.replacementEventIds] : []
   const growth = growthValue(event)
-  return growth ? [...new Set([...base, ...growth.causeEventIds, ...(growth.previousEventId ? [growth.previousEventId] : [])])] : base
+  const semantic = growth ?? personValue(event)
+  return semantic ? [...new Set([...base, ...semantic.causeEventIds, ...(semantic.previousEventId ? [semantic.previousEventId] : [])])] : base
+}
+function authenticateEvent(event: SemanticEvent, changes: readonly AuthorityChange[]) {
+  const protocol = markerProtocol(changes, event)
+  if (!protocol) return
+  markSemantic(event, protocol)
+  if (protocol === 'agent-memory/v1') markGrowthEvent(event)
+  else if (protocol === 'person-core/v1') personValue(event)
+  else if (event.payload.kind !== 'occurrence' || event.epistemic !== 'world' || !['user_canon', 'explicit_ooc'].includes(event.authority) || event.supersedes.length) denied('person origin must be explicit initial definition')
 }
 function error(code: import('./types.js').ErrorCode, message: string): never { throw new RpError(code, message) }
 const ZERO = '0'.repeat(64)
@@ -79,9 +90,10 @@ type Operation = { readonly kind: 'branch'; readonly branch: Branch; readonly fe
 interface Transaction {
   readonly schemaVersion: 1; readonly workspaceId: string; readonly sequence: number; readonly previousHash: string
   readonly idempotencyKey: string; readonly effectHash: string; readonly operation: Operation
+  readonly requiredCapabilities?: readonly string[]
 }
-interface WorkspaceState { sources: Map<string, SourceRevision>; branches: Map<string, BranchState>; transactions: Transaction[]; hashes: string[]; copies: Map<string, PayloadCopy>; privacy: Map<string, PrivacyDeletion> }
-const emptyState = (): WorkspaceState => ({ sources: new Map(), branches: new Map(), transactions: [], hashes: [], copies: new Map(), privacy: new Map() })
+interface WorkspaceState { sources: Map<string, SourceRevision>; branches: Map<string, BranchState>; transactions: Transaction[]; hashes: string[]; copies: Map<string, PayloadCopy>; privacy: Map<string, PrivacyDeletion>; requiredCapabilities: string[] }
+const emptyState = (): WorkspaceState => ({ sources: new Map(), branches: new Map(), transactions: [], hashes: [], copies: new Map(), privacy: new Map(), requiredCapabilities: [] })
 const queues = new Map<string, Promise<unknown>>()
 async function serial<T>(key: string, work: () => Promise<T>): Promise<T> {
   const prior = queues.get(key) ?? Promise.resolve()
@@ -306,14 +318,18 @@ export class RpStore {
       if (!/^\d{16}\.json$/u.test(file) || file !== String(state.transactions.length + 1).padStart(16, '0') + '.json') error('store_corrupt', 'RP transaction sequence gap')
       try {
         const envelope = object(await readJson(path.join(directory, file)), ['transaction', 'sha256']); hash(envelope.sha256)
-        const tx = object(envelope.transaction, ['schemaVersion', 'workspaceId', 'sequence', 'previousHash', 'idempotencyKey', 'effectHash', 'operation'])
+        const tx = object(envelope.transaction, ['schemaVersion', 'workspaceId', 'sequence', 'previousHash', 'idempotencyKey', 'effectHash', 'operation'], ['requiredCapabilities'])
         if (tx.schemaVersion !== 1 || tx.workspaceId !== workspaceId || tx.sequence !== state.transactions.length + 1 || tx.previousHash !== (state.hashes.at(-1) ?? ZERO) || envelope.sha256 !== digest(tx)) invalid('transaction chain')
         text(tx.idempotencyKey, 512); hash(tx.effectHash); this.#validateOperation(tx.operation)
+        const caps = tx.requiredCapabilities ?? []
+        if (!Array.isArray(caps) || caps.some(c => c !== 'rp.person-core/v1')) error('capability_missing', 'Unsupported workspace reader capability')
+        if (!same(caps, [...new Set(caps)].sort()) || state.requiredCapabilities.some(c => !caps.includes(c)) || (tx.operation.kind === 'commit' && requiresPerson(tx.operation.authorityChanges) && !caps.includes('rp.person-core/v1'))) invalid('workspace capability regression or missing person barrier')
+        state.requiredCapabilities = caps
         if (effects.has(tx.idempotencyKey)) invalid('duplicate transaction effect')
         this.#apply(state, tx.operation)
         effects.add(tx.idempotencyKey)
         state.transactions.push(tx as Transaction); state.hashes.push(envelope.sha256)
-      } catch (cause) { error('store_corrupt', 'RP transaction corruption: ' + (cause instanceof Error ? cause.message : 'invalid record')) }
+      } catch (cause) { if (cause instanceof RpError && cause.code === 'capability_missing') throw cause; error('store_corrupt', 'RP transaction corruption: ' + (cause instanceof Error ? cause.message : 'invalid record')) }
     }
     const seals = (await fs.readdir(sealDirectory)).filter(file => !file.includes('.tmp-')).sort()
     if (!same(initialSeals, seals)) error('stale_input', 'RP transaction snapshot changed during read')
@@ -399,7 +415,8 @@ export class RpStore {
     return new Map([...branch.records].map(([id, r]) => [id, { ...r, active: !blocked.has(id) }]))
   }
   async #append(workspaceId: string, state: WorkspaceState, key: string, effectHash: string, operation: Operation, useFault = true, publishPayloads?: () => Promise<void>): Promise<void> {
-    const transaction: Transaction = { schemaVersion: 1, workspaceId, sequence: state.transactions.length + 1, previousHash: state.hashes.at(-1) ?? ZERO, idempotencyKey: key, effectHash, operation }
+    const caps = [...new Set([...state.requiredCapabilities, ...(operation.kind === 'commit' && requiresPerson(operation.authorityChanges) ? ['rp.person-core/v1'] : [])])].sort()
+    const transaction: Transaction = { schemaVersion: 1, workspaceId, sequence: state.transactions.length + 1, previousHash: state.hashes.at(-1) ?? ZERO, idempotencyKey: key, effectHash, operation, ...(caps.length ? { requiredCapabilities: caps } : {}) }
     this.#validateOperation(operation)
     // Run the same metadata replay validator before publishing.
     const copy: WorkspaceState = structuredClone(state); this.#apply(copy, operation)
@@ -407,9 +424,43 @@ export class RpStore {
     const file = path.join(this.#workspacePath(workspaceId), 'commits', String(transaction.sequence).padStart(16, '0') + '.json')
     // Complete the durable receipt for a prior interrupted publication first.
     if (state.transactions.length) await this.#seal(workspaceId, state.transactions.length, state.hashes.at(-1)!)
+    if (caps.some(c => !state.requiredCapabilities.includes(c))) await this.#backupBeforeCapabilities(workspaceId, state)
     await publishPayloads?.()
     await this.#publish(file, encoded, 'transaction', useFault,
       () => this.#seal(workspaceId, transaction.sequence, digest(transaction), useFault))
+  }
+  /** Caller holds workspace writer lock. Backup payloads are deliberately outside
+   * immutable audit metadata and are disclosed as separately managed copies. */
+  async #backupBeforeCapabilities(workspaceId: string, state: WorkspaceState): Promise<void> {
+    try {
+      const binding = await this.#rootBinding(workspaceId), directory = path.join(this.#root, 'backups', workspaceId, newId('backup'))
+      await fs.mkdir(directory, { recursive: true })
+      const files: { path: string; sha256: string; bytes: number }[] = [], originals: { source: string; hash: string }[] = []
+      const copy = async (source: string, relative: string) => {
+        const stat = await fs.lstat(source); if (!stat.isFile() || stat.isSymbolicLink()) denied('backup requires regular source files')
+        const bytes = await fs.readFile(source), target = path.join(directory, relative)
+        await fs.mkdir(path.dirname(target), { recursive: true }); await this.#publish(target, bytes, 'blob', false)
+        const checksum = sha(bytes); if (sha(await fs.readFile(target)) !== checksum) error('persistence_failed', 'Backup verification mismatch')
+        files.push({ path: relative, sha256: checksum, bytes: bytes.length }); originals.push({ source, hash: checksum })
+      }
+      await copy(path.join(this.#root, 'identity.json'), 'profile/identity.json')
+      await copy(path.join(binding.root, '.dsh-rp-workspace.json'), 'project/.dsh-rp-workspace.json')
+      for (const folder of ['bindings', 'commits', 'seals', 'blobs']) {
+        const from = path.join(this.#workspacePath(workspaceId), folder)
+        for (const file of (await fs.readdir(from)).sort()) if (!file.includes('.tmp-')) await copy(path.join(from, file), 'workspace/'+folder+'/'+file)
+      }
+      const host = path.join(this.#root, 'host'), hostFiles = await fs.readdir(host).catch(e => { if (e.code === 'ENOENT') return []; throw e })
+      for (const file of hostFiles) if (file.endsWith('.json')) {
+        const source = path.join(host, file), body = await readJson(source)
+        if ((body as { data?: { request?: { workspaceId?: string } } }).data?.request?.workspaceId === workspaceId) await copy(source, 'host/'+file)
+      }
+      // Host journal writes use a separate queue. Reject changing snapshots;
+      // never label a best-effort mixed backup complete.
+      for (const original of originals) if (sha(await fs.readFile(original.source)) !== original.hash) error('persistence_failed', 'Backup source changed; retry after host is idle')
+      if (!same(hostFiles.sort(), (await fs.readdir(host).catch(e => { if (e.code === 'ENOENT') return []; throw e })).sort())) error('persistence_failed', 'Backup host journal set changed')
+      await this.#publish(path.join(directory, 'manifest.json'), canonical({ schemaVersion: 1, workspaceId, profileId: this.#profileId, sequence: state.transactions.length, headHash: state.hashes.at(-1) ?? ZERO, requiredCapabilities: state.requiredCapabilities, files, restore: 'Stop all writers; restore the complete workspace plus matching host journal set at the original verified roots. Do not remove individual transactions to downgrade.' }), 'blob', false)
+      await this.#syncDirectory(directory)
+    } catch (cause) { if (cause instanceof RpError) throw cause; error('persistence_failed', 'Person pre-upgrade backup failed: ' + (cause instanceof Error ? cause.message : String(cause))) }
   }
   async #seal(workspaceId: string, sequence: number, transactionHash: string, useFault = false): Promise<void> {
     const file = path.join(this.#workspacePath(workspaceId), 'seals', String(sequence).padStart(16, '0') + '.json')
@@ -646,7 +697,7 @@ export class RpStore {
       for (const sourceId of r.sourceRevisionIds) await sourceText(sourceId)
       const body = await this.#readBlob(request.workspaceId, r.blobId, r.bodySha256), parsed = parseRecord({ kind: 'event', record: JSON.parse(body) })
       if (!parsed.ok || parsed.value.kind !== 'event') error('source_unavailable', 'RP event payload unavailable')
-      if (hasGrowthMarker(branch.changes, parsed.value.record.id)) markGrowthEvent(parsed.value.record)
+      authenticateEvent(parsed.value.record, branch.changes)
       const { payload: _payload, fictionalTime: _time, ...metadata } = parsed.value.record
       if (!same(metadata, r.metadata) || !same(eventDependencies(parsed.value.record), r.dependencyIds)) error('source_unavailable', 'RP event authority metadata mismatch')
       records.push(parsed.value.record)
@@ -775,7 +826,7 @@ export class RpStore {
       return await lock(this.#workspacePath(grant.request.workspaceId), async () => {
         await this.#authorize(authority, 'commit')
         const state = await this.#load(grant.request.workspaceId), current = this.#branch(state, grant.request)
-        const key = 'branch:' + grant.request.branchId + ':' + sha(batch.idempotencyKey), effect = digest(batch), existing = state.transactions.find(tx => tx.idempotencyKey === key)
+        const key = 'branch:' + grant.request.branchId + ':' + sha(batch.idempotencyKey), effect = requiresPerson(batch.authorityChanges) ? digest({ batch, requiredCapabilities: ['rp.person-core/v1'] }) : digest(batch), existing = state.transactions.find(tx => tx.idempotencyKey === key)
         if (existing) { if (existing.effectHash !== effect || existing.operation.kind !== 'commit') error('idempotency_conflict', 'RP commit idempotency key has different effects'); await this.#seal(grant.request.workspaceId, existing.sequence, digest(existing)); return ok(existing.operation.result) }
         if (!same(current.fence, batch.expected) || batch.nextContextRevision !== current.fence.contextRevision + 1) error('stale_input', 'RP input fence changed')
         const next: BranchState = structuredClone(current), touched = new Set<string>()
@@ -792,6 +843,7 @@ export class RpStore {
           next.bindings = new Map([...parentState.bindings].map(([id, b]) => [id, { ...b, branchId: grant.request.branchId }]))
           next.records = structuredClone(parentState.records); next.invalidated = structuredClone(parentState.invalidated); next.changes = structuredClone(parentState.changes)
         }
+        const inheritedBase: BranchState = structuredClone(next)
         for (const b of batch.sourceBindings) {
           if (touched.has(b.sourceRevisionId)) invalid('duplicate binding mutation'); touched.add(b.sourceRevisionId)
           const source = state.sources.get(b.sourceRevisionId)
@@ -842,12 +894,23 @@ export class RpStore {
         validateFence(result)
         const records: Derived[] = [], payloads = new Map<string, string>(), identifiers = new Set([...next.records.keys(), ...next.jobs.keys()])
         let growthHistory: SemanticEvent[] | undefined
+        batch.events.forEach(e => authenticateEvent(e, changes))
+        const newPeople = new Set<string>()
+        for (const event of batch.events) if (semanticProtocol(event) === 'person-origin/v1' && event.payload.kind === 'occurrence') {
+          const personId = event.payload.actorIds[0]
+          if (newPeople.has(personId) || hasPersonOwner(inheritedBase.changes, personId)) invalid('person already initialized in life branch')
+          if (!batch.events.some(e => e.payload.kind === 'state_change' && e.payload.subjectId === personId && personValue(e)?.causeEventIds.includes(event.id))) invalid('person origin and initial fields require one atomic commit')
+          growthHistory ??= await this.#readEventBodies(state, inheritedBase, grant.request)
+          const conflicts = growthHistory.filter(e => (e.payload.kind === 'state_change' || e.payload.kind === 'canon_assertion') && e.payload.subjectId === personId && ['identity','background','voice','rule'].includes(e.payload.key))
+          if (conflicts.length) denied('legacy person field conflicts: ' + conflicts.map(e => e.id).join(', '))
+          newPeople.add(personId)
+        }
         for (const record of [...batch.events, ...batch.summaries]) {
           if (identifiers.has(record.id)) invalid('immutable derived identity'); identifiers.add(record.id)
           if ([...state.branches.values()].some(branch => branch.records.has(record.id)) || state.copies.has(record.id)) invalid('workspace derived identity')
           if (!this.#scopeMatches(record.scope, grant.request) || (record.scope.kind !== 'branch' && record.scope.kind !== 'session') || record.scope.branchId !== grant.request.branchId || !same(record.visibility, authority.visibility) || record.policyVersion !== current.fence.policyVersion) denied('derived scope/visibility/policy')
           const isEvent = 'payload' in record
-          if (isEvent && hasGrowthMarker(changes, record.id)) markGrowthEvent(record)
+          if (isEvent && (record.payload.kind === 'state_change' || record.payload.kind === 'canon_assertion') && ['identity','background','voice','rule'].includes(record.payload.key) && (newPeople.has(record.payload.subjectId) || hasPersonOwner(inheritedBase.changes, record.payload.subjectId)) && !personValue(record)) denied('person fields require marked person controls')
           const sourceIds = isEvent ? [...new Set(record.sources.map(span => span.sourceRevisionId))] : [...record.sourceRevisionIds]
           for (const sourceId of sourceIds) {
             const original = this.#source(state, next, grant.request, sourceId)
@@ -875,17 +938,19 @@ export class RpStore {
               if (original.value.record.payload.kind === 'canon_assertion' && original.value.record.payload.locked && !['explicit_ooc', 'user_canon'].includes(record.authority)) denied('locked canon requires explicit user correction')
             }
             dependencies = eventDependencies(record)
-            const growth = growthValue(record)
-            if (growth) {
+            const growth = growthValue(record), person = personValue(record)
+            if (person?.operation === 'init' && !batch.events.some(e => e.id === person.causeEventIds[0] && semanticProtocol(e) === 'person-origin/v1')) invalid('initial person fields require the same origin transaction')
+            if (growth || person) {
               if (batch.invalidatedIds.length || batch.events.some(e => e.supersedes.length || e.payload.kind === 'correction')) invalid('growth and retcon must be separate controls')
-              growthHistory ??= await this.#readEventBodies(state, current, grant.request)
+              growthHistory ??= await this.#readEventBodies(state, inheritedBase, grant.request)
               checkGrowthTransition(record, [...growthHistory, ...batch.events.slice(0, batch.events.indexOf(record))])
+              checkPersonTransition(record, [...growthHistory, ...batch.events.slice(0, batch.events.indexOf(record))])
             }
             if (dependencies.some(id => !next.records.has(id) || !this.#activeRecords(next).get(id)?.active)) invalid('semantic event dependency')
             for (const id of dependencies) {
               const dependency = next.records.get(id)!
               if (!this.#visible(dependency.visibility, grant.request) || dependency.visibility.audienceSetId !== record.visibility.audienceSetId) denied('semantic event dependency audience')
-              if (growth?.causeEventIds.includes(id) && dependency.sourceRevisionIds.some(id => !sourceIds.includes(id))) invalid('growth cause source coverage')
+              if ((growth ?? person)?.causeEventIds.includes(id) && dependency.sourceRevisionIds.some(id => !sourceIds.includes(id))) invalid('growth cause source coverage')
             }
             const { payload: _payload, fictionalTime: _time, ...rest } = record; metadata = rest
           } else {

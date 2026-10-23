@@ -8,6 +8,7 @@
   "files": [
     "lib",
     "src",
+    "ui",
     "scripts/build.mjs",
     "tsconfig.json",
     "SOURCE-MANIFEST.json",

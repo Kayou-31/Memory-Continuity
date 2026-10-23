@@ -1,14 +1,11 @@
 import type { AuthorityChange, JsonValue, SemanticEvent } from './types.js'
 import { denied, id, integer, invalid, object, RpError, text } from './schema.js'
-const growthRecords = new WeakSet<object>()
+import { inheritSemanticMarks, markSemantic, semanticProtocol } from './semantic-registry.js'
+import { personValue } from './person/format.js'
 export const hasGrowthMarker = (changes: readonly AuthorityChange[], eventId: string) => changes.some(c => c.kind === 'candidate_adoption' && c.recordId === 'growth_' + eventId && c.record.candidateId === 'agent_memory_v1' && c.record.decision === 'accepted' && c.record.eventIds.length === 1 && c.record.eventIds[0] === eventId)
 /** Only a verified authority-ledger marker opts an event into growth semantics. */
-export function markGrowthEvent(event: SemanticEvent) { growthRecords.add(event); if (!growthValue(event)) invalid('marked growth payload missing') }
-export function inheritGrowthMarks(from: unknown, to: unknown) {
-  if (!from || !to || typeof from !== 'object' || typeof to !== 'object') return
-  if (growthRecords.has(from)) growthRecords.add(to)
-  for (const key of Object.keys(from)) inheritGrowthMarks((from as Record<string, unknown>)[key], (to as Record<string, unknown>)[key])
-}
+export function markGrowthEvent(event: SemanticEvent) { markSemantic(event, 'agent-memory/v1'); if (!growthValue(event)) invalid('marked growth payload missing') }
+export const inheritGrowthMarks = inheritSemanticMarks
 
 export interface GrowthValue {
   protocol: 'agent-memory/v1'; channel: 'state' | 'relationship' | 'goal'; value: JsonValue
@@ -26,7 +23,7 @@ export function goalValue(input: unknown): GoalValue {
   return g as GoalValue
 }
 export function growthValue(event: SemanticEvent): GrowthValue | null {
-  if (!growthRecords.has(event)) return null
+  if (semanticProtocol(event) !== 'agent-memory/v1') return null
   const p = event.payload, raw = p.kind === 'state_change' ? p.after : p.kind === 'relationship_change' ? p.value : null
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !('protocol' in raw) || typeof raw.protocol !== 'string' || !raw.protocol.startsWith('agent-memory/')) return null
   const g = object(raw, ['protocol', 'channel', 'value', 'previousEventId', 'causeEventIds', 'note'])
@@ -44,6 +41,7 @@ export function growthSlot(event: SemanticEvent): string | null {
     : p.kind === 'relationship_change' ? JSON.stringify(['relationship', event.epistemic, event.beliefHolderId ?? null, p.fromId, p.toId, p.relation]) : null
 }
 export function projectedStateKey(event: SemanticEvent): string {
+  const person = personValue(event); if (person) return 'person:' + person.fieldId
   const p = event.payload, g = growthValue(event)
   return g?.channel === 'goal' ? goalValue(g.value).category + ':' + goalValue(g.value).goalId : 'key' in p ? p.key : ''
 }
@@ -52,6 +50,7 @@ export function currentGrowthHeads(events: readonly SemanticEvent[]): SemanticEv
   return events.filter(e => !previous.has(e.id))
 }
 export function projectedEventValue(event: SemanticEvent): JsonValue {
+  const person = personValue(event); if (person) return person.value
   const g = growthValue(event); if (g) return g.value
   const p = event.payload
   return p.kind === 'state_change' ? p.after : 'value' in p ? p.value : null

@@ -52,6 +52,23 @@ for (const [order, optimize] of [['standalone', true], ['engineering-first', fal
 
 test.after(async () => fs.writeFile(path.join(base, 'report.json'), JSON.stringify({ node: process.version, sdk: { packageVersions }, manifests, observations, scope: 'native SDK with local synthetic terminal; no real provider, desktop UI, or power-loss proof' }, null, 2)))
 
+for (const order of ['standalone', 'engineering-first', 'rp-first']) test('Person binding in actual TGZ '+order, async () => {
+  const load = async ({ctx}) => { await ctx.plugin(modules.ultra, {contextCompression:false,memoryMaxRequests:0,memoryMaxTokens:0}).await() }
+  const f = await host({entityIds:['erin']}, {install:rpModule.installRpPlugin,...(order==='standalone'?{}:{[order==='engineering-first'?'before':'after']:load})}), requests=[]
+  class Capture extends LlmAdapter { async *stream(request) { requests.push(request); yield {type:'text-delta',index:0,text:'offline person'}; yield {type:'finish',reason:{kind:'stop'}} } }
+  const command = async (agent,text) => { const r=await f.command(agent,text); assert.equal(r.kind,'success',r.text); return r }
+  try {
+    f.ctx.llm.registerAdapter(['person-bundle'],new Capture()); const a=await f.create(); a.options.provider='person-bundle'; await command(a,'start')
+    const d={schemaVersion:1,kind:'person-draft',personId:'erin',fields:[{fieldId:'name',kind:'identity',value:'林澈',policy:'stable'}],relationships:[],goals:[]}
+    const preview=JSON.parse((await command(a,'person preview '+JSON.stringify(d))).text)
+    await command(a,'person confirm '+preview.previewId); await command(a,'person use erin'); await command(a,'input 你是谁'); await a.whenIdle(); await f.rp.ready(a.id)
+    assert.equal(requests.length,1); assert.match(JSON.stringify(requests[0]),/primaryPerson/); assert.match(JSON.stringify(requests[0]),/林澈/)
+    assert.equal(f.rp.status(a.id).memoryOptimization.packet,order==='standalone'?'standalone':'ultra-rp/v1')
+    if(order!=='standalone')assert.equal(f.ctx.get('ultraEvidenceSupport').memory.hasActiveSession(a.id),false)
+    observations.push({personCore:true,order,personId:'erin',actualRequests:1,automaticSummary:false})
+  } finally {await f.dispose()}
+})
+
 for (const companions of [['memory'], ['ultra', 'memory'], ['decision', 'memory']]) for (const order of ['engineering-first', 'rp-first']) {
   test('R40 final TGZ ' + companions.join('+') + ' ' + order, { timeout: 30000 }, async () => {
     let engineeringPolicy, evidence

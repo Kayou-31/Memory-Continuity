@@ -384,3 +384,22 @@ Node **22.23.3**、npm **11.16.0**、TypeScript **5.9.3**、esbuild **0.25.12**�
 100 阶段持久数据 482,514 字节，增量准备 2.38 s；260 阶段 1,245,603 字节，后续准备 14.06 s。原始 `benchmark/2026-10-23T10-50-34-772Z/report.json` 包含夹具哈希、metadata/blob I/O 时长及包含解析/哈希/Schema 的链加载时长。I/O 与包含式 chainLoad 时间不能相加为互斥分项；未单独测量纯校验 CPU。峰值含模块初始化，单样本约 5 倍的本地 packet 组装差异不能外推为所有机器或真实模型端到端加速。
 
 兼容性：M0 未改 branch/global/journal 格式或生产功能开关。仍需 M1 后完整五命令和实际 TGZ 宿主复验；M1/M2 和编辑器尚未在本节验收。
+
+## 2026-10-23 人物核心 M1：创建、备份和宿主绑定
+
+实现文件：`src/rp/person/`（严格草稿、协议、原子创建、读取、绑定与离线编辑器），`semantic-registry.ts`（统一认证标记），store/canonical/memory/growth-format/packet（所有底层入口及投影），host-journal/rp-plugin（可信命令与原始绑定证明），build/package/manifest（独立离线编辑器分发）。
+
+人物起点、字段、初始定向关系和目标一次提交。首次启用 `rp.person-core/v1` 前，在 writer lock 下复制并逐文件哈希核验插件 workspace、identity、project marker 和关联插件 journal；完成 manifest 最后发布。备份失败不发布人物事务。能力集合单调增加，旧 reader 拒绝整个对应 workspace；global v1 不变。实际 fdd9209 源码 reader 的拒绝与整份 workspace 备份恢复均通过定向验证。该备份不包含 DSH 原生 session 历史、global 或其他插件状态，降级时需停写并恢复匹配的数据，不能删事务降级。
+
+回归与执行证据均在 `work/person-core-2026-10-23/`：
+- m1-red.log exit1（三项缺新 API），m1-typecheck.log exit0，m1-core-green.log exit0（12/12）。
+- m1-compat.log exit0（4/4）；这些额外兼容测试写于核心实现后，未声称先有 RED。
+- m1-host-red.log exit1（两个缺命令），m1-host-typecheck.log exit0，m1-host-green.log exit0（2/2）。真实 pinned SDK 使用离线 Terminal，不调用模型。
+- m1-atomic-red.log exit1 / m1-atomic-green.log exit0（10/10）：无字段 origin 以及后补 init 均拒绝。
+- 审阅确认工具调用帧漏绑定：m1-review-tool-red.log exit1。首次修复后的 green/diagnostic/green-2 仍 exit1，原因分别涉及同宿主销毁恢复 modeEpoch、未采纳回复；cold-green 首次 exit1 因 close 主动封锁，调整为先正常 session drop 再重建宿主后，m1-review-tool-cold-green-2.log exit0（3/3）。保留全部失败，未移除断言。真正冷宿主覆盖工具调用、工具结果、第二次请求、原始 proof 恢复和后续请求。同宿主销毁重建后的历史 epoch 拒绝仍需 clean root。
+- m1-review-parent-red.log exit1 / m1-review-parent-green.log exit0（29/29）：固定父前缀与新增事件同事务时，以继承后前置状态检查人物保护。
+- m1-review-editor-red.log exit1（新分配器未实现）/ m1-review-editor-green.log exit0（1/1）：保存→重开后的字段/目标 ID 分配避让；这是逻辑回归，不是浏览器测试。
+- 首次全量五命令 `m1-verification/final-commands.json` 全 exit0，其中 npm test 165/165；其后审阅修复另行完整重跑，不能将这次旧结果用于后来源码。
+
+编辑器浏览器自动化被工具 file URL 策略拦截，未绕过。用户于本轮人工打开本机页面并反馈“页面正常，能生成命令”；标为用户人工验证，不冒充代理浏览器验证。导入/导出其余浏览器交互尚未完整人工验收。新版本未发布、未覆盖稳定包，无付费 API、自动摘要或压缩。
+M1 审阅后完整复验：`m1-verification-2/final-commands.json` 五命令均 exit0，npm test 169/169（单次全量，非定向拼接）。实际包 `m1-final` 打包/解包/逐文件 SHA-256 核验 exit0，实际 TGZ 宿主组合测试 `m1-final-tgz-host.log` exit0（17/17），包括人物 standalone/Ultra-first/RP-first、实际工具循环及冷启动。精确包哈希/文件数见同轮 package-manifest.json。Node 22.23.3、npm 11.16.0、TS 5.9.3、esbuild 0.25.12；DSH 0.2.1-rc.2、Cordis 4.0.5、Schemastery 3.18.5。
