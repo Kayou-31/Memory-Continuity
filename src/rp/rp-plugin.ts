@@ -16,6 +16,7 @@ import { acquireSessionPolicy, engineeringAllowed, type SessionMemoryPolicy } fr
 import { acquireRpAdmission } from './admission.js'
 import { retrievalEvidence, verifyRetrievalEvidence, type RetrievalEvidence } from './retrieval-evidence.js'
 import { verifyPacketProof } from './packet-proof.js'
+import { createUltraRpOptimizer } from './memory-optimizer.js'
 import { observePublicHostSource } from './source-adapter.js'
 import { fullSpan, unwrap } from './retrieval.js'
 import { estimateFinalRequest, type GlobalDependency, type InputBinding, type MemoryPacket, type RuntimeBudget } from './packet.js'
@@ -55,6 +56,8 @@ export interface RpPluginConfig {
   contextCompression?: boolean; strictPov?: boolean
   /** Trusted composition attestation. Not a claim about arbitrary installed plugins. */
   knownCooperatingWriters?: boolean
+  /** Enable the local RP-safe optimizer when compatible Ultra evidence is live. */
+  ultraMemoryOptimization?: boolean
   globalGrants?: readonly { scope: any; visibility: any; audienceSetIds: string[]; write: boolean }[]
   /** Fault seam before dispatch, used to prove durable input recovery without a model. */
   beforeInputDispatch?: () => Promise<void>
@@ -67,7 +70,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     const root = context.root ?? context, remove = root.on('llm/stream', (async function* (options: any, next: () => AsyncIterable<any>) { if (options.sessionId && !engineeringAllowed(root, options.sessionId) && ((root.get('sessionMemoryPolicy') as any)?.status(options.sessionId).mode !== 'rp' || !(root.get('rpSessionAdmission') as any)?.permits(options.sessionId, options))) throw new LlmError('RP recovery owner is unavailable', 'RP_ADMISSION'); yield* next() }) as never)
     return Object.freeze({ enabled: false, close: async () => { remove() }, status: () => ({ enabled: false, contextCompression: false, strictPov: false }) })
   }
-  for (const key of ['contextCompression', 'strictPov'] as const) if (config[key] !== undefined && typeof config[key] !== 'boolean') throw new RpError('invalid_record', 'RP mode option must be boolean: ' + key)
+  for (const key of ['contextCompression', 'strictPov', 'ultraMemoryOptimization'] as const) if (config[key] !== undefined && typeof config[key] !== 'boolean') throw new RpError('invalid_record', 'RP mode option must be boolean: ' + key)
   if (config.contextCompression === true || config.strictPov === true) throw new RpError('capability_missing', 'Native compaction CAS/lifecycle/ownership and complete strict POV filtering are not verified; both modes remain disabled')
   if (!config.profileRoot || !config.workspaceRoot || !config.budget) throw new Error('RP requires explicit profile/workspace and verified request capacity')
   if (config.knownCooperatingWriters !== true) throw new Error('RP requires a trusted known-writer composition; unknown/private compactors are unsupported')
@@ -87,7 +90,12 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
   try {
   const lease = acquireSessionPolicy(root as any, 'rp'), policy = lease.policy
   startupCleanups.push(() => lease.release())
-  const memory = await openRpMemory({ profileRoot: config.profileRoot, entityIds: config.entityIds ?? [], coordinator: policy.coordinator })
+  const ultraOptimizer = createUltraRpOptimizer()
+  const optimizer = () => {
+    const support = root.get('ultraEvidenceSupport') as any
+    return config.ultraMemoryOptimization !== false && support?.protocol === 'dsh-ultra-evidence/v2' && typeof support.memory?.hasActiveSession === 'function' && support.status?.().leases > 0 && !support.status?.().transitioning ? ultraOptimizer : undefined
+  }
+  const memory = await openRpMemory({ profileRoot: config.profileRoot, entityIds: config.entityIds ?? [], coordinator: policy.coordinator, optimizer })
   startupCleanups.push(() => memory.retrieval.dispose(), () => memory.jobs.close())
   const workspaceRoot = await fs.realpath(config.workspaceRoot), hostRoot = path.join(config.profileRoot, '.dsh-rp', 'v1', 'host')
   await fs.mkdir(hostRoot, { recursive: true })
@@ -155,7 +163,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
   const queue = (b: Bound, work: () => Promise<void>) => { const p = b.queue.catch(() => {}).then(async () => { if (closed) throw new RpError('ownership_lost', 'RP owner closing'); await work() }); b.queue = p; void p.catch(e => { b.data.blocked = true; b.lastError = e instanceof RpError ? e.code : 'persistence_failed' }); return p }
   const drain = async (b: Bound) => { const queueTail = b.queue; await queueTail; const saveTail = b.saveQueue; await saveTail; if (queueTail !== b.queue || saveTail !== b.saveQueue) throw new RpError('stale_input', 'RP queues changed while settling'); if (closed || !live(b.agent) || b.data.blocked) throw new RpError('ownership_lost', 'RP session is unavailable') }
   const settle = async (b: Bound) => { const results = await Promise.allSettled([b.queue, b.saveQueue]); if (results.some(r => r.status === 'rejected')) { b.data.blocked = true; b.lastError ??= 'persistence_failed' } }
-  const diagnostic = (sessionId: string) => { const b = bound.get(sessionId); return { enabled: !closed, lifecycle: closed ? 'closing' : 'open', contextCompression: false, strictPov: false, nativeVersions, policy: policy.status(sessionId), branchId: b?.data.request.branchId, blocked: !b || closed || b.data.blocked === true || b.recoveryOnly === true, lastError: b?.lastError, candidateIds: b ? Object.values(b.data.hostSources).filter(s => !b.data.inputs.some(i => i.sourceId === s)) : [], pendingInputIds: b?.data.inputs.filter(i => i.phase === 'observed' || i.phase === 'accepted').map(i => i.sourceId) ?? [], ambiguousInputIds: b?.data.inputs.filter(i => i.phase === 'dispatching' || i.phase === 'dispatched').map(i => i.sourceId) ?? [], snapshots: b ? Object.keys(b.data.snapshots).length : 0 } }
+  const diagnostic = (sessionId: string) => { const b = bound.get(sessionId); return { enabled: !closed, lifecycle: closed ? 'closing' : 'open', contextCompression: false, strictPov: false, nativeVersions, memoryOptimization: { available: optimizer()?.protocol ?? 'standalone', packet: b?.packet?.optimizer ?? null }, policy: policy.status(sessionId), branchId: b?.data.request.branchId, blocked: !b || closed || b.data.blocked === true || b.recoveryOnly === true, lastError: b?.lastError, candidateIds: b ? Object.values(b.data.hostSources).filter(s => !b.data.inputs.some(i => i.sourceId === s)) : [], pendingInputIds: b?.data.inputs.filter(i => i.phase === 'observed' || i.phase === 'accepted').map(i => i.sourceId) ?? [], ambiguousInputIds: b?.data.inputs.filter(i => i.phase === 'dispatching' || i.phase === 'dispatched').map(i => i.sourceId) ?? [], snapshots: b ? Object.keys(b.data.snapshots).length : 0 } }
   const assertIdle = (agent: Agent) => { if (!live(agent) || agent.status !== 'idle') throw new RpError('scope_denied', 'RP controls require the exact live idle root session') }
   const requestFor = (session: string, branchId: string): AuthorityRequest => ({ workspaceId: binding.workspaceId, campaignId: config.campaignId ?? 'rp_campaign', branchId, sessionId: session, sceneId: 'rp_scene', viewpoint: { kind: 'narrator' }, visibility, audienceSetIds: ['rp_user'], permissions: ['read', 'observe', 'commit', 'control'] })
   const safe = (agent: Agent) => agent.session.deriveMessages().length === 0 && !agent.session.header.parentSession && !agent.session.header.isSeeded && !(root.get('compaction')) && !(root.get('ultraEvidenceSupport') as any)?.memory?.hasActiveSession(agent.id)

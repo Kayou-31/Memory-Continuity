@@ -11,13 +11,15 @@ import fs from 'node:fs/promises'
 import { createSummaryService } from './summarizer.js'
 import { createJobService } from './jobs.js'
 import { createAgentMemory } from './agent-memory.js'
+import type { RecallOptimizer } from './memory-optimizer.js'
+export { createUltraRpOptimizer } from './memory-optimizer.js'
 export type { AgentMemoryControl } from './agent-memory.js'
 export { scoreAnnotatedClaims, validateCandidate } from './candidates.js'
 export * from './session-policy.js'
 export * from './packet.js'
 export * from './retrieval.js'
 export { canonical } from './store.js'
-export async function openRpMemory(input: { profileRoot: string; entityIds: readonly string[]; coordinator?: MemoryCoordinator; verification?: (recordId: string) => Promise<'source-match' | 'unavailable' | 'hash-mismatch'> }) {
+export async function openRpMemory(input: { profileRoot: string; entityIds: readonly string[]; coordinator?: MemoryCoordinator; optimizer?: () => RecallOptimizer | undefined; verification?: (recordId: string) => Promise<'source-match' | 'unavailable' | 'hash-mismatch'> }) {
   const coordinator = input.coordinator ?? new MemoryCoordinator()
   let global: Awaited<ReturnType<typeof openRpGlobalStore>>
   type Adoption = { authority: object; approval: object; binding: CanonBinding }
@@ -34,7 +36,7 @@ export async function openRpMemory(input: { profileRoot: string; entityIds: read
   const summaries = createSummaryService({ store: opened.store, global, coordinator, entityIds: input.entityIds })
   const profilePath = await fs.realpath(input.profileRoot), jobs = createJobService({ store: opened.store, summaries, coordinator, profileKey: process.platform === 'win32' ? profilePath.toLowerCase() : profilePath })
   const inputs = new Map<string, Set<string>>()
-  return { store, control, global, canonical: service, agentMemory: createAgentMemory(store, service, input.entityIds), summaries, jobs, retrieval: createRetrieval(store, { entityIds: input.entityIds, inputSourceIds: authority => inputs.get(authority.scope.branchId) ?? new Set(), verification: input.verification }), packets: createPacketService(store, global), coordinator,
+  return { store, control, global, canonical: service, agentMemory: createAgentMemory(store, service, input.entityIds), summaries, jobs, retrieval: createRetrieval(store, { entityIds: input.entityIds, inputSourceIds: authority => inputs.get(authority.scope.branchId) ?? new Set(), verification: input.verification }), packets: createPacketService(store, global, { optimizer: input.optimizer }), coordinator,
     registerInputBindings(branchId: string, bindings: readonly import('./packet.js').InputBinding[]) { const set = inputs.get(branchId) ?? new Set<string>(); bindings.filter(b => b.kind === 'input').forEach(b => set.add(b.sourceId)); inputs.set(branchId, set) },
     async adoptCanon(authority: HostAuthority, globalAuthority: object, approval: object, publicationId: string, key: string) {
       // Approval validity is checked by a no-effect host operation, never by TS branding.

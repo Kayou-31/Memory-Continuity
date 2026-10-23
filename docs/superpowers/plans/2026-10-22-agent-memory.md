@@ -57,3 +57,5 @@
 
 - L3：goal 生命周期基线 0/2 先红；独立 task/promise 按 goalId 分组、完整状态机、显式进展后 goals+growth 6/6 exit0。原生 agent 命令先红，实现后 host+goals 3/3 exit0；真实 AgentLoop 请求包含目标与受限经历摘录，模型仍只有三个只读工具。packet 可选经历最多8条，共用 soft budget；当前目标始终属于可验证的状态投影。
 - L4 裁决：已验证 Ultra 0.6.1-dev.rp.1 无对 RP 开放的纯算法接口，工程 memory 明确跳过 RP。实现可选 ultra-rp/v1 排序适配协议，RP 提供已授权候选并验证返回 ID；兼容 Ultra 存在时启用本包纯排序/预算适配器，无 Ultra 时独立使用。不会声称调用了现有 Ultra 的归档或压缩器。用实际 companion TGZ 验证加载顺序、RP 请求、工程隔离。
+
+- L4 纯接口阶段：缺失 optimizer/外来 ID 未被拒绝先红 0/2；实现后 optimizer+Agent native 3/3 exit0。可选集合不超过32个，只能返回 RP 已授权 ID，预算只收紧；typecheck 首轮上下文类型推断错误，显式参数类型后 exit0。实际 TGZ 共存仍待最终包验证。

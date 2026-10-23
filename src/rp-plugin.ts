@@ -3,6 +3,8 @@ import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { installRpPlugin, type RpPluginConfig } from './rp/rp-plugin.js'
 export { installRpPlugin }
+export { openRpMemory, createUltraRpOptimizer } from './rp/memory.js'
+export type { AgentMemoryControl } from './rp/agent-memory.js'
 export type { RpPluginConfig }
 export const name = '@dsh-external/dsh-ultra-rp-memory'
 // Disabled installation needs no native services; enabled installation verifies them itself.
@@ -16,6 +18,7 @@ export const Config = z.object({
   campaignId: z.string().required(false),
   entityIds: z.array(z.string()).default([]),
   knownCooperatingWriters: z.boolean().default(false),
+  ultraMemoryOptimization: z.boolean().default(true),
   budget: z.any().required(false),
   globalGrants: z.array(z.any()).required(false),
 })
