@@ -1,0 +1,43 @@
+{
+  "firstAttempt": {
+    "command": "npm run typecheck",
+    "invocation": "<NODE22>/node.exe <NPM>/npm-cli.js run typecheck",
+    "cwd": "<REPO>/work/release-02-2026-10-23/source-check/ultra-rp-memory-0.2.0-dev.1",
+    "node": "v22.23.3",
+    "exit": -1073741819,
+    "windowsStatus": "0xC0000005",
+    "exitEvidence": "Observed process exit from original execution tool output; log contains only the npm/tsc banner.",
+    "log": "source-typecheck.log",
+    "logLastWriteTimeUtc": "2026-10-23T14:23:45.195Z",
+    "exactCommandStartEnd": "Not captured; log modification time is not an exact process start/end time.",
+    "subsequentBuild": "Not executed after failed typecheck",
+    "rootCause": "Unresolved"
+  },
+  "followup": [
+    {
+      "node": "v22.23.3",
+      "exit": 0,
+      "command": "npm run typecheck",
+      "note": "One unchanged-command retry after native process exit; no implementation or validation changes",
+      "end": "2026-10-23T14:25:14.8214661Z",
+      "start": "2026-10-23T14:25:13.0172679Z"
+    },
+    {
+      "node": "v22.23.3",
+      "command": "npm run build",
+      "exit": 0,
+      "start": "2026-10-23T14:25:14.8356577Z",
+      "end": "2026-10-23T14:25:16.8887021Z"
+    }
+  ],
+  "unchanged": [
+    "all 255 tracked source files compared by SHA-256",
+    "dependency directory",
+    "Node/npm versions",
+    "command arguments",
+    "memory limits and runtime flags"
+  ],
+  "typecheckRetryCount": 1,
+  "freshDependencyInstall": false,
+  "originalLogsPreserved": true
+}

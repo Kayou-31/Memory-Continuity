@@ -1,0 +1,11 @@
+{
+  "firstTypecheckExit": -1073741819,
+  "manifestMatch": true,
+  "sha256": "a6e5e804c79d47a51499bfcda152253bae3c22a683ec67463dd5099f4b1150f8",
+  "unchangedCommandRetryExit": 0,
+  "sourceBuildExit": 0,
+  "firstTypecheckWindowsStatus": "0xC0000005",
+  "dependencies": "existing pinned dependency directory via junction; no fresh install",
+  "rootCause": "unresolved",
+  "trackedSourceComparison": 255
+}
