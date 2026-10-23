@@ -1,0 +1,26 @@
+TAP version 13
+# Subtest: M4 native story keeps original identity through twelve clean roots and cold resume; revoked root never dispatches
+not ok 1 - M4 native story keeps original identity through twelve clean roots and cold resume; revoked root never dispatches
+  ---
+  duration_ms: 5635.9653
+  type: 'test'
+  location: '<REPO>\\test\\rp-life-host.test.mjs:7:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'dispose')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    Object.drop (file:///<REPO>/test/fixtures/rp/native-host.mjs:38:116)
+    async TestContext.<anonymous> (file:///<REPO>/test/rp-life-host.test.mjs:20:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5957.115

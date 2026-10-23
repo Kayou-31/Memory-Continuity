@@ -1,0 +1,79 @@
+[
+  {
+    "name": "typecheck",
+    "command": [
+      "npm",
+      "run",
+      "typecheck"
+    ],
+    "node": "v22.23.3",
+    "start": "2026-10-23T13:37:49.795Z",
+    "end": "2026-10-23T13:37:51.636Z",
+    "exit": 0,
+    "signal": null
+  },
+  {
+    "name": "build",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "node": "v22.23.3",
+    "start": "2026-10-23T13:37:51.637Z",
+    "end": "2026-10-23T13:37:53.701Z",
+    "exit": 0,
+    "signal": null
+  },
+  {
+    "name": "test",
+    "command": [
+      "npm",
+      "test"
+    ],
+    "node": "v22.23.3",
+    "start": "2026-10-23T13:37:53.701Z",
+    "end": "2026-10-23T13:39:44.918Z",
+    "exit": 0,
+    "signal": null
+  },
+  {
+    "name": "fixture",
+    "command": [
+      "npm",
+      "run",
+      "evaluate:fixture"
+    ],
+    "node": "v22.23.3",
+    "start": "2026-10-23T13:39:44.919Z",
+    "end": "2026-10-23T13:39:45.105Z",
+    "exit": 0,
+    "signal": null
+  },
+  {
+    "name": "life",
+    "command": [
+      "npm",
+      "run",
+      "evaluate:life"
+    ],
+    "node": "v22.23.3",
+    "start": "2026-10-23T13:39:45.105Z",
+    "end": "2026-10-23T13:40:59.366Z",
+    "exit": 0,
+    "signal": null
+  },
+  {
+    "name": "pack-dry-run",
+    "command": [
+      "npm",
+      "pack",
+      "--dry-run"
+    ],
+    "node": "v22.23.3",
+    "start": "2026-10-23T13:40:59.366Z",
+    "end": "2026-10-23T13:41:00.112Z",
+    "exit": 0,
+    "signal": null
+  }
+]

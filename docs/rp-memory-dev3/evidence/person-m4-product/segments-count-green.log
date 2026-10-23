@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: segmented 4097th short publication is writable and cold readable without widening legacy input arrays
+ok 1 - segmented 4097th short publication is writable and cold readable without widening legacy input arrays
+  ---
+  duration_ms: 2244.1033
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2458.3065

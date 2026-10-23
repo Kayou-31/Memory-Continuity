@@ -1,0 +1,232 @@
+TAP version 13
+# Subtest: R01 R03 failed observation save cannot skip blocking any session on close
+ok 1 - R01 R03 failed observation save cannot skip blocking any session on close
+  ---
+  duration_ms: 151.6188
+  type: 'test'
+  ...
+# Subtest: R05 mode RP alone and copied options cannot enter the real SDK terminal
+ok 2 - R05 mode RP alone and copied options cannot enter the real SDK terminal
+  ---
+  duration_ms: 33.7805
+  type: 'test'
+  ...
+# Subtest: R04 R05 opaque owners and exact options remain isolated across retirement and stamp changes
+ok 3 - R04 R05 opaque owners and exact options remain isolated across retirement and stamp changes
+  ---
+  duration_ms: 30.8238
+  type: 'test'
+  ...
+# Subtest: R02 real SDK preserves admission identity; closing revokes before a paused stream ends
+ok 4 - R02 real SDK preserves admission identity; closing revokes before a paused stream ends
+  ---
+  duration_ms: 192.8838
+  type: 'test'
+  ...
+# Subtest: R04 duplicate installation is rejected before acquiring sessions and preserves first owner
+ok 5 - R04 duplicate installation is rejected before acquiring sessions and preserves first owner
+  ---
+  duration_ms: 65.3773
+  type: 'test'
+  ...
+# Subtest: R04 failed installation releases its reservation so corrected configuration can be installed
+ok 6 - R04 failed installation releases its reservation so corrected configuration can be installed
+  ---
+  duration_ms: 64.7921
+  type: 'test'
+  ...
+# Subtest: R06 R07 failed queue permits diagnostics and clean root on the same verified branch
+ok 7 - R06 R07 failed queue permits diagnostics and clean root on the same verified branch
+  ---
+  duration_ms: 105.5184
+  type: 'test'
+  ...
+# Subtest: R08 failed clean journal publication leaves old root blocked and no new live owner
+ok 8 - R08 failed clean journal publication leaves old root blocked and no new live owner
+  ---
+  duration_ms: 73.0288
+  type: 'test'
+  ...
+# Subtest: R09 dispatch-marked input is diagnosed as ambiguous and never automatically resent in a clean root
+ok 9 - R09 dispatch-marked input is diagnosed as ambiguous and never automatically resent in a clean root
+  ---
+  duration_ms: 146.216
+  type: 'test'
+  ...
+# Subtest: native manual manager creates and edits real person, explicit proposal/adoption survives and disposal revokes HTTP
+ok 10 - native manual manager creates and edits real person, explicit proposal/adoption survives and disposal revokes HTTP
+  ---
+  duration_ms: 1146.5823
+  type: 'test'
+  ...
+# Subtest: closing a manager while its listener opens prevents a late live endpoint
+ok 11 - closing a manager while its listener opens prevents a late live endpoint
+  ---
+  duration_ms: 69.1225
+  type: 'test'
+  ...
+# Subtest: manual management server binds loopback, rejects foreign callers and never exposes its token in HTML
+ok 12 - manual management server binds loopback, rejects foreign callers and never exposes its token in HTML
+  ---
+  duration_ms: 119.6763
+  type: 'test'
+  ...
+# Subtest: management requires original review, uses explicit writes, and shares person growth history
+ok 13 - management requires original review, uses explicit writes, and shares person growth history
+  ---
+  duration_ms: 1014.2092
+  type: 'test'
+  ...
+# Subtest: management refuses stale snapshots, request mutation, forged actions and revoked capabilities
+ok 14 - management refuses stale snapshots, request mutation, forged actions and revoked capabilities
+  ---
+  duration_ms: 518.781
+  type: 'test'
+  ...
+# Subtest: management snapshots cannot be rewritten by their caller
+ok 15 - management snapshots cannot be rewritten by their caller
+  ---
+  duration_ms: 247.0798
+  type: 'test'
+  ...
+# Subtest: revocation during commit preparation prevents publication
+ok 16 - revocation during commit preparation prevents publication
+  ---
+  duration_ms: 253.2999
+  type: 'test'
+  ...
+# Subtest: a lost receipt can recover its original management review key
+ok 17 - a lost receipt can recover its original management review key
+  ---
+  duration_ms: 323.243
+  type: 'test'
+  ...
+# Subtest: a second writer cannot rebase an old management proposal during control observation
+ok 18 - a second writer cannot rebase an old management proposal during control observation
+  ---
+  duration_ms: 388.6663
+  type: 'test'
+  ...
+# Subtest: module registry and dual-layer constraints reject unknown grants; core survives revoke
+ok 19 - module registry and dual-layer constraints reject unknown grants; core survives revoke
+  ---
+  duration_ms: 150.9512
+  type: 'test'
+  ...
+# Subtest: module evidence binds actual result, module version, fence and identity; mutation cannot be certified
+ok 20 - module evidence binds actual result, module version, fence and identity; mutation cannot be certified
+  ---
+  duration_ms: 235.9152
+  type: 'test'
+  ...
+# Subtest: module invocation revokes while queued
+ok 21 - module invocation revokes while queued
+  ---
+  duration_ms: 101.0539
+  type: 'test'
+  ...
+# Subtest: module context is an exact capability and revocation invalidates prepared packets
+ok 22 - module context is an exact capability and revocation invalidates prepared packets
+  ---
+  duration_ms: 44.3785
+  type: 'test'
+  ...
+# Subtest: in-flight module verification and packet admission recheck capabilities and actual contents
+ok 23 - in-flight module verification and packet admission recheck capabilities and actual contents
+  ---
+  duration_ms: 146.6091
+  type: 'test'
+  ...
+# Subtest: packet preparation captures the original runtime capability before awaiting the read view
+ok 24 - packet preparation captures the original runtime capability before awaiting the read view
+  ---
+  duration_ms: 44.9879
+  type: 'test'
+  ...
+# Subtest: module rejects data invalidated by a second writer while assembling a person view
+ok 25 - module rejects data invalidated by a second writer while assembling a person view
+  ---
+  duration_ms: 191.1485
+  type: 'test'
+  ...
+# Subtest: growth module only creates review candidates; protected fields and output budgets reject before publication
+ok 26 - growth module only creates review candidates; protected fields and output budgets reject before publication
+  ---
+  duration_ms: 323.0998
+  type: 'test'
+  ...
+# Subtest: person edit keeps history, grow needs growable policy and real experience; policy change stales candidates
+ok 27 - person edit keeps history, grow needs growable policy and real experience; policy change stales candidates
+  ---
+  duration_ms: 500.4182
+  type: 'test'
+  ...
+# Subtest: situational person fields expire by accepted sequence or scene without deleting history or reviving predecessors
+ok 28 - situational person fields expire by accepted sequence or scene without deleting history or reviving predecessors
+  ---
+  duration_ms: 302.2464
+  type: 'test'
+  ...
+# Subtest: growth batch is deterministic, supports explicit predecessor chains, rejects conflicts atomically and restores cold
+ok 29 - growth batch is deterministic, supports explicit predecessor chains, rejects conflicts atomically and restores cold
+  ---
+  duration_ms: 1280.3595
+  type: 'test'
+  ...
+# Subtest: Retcon invalidates dependent person growth without changing a fixed child; privacy removes growth candidates too
+ok 30 - Retcon invalidates dependent person growth without changing a fixed child; privacy removes growth candidates too
+  ---
+  duration_ms: 538.9001
+  type: 'test'
+  ...
+# Subtest: growth cannot borrow another field predecessor or carry policy edits in a candidate
+ok 31 - growth cannot borrow another field predecessor or carry policy edits in a candidate
+  ---
+  duration_ms: 173.5223
+  type: 'test'
+  ...
+# Subtest: reject retry is durable and immutable, sixteen changes fit and seventeen reject without publication
+ok 32 - reject retry is durable and immutable, sixteen changes fit and seventeen reject without publication
+  ---
+  duration_ms: 501.1287
+  type: 'test'
+  ...
+# Subtest: timeline invalidation IDs are scoped to that person and expired heads never revive earlier values
+ok 33 - timeline invalidation IDs are scoped to that person and expired heads never revive earlier values
+  ---
+  duration_ms: 435.1645
+  type: 'test'
+  ...
+# Subtest: person preview confirms one atomic origin, fields, relationship and goal with durable retry
+ok 34 - person preview confirms one atomic origin, fields, relationship and goal with durable retry
+  ---
+  duration_ms: 262.5086
+  type: 'test'
+  ...
+# Subtest: person import rejects unknown entities, untrusted fields, excessive text and stale or forged previews
+ok 35 - person import rejects unknown entities, untrusted fields, excessive text and stale or forged previews
+  ---
+  duration_ms: 166.7486
+  type: 'test'
+  ...
+# Subtest: legacy identity conflicts are explicit and all canonical routes reject unmarked person fields
+ok 36 - legacy identity conflicts are explicit and all canonical routes reject unmarked person fields
+  ---
+  duration_ms: 241.4839
+  type: 'test'
+  ...
+# Subtest: raw canonical controls cannot create a fieldless person or append a second initialization later
+ok 37 - raw canonical controls cannot create a fieldless person or append a second initialization later
+  ---
+  duration_ms: 224.741
+  type: 'test'
+  ...
+1..37
+# tests 37
+# suites 0
+# pass 37
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12551.7978

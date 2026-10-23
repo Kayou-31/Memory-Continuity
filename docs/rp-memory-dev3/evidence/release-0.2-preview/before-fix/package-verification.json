@@ -1,0 +1,12 @@
+{
+  "node": "v22.23.3",
+  "v8": "12.4.254.21-node.57",
+  "name": "@dsh-external/dsh-ultra-rp-memory",
+  "version": "0.2.0-dev.1",
+  "bytes": 790429,
+  "sha256": "092f72405f447de312b993ab4417eb54b80030c9315da6476b18fa63ef0b450c",
+  "packageFiles": 210,
+  "manifestEntries": 96,
+  "currentSourceAndBuildMatch": true,
+  "documentation": "Package reports are the original build snapshot; release source and RESULTS provide final release evidence."
+}

@@ -1,6 +1,10 @@
-# RP Memory 预览交付与来源
+# Ultra RP Memory：独立使用与可选适配
 
-本版本提供用户明确采纳的 narrator Memory、独立分支与 global 权限、来源检索、分层摘要和候选作业边界。公开入口为 `@dsh-external/dsh-rp-memory`，版本 `0.1.0-dev.2`。BSD-3-Clause；上游为 Kayou-31/dsh-ultra-mode，设计基线 `00bc770ef5e0819fb0fb3bee4afbd9576e303364`。后续开发 checkpoint 仅本地，不能把该哈希拼成假 GitHub 链接。独立仓库的 UPSTREAM.json 记录原路径、字节和哈希；完整开发源归档补充工程共存来源。
+产品目标是为可长期培养的 Agent 提供记忆连续性，让互动经历、关系、承诺与可复用经验逐步积累。RP 是当前已实现的场景；更完整的目标、技能和习惯成长属于后续设计。独立运行与可选 Ultra Mode 适配是并列使用方式，不能要求用户先安装 Ultra 才能使用核心记忆。
+
+本版本提供用户明确采纳的 narrator Memory、独立分支与 global 权限、来源检索、分层摘要和候选作业边界。本地开发入口已命名为 `@dsh-external/dsh-ultra-rp-memory`，版本仍为 `0.1.0-dev.3`；已发布历史包使用旧名 `@dsh-external/dsh-rp-memory`。这是可独立使用的插件，Ultra Mode 适配为可选能力，不要求安装任何 Ultra 工程包。当前已验证的是特定兼容版本共存；同会话检索/预算算法叠加的后续方向及未修复问题见 [审查报告](rp-memory-dev3/REVIEW-2026-10-22.md)。
+
+BSD-3-Clause；上游为 Kayou-31/dsh-ultra-mode，设计基线 `00bc770ef5e0819fb0fb3bee4afbd9576e303364`。后续开发 checkpoint 仅本地，不能把该哈希拼成假 GitHub 链接。独立仓库的 UPSTREAM.json 记录原路径、字节和哈希；完整开发源归档补充工程共存来源。下文保留 dev.2 适配阶段的机制与边界；dev.3 的实际验收以 [RESULTS](rp-memory-dev3/RESULTS.md) 最新节为准。
 
 默认 `enabled:false`、`contextCompression:false`、`strictPov:false`。dev.2 精确适配 SDK `0.2.1-rc.2`、session format 4、Cordis `4.0.5`、Schemastery `3.18.5`；SDK `0.2.0-rc.2` 使用冻结 dev.1。启用入口拒绝旧版与混版 peers。根 wrapper 不要求禁用实例先初始化原生服务，启用时会复核实际服务身份、容量和已声明的合作写入者。跨 SDK 历史迁移未测；在新隔离 profile 验证后再决定使用，不能将此版本适配视为已有剧情数据迁移承诺。
 

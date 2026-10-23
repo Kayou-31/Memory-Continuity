@@ -1,6 +1,6 @@
 - insert:
     - id: rp-memory
-      name: '@dsh-external/dsh-rp-memory'
+      name: '@dsh-external/dsh-ultra-rp-memory'
       config:
         enabled: false
         contextCompression: false

@@ -83,7 +83,12 @@ test('R21 v1 with no tools upgrades with exact byte backup; tool history stays r
   for (const tools of [false, true]) {
     const f = await host()
     try {
-      const a = tools ? await prepared(f) : await f.create(); if (!tools) await f.command(a, 'start'); else await execute(f, a, 'rp_memory_status')
+      // Construct an actual pre-M3 session before generating historical packets.
+      // Merely changing schemaVersion on new runtime-bound history is not v1 data.
+      let a = await f.create(); await f.command(a,'start')
+      const legacy = await journal(f,a); await f.drop(a); delete legacy.data.runtimeBinding
+      legacy.sha256=sha(canonical(legacy.data));await fs.writeFile(journalPath(f,a),canonical(legacy));a=await f.resume(a)
+      if(tools){assert.equal((await f.command(a,'input MEMORY_FACT')).kind,'success');await a.whenIdle();await f.rp.ready(a.id);await execute(f,a,'rp_memory_status')}
       const j = await journal(f, a); await f.drop(a); j.data.schemaVersion = 1
       for (const s of [...Object.values(j.data.pending), ...Object.values(j.data.snapshots), ...Object.values(j.data.frames), ...Object.values(j.data.receipts).map(r => r.snapshot)]) { delete s.provenance; delete s.records; delete s.resultSha256 }
       j.sha256 = sha(canonical(j.data)); const bytes = canonical(j); await fs.writeFile(journalPath(f, a), bytes)
@@ -120,8 +125,8 @@ test('R18 changed rendered text cannot acquire a receipt for an earlier result',
 test('R19 disposal while evidence validation awaits cannot publish the retired owner receipt', { timeout: 15000 }, async () => {
   const f = await host(), gate = latch(); let remove, restore
   try {
-    const a = await prepared(f), original = f.rp.memory.store.readFence; let armed = false
-    f.rp.memory.store.readFence = async (...args) => { const r = await original(...args); if (armed) { armed = false; await gate.wait() }; return r }; restore = () => f.rp.memory.store.readFence = original
+    const a = await prepared(f), original = f.rp.memory.store.withReadView; let armed = false
+    f.rp.memory.store.withReadView = async (...args) => { const r = await original(...args); if (armed) { armed = false; await gate.wait() }; return r }; restore = () => f.rp.memory.store.withReadView = original
     remove = f.ctx.on('tools/execute', async (_exec, next) => { const r = await next(); armed = true; return r })
     const running = execute(f, a, 'rp_memory_search', { query: 'MEMORY_FACT' }); await gate.entered
     let disposed; const observed = new Promise(r => disposed = r), off = f.ctx.on('agent/disposed', () => disposed())
@@ -133,8 +138,8 @@ test('R19 disposal while evidence validation awaits cannot publish the retired o
 test('R18 receipt validation cannot race a queue journal rename and lose a successful receipt', { timeout: 15000 }, async () => {
   const f = await host(), verifyGate = latch(), saveGate = latch(); let remove, restoreFence, restoreRename
   try {
-    const a = await prepared(f), original = f.rp.memory.store.readFence; let armed = false, blockSave = false
-    f.rp.memory.store.readFence = async (...args) => { const r = await original(...args); if (armed) { armed = false; await verifyGate.wait() }; return r }; restoreFence = () => f.rp.memory.store.readFence = original
+    const a = await prepared(f), original = f.rp.memory.store.withReadView; let armed = false, blockSave = false
+    f.rp.memory.store.withReadView = async (...args) => { const r = await original(...args); if (armed) { armed = false; await verifyGate.wait() }; return r }; restoreFence = () => f.rp.memory.store.withReadView = original
     remove = f.ctx.on('tools/execute', async (_exec, next) => { const r = await next(); armed = true; return r })
     const rename = fs.rename; fs.rename = async (from, to) => { if (blockSave && to === journalPath(f, a)) { blockSave = false; await saveGate.wait() }; return rename(from, to) }; restoreRename = () => fs.rename = rename
     const running = execute(f, a, 'rp_memory_search', { query: 'MEMORY_FACT' }); await verifyGate.entered

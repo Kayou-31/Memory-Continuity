@@ -6,6 +6,7 @@ import { canonical, withRpWriterLock, recoverRpWriterLock, readRpJson } from './
 import { checkedRpJson, MAX_RP_JSON_BYTES, MAX_RP_PUBLISH_BYTES, cloneInput, denied, failure, id, hostId, hash, integer, invalid, object, parseRecord, RpError, scope as validateScope, text, visibility as validateVisibility } from './schema.js'
 import type { CanonBinding, Result, Scope, SourceRevision, Visibility } from './types.js'
 import { MemoryCoordinator } from './session-policy.js'
+import { SEGMENT_FORMAT, SEGMENT_PUBLISH_BYTES, SEGMENT_CONTROL_BYTES, type SegmentLayout, readSegmentState, encodeSegments, writeSegments, backupGlobal } from './global-segments.js'
 export type GlobalScope = Extract<Scope, { kind: 'profile' | 'world' }>
 export interface GlobalFence { scope: GlobalScope; scopeRevision: number; visibilityRevision: number; deletionGeneration: number }
 export interface GlobalPublication { id: string; key: string; scope: GlobalScope; revision: number; body: string; bodySha256: string; source: SourceRevision; supersedes: string | null; verification: 'source-match' | 'private-source-deleted' }
@@ -21,21 +22,25 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
   const root = path.join(await fs.realpath(profileRoot), '.dsh-rp', 'v1'), identity = object(await readRpJson(path.join(root, 'identity.json')), ['schemaVersion', 'profileId', 'rootHash', 'directoryIdentity'])
   id(identity.profileId); hash(identity.rootHash); object(identity.directoryIdentity, ['dev', 'ino', 'birthtime']); if (identity.schemaVersion !== 1) invalid('global profile schema')
   const identityText = canonical(identity), globalRoot = path.join(root, 'global'), grants = new WeakMap<object, Grant>(), approvals = new WeakSet<object>()
+  const layouts = new WeakMap<State, SegmentLayout>()
   await fs.mkdir(globalRoot, { recursive: true })
   const check = async () => { if (canonical(await readRpJson(path.join(root, 'identity.json'))) !== identityText) denied('global profile identity changed') }
   const grant = async (authority: object, write = false) => { await check(); const g = grants.get(authority); if (!g || (write && !g.write)) denied('global authority'); return g! }
   const directory = (scope: GlobalScope) => path.join(globalRoot, sha(canonical(scope)))
   const atomic = async (file: string, body: string) => {
-    await fs.mkdir(path.dirname(file), { recursive: true }); const tmp = file + '.tmp-' + uid('write'), h = await fs.open(tmp, 'wx', 0o600)
-    try { await h.writeFile(body); await h.sync() } finally { await h.close() }
-    await fs.rename(tmp, file)
+    await fs.mkdir(path.dirname(file), { recursive: true }); const tmp = file + '.tmp-' + uid('write')
+    try {
+      const h = await fs.open(tmp, 'wx', 0o600)
+      try { await h.writeFile(body); await h.sync() } finally { await h.close() }
+      await fs.rename(tmp, file)
+    } catch (e) { await fs.rm(tmp, { force: true }).catch(() => {}); throw e }
   }
-  const validateState = (input: unknown, g: Grant): State => {
+  const validateState = (input: unknown, g: Grant, segmented = false): State => {
         const r = object(input, ['fence', 'publications', 'keys', 'previousHash', 'seq']), f = object(r.fence, ['scope', 'scopeRevision', 'visibilityRevision', 'deletionGeneration'])
         validateScope(f.scope); if (!['world', 'profile'].includes(f.scope.kind)) invalid('global scope'); integer(f.scopeRevision); integer(f.visibilityRevision); integer(f.deletionGeneration); hash(r.previousHash); integer(r.seq, 1)
-        if (!Array.isArray(r.publications) || r.publications.length > 4096) invalid('global publications')
+        if (!Array.isArray(r.publications) || r.publications.length > (segmented ? 8192 : 4096)) invalid('global publications')
         for (const item of r.publications) { const p = object(item, ['id', 'key', 'scope', 'revision', 'bodySha256', 'source', 'supersedes', 'privateSourceIds', 'revoked', 'deleted', 'privateDeleted']); id(p.id); text(p.key, 128); validateScope(p.scope); integer(p.revision, 1); hash(p.bodySha256); const parsed = parseRecord({ kind: 'source', record: p.source }); if (!parsed.ok || p.source.origin !== 'approved_publication' || !same(p.source.scope, g.scope) || !same(p.scope, g.scope) || p.source.publicTextSha256 !== p.bodySha256) invalid('approved global source'); if (p.supersedes !== null) id(p.supersedes); if (!Array.isArray(p.privateSourceIds) || p.privateSourceIds.length > 256) invalid('global private references'); p.privateSourceIds.forEach(id); for (const key of ['revoked', 'deleted', 'privateDeleted']) if (typeof p[key] !== 'boolean') invalid('publication status') }
-        const keys = object(r.keys, [], Object.keys(r.keys)); if (Object.keys(keys).length > 4096) invalid('global keys'); for (const [key, val] of Object.entries(keys)) { hash(key); const k = object(val, ['effect', 'result']); hash(k.effect); if (k.result !== '') id(k.result) }
+        const keys = object(r.keys, [], Object.keys(r.keys)); if (Object.keys(keys).length > (segmented ? 12288 : 4096)) invalid('global keys'); for (const [key, val] of Object.entries(keys)) { hash(key); const k = object(val, ['effect', 'result']); hash(k.effect); if (k.result !== '') id(k.result) }
         return r as State
   }
   const load = async (g: Grant): Promise<State> => {
@@ -45,11 +50,20 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
     try { names = (await fs.readdir(path.join(dir, 'commits'))).filter(f => /^\d{16}\.json$/u.test(f)).sort() } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e; names = [] }
     let state: State = { fence: { scope: g.scope, scopeRevision: 0, visibilityRevision: 0, deletionGeneration: 0 }, publications: [], keys: {}, previousHash: '0'.repeat(64), seq: 0 }
     const hashes = new Map<number, string>()
+    const pages = new Map<string, unknown>(); let layout: SegmentLayout | undefined
     for (const name of names) {
       let envelope: Record<string, any>, value: State
       try {
-        envelope = object(await readRpJson(path.join(dir, 'commits', name)), ['state', 'sha256']); hash(envelope.sha256)
-        value = validateState(envelope.state, g)
+        const raw = await readRpJson(path.join(dir, 'commits', name))
+        if (raw && typeof raw === 'object' && 'format' in raw) {
+          const decoded = await readSegmentState(dir, raw, pages)
+          if (layout && !same(layout, decoded.layout)) throw new RpError('store_corrupt', 'Global migration identity changed')
+          layout = decoded.layout; envelope = decoded
+        } else {
+          if (layout) throw new RpError('store_corrupt', 'Global layout downgrade')
+          envelope = object(raw, ['state', 'sha256']); hash(envelope.sha256)
+        }
+        value = validateState(envelope.state, g, !!layout)
       } catch (e) { throw new RpError('store_corrupt', 'Global metadata schema corrupt: ' + (e instanceof Error ? e.message : 'invalid')) }
       if (sha(canonical(value)) !== envelope.sha256 || value.seq !== state.seq + 1 || value.previousHash !== sha(canonical(state)) || !same(value.fence.scope, g.scope)) throw new RpError('store_corrupt', 'Global transaction chain corrupt')
       state = value
@@ -59,9 +73,36 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
     if (!same(initialSeal ?? null, seal ?? null)) throw new RpError('stale_input', 'Global publication changed during read')
     if (state.seq > (seal?.seq ?? 0) + 1) throw new RpError('store_corrupt', 'Global unsealed transaction chain')
     if (seal && (seal.seq > state.seq || hashes.get(seal.seq) !== seal.hash)) throw new RpError('store_corrupt', 'Global committed transaction missing')
+    if (layout) layouts.set(state, layout)
     return state
   }
   const allowed = (g: Grant, p: Meta) => same(p.scope, g.scope) && p.source.visibility.policyId === g.visibility.policyId && p.source.visibility.revision === g.visibility.revision && g.audienceSetIds.includes(p.source.visibility.audienceSetId)
+  // Called only with the scope writer lock and a completely validated history.
+  // Every committed publication remains in state, including retained/revoked ones.
+  // An unregistered source directory therefore cannot be an accepted publication.
+  const reclaimUnpublished = async (state: State, g: Grant) => {
+    const root = path.join(directory(g.scope), 'blobs'), registered = new Map(state.publications.map(p => [p.source.id, p.source.blobId + '.txt']))
+    let entries: import('node:fs').Dirent[]
+    try { const stat = await fs.lstat(root); if (!stat.isDirectory() || stat.isSymbolicLink()) throw new RpError('store_corrupt', 'Invalid global blob directory'); entries = await fs.readdir(root, { withFileTypes: true }) } catch (e) { if ((e as NodeJS.ErrnoException).code === 'ENOENT') return; throw e }
+    const remove: string[] = [], empty: string[] = []
+    for (const entry of entries) {
+      if (!/^approved_[A-Za-z0-9_-]+$/u.test(entry.name) || !entry.isDirectory() || entry.isSymbolicLink()) throw new RpError('store_corrupt', 'Unknown global blob source')
+      const dir = path.join(root, entry.name), expected = registered.get(entry.name)
+      for (const file of await fs.readdir(dir, { withFileTypes: true })) {
+        // Registered bodies belong to read/purge. A physical purge obstruction
+        // must not prevent the durable deletion tombstone from being published.
+        if (file.name === expected) continue
+        if (!file.isFile() || file.isSymbolicLink() || !/^blob_[a-f0-9]{64}\.txt(?:\.tmp-write_[a-f0-9]{32})?$/u.test(file.name)) throw new RpError('store_corrupt', 'Unknown global blob file')
+        const temporary = file.name.includes('.tmp-')
+        if (expected && file.name.split('.tmp-')[0] !== expected) throw new RpError('store_corrupt', 'Global publication blob mismatch')
+        if (!expected || temporary) remove.push(path.join(dir, file.name))
+      }
+      if (!expected) empty.push(dir)
+    }
+    // Validate the entire candidate set before deleting any transient file.
+    for (const file of remove) await fs.unlink(file)
+    for (const dir of empty) await fs.rmdir(dir)
+  }
   const purge = async (state: State, g: Grant, value: any) => {
     const affected = state.publications.filter(p => p.deleted && (value.privateSourceIds ? p.privateSourceIds.some(x => value.privateSourceIds.includes(x)) : allowed(g, p)))
     if (affected.some(p => !allowed(g, p))) denied('approved purge audience')
@@ -82,7 +123,7 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
       return ok({ ...publicMeta, body, verification: privateDeleted ? 'private-source-deleted' : 'source-match' })
     } catch (e) { return failure(e) }
   }
-  const mutate = async (authority: object, approval: object, input: unknown, update: (s: State, g: Grant, v: any, blobs: { file: string; body: string }[]) => Promise<string>, publication = false): Promise<Result<GlobalPublication | GlobalFence>> => {
+  const mutate = async (authority: object, approval: object, input: unknown, update: (s: State, g: Grant, v: any, blobs: { file: string; body: string }[]) => Promise<string>, publication = false, enableSegments = false): Promise<Result<GlobalPublication | GlobalFence>> => {
     let published = false
     try {
       const g = await grant(authority, true); if (!approvals.has(approval)) denied('trusted global command approval required')
@@ -97,15 +138,23 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
             let existing: unknown; try { existing = await readRpJson(target) } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e }
             if (!same(existing ?? null, expected)) await atomic(target, canonical(expected))
           }
-          if (prior) { if (prior.effect !== effect) throw new RpError('idempotency_conflict', 'Global command differs'); published = true; await sealHead(); await purge(current, g, value); return prior.result ? read(authority, prior.result) : ok(current.fence) }
+          if (prior) { if (prior.effect !== effect) throw new RpError('idempotency_conflict', 'Global command differs'); published = true; await sealHead(); await reclaimUnpublished(current, g); await purge(current, g, value); return prior.result ? read(authority, prior.result) : ok(current.fence) }
           if (!same(current.fence, value.expected)) throw new RpError('stale_input', 'Global fence changed')
           await sealHead()
           const next = structuredClone(current), blobs: { file: string; body: string }[] = [], result = await update(next, g, value, blobs)
           next.fence.scopeRevision++; next.previousHash = sha(canonical(current)); next.seq++; next.keys[commandKey] = { effect, result }
-          if (next.publications.length > 4096 || Object.keys(next.keys).length > (publication ? 3072 : 4096)) throw new RpError('capacity_exceeded', 'Global metadata count limit; old state preserved')
-          validateState(next, g)
-          const encoded = checkedRpJson({ state: next, sha256: sha(canonical(next)) }, canonical, publication ? MAX_RP_PUBLISH_BYTES : MAX_RP_JSON_BYTES)
+          const segmented = enableSegments || layouts.has(current)
+          if (next.publications.length > (segmented ? 8192 : 4096) || Object.keys(next.keys).length > (segmented ? (publication ? 8192 : 12288) : (publication ? 3072 : 4096))) throw new RpError('capacity_exceeded', 'Global metadata count limit; old state preserved')
+          validateState(next, g, segmented)
+          let encoded = checkedRpJson({ state: next, sha256: sha(canonical(next)) }, canonical, segmented ? (publication ? SEGMENT_PUBLISH_BYTES : SEGMENT_CONTROL_BYTES) : (publication ? MAX_RP_PUBLISH_BYTES : MAX_RP_JSON_BYTES), segmented ? 8192 : 4096)
+          let segments: ReturnType<typeof encodeSegments> | undefined
+          if (segmented) {
+            const layout = layouts.get(current) ?? await backupGlobal(root, dir, current, atomic)
+            segments = encodeSegments(next, layout); encoded = segments.encoded
+          }
           await grant(authority, true); if (!approvals.has(approval)) denied('global command approval revoked before publication')
+          await reclaimUnpublished(current, g)
+          if (segments) await writeSegments(dir, segments.pages, atomic)
           for (const blob of blobs) await atomic(blob.file, blob.body)
           const commitFile = path.join(dir, 'commits', String(next.seq).padStart(16, '0') + '.json')
           try { await atomic(commitFile, encoded); published = true } catch (e) {
@@ -122,6 +171,7 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
     } catch (e) { return failure(e instanceof RpError ? e : new RpError(published ? 'persistence_uncertain' : 'persistence_failed', e instanceof Error ? e.message : 'Global persistence failure')) }
   }
   const store = {
+    async storageStatus(authority: object) { try { const g = await grant(authority), state = await load(g), layout = layouts.get(state); return ok({ format: layout ? SEGMENT_FORMAT : 'v1', ...layout, logicalBytes: Buffer.byteLength(canonical({ state, sha256: sha(canonical(state)) })), seq: state.seq, publicationLimitBytes: layout ? SEGMENT_PUBLISH_BYTES : MAX_RP_PUBLISH_BYTES, controlLimitBytes: layout ? SEGMENT_CONTROL_BYTES : MAX_RP_JSON_BYTES }) } catch (e) { return failure(e) } },
     async listActive(authority: object) { try { const g = await grant(authority), state = await load(g), heads = new Map<string, Meta>(); for (const p of state.publications) heads.set(p.key, p); const values: GlobalPublication[] = []; for (const p of heads.values()) if (allowed(g, p) && !p.revoked && !p.deleted) { const r = await read(authority, p.id); if (!r.ok) return r; values.push(r.value) }; return ok(values) } catch (e) { return failure(e) } },
     async readFence(authority: object): Promise<Result<GlobalFence>> { try { return ok((await load(await grant(authority))).fence) } catch (e) { return failure(e) } },
     readPublication: read,
@@ -129,6 +179,7 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
     async verifyBinding(authority: object, binding: CanonBinding) { const r = await read(authority, binding.publicationId); return r.ok && r.value.scope.kind === 'world' && r.value.scope.worldId === binding.worldId && r.value.scope.entityId === binding.entityId && r.value.revision === binding.revision && r.value.bodySha256 === binding.bodySha256 },
   }
   const control = {
+    enableSegments(authority: object, approval: object, input: { idempotencyKey: string; expected: GlobalFence }) { return mutate(authority, approval, input, async (_s, _g, v) => { object(v, ['idempotencyKey', 'expected']); return '' }, false, true) as Promise<Result<GlobalFence>> },
     async purgeStatus(authority: object) { try { const g = await grant(authority), s = await load(g), values = []; for (const p of s.publications.filter(p => allowed(g, p) && p.deleted)) { let exists = true; try { await fs.lstat(path.join(directory(g.scope), 'blobs', p.source.id, p.source.blobId + '.txt')) } catch (e) { if ((e as NodeJS.ErrnoException).code === 'ENOENT') exists = false; else throw e }; values.push({ publicationId: p.id, purgeState: exists ? 'blocked' : 'complete' }) }; return ok(values) } catch (e) { return failure(e) } },
     isApproval(handle: object) { return approvals.has(handle) },
     async authorize(input: Grant): Promise<Result<object>> { try { await check(); const g = cloneInput(input); object(g, ['scope', 'visibility', 'audienceSetIds', 'write']); validateScope(g.scope); validateVisibility(g.visibility); if (!['profile', 'world'].includes(g.scope.kind) || g.scope.profileId !== identity.profileId || typeof g.write !== 'boolean' || !Array.isArray(g.audienceSetIds) || !g.audienceSetIds.includes(g.visibility.audienceSetId)) denied('global profile/scope grant'); g.audienceSetIds.forEach(id); const handle = Object.freeze({}); grants.set(handle, g); return ok(handle) } catch (e) { return failure(e) } },

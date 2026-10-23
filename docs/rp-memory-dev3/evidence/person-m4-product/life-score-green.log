@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: life evaluator requires the annotated fact span, original revision and actual returned content
+ok 1 - life evaluator requires the annotated fact span, original revision and actual returned content
+  ---
+  duration_ms: 0.6621
+  type: 'test'
+  ...
+# Subtest: life evaluator reports omissions, duplicate and unknown claims without inflated scores
+ok 2 - life evaluator reports omissions, duplicate and unknown claims without inflated scores
+  ---
+  duration_ms: 0.1572
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 55.2228

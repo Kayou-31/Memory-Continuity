@@ -6,19 +6,95 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { spawnSync } from 'node:child_process'
 import { host } from '../../test/fixtures/rp/native-host.mjs'
+import { LlmAdapter } from '@deepseek-ai/dsh-llm'
 
-const base = path.resolve('work/host-followup')
+const base = path.resolve(process.env.RP_BUNDLES_ROOT ?? 'work/host-followup')
 const packageVersions = {}
 for (const [name, expected] of [['cordis', '4.0.5'], ['schemastery', '3.18.5'], ...['dsh-agent', 'dsh-agent-loop', 'dsh-llm', 'dsh-session', 'dsh-system-prompt', 'dsh-tools', 'dsh-commands', 'dsh-session-projection', 'dsh-session-persistence-jsonl'].map(name => [name, '0.2.1-rc.2'])]) {
   const pkg = JSON.parse(await fs.readFile(path.join(path.resolve(process.env.RP_NATIVE_SDK ?? 'node_modules'), '@deepseek-ai', name, 'package.json'), 'utf8'))
   assert.equal(pkg.version, expected); packageVersions[name] = pkg.version
 }
+
 const manifests = JSON.parse(await fs.readFile(path.join(base, 'bundles.json'), 'utf8'))
 const rpModule = await import(pathToFileURL(path.join(base, 'rp/package/lib/index.js')).href)
 const modules = {}
 for (const id of ['ultra', 'memory', 'decision']) modules[id] = await import(pathToFileURL(path.join(base, id, 'package/lib/index.js')).href)
 const observations = []
+
+for (const [order, optimize] of [['standalone', true], ['engineering-first', false], ['engineering-first', true], ['rp-first', true]]) test('Agent growth in actual TGZ '+order+' optimize='+optimize, { timeout: 30000 }, async () => {
+  const load = async ({ ctx }) => { await ctx.plugin(modules.ultra, { contextCompression: false, memoryMaxRequests: 0, memoryMaxTokens: 0 }).await() }
+  const f = await host({ entityIds: ['erin', 'bea'], ultraMemoryOptimization: optimize }, { install: rpModule.installRpPlugin, ...(order === 'standalone' ? {} : { [order === 'engineering-first' ? 'before' : 'after']: load }) }), requests = []
+  const stacked = order !== 'standalone' && optimize, expected = stacked ? 'ultra-rp/v1' : 'standalone'
+  class Capture extends LlmAdapter { async *stream(request) { requests.push(request); yield { type: 'text-delta', index: 0, text: 'offline Agent reply' }; yield { type: 'finish', reason: { kind: 'stop' } } } }
+  try {
+    f.ctx.llm.registerAdapter(['stacked-agent'], new Capture()); const a = await f.create(); a.options.provider = 'stacked-agent'
+    await f.command(a, 'start'); const eventIds = []
+    for (const description of ['在钟楼与贝雅共同救援', '在钟楼与贝雅共同救援', '在钟楼开始学习医术']) {
+      const result = await f.command(a, 'agent '+JSON.stringify({ kind: 'experience', actorIds: ['erin', 'bea'], description, sourceRevisionIds: [] }))
+      assert.equal(result.kind, 'success', result.text); eventIds.push(JSON.parse(result.text).eventId)
+    }
+    const goal = await f.command(a, 'agent '+JSON.stringify({ kind: 'goal', ownerId: 'erin', goalId: 'medicine', category: 'task', objective: '学习医术', status: 'active', progress: 0, nextAction: '继续课程', previousEventId: null, causeEventIds: [eventIds[2]], note: '长期目标' }))
+    assert.equal(goal.kind, 'success', goal.text)
+    assert.equal(f.rp.status(a.id).memoryOptimization.available, expected)
+    assert.equal((await f.command(a, 'input 钟楼')).kind, 'success'); await a.whenIdle(); await f.rp.ready(a.id)
+    assert.equal(requests.length, 1); assert.match(JSON.stringify(requests[0]), /学习医术/)
+    assert.equal(f.rp.status(a.id).memoryOptimization.packet, expected)
+    const runtime = a.session.deriveMessages().find(m => m.source?.kind === 'runtime-context')
+    const text = runtime.content.filter(c => c.type === 'text').map(c => c.text).join('')
+    assert.equal((text.match(/在钟楼与贝雅共同救援/gu) ?? []).length, stacked ? 1 : 2, 'only the optional stacked adapter deduplicates experience text')
+    if (order !== 'standalone') {
+      assert.equal(await f.ctx.get('ultraEvidenceSupport').memory.begin(a, 'NO_ENGINEERING_CAPTURE'), undefined)
+      assert.equal(f.ctx.get('ultraEvidenceSupport').memory.hasActiveSession(a.id), false)
+    }
+    observations.push({ agentStack: stacked, order, actualRequests: 1, optimizer: expected, duplicateExperienceRemoved: stacked, engineeringCapture: false, nativeCompression: false })
+  } finally { await f.dispose() }
+})
+
 test.after(async () => fs.writeFile(path.join(base, 'report.json'), JSON.stringify({ node: process.version, sdk: { packageVersions }, manifests, observations, scope: 'native SDK with local synthetic terminal; no real provider, desktop UI, or power-loss proof' }, null, 2)))
+
+for(const [order,mode] of [['standalone','companion'],['engineering-first','project'],['rp-first','creation']])test('M3 module candidates and constraints in actual TGZ '+order,async()=>{
+  const load=async({ctx})=>{await ctx.plugin(modules.ultra,{contextCompression:false,memoryMaxRequests:0,memoryMaxTokens:0}).await()}
+  const f=await host({entityIds:['erin']},{install:rpModule.installRpPlugin,...(order==='standalone'?{}:{[order==='engineering-first'?'before':'after']:load})}),requests=[]
+  class Terminal extends LlmAdapter{async *stream(request){requests.push(request);yield {type:'text-delta',index:0,text:'Offline M3'};yield {type:'finish',reason:{kind:'stop'}}}}
+  const cmd=async(a,input)=>{const r=await f.command(a,input);assert.equal(r.kind,'success',r.text);return r}
+  try{f.ctx.llm.registerAdapter(['m3-bundle'],new Terminal());const a=await f.create();a.options.provider='m3-bundle';await cmd(a,'start');await cmd(a,'mode set '+mode)
+    await cmd(a,'modules enable person-view');await cmd(a,'modules enable growth-review');await cmd(a,'constraints set '+JSON.stringify({guidance:[{id:'boundary',text:'保留不确定性，尊重人物边界'}]}))
+    const d={schemaVersion:1,kind:'person-draft',personId:'erin',fields:[{fieldId:'name',kind:'identity',value:'林澈',policy:'stable'},{fieldId:'care',kind:'trait',value:'谨慎',policy:'growable'}],relationships:[],goals:[]}
+    const p=JSON.parse((await cmd(a,'person preview '+JSON.stringify(d))).text);await cmd(a,'person confirm '+p.previewId);await cmd(a,'person use erin')
+    const read=JSON.parse((await cmd(a,'modules run '+JSON.stringify({moduleId:'person-view',input:{personId:'erin'}}))).text);assert.equal(read.receipt.execution,'core-only');assert.ok(read.receipt.records.length)
+    const cause=JSON.parse((await cmd(a,'agent '+JSON.stringify({kind:'experience',actorIds:['erin'],description:'完成一次可靠的探索',sourceRevisionIds:[]}))).text)
+    const changes=[{changeId:'care',personId:'erin',fieldId:'care',previousEventId:read.result.fields.find(f=>f.fieldId==='care').eventId,value:'敢于探索',causeEventIds:[cause.eventId],note:'有依据的变化'}]
+    const proposal=JSON.parse((await cmd(a,'modules run '+JSON.stringify({moduleId:'growth-review',input:{changes}}))).text)
+    assert.equal(JSON.parse((await cmd(a,'person show erin')).text).fields.find(f=>f.fieldId==='care').value,'谨慎')
+    await cmd(a,'person adopt '+JSON.stringify({candidateIds:[proposal.result.id]}));await cmd(a,'input 开始');await a.whenIdle();await f.rp.ready(a.id)
+    assert.equal(requests.length,1);assert.match(JSON.stringify(requests[0]),/敢于探索/);assert.match(JSON.stringify(requests[0]),/保留不确定性/)
+    assert.equal(f.rp.status(a.id).purpose.mode,mode);assert.equal(f.rp.status(a.id).memoryOptimization.packet,order==='standalone'?'standalone':'ultra-rp/v1')
+    await cmd(a,'modules disable growth-review');await assert.rejects(f.stream(a));assert.equal(requests.length,1)
+    observations.push({m3:true,order,mode,explicitCandidateOnly:true,actualRequests:1,automaticSummary:false})
+  }finally{await f.dispose()}
+})
+
+for (const order of ['standalone', 'engineering-first', 'rp-first']) test('Person binding in actual TGZ '+order, async () => {
+  const load = async ({ctx}) => { await ctx.plugin(modules.ultra, {contextCompression:false,memoryMaxRequests:0,memoryMaxTokens:0}).await() }
+  const f = await host({entityIds:['erin']}, {install:rpModule.installRpPlugin,...(order==='standalone'?{}:{[order==='engineering-first'?'before':'after']:load})}), requests=[]
+  class Capture extends LlmAdapter { async *stream(request) { requests.push(request); yield {type:'text-delta',index:0,text:'offline person'}; yield {type:'finish',reason:{kind:'stop'}} } }
+  const command = async (agent,text) => { const r=await f.command(agent,text); assert.equal(r.kind,'success',r.text); return r }
+  try {
+    f.ctx.llm.registerAdapter(['person-bundle'],new Capture()); const a=await f.create(); a.options.provider='person-bundle'; await command(a,'start')
+    const d={schemaVersion:1,kind:'person-draft',personId:'erin',fields:[{fieldId:'name',kind:'identity',value:'林澈',policy:'stable'},{fieldId:'care',kind:'trait',value:'观望',policy:'growable'}],relationships:[],goals:[]}
+    const preview=JSON.parse((await command(a,'person preview '+JSON.stringify(d))).text)
+    await command(a,'person confirm '+preview.previewId); await command(a,'person use erin')
+    const person=JSON.parse((await command(a,'person show erin')).text),experience=JSON.parse((await command(a,'agent '+JSON.stringify({kind:'experience',actorIds:['erin'],description:'共同探索钟楼',sourceRevisionIds:[]}))).text)
+    const proposed=JSON.parse((await command(a,'person propose '+JSON.stringify({changes:[{changeId:'care',personId:'erin',fieldId:'care',previousEventId:person.fields.find(f=>f.fieldId==='care').eventId,value:'愿意探索',causeEventIds:[experience.eventId],note:'共同经历'}]}))).text)
+    await command(a,'person adopt '+JSON.stringify({candidateIds:[proposed.id]}))
+    await command(a,'input 你是谁'); await a.whenIdle(); await f.rp.ready(a.id)
+    assert.equal(requests.length,1); assert.match(JSON.stringify(requests[0]),/primaryPerson/); assert.match(JSON.stringify(requests[0]),/林澈/)
+    assert.equal(f.rp.status(a.id).memoryOptimization.packet,order==='standalone'?'standalone':'ultra-rp/v1')
+    if(order!=='standalone')assert.equal(f.ctx.get('ultraEvidenceSupport').memory.hasActiveSession(a.id),false)
+    assert.match(JSON.stringify(requests[0]),/愿意探索/)
+    observations.push({personCore:true,personGrowth:true,order,personId:'erin',actualRequests:1,automaticSummary:false})
+  } finally {await f.dispose()}
+})
 
 for (const companions of [['memory'], ['ultra', 'memory'], ['decision', 'memory']]) for (const order of ['engineering-first', 'rp-first']) {
   test('R40 final TGZ ' + companions.join('+') + ' ' + order, { timeout: 30000 }, async () => {

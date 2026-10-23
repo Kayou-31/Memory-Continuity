@@ -1,0 +1,32 @@
+{
+  "command": "npm pack --ignore-scripts --json --pack-destination <DELIVERY>",
+  "exit": 0,
+  "node": "v22.23.3",
+  "name": "@dsh-external/dsh-ultra-rp-memory",
+  "version": "0.2.0-dev.1",
+  "bytes": 826602,
+  "unpackedBytes": 3044411,
+  "files": 236,
+  "manifestEntries": 96,
+  "manifestMatchesCurrentSourceBuildAndUi": true,
+  "bundles": [
+    {
+      "id": "rp",
+      "sha256": "30caccebceabc8c42dcf64c04219c96598bfb1f44f396da86754874286f07f8d"
+    },
+    {
+      "id": "ultra",
+      "sha256": "118e9f329e601b9841b6fa3b59004552ae4b2808b6a6ea54845bdf14b0c06dce"
+    },
+    {
+      "id": "memory",
+      "sha256": "9ddf227bdf9b5a52c4c7f7ae188a294c2c5805c274b9fe0f58b92b212c2397b9"
+    },
+    {
+      "id": "decision",
+      "sha256": "2db3afabeb6de27e6da7132e0c6bf776ac7485541b5752cb055025074c2c5bc8"
+    }
+  ],
+  "hostTestExit": 0,
+  "publicCoreRegressionExit": 0
+}

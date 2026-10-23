@@ -1,0 +1,8 @@
+{
+  "exit": 0,
+  "end": "2026-10-23T14:08:10.5164153Z",
+  "start": "2026-10-23T14:07:54.2413522Z",
+  "RP_PERSON_BUNDLE": "work/release-02-2026-10-23/bundles/rp/package/lib/index.js",
+  "command": "node --test --test-concurrency=1 scripts/host-acceptance/dev3-companion.test.mjs test/rp-person-host.test.mjs test/rp-modules-host.test.mjs test/rp-management-host.test.mjs test/rp-storage-host.test.mjs",
+  "RP_BUNDLES_ROOT": "work/release-02-2026-10-23/bundles"
+}

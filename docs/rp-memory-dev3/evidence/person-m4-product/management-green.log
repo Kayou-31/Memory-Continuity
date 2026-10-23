@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: management requires original review, uses explicit writes, and shares person growth history
+ok 1 - management requires original review, uses explicit writes, and shares person growth history
+  ---
+  duration_ms: 1054.9214
+  type: 'test'
+  ...
+# Subtest: management refuses stale snapshots, request mutation, forged actions and revoked capabilities
+ok 2 - management refuses stale snapshots, request mutation, forged actions and revoked capabilities
+  ---
+  duration_ms: 491.019
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1741.8347

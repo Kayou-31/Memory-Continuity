@@ -2,18 +2,21 @@
  * subscribes to completion events. All state changes use the P1 store ledger. */
 import { createHash } from 'node:crypto'
 import type { RpStore } from './store.js'
-import type { BranchSourceBinding, EventPayload, ForkManifest, HostAuthority, InputFence, Result, SemanticEvent, SourceRevision } from './types.js'
+import type { AuthorityChange, BranchSourceBinding, EventPayload, ForkManifest, HostAuthority, InputFence, Result, SemanticEvent, SourceRevision } from './types.js'
 import { cloneInput, event as validateEvent, failure, fence as validateFence, id, invalid, object, denied, text } from './schema.js'
+import { personOriginCandidate } from './semantic-registry.js'
 export { assessClaim, reduceEvents } from './reducer.js'
 export { applyNativeCanonicalEvent } from './host-adapter.js'
 
 export interface EventProposal {
   readonly id: string; readonly payload: EventPayload; readonly epistemic: SemanticEvent['epistemic']; readonly beliefHolderId?: string
   readonly fictionalTime?: string | null; readonly sourceRevisionIds?: readonly string[]; readonly supersedes?: readonly string[]
+  readonly growthProtocol?: 'agent-memory/v1'
+  readonly personProtocol?: 'person-core/v1' | 'person-origin/v1'
 }
 type BaseControl = { readonly idempotencyKey: string; readonly expected: InputFence }
 export type CanonicalControl = BaseControl & (
-  | { readonly kind: 'accept' | 'confirm_replay'; readonly sourceRevisionIds: readonly string[]; readonly events: readonly EventProposal[] }
+  | { readonly kind: 'accept' | 'confirm_replay'; readonly sourceRevisionIds: readonly string[]; readonly events: readonly EventProposal[]; readonly personCandidates?: readonly {candidateId:string;eventIds:readonly string[];decision:'accepted'|'rejected'}[] }
   | { readonly kind: 'reject' | 'retract'; readonly sourceRevisionIds: readonly string[] }
   | { readonly kind: 'replace'; readonly sourceRevisionId: string; readonly replacementSourceRevisionId: string; readonly events: readonly EventProposal[] }
   | { readonly kind: 'retcon'; readonly targetEventIds: readonly string[]; readonly events: readonly EventProposal[] }
@@ -43,7 +46,7 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
         text(value.idempotencyKey, 256); validateFence(value.expected)
         const fields: Record<string, string[]> = { accept: ['sourceRevisionIds', 'events'], confirm_replay: ['sourceRevisionIds', 'events'], reject: ['sourceRevisionIds'], retract: ['sourceRevisionIds'], replace: ['sourceRevisionId', 'replacementSourceRevisionId', 'events'], retcon: ['targetEventIds', 'events'], character_forget: ['knowerId', 'claimId'], privacy_delete: ['sourceRevisionIds', 'affectedBranchIds'] }
         if (!Object.hasOwn(fields, value.kind)) invalid('canonical operation')
-        object(value, ['kind', 'idempotencyKey', 'expected', ...fields[value.kind]])
+        object(value, ['kind', 'idempotencyKey', 'expected', ...fields[value.kind]],value.kind==='accept'?['personCandidates']:[])
         if (value.kind === 'privacy_delete') {
           list(value.sourceRevisionIds); list(value.affectedBranchIds)
           const blocked = await control.privacyDelete(authority, source.id, { idempotencyKey: value.idempotencyKey, expected: value.expected, sourceRevisionIds: value.sourceRevisionIds, affectedBranchIds: value.affectedBranchIds }, affectedAuthorities)
@@ -54,6 +57,7 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
         const prior = unwrap(await store.readControlCommit(authority, value.idempotencyKey))
         if (prior) {
           if (!prior.authorityChanges.some(c => c.kind === 'candidate_adoption' && c.recordId === commandId && c.record.candidateId === commandHash)) return { ok: false as const, code: 'idempotency_conflict' as const, message: 'RP control idempotency key has different effects' }
+          unwrap(await store.ensureDurable(authority, ledger.fence))
           return { ok: true as const, value: prior.fence }
         }
         if (encode(ledger.fence) !== encode(value.expected)) return { ok: false as const, code: 'stale_input' as const, message: 'RP canonical input changed' }
@@ -106,8 +110,9 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
         } else invalid('canonical operation')
         if (bindings.get(source.id)?.disposition !== 'accepted') bind(source, 'accepted')
         if (!Array.isArray(proposals) || proposals.length > 256) invalid('event proposals')
+        const growthMarkers: AuthorityChange[] = []
         const events: SemanticEvent[] = proposals.map((proposal, i) => {
-          object(proposal, ['id', 'payload', 'epistemic'], ['fictionalTime', 'beliefHolderId', 'sourceRevisionIds', 'supersedes'])
+          object(proposal, ['id', 'payload', 'epistemic'], ['fictionalTime', 'beliefHolderId', 'sourceRevisionIds', 'supersedes', 'growthProtocol', 'personProtocol'])
           if (proposal.epistemic === 'belief' && (!proposal.beliefHolderId || !entities.has(proposal.beliefHolderId))) denied('unknown belief holder')
           if (proposal.payload.kind === 'knowledge_change' && !entities.has(proposal.payload.knowerId)) denied('unknown knowledge holder')
           const origins: SourceRevision[] = proposal.sourceRevisionIds ? (list(proposal.sourceRevisionIds), proposal.sourceRevisionIds.map(get)) : eventSources
@@ -119,10 +124,35 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
             payload: proposal.payload, epistemic: proposal.epistemic, authority: authorityClass, ...(proposal.beliefHolderId ? { beliefHolderId: proposal.beliefHolderId } : {}),
             sources: support.map(s => ({ sourceRevisionId: s.id, publicTextSha256: s.publicTextSha256, startUtf16: 0, endUtf16: s.publicTextLengthUtf16, quoteSha256: s.publicTextSha256 })),
             visibility: authority.visibility, supersedes: [...new Set([...(proposal.supersedes ?? []), ...(i === 0 ? targets : [])])], policyVersion: ledger.fence.policyVersion }
-          validateEvent(event); return event
+          validateEvent(event)
+          if (proposal.growthProtocol !== undefined) {
+            if (proposal.growthProtocol !== 'agent-memory/v1') invalid('growth protocol')
+            growthMarkers.push({ kind: 'candidate_adoption', recordId: 'growth_' + event.id, record: { candidateId: 'agent_memory_v1', sourceRevisionIds: support.map(s => s.id), eventIds: [event.id], summaryIds: [], decision: 'accepted', controlSourceId: source.id } })
+          }
+          if (proposal.personProtocol !== undefined) {
+            if (proposal.growthProtocol !== undefined || !['person-core/v1', 'person-origin/v1'].includes(proposal.personProtocol)) invalid('person protocol')
+            const origin = proposal.personProtocol === 'person-origin/v1'
+            if (origin && (event.payload.kind !== 'occurrence' || event.payload.actorIds.length !== 1)) invalid('person origin actors')
+            // Public core controls share the same trusted entity registry as person drafts.
+            if (origin && event.payload.kind === 'occurrence' && !entities.has(event.payload.actorIds[0])) denied('unknown person origin entity')
+            if (!origin && event.payload.kind === 'state_change' && !entities.has(event.payload.subjectId)) denied('unknown person field entity')
+            growthMarkers.push({ kind: 'candidate_adoption', recordId: (origin ? 'person_origin_' : 'person_') + event.id, record: { candidateId: origin && event.payload.kind === 'occurrence' ? personOriginCandidate(event.payload.actorIds[0]) : 'person_core_v1', sourceRevisionIds: support.map(s => s.id), eventIds: [event.id], summaryIds: [], decision: 'accepted', controlSourceId: source.id } })
+          }
+          return event
         })
+        if(value.kind==='accept' && value.personCandidates) {
+          if(!Array.isArray(value.personCandidates)||!value.personCandidates.length||value.personCandidates.length>16)invalid('person decision count')
+          const seen=new Set<string>()
+          for(const d of value.personCandidates) {
+            object(d,['candidateId','eventIds','decision']);id(d.candidateId);list(d.eventIds,false)
+            if(!d.candidateId.startsWith('person_candidate_')||seen.has(d.candidateId)||!['accepted','rejected'].includes(d.decision)||d.eventIds.some((id:string)=>!events.some(e=>e.id===id))||(d.decision==='rejected'&&d.eventIds.length))invalid('person decision')
+            seen.add(d.candidateId)
+            if(ledger.authorityChanges.some(c=>c.kind==='candidate_adoption'&&c.record.candidateId===d.candidateId))invalid('person candidate already decided')
+            growthMarkers.push({kind:'candidate_adoption',recordId:'person_decision_'+digest(d.candidateId),record:{candidateId:d.candidateId,sourceRevisionIds:[],eventIds:d.eventIds,summaryIds:[],decision:d.decision,controlSourceId:source.id}})
+          }
+        }
         return store.commit(authority, { schemaVersion: 1, idempotencyKey: value.idempotencyKey, expected: value.expected, sourceBindings: [...mutations.values()], events, summaries: [], jobs: [], invalidatedIds: [...targets], nextContextRevision: value.expected.contextRevision + 1,
-          authorityChanges: [{ kind: 'candidate_adoption', recordId: commandId, record: { candidateId: commandHash, sourceRevisionIds: eventSources.map(s => s.id), eventIds: events.map(e => e.id), summaryIds: [], decision: value.kind === 'reject' ? 'rejected' : 'accepted', controlSourceId: source.id } }] })
+          authorityChanges: [{ kind: 'candidate_adoption', recordId: commandId, record: { candidateId: commandHash, sourceRevisionIds: eventSources.map(s => s.id), eventIds: events.map(e => e.id), summaryIds: [], decision: value.kind === 'reject' ? 'rejected' : 'accepted', controlSourceId: source.id } }, ...growthMarkers] })
       } catch (cause) { return caught(cause) }
     },
   })
