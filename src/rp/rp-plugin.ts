@@ -27,6 +27,21 @@ const sha = (s: string) => createHash('sha256').update(s).digest('hex')
 const uid = (p: string) => p + '_' + randomUUID().replaceAll('-', '')
 const body = (m: any) => (m.content ?? []).filter((b: any) => b.type === 'text').map((b: any) => b.text).join('\n')
 const normalizedMessage = (m: any) => canonical(m)
+const validReadToolContent = (content: unknown): boolean => {
+  try {
+    if (!Array.isArray(content)) return false
+    const calls = new Set<string>()
+    for (const block of content) {
+      if (block?.type === 'text') { object(block, ['type', 'text']); if (typeof block.text !== 'string') return false }
+      else {
+        object(block, ['type', 'id', 'name', 'arguments']); hostId(block.id)
+        if (block.type !== 'tool-call' || !['rp_memory_search', 'rp_memory_get', 'rp_memory_status'].includes(block.name) || typeof block.arguments !== 'string' || calls.has(block.id)) return false
+        calls.add(block.id)
+      }
+    }
+    return calls.size > 0
+  } catch { return false }
+}
 import { validateJournal, type Snapshot, type Input, type DurableSession } from './host-journal.js'
 interface Bound { agent: Agent; authority: HostAuthority; data: DurableSession; queue: Promise<unknown>; saveQueue: Promise<void>; packet?: MemoryPacket; staticSystem?: string; staticTools?: string; generation: number; lastError?: string; recoveryOnly?: boolean }
 export interface RpPluginConfig {
@@ -277,7 +292,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       b.data.frames[message.id] = receipt.snapshot; b.data.messageHashes[message.id] = sha(normalizedMessage(message)); void queue(b, () => save(b)); return
     }
     if (event.type === 'assistant/message' && message?.content?.some((c: any) => c.type === 'tool-call')) {
-      if (!b.packet || !message.content.every((c: any) => c.type === 'tool-call' && ['rp_memory_search', 'rp_memory_get', 'rp_memory_status'].includes(c.name))) { b.data.blocked = true; return }
+      if (!b.packet || !validReadToolContent(message.content)) { b.data.blocked = true; return }
       b.data.frames[message.id] = { provenance: 'tool-call', packetProof: b.packet.proof, bodyHash: sha(body(message)), packetId: b.packet.id, fence: b.packet.inputFence, globals: [...b.packet.globalFences], globalDependencies: [...b.packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...b.packet.dependencyIds], eventIds: [], modeEpoch: policy.status(session.id).modeEpoch }
       b.data.messageHashes[message.id] = sha(normalizedMessage(message)); void queue(b, () => save(b)); return
     }
