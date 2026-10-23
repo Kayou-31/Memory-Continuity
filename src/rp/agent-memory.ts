@@ -43,7 +43,7 @@ export function createAgentMemory(store: RpStore, service: ReturnType<typeof cre
           if (value.previousEventId !== null) id(value.previousEventId)
           if (!Array.isArray(value.causeEventIds) || !value.causeEventIds.length || value.causeEventIds.length > 32) invalid('growth causes')
           const deps = [...value.causeEventIds, ...(value.previousEventId ? [value.previousEventId] : [])]
-          for (const dep of deps) { id(dep); const event = events.find(e => e.id === dep); if (!event) denied('growth evidence unavailable'); event.sources.forEach(s => origins.add(s.sourceRevisionId)) }
+          for (const dep of deps) { id(dep); const event = events.find(e => e.id === dep); if (!event) denied('growth evidence unavailable'); if (value.causeEventIds.includes(dep)) event.sources.forEach(s => origins.add(s.sourceRevisionId)) }
           const goal = value.kind === 'goal' ? goalValue({ goalId: value.goalId, category: value.category, objective: value.objective, status: value.status, progress: value.progress, nextAction: value.nextAction, ...(value.targetEntityId ? { targetEntityId: value.targetEntityId } : {}) }) : null
           const g: GrowthValue = { protocol: 'agent-memory/v1', channel: value.kind, value: goal ? goal as unknown as JsonValue : (value as Progress).value, previousEventId: value.previousEventId, causeEventIds: value.causeEventIds, note: value.note }
           if (value.kind === 'state') { known(value.entityId); payload = { kind: 'state_change', subjectId: value.entityId, key: value.key, after: g as unknown as JsonValue } }
@@ -51,7 +51,7 @@ export function createAgentMemory(store: RpStore, service: ReturnType<typeof cre
           else { known(value.ownerId); if (value.targetEntityId) known(value.targetEntityId); payload = { kind: 'state_change', subjectId: value.ownerId, key: value.category, after: g as unknown as JsonValue } }
         }
         validatePayload(payload)
-        const result = await service.applyControl(authority, ctl, { kind: 'accept', idempotencyKey: value.idempotencyKey, expected: value.expected, sourceRevisionIds: [ctl.id], events: [{ id: eventId, payload, epistemic: 'world', fictionalTime: value.fictionalTime ?? null, sourceRevisionIds: [...origins] }] })
+        const result = await service.applyControl(authority, ctl, { kind: 'accept', idempotencyKey: value.idempotencyKey, expected: value.expected, sourceRevisionIds: [ctl.id], events: [{ id: eventId, payload, epistemic: 'world', fictionalTime: value.fictionalTime ?? null, sourceRevisionIds: [...origins], ...(value.kind === 'experience' ? {} : { growthProtocol: 'agent-memory/v1' as const }) }] })
         return result.ok ? { ok: true as const, value: { eventId, fence: result.value as InputFence } } : result
       } catch (e) { return failure(e) }
     },

@@ -3,8 +3,9 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { host } from '../../test/fixtures/rp/native-host.mjs'
 const [directory, sessionId, branchId, mode] = process.argv.slice(2)
-const { installRpPlugin } = await import(pathToFileURL(path.resolve('work/host-followup/rp/package/lib/index.js')).href)
-const memory = await import(pathToFileURL(path.resolve('work/host-followup/memory/package/lib/index.js')).href)
+const bundles = path.resolve(process.env.RP_BUNDLES_ROOT ?? 'work/host-followup')
+const { installRpPlugin } = await import(pathToFileURL(path.join(bundles, 'rp/package/lib/index.js')).href)
+const memory = await import(pathToFileURL(path.join(bundles, 'memory/package/lib/index.js')).href)
 const f = await host({ enabled: mode === 'enabled' }, { directory, install: installRpPlugin, before: async ({ ctx }) => { await ctx.plugin(memory, {}).await() } })
 try {
   const a = await f.resume({ id: sessionId, options: { provider: 'rp-dev3', model: 'offline', maxTokens: 128 } })

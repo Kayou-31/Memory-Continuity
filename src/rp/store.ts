@@ -6,7 +6,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import type { Branch, BranchScope, BranchSourceBinding, CommitBatch, HostAuthority, InputFence, Job, LedgerSnapshot, Result, Scope, SemanticEvent, SourceObservation, SourceRevision, SourceSpan, StoredDerived, Summary, Visibility, Viewpoint, WorkspaceBinding, AuthorityChange, CanonBinding, ForkManifest, PayloadCopy, PrivacyDeletion, ProjectionResult } from './types.js'
 import { RpError, batch as validateBatch, binding as validateBinding, branch as validateBranch, checkedRpJson, cloneInput, denied, failure, fence as validateFence, hash, id, hostId, integer, invalid, job as validateJob, object, observation as validateObservation, parseRecord, scope as validateScope, sourceSpan as validateSpan, text, visibility as validateVisibility, authorityChange as validateChange, wellFormed } from './schema.js'
 import { reduceEvents, eventsForView } from './reducer.js'
-import { checkGrowthTransition, growthValue } from './growth-format.js'
+import { checkGrowthTransition, growthValue, hasGrowthMarker, inheritGrowthMarks, markGrowthEvent } from './growth-format.js'
 export { parseRecord } from './schema.js'
 /** Trusted storage adapters reuse the same verified lock/read protocol. */
 export { lock as withRpWriterLock, recoverLock as recoverRpWriterLock, readJson as readRpJson }
@@ -21,7 +21,7 @@ export function canonical(value: unknown): string {
 }
 const digest = (v: unknown) => sha(canonical(v))
 const newId = (prefix: string) => prefix + '_' + randomUUID().replaceAll('-', '')
-const ok = <T>(value: T): Result<T> => ({ ok: true, value: structuredClone(value) })
+const ok = <T>(value: T): Result<T> => { const copy = structuredClone(value); inheritGrowthMarks(value, copy); return { ok: true, value: copy } }
 const same = (a: unknown, b: unknown) => canonical(a) === canonical(b)
 function eventDependencies(event: SemanticEvent): string[] {
   const payload = event.payload
@@ -582,6 +582,7 @@ export class RpStore {
         const body = await this.#readBlob(request.workspaceId, r.blobId, r.bodySha256), parsed = parseRecord({ kind, record: JSON.parse(body) })
         if (!parsed.ok || (parsed.value.kind !== 'event' && parsed.value.kind !== 'summary') || parsed.value.record.id !== r.id) error('source_unavailable', 'RP derived payload unavailable')
         if (parsed.value.kind === 'event') {
+          if (hasGrowthMarker(branch.changes, parsed.value.record.id)) markGrowthEvent(parsed.value.record)
           const { payload: _payload, fictionalTime: _time, ...metadata } = parsed.value.record
           if (!same(metadata, r.metadata) || !same(eventDependencies(parsed.value.record), r.dependencyIds)) error('source_unavailable', 'RP event authority metadata mismatch')
         } else {
@@ -603,6 +604,7 @@ export class RpStore {
       for (const sourceId of r.sourceRevisionIds) await this.#sourceText(state, branch, request, sourceId)
       const body = await this.#readBlob(request.workspaceId, r.blobId, r.bodySha256), parsed = parseRecord({ kind: 'event', record: JSON.parse(body) })
       if (!parsed.ok || parsed.value.kind !== 'event') error('source_unavailable', 'RP event payload unavailable')
+      if (hasGrowthMarker(branch.changes, parsed.value.record.id)) markGrowthEvent(parsed.value.record)
       const { payload: _payload, fictionalTime: _time, ...metadata } = parsed.value.record
       if (!same(metadata, r.metadata) || !same(eventDependencies(parsed.value.record), r.dependencyIds)) error('source_unavailable', 'RP event authority metadata mismatch')
       records.push(parsed.value.record)
@@ -803,6 +805,7 @@ export class RpStore {
           if ([...state.branches.values()].some(branch => branch.records.has(record.id)) || state.copies.has(record.id)) invalid('workspace derived identity')
           if (!this.#scopeMatches(record.scope, grant.request) || (record.scope.kind !== 'branch' && record.scope.kind !== 'session') || record.scope.branchId !== grant.request.branchId || !same(record.visibility, authority.visibility) || record.policyVersion !== current.fence.policyVersion) denied('derived scope/visibility/policy')
           const isEvent = 'payload' in record
+          if (isEvent && hasGrowthMarker(changes, record.id)) markGrowthEvent(record)
           const sourceIds = isEvent ? [...new Set(record.sources.map(span => span.sourceRevisionId))] : [...record.sourceRevisionIds]
           for (const sourceId of sourceIds) {
             const original = this.#source(state, next, grant.request, sourceId)
@@ -840,7 +843,7 @@ export class RpStore {
             for (const id of dependencies) {
               const dependency = next.records.get(id)!
               if (!this.#visible(dependency.visibility, grant.request) || dependency.visibility.audienceSetId !== record.visibility.audienceSetId) denied('semantic event dependency audience')
-              if (growth && dependency.sourceRevisionIds.some(id => !sourceIds.includes(id))) invalid('growth dependency source coverage')
+              if (growth?.causeEventIds.includes(id) && dependency.sourceRevisionIds.some(id => !sourceIds.includes(id))) invalid('growth cause source coverage')
             }
             const { payload: _payload, fictionalTime: _time, ...rest } = record; metadata = rest
           } else {

@@ -68,3 +68,7 @@ strict POV/full filtering、自动采纳、原生持久替换和压缩仍关闭�
 ## dev.3 稳定性修复
 
 本轮新增的关闭/诊断/干净续接、host journal v2、容量、检索证明和摘要失效规则见 [兼容与迁移说明](rp-memory-dev3/MIGRATION.md)，实际执行结果见 [RESULTS](rp-memory-dev3/RESULTS.md)。本文原有 dev.1/dev.2 历史证据仍保留其原验证范围。
+
+## 长期 Agent 控制（2026-10-23 本地开发版）
+
+新增 `/rp agent <JSON>`（experience/state/relationship/goal），以及只读的 `/rp goals`、`/rp relationships`、`/rp self`。这些显式命令会将用户控制原文写入来源账本，读取命令会显示当前事实正文；它们不注册为模型写工具。完整示例、前驱与来源约束、目标状态机和 continue-clean 流程见 [长期 Agent 记忆与成长](agent-memory.zh.md)。

@@ -2,13 +2,13 @@
 
 **独立使用，可选适配 Ultra Mode。** 技术名称 `dsh-ultra-rp-memory`，npm 包名 `@dsh-external/dsh-ultra-rp-memory`。无需安装 Ultra Mode、Ultra Memory 或 Ultra Decision 即可使用 RP 的记忆、检索、分支和人工采纳功能；运行时仅依赖下文列出的 DSH 原生 peers。
 
-产品方向是**长期 Agent 的记忆与成长基础**：支持用户持续培养同一个 Agent，让经历、关系、承诺和做事经验在后续互动中延续；角色扮演是使用场景之一。当前交付仍为人工 narrator Memory 预览，长期目标/技能/习惯的成长机制、自动行动与 Ultra 同会话深度适配尚未实现，不能由命名推断已经具备。已有能力与未完成项见审查报告。
+产品方向是**长期 Agent 的记忆与成长基础**：支持用户持续培养同一个 Agent，让经历、关系、承诺和做事经验在后续互动中延续；角色扮演是使用场景之一。本地开发版已加入显式经历记录、身份/关系成长、目标/承诺生命周期与有界上下文回忆；模型仍只有只读记忆工具，变化由用户确认。技能训练、习惯自动形成与自主行动尚未实现。用法和限制见 [Agent 记忆与成长](docs/agent-memory.zh.md)。
 
-此名称已在本地包元数据、入口和 Cordis patch 中统一；已发布 dev.3 仍使用旧包名 `@dsh-external/dsh-rp-memory`，仓库 URL 与历史附件名保持实际值。替换旧入口时更新配置的包名，保留 `rp-memory` 配置节点与原数据目录，避免同时启用新旧两个入口；没有为命名调整执行数据迁移。可选 Ultra 适配当前有固定版本共存证据，同一 RP 会话复用 Ultra 的检索/预算算法仍属后续工作，不能把改名当作叠加已实现。
+此名称已在本地包元数据、入口和 Cordis patch 中统一；已发布 dev.3 仍使用旧包名 `@dsh-external/dsh-rp-memory`，仓库 URL 与历史附件名保持实际值。替换旧入口时更新配置的包名，保留 `rp-memory` 配置节点与原数据目录，避免同时启用新旧两个入口；没有为命名调整执行数据迁移。可选 Ultra 适配使用本包的 ultra-rp/v1 纯排序和预算接口，只处理 RP 已授权记忆，不调用 Ultra 的工程归档/压缩器；默认无 Ultra 时独立运行。
 
 dev.3 修复请求准入、异常诊断/干净续接、retcon 摘要依赖、稳定检索与实际记录回执、全局容量和 seal 恢复、锚点合并及批量撤回。仅 host journal 升级为 v2，branch/global 存储继续使用 v1。升级前阅读 [迁移与恢复规则](docs/rp-memory-dev3/MIGRATION.md)；本轮执行结果及未测边界见 [RESULTS](docs/rp-memory-dev3/RESULTS.md)。历史 dev.1/dev.2 的证据不代替 dev.3 验证。人工采纳、自动功能关闭和默认禁用保持原有约束。
 
-2026-10-22 的 [完整审查与局部重构](docs/rp-memory-dev3/REVIEW-2026-10-22.md) 包含新发现的 8 项正确性问题、已本地修复的分支事务容量问题和历史重放优化；旧 packet 摘要认证、失败全局发布的明文清理等 7 项仍待修。该本地分支未更新已发布的 dev.3 包，不能用既有测试通过代替这些新增问题的验收。
+2026-10-22 的 [完整审查与局部重构](docs/rp-memory-dev3/REVIEW-2026-10-22.md) 包含新发现的 8 项正确性问题、已本地修复的分支事务容量问题和历史重放优化；旧 packet 摘要认证、失败全局发布的明文清理等遗留 7 项已在本地后续分支修复，新增先红后绿回归；最新完整验收结果见 RESULTS 最后一节。该本地分支未更新已发布的 dev.3 包，不能用既有测试通过代替这些新增问题的验收。
 
 人工 narrator Memory 预览。默认禁用；本版精确适配宿主 SDK **0.2.1-rc.2 / session format 4**，Cordis **4.0.5**、Schemastery **3.18.5**。0.2.0-rc.2 请使用冻结的 dev.1；dev.2 拒绝旧版或混版 native peers。来源为 Kayou-31/dsh-ultra-mode 的本地 RP 开发分支；专用源码仓库为 [dsh-rp-memory](https://github.com/Kayou-31/dsh-rp-memory)。BSD-3-Clause。
 
@@ -21,6 +21,8 @@ dev.3 修复请求准入、异常诊断/干净续接、retcon 摘要依赖、稳
 安装本 TGZ 本身不启用。先在独立测试 profile 中配置实际 profileRoot/workspaceRoot、可信 entityIds、已核实预算与 knownCooperatingWriters；保留 enabled:false、contextCompression:false、strictPov:false。确认只有已声明的合作写入者后显式 enabled:true，再使用 `/rp start`。不要把示例路径/预算直接套入日常 profile。实际激活配置和完整命令见发行包中文使用说明。
 
 共存须使用兼容开发包：Ultra 0.6.1-dev.rp.1、Memory/Decision 0.1.1-dev.rp.1，其代码与 TGZ 沿用 dev.1 同哈希附件；其它旧公开版本没有共同 policy，不承诺可同时工作。无需为 RP 单独安装这些工程包。dev.3 补验已在精确 SDK 中加载实际 TGZ，覆盖 RP 与 Memory、Ultra+Memory、Decision+Memory 的两种顺序，以及冷启动禁用门禁/ambiguous 干净续接；7项原生验收通过。合成 terminal 不代表真实模型或桌面 UI。结果、哈希及其余边界见 [RESULTS](docs/rp-memory-dev3/RESULTS.md)。
+
+2026-10-23 本地成长开发版重新执行一次完整 **154/154** 回归，并以实际新 TGZ 完成 **11/11** 原生补验，新增独立 Agent 流程、优化开关和双顺序实际请求去重。260 阶段持久化及祖先删除测试通过，但耗时约640秒；长链性能仍待改善，没有无限容量或真实模型“完整人生”质量的承诺。
 
 本次升级保留实际服务身份、session format、正文/元数据哈希、来源、分支、预算、租约及全局权限门。SDK021 在发送前刷新 runtime contexts；未获既有认证的动态正文变化仍会被拒绝。跨 SDK 历史迁移未测，不能直接把 dev.1 日常 profile 当作迁移验收。
 

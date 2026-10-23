@@ -2,7 +2,7 @@
  * subscribes to completion events. All state changes use the P1 store ledger. */
 import { createHash } from 'node:crypto'
 import type { RpStore } from './store.js'
-import type { BranchSourceBinding, EventPayload, ForkManifest, HostAuthority, InputFence, Result, SemanticEvent, SourceRevision } from './types.js'
+import type { AuthorityChange, BranchSourceBinding, EventPayload, ForkManifest, HostAuthority, InputFence, Result, SemanticEvent, SourceRevision } from './types.js'
 import { cloneInput, event as validateEvent, failure, fence as validateFence, id, invalid, object, denied, text } from './schema.js'
 export { assessClaim, reduceEvents } from './reducer.js'
 export { applyNativeCanonicalEvent } from './host-adapter.js'
@@ -10,6 +10,7 @@ export { applyNativeCanonicalEvent } from './host-adapter.js'
 export interface EventProposal {
   readonly id: string; readonly payload: EventPayload; readonly epistemic: SemanticEvent['epistemic']; readonly beliefHolderId?: string
   readonly fictionalTime?: string | null; readonly sourceRevisionIds?: readonly string[]; readonly supersedes?: readonly string[]
+  readonly growthProtocol?: 'agent-memory/v1'
 }
 type BaseControl = { readonly idempotencyKey: string; readonly expected: InputFence }
 export type CanonicalControl = BaseControl & (
@@ -107,8 +108,9 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
         } else invalid('canonical operation')
         if (bindings.get(source.id)?.disposition !== 'accepted') bind(source, 'accepted')
         if (!Array.isArray(proposals) || proposals.length > 256) invalid('event proposals')
+        const growthMarkers: AuthorityChange[] = []
         const events: SemanticEvent[] = proposals.map((proposal, i) => {
-          object(proposal, ['id', 'payload', 'epistemic'], ['fictionalTime', 'beliefHolderId', 'sourceRevisionIds', 'supersedes'])
+          object(proposal, ['id', 'payload', 'epistemic'], ['fictionalTime', 'beliefHolderId', 'sourceRevisionIds', 'supersedes', 'growthProtocol'])
           if (proposal.epistemic === 'belief' && (!proposal.beliefHolderId || !entities.has(proposal.beliefHolderId))) denied('unknown belief holder')
           if (proposal.payload.kind === 'knowledge_change' && !entities.has(proposal.payload.knowerId)) denied('unknown knowledge holder')
           const origins: SourceRevision[] = proposal.sourceRevisionIds ? (list(proposal.sourceRevisionIds), proposal.sourceRevisionIds.map(get)) : eventSources
@@ -120,10 +122,15 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
             payload: proposal.payload, epistemic: proposal.epistemic, authority: authorityClass, ...(proposal.beliefHolderId ? { beliefHolderId: proposal.beliefHolderId } : {}),
             sources: support.map(s => ({ sourceRevisionId: s.id, publicTextSha256: s.publicTextSha256, startUtf16: 0, endUtf16: s.publicTextLengthUtf16, quoteSha256: s.publicTextSha256 })),
             visibility: authority.visibility, supersedes: [...new Set([...(proposal.supersedes ?? []), ...(i === 0 ? targets : [])])], policyVersion: ledger.fence.policyVersion }
-          validateEvent(event); return event
+          validateEvent(event)
+          if (proposal.growthProtocol !== undefined) {
+            if (proposal.growthProtocol !== 'agent-memory/v1') invalid('growth protocol')
+            growthMarkers.push({ kind: 'candidate_adoption', recordId: 'growth_' + event.id, record: { candidateId: 'agent_memory_v1', sourceRevisionIds: support.map(s => s.id), eventIds: [event.id], summaryIds: [], decision: 'accepted', controlSourceId: source.id } })
+          }
+          return event
         })
         return store.commit(authority, { schemaVersion: 1, idempotencyKey: value.idempotencyKey, expected: value.expected, sourceBindings: [...mutations.values()], events, summaries: [], jobs: [], invalidatedIds: [...targets], nextContextRevision: value.expected.contextRevision + 1,
-          authorityChanges: [{ kind: 'candidate_adoption', recordId: commandId, record: { candidateId: commandHash, sourceRevisionIds: eventSources.map(s => s.id), eventIds: events.map(e => e.id), summaryIds: [], decision: value.kind === 'reject' ? 'rejected' : 'accepted', controlSourceId: source.id } }] })
+          authorityChanges: [{ kind: 'candidate_adoption', recordId: commandId, record: { candidateId: commandHash, sourceRevisionIds: eventSources.map(s => s.id), eventIds: events.map(e => e.id), summaryIds: [], decision: value.kind === 'reject' ? 'rejected' : 'accepted', controlSourceId: source.id } }, ...growthMarkers] })
       } catch (cause) { return caught(cause) }
     },
   })

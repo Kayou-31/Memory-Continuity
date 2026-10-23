@@ -67,3 +67,32 @@ test('privacy deletion removes the causal growth closure; explicit null stays un
     assert.equal(must(await f.store.replayProjection(f.authority)).state.length, 0)
   } finally { await f.close() }
 })
+
+test('growth stores only direct provenance and ancestor-only deletion still erases descendants', async () => {
+  const f = await setup()
+  try {
+    const ancestor = await f.experience('ancestor', 'Old private meeting'), newer = await f.experience('newer', 'New public experience')
+    let previousEventId = null
+    const ids = []
+    for (let i = 0; i < Number(process.env.RP_GROWTH_STAGES ?? 4); i++) {
+      const result = must(await f.apply('stage_'+i, { kind: 'state', entityId: 'erin', key: 'identity', value: 'stage_'+i, previousEventId, causeEventIds: [i ? newer : ancestor], note: 'Explicit evolution' }))
+      previousEventId = result.eventId; ids.push(result.eventId)
+      if (process.env.RP_GROWTH_STAGES && (i + 1) % 50 === 0) console.log('PERSISTED_GROWTH_STAGES '+(i + 1))
+      assert.equal(must(await f.store.readEvents(f.authority)).find(e => e.id === result.eventId).sources.length, 2, 'provenance must not grow with chain length')
+    }
+    const sourceId = must(await f.store.readEvents(f.authority)).find(e => e.id === ancestor).sources[0].sourceRevisionId
+    must(await f.canonical.applyControl(f.authority, await f.controlSource('erase_ancestor'), { kind: 'privacy_delete', idempotencyKey: 'erase_ancestor', expected: await f.fence(), sourceRevisionIds: [sourceId], affectedBranchIds: [f.request.branchId] }))
+    assert.equal(must(await f.store.readEvents(f.authority)).some(e => ids.includes(e.id)), false)
+    assert.equal(must(await f.store.readEvents(f.authority)).some(e => e.id === newer), true)
+  } finally { await f.close() }
+})
+
+for (const value of [{ protocol: 'agent-memory/v0', value: 'ordinary old metadata' }, { protocol: 'agent-memory/v1', channel: 'state', value: 'ordinary old metadata', previousEventId: null, causeEventIds: ['legacy_id'], note: 'data' }]) test('ordinary v1 JSON stays ordinary without an explicit growth ledger marker: '+value.protocol, async () => {
+  const f = await setup()
+  try {
+    const ctl = await f.controlSource('legacy')
+    must(await f.canonical.applyControl(f.authority, ctl, { kind: 'accept', idempotencyKey: 'legacy', expected: await f.fence(), sourceRevisionIds: [ctl.id], events: [{ id: 'legacy_metadata', epistemic: 'world', payload: { kind: 'state_change', subjectId: 'erin', key: 'background', after: value } }] }))
+    const cold = await setup(f.directory, f.request)
+    try { assert.deepEqual(must(await cold.store.replayProjection(cold.authority)).state[0].value, value); assert.equal(must(await cold.store.readEvents(cold.authority)).length, 1) } finally { await cold.close() }
+  } finally { await f.close() }
+})

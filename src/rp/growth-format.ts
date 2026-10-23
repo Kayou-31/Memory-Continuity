@@ -1,5 +1,12 @@
-import type { JsonValue, SemanticEvent } from './types.js'
+import type { AuthorityChange, JsonValue, SemanticEvent } from './types.js'
 import { denied, id, integer, invalid, object, RpError, text } from './schema.js'
+const growthRecords = new WeakSet<object>()
+export const hasGrowthMarker = (changes: readonly AuthorityChange[], eventId: string) => changes.some(c => c.kind === 'candidate_adoption' && c.recordId === 'growth_' + eventId && c.record.candidateId === 'agent_memory_v1' && c.record.decision === 'accepted' && c.record.eventIds.length === 1 && c.record.eventIds[0] === eventId)
+/** Only a verified authority-ledger marker opts an event into growth semantics. */
+export function markGrowthEvent(event: SemanticEvent) { growthRecords.add(event); if (!growthValue(event)) invalid('marked growth payload missing') }
+export function inheritGrowthMarks(from: unknown, to: unknown) {
+  if (Array.isArray(from) && Array.isArray(to)) from.forEach((event, i) => { if (event && typeof event === 'object' && growthRecords.has(event)) growthRecords.add(to[i]) })
+}
 
 export interface GrowthValue {
   protocol: 'agent-memory/v1'; channel: 'state' | 'relationship' | 'goal'; value: JsonValue
@@ -17,6 +24,7 @@ export function goalValue(input: unknown): GoalValue {
   return g as GoalValue
 }
 export function growthValue(event: SemanticEvent): GrowthValue | null {
+  if (!growthRecords.has(event)) return null
   const p = event.payload, raw = p.kind === 'state_change' ? p.after : p.kind === 'relationship_change' ? p.value : null
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !('protocol' in raw) || typeof raw.protocol !== 'string' || !raw.protocol.startsWith('agent-memory/')) return null
   const g = object(raw, ['protocol', 'channel', 'value', 'previousEventId', 'causeEventIds', 'note'])

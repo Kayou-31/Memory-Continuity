@@ -35,3 +35,11 @@
 后台自动摘要、strict POV、原生上下文压缩、自动采纳均关闭。真实模型语义质量、付费调用、桌面完整 UI、跨 SDK 迁移、长期运行和断电耐久性未验证。不能强制结束忽略 AbortSignal 的 provider，也不能撤回关闭前已经发送的网络数据。已发布 dev.3 最终 TGZ 的 RP+Memory、RP+Ultra+Memory、RP+Decision+Memory 两种加载顺序，以及两个新进程的恢复路径已补验，精确版本与边界见 [RESULTS](RESULTS.md) 的 Luna 与原生宿主补验节；不扩大为任意混装兼容或本次未打包源码的 TGZ 验收。
 
 2026-10-22 审查另确认旧宿主 packet 的摘要依赖认证、失败全局发布的明文清理等遗留问题，当前本地 store 重构没有修复这些路径。详见 [审查报告](REVIEW-2026-10-22.md) A2–A8；新 packet 摘要有效性不代表宿主里所有旧 packet 已被完整认证。
+
+## 2026-10-23 成长开发版的追加规则
+
+host journal 仍为 v2，但 packet/tool-call frame 增加 `packetProof`（实际注入的事件/摘要 ID 与内容 revision，以及当时状态投影哈希）。新 reader 只验证当时捕获的证明，不用当前账本倒填旧记录。缺证明的旧 packet 历史进入 recovery-only；损坏证明拒绝恢复。使用 `/rp continue-clean [branchId]` 延续独立授权的有效剧情。旧 reader 对新字段会 fail-closed，不支持直接降级读取新 journal。
+
+成长记录使用既有 v1 JSON payload 中的保留标记 `protocol:"agent-memory/v1"`，同一事务以已有 candidate_adoption 格式写入明确成长标记，只有经账本验证标记的事件才能启用新语义。旧普通 JSON 中的同名 protocol 字段不会被重新解释。前驱和原因经历使用既有依赖链；没有 branch/global 格式迁移、没有后台历史补写。正常成长保留前史，普通未标记的 `before` 元数据行为保持不变。旧逻辑不理解成长投影，还可能因新依赖拒绝记录；探针确认修复前 reader 对后继成长返回 source_unavailable。禁止新旧写入者混用，降级须恢复写入成长前的独立备份。
+
+新包名、配置路径、独立 native peers 继续保持上一节规则。`ultraMemoryOptimization` 为 true 时，仅在兼容 evidence v2 服务实际存在且有有效 lease 时启用本包适配器；服务缺失自动独立运行。旧协议依旧拒绝。详细生命周期、命令和限制见 [Agent 记忆与成长](../agent-memory.zh.md)。这次未在用户日常 profile 上做迁移或安装。

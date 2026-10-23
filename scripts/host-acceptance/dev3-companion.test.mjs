@@ -6,18 +6,50 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { spawnSync } from 'node:child_process'
 import { host } from '../../test/fixtures/rp/native-host.mjs'
+import { LlmAdapter } from '@deepseek-ai/dsh-llm'
 
-const base = path.resolve('work/host-followup')
+const base = path.resolve(process.env.RP_BUNDLES_ROOT ?? 'work/host-followup')
 const packageVersions = {}
 for (const [name, expected] of [['cordis', '4.0.5'], ['schemastery', '3.18.5'], ...['dsh-agent', 'dsh-agent-loop', 'dsh-llm', 'dsh-session', 'dsh-system-prompt', 'dsh-tools', 'dsh-commands', 'dsh-session-projection', 'dsh-session-persistence-jsonl'].map(name => [name, '0.2.1-rc.2'])]) {
   const pkg = JSON.parse(await fs.readFile(path.join(path.resolve(process.env.RP_NATIVE_SDK ?? 'node_modules'), '@deepseek-ai', name, 'package.json'), 'utf8'))
   assert.equal(pkg.version, expected); packageVersions[name] = pkg.version
 }
+
 const manifests = JSON.parse(await fs.readFile(path.join(base, 'bundles.json'), 'utf8'))
 const rpModule = await import(pathToFileURL(path.join(base, 'rp/package/lib/index.js')).href)
 const modules = {}
 for (const id of ['ultra', 'memory', 'decision']) modules[id] = await import(pathToFileURL(path.join(base, id, 'package/lib/index.js')).href)
 const observations = []
+
+for (const [order, optimize] of [['standalone', true], ['engineering-first', false], ['engineering-first', true], ['rp-first', true]]) test('Agent growth in actual TGZ '+order+' optimize='+optimize, { timeout: 30000 }, async () => {
+  const load = async ({ ctx }) => { await ctx.plugin(modules.ultra, { contextCompression: false, memoryMaxRequests: 0, memoryMaxTokens: 0 }).await() }
+  const f = await host({ entityIds: ['erin', 'bea'], ultraMemoryOptimization: optimize }, { install: rpModule.installRpPlugin, ...(order === 'standalone' ? {} : { [order === 'engineering-first' ? 'before' : 'after']: load }) }), requests = []
+  const stacked = order !== 'standalone' && optimize, expected = stacked ? 'ultra-rp/v1' : 'standalone'
+  class Capture extends LlmAdapter { async *stream(request) { requests.push(request); yield { type: 'text-delta', index: 0, text: 'offline Agent reply' }; yield { type: 'finish', reason: { kind: 'stop' } } } }
+  try {
+    f.ctx.llm.registerAdapter(['stacked-agent'], new Capture()); const a = await f.create(); a.options.provider = 'stacked-agent'
+    await f.command(a, 'start'); const eventIds = []
+    for (const description of ['在钟楼与贝雅共同救援', '在钟楼与贝雅共同救援', '在钟楼开始学习医术']) {
+      const result = await f.command(a, 'agent '+JSON.stringify({ kind: 'experience', actorIds: ['erin', 'bea'], description, sourceRevisionIds: [] }))
+      assert.equal(result.kind, 'success', result.text); eventIds.push(JSON.parse(result.text).eventId)
+    }
+    const goal = await f.command(a, 'agent '+JSON.stringify({ kind: 'goal', ownerId: 'erin', goalId: 'medicine', category: 'task', objective: '学习医术', status: 'active', progress: 0, nextAction: '继续课程', previousEventId: null, causeEventIds: [eventIds[2]], note: '长期目标' }))
+    assert.equal(goal.kind, 'success', goal.text)
+    assert.equal(f.rp.status(a.id).memoryOptimization.available, expected)
+    assert.equal((await f.command(a, 'input 钟楼')).kind, 'success'); await a.whenIdle(); await f.rp.ready(a.id)
+    assert.equal(requests.length, 1); assert.match(JSON.stringify(requests[0]), /学习医术/)
+    assert.equal(f.rp.status(a.id).memoryOptimization.packet, expected)
+    const runtime = a.session.deriveMessages().find(m => m.source?.kind === 'runtime-context')
+    const text = runtime.content.filter(c => c.type === 'text').map(c => c.text).join('')
+    assert.equal((text.match(/在钟楼与贝雅共同救援/gu) ?? []).length, stacked ? 1 : 2, 'only the optional stacked adapter deduplicates experience text')
+    if (order !== 'standalone') {
+      assert.equal(await f.ctx.get('ultraEvidenceSupport').memory.begin(a, 'NO_ENGINEERING_CAPTURE'), undefined)
+      assert.equal(f.ctx.get('ultraEvidenceSupport').memory.hasActiveSession(a.id), false)
+    }
+    observations.push({ agentStack: stacked, order, actualRequests: 1, optimizer: expected, duplicateExperienceRemoved: stacked, engineeringCapture: false, nativeCompression: false })
+  } finally { await f.dispose() }
+})
+
 test.after(async () => fs.writeFile(path.join(base, 'report.json'), JSON.stringify({ node: process.version, sdk: { packageVersions }, manifests, observations, scope: 'native SDK with local synthetic terminal; no real provider, desktop UI, or power-loss proof' }, null, 2)))
 
 for (const companions of [['memory'], ['ultra', 'memory'], ['decision', 'memory']]) for (const order of ['engineering-first', 'rp-first']) {

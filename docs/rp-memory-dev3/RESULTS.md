@@ -277,3 +277,74 @@ Node 22.23.3、npm 11.16.0，SDK 与依赖版本不变。一次完整串行五�
 | `npm pack --dry-run` | 14:58:34.908–14:58:35.388 | exit0，新包名，77个文件 |
 
 此后仅补写本节与产品方向文档；文档最终包清单复查另存 `document-final-pack.json`，不合并为另一轮全量测试。改名不解决前节 A2–A8 的7项遗留问题，未验证真实用户 profile 的新旧包替换或新命名 TGZ 实际安装。没有启用自动摘要/压缩/采纳，没有真实模型调用，没有 push、远端改名、npm/Release 发布或覆盖已发布包。
+
+## 七项遗留修复与 Agent 记忆成长（2026-10-23，当前本地交付）
+
+本节更新前文的历史状态：**A2–A8 七项遗留问题已修复，显式 Agent 经历、身份/关系成长、目标/承诺及可选 Ultra 适配已实现并完成下述验证。** 实际开发基线 `85d15e3d3d3b2c4a73a197178b937855d7d05030`，分支 `feature/agent-memory-20261022`。沿用实际 checkout、依赖与原有修复，没有回滚到最早审查基线。仍为 `@dsh-external/dsh-ultra-rp-memory@0.1.0-dev.3` 的本地开发快照；未 push、发布 Release/npm、覆盖历史包或安装到日常 profile。
+
+一个执行者修改代码，最后一个只读审阅者静态复核，无递归代理；所有构建、测试和打包串行。未设置低内存上限，未安装或升级依赖，未调用付费 API 或真实模型。后台自动摘要、strict POV、原生压缩、自动采纳和自主行动均保持关闭。
+
+### 修改文件、原因与回归证据
+
+| 项目 | 主要实现与回归文件 | 修复效果与定向结果 |
+|---|---|---|
+| F1 / A2：历史 packet 认证 | `packet-proof.ts`、`packet.ts`、`host-journal.ts`、`rp-plugin.ts`；`rp-packet-proof.test.mjs` | 证明绑定组装时实际使用的事件/摘要 revision 与投影哈希，拒绝失效旧上下文，不以后读结果追认。缺证明 recovery-only，损坏证明不能提供可信分支。先红；初次相关测试 20/20，后续边界及最终全量覆盖 |
+| F2 / A3：失败发布明文清理 | `global.ts`；`rp-global-orphans.test.mjs` | 在验证完整全局历史及 writer lock 后回收未发布正文/tmp；已登记独立 retain 副本保留。覆盖 blob/commit 前失败、有无同键重试、冷读及隐私删除。先红，7/7；进一步冷恢复边界通过 |
+| F3 / A4：上层幂等返回绕过 seal | `store.ts`、`canonical.ts`、`summarizer.ts`、`jobs.ts`、`memory.ts`；`rp-seal-ack.test.mjs` | `ensureDurable` 在锁内验证并补 seal 后才能确认已提交效果；连续失败仍返回 persistence_uncertain，冷恢复不多发布。五条快捷路径先红，相关测试 45/45 |
+| F4 / A5：混合文本和只读工具调用 | `rp-plugin.ts`；`rp-native-tool-mixed.test.mjs` | 接受真实 AgentLoop 合法 text+tool-call；严格校验每个 block、唯一 call ID、工具名和参数。未知工具/推理块仍拒绝。先红，4/4 |
+| F5 / A6：非法命令 JSON 污染会话 | `rp-plugin.ts`；`rp-command-json.test.mjs` | 统一语法/对象结构错误为 invalid_record，健康会话可继续；I/O 故障仍 fail-closed。七组命令先红，命令+生命周期 16/16 |
+| F6 / A7：未持久化 grant 被激活 | `rp-plugin.ts`；`rp-command-grant.test.mjs` | 授权草案完成 tmp/sync/rename 后才激活；失败不发布内存授权并清 tmp，可重试和冷恢复。先红，grant+receipts 10/10 |
+| F7 / A8：健康状态误报 blocked | `rp-plugin.ts`；`rp-diagnostic.test.mjs` | 明确区分未绑定、健康、故障、关闭；与 ready/实际准入一致。先红，diagnostic+生命周期 10/10 |
+| L1：长期检索 | 新 `lexical.ts`，更新 `retrieval.ts`、`packet.ts`；`rp-retrieval.test.mjs` | 中文相邻双字词项、词组匹配、有界计分与原文命中摘录，固定分页仍使用原结果集合。先红；最后 retrieval+orphans 22/22。属于词项检索，未宣称语义检索 |
+| L2：经历与关系/身份成长 | 新 `agent-memory.ts`、`growth-format.ts`，更新 `canonical.ts`、`reducer.ts`、`store.ts`、`memory.ts`；`rp-growth.test.mjs`、`fixtures/rp/growth.mjs` | 明确人类控制来源、原因经历、唯一当前前驱；保留旧经历，拒绝陈旧/跨分支/无依据迁移，Retcon/隐私删除沿依赖失效。初次先红；growth+branch 29/29，删除/null 边界 4/4 |
+| L3：目标与承诺 | `agent-memory.ts`、`growth-format.ts`、`rp-plugin.ts`、`packet.ts`；`rp-goals.test.mjs`、`rp-agent-host.test.mjs` | 独立 goalId，active/paused/completed/abandoned、进度与终止规则；`/rp agent`、`goals`、`relationships`、`self`，模型仍仅有三个只读工具。先红；goals+growth 6/6，原生+goals 3/3；追加目标推进后干净续接实际请求 1/1 |
+| L4：Ultra 可选适配 | 新 `memory-optimizer.ts`，更新 `packet.ts`、`rp-plugin.ts`、公开 `src/rp-plugin.ts`；`rp-optimizer.test.mjs`、实际包宿主脚本 | 受限纯排序接口只返回已授权候选 ID，去重、预算收紧；无 Ultra 或显式关闭时独立运行。先红，optimizer+原生 3/3；实际包宿主见下文 |
+| 复审修正 | `growth-format.ts`、`store.ts`、`canonical.ts`、`agent-memory.ts`；追加 growth 回归及 `scripts/host-acceptance/agent-legacy.mjs` | 直接来源不累积前驱全部来源；新成长需同事务账本 marker，普通旧 JSON 不被重新解释。3 项先红，相关测试 36/36；长链和真实旧源码探针见下文 |
+| 文档/构建 | README、新 `docs/agent-memory.zh.md`、MIGRATION、narrator 指南、执行计划、`AGENT-REVIEW-2026-10-23.md`、本报告、`SOURCE-MANIFEST.json` | 命令示例、兼容/降级规则、人工确认边界和实际证据；manifest 由 build 生成，不手写构建哈希 |
+
+实现路径均在 `src/rp/`（特别标注除外），回归均在 `test/`。原始日志集中于 `work/agent-memory-2026-10-22/`，交付证据归档保留失败与通过日志。上述定向测试互相有重叠，**不相加为完整测试数量**。
+
+### 失败与复审裁决
+
+F1–F7 和 L1–L4 的预期失败回归均保留。L1 首轮 17/18、exit1 暴露 F2 对已登记正文目录的过早拒绝，使隐私删除来不及发布 tombstone；改为已登记正文交回 read/purge 协议，最终 22/22、exit0，保留 `l1-green.log` 与 `l1-green-2.log`，不把首轮写成成功。类型检查有两类开发期错误：Map 联合类型推断、optimizer 参数 implicit any；明确类型后重新检查通过。F4 首次命令含错误的既有测试文件名，仅实际执行的 4 项计数，后续及最终全量运行了真正的 receipts 文件。一次 `git diff --check` 发现新增行 CRLF 尾部空白，规范换行后 exit0。
+
+只读审阅确认来源累积与旧 JSON 误解释两项 P2，均先补失败回归后修正；窄审未发现新的具体 P1/P2。旧 marker 后补的疑点已有“必须引用本事务事件”和不可变事件 ID 检查共同阻止，探针确认拒绝，不重复修改。完整裁决见 [只读复审记录](AGENT-REVIEW-2026-10-23.md)。未将静态审阅当成独立测试运行。
+
+### 一次完整验收与额外宿主验证
+
+Node **22.23.3**、npm **11.16.0**、TypeScript **5.9.3**、esbuild **0.25.12**。运行时验证的 DSH peers 与 AgentLoop/commands/session-persistence-jsonl 为 **0.2.1-rc.2**，Cordis **4.0.5**、Schemastery **3.18.5**。npm 由指定 Node22 启动 `C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js`，子进程 PATH 使用该 Node，缓存位于仓库 `work/npm-cache`。
+
+`work/agent-memory-2026-10-22/final-round-1/final-verify.mjs` 的同一次串行运行：
+
+| 命令 | UTC 起止（2026-10-23） | 退出码与结果 |
+|---|---|---|
+| `npm run typecheck` | 10:07:01.503–10:07:03.215 | **0** |
+| `npm run build` | 10:07:03.217–10:07:05.185 | **0**，独立 bundle 与声明构建 |
+| `npm test` | 10:07:05.185–10:08:33.176 | **0；154 tests / 154 pass / 0 fail / 0 skip；87.758 秒，一次完整 suite** |
+| `npm run evaluate:fixture` | 10:08:33.177–10:08:33.361 | **0**；固定标注 fixture，不代表真实模型语义质量 |
+| `npm pack --dry-run` | 10:08:33.362–10:08:41.978 | **0**；90 文件 |
+
+完整 stdout/stderr 与每条命令的起止、退出码在 `final-round-1/final-commands.json` 和 `final-*.log`。本轮未在完整 suite 失败后用定向重跑拼接成功。之后只调整文档、测试补验脚本和归档，不修改产品实现。
+
+以下各项单独计数，不并入 154：
+
+| 实际命令/环境 | 退出码与证据 |
+|---|---|
+| `RP_GROWTH_STAGES=260 node22 --test --test-concurrency=1 --test-name-pattern="direct provenance" test/rp-growth.test.mjs` | **0，1/1，640.098 秒**；260 次真实持久化，每节点两条直接来源；删祖先独有来源后后代清除、独立新经历保留，`growth-260.log` |
+| `git archive` 导出 `85d15e3` 的 src，`node22 scripts/host-acceptance/agent-legacy.mjs work/agent-memory-2026-10-22/legacy-baseline` | **0**；实际旧源码写入的两种普通 JSON 由当前冷读保持原值/投影/fence，事后补 marker 被拒；扩展探针确认旧 reader 对新成长依赖 fail-closed。`legacy-probe.log`、`legacy-probe-downgrade.log` |
+| `node22 --test --test-concurrency=1 test/rp-agent-host.test.mjs` | **0，1/1**；真实 AgentLoop 先发送目标 0，再显式推进到 50、干净续接、发送新目标；新 root 空历史且同分支，旧 owner 拒绝。`agent-clean-host.log` |
+| `node22 work/agent-memory-2026-10-22/pack-artifacts.mjs acceptance-1`（内部 `npm pack --ignore-scripts --json --pack-destination ...`） | **0**；实际 TGZ 90 文件，初包 449,325 字节；解包 56 个 src/lib manifest 条目的字节数/SHA-256 全与本地构建一致；companion TGZ 哈希与既有原件相同 |
+| `RP_BUNDLES_ROOT=.../acceptance-1 node22 --test --test-concurrency=1 scripts/host-acceptance/dev3-companion.test.mjs` | **0**；首次 9/9；追加 standalone 和显式关闭优化后，独立一次 **11/11、0 fail、0 skip**。`companion-acceptance-1.log`、`companion-expanded.log`，不合并计数 |
+
+实际 TGZ 验证包括 standalone；Ultra 已加载但优化关闭；Ultra+RP 的两种加载顺序及实际请求去重；RP+Memory、RP+Ultra+Memory、RP+Decision+Memory 各两种顺序；新冷进程 disabled 门禁和 ambiguous 输入干净续接不自动重发。仅使用固定 Ultra **0.6.1-dev.rp.1**、Memory/Decision **0.1.1-dev.rp.1**。网络 guard 未记录外部请求。真实 Cordis/SDK/AgentLoop/JSONL 持久化与实际 TGZ 已运行，终端回复为离线合成输出；这不是 DSH 桌面 UI 或真实 provider 验证。
+
+最终报告纳入后重新实际打包并重放上述 11 项；准确字节数、包 SHA-256、提交 ID、最终入口日志和源码/证据归档在交付目录的外部 `delivery-manifest.json`，避免包内自引用哈希。初包和原始历史包保留。
+
+### 兼容性、边界与剩余工作
+
+- **已完成：** 七项遗留修复；有来源的经历、关系/身份正常成长、长期目标/承诺；中文词项检索和有界回忆；独立 npm API/原生命令；可选 Ultra 纯排序/预算适配；两项复审修正；154 项完整回归、规定五命令、实际 TGZ 11 项宿主补验、旧数据和 260 阶段持久化验证。
+- **未完成的后续改进：** 批量授权视图读取、持久搜索索引、分页游标容量淘汰、长期历史分卷、技能训练/习惯成长、自主行动；此前 Luna 夹具修订后的独立新一轮语义试验。当前“成长”是用户确认的事件与状态机制，不是模型自己学会技能或自动形成性格。
+- **未验证：** 真实模型的长期人格、关系理解、目标执行和语义记忆质量；真实长上下文/费用/token 统计；日常 profile 迁移、桌面完整 UI、其他 SDK/公开旧 Ultra 包；连续多日运行、断电、OS/Node 全矩阵、大规模分支峰值内存与 p95 吞吐。上轮 Luna 试验及本轮固定 fixture 分数均不能补足这些缺口。
+- **数据兼容：** branch/global v1 不变，不截断历史。只有同事务显式账本标记启用新增成长语义；普通旧 JSON 不改写。旧版可能因新前驱依赖返回 source_unavailable，写入成长后禁止混用旧逻辑；降级须恢复写入前备份。host journal 保持 v2，缺少 packetProof 的历史 recovery-only；损坏或无法认证的历史不补信任、不迁移。详见 MIGRATION。
+- **性能限制：** 260 阶段测试共 640 秒，含每步写入、全量验证与重新读取，不能当成单请求延迟或吞吐基准；它显示长链成本仍高。检索尚无持久索引，读写仍需验证账本及正文。packet 最多补入 8 条经历，共用摘要可选预算；必需状态或总请求超预算时拒绝。既有来源数、深度、事务 envelope/journal 上限保留，没有“无限人生”容量承诺。
+- **Ultra 适配范围：** 本包的 ultra-rp/v1 排序/去重/预算算法只处理 RP 已授权视图，不能扩大权限或注入陌生记录；没有调用 Ultra 的工程归档/压缩器。不会把“可以叠加”宣传成已有 Ultra 全部项目优化已复用。
