@@ -10,7 +10,15 @@ M4 已完成离线范围：`scripts/benchmarks/person-life.mjs` 复用实际 cor
 
 证据：`work/person-m4-2026-10-23/commands.jsonl` 和对应日志。life-first exit1（评测脚本错误使用Result包装模块API），查实际接口后修正，life-corrected exit0；life-host首次exit1（测试fixture的drop不能释放插件创建的root），改用实际session flush和宿主销毁，life-host-corrected exit0。未降低生产校验。此处不代表最终全量通过，最终命令另记。
 
-未验证：真实模型长期语义、连续多日使用、真实断电、日常profile迁移；旧Luna/fixture不补足这些缺口。统一管理与长期存储进行中。
+统一管理完成：`person/management.ts` 复用人物/Agent 核心，服务端保存预览与原始 fence；`management-server.ts` 提供仅手动打开的回环 HTTP 服务；`manager-ui.ts` 提供人物、经历/时间线、关系/目标、成长审阅和用途规则面板；`rp-plugin.ts` 负责实际会话生命周期。`/rp person manage` 打开，`manage-close` 关闭；无轮询、自动采纳或模型调用。界面更换查看人物不自动改变聊天绑定，用途/规则在此只读，旧经历超过最近200条需使用核心查询。
+
+新增 `rp-management.test.mjs`、`rp-management-server.test.mjs`、`rp-management-host.test.mjs`。先保存缺服务/命令的RED，后完成实际核心与原生SDK闭环。只读审阅五项均先复现再修复：快照对象别名、撤权后的提交竞态、已发布但回执丢失的重试、独立写入者与候选提案竞态、打开监听器时关闭入口。`publication-guard.ts` 在真正发布临时文件及 rename 前复验权限，已提交事务仍完成 seal；已经发送给文件系统的 rename 不能事后撤销。新增的原始 fence 参数使提案/拒绝在核心读视图中复验。
+
+`management-review-green` 9/9、`manager-final-typecheck` exit0、`manager-related` 37/37 exit0（相关人物/模块/生命周期和管理测试）。这是定向验证，最终全量另列。首次管理typecheck有两处类型错误、原生HTTP首轮被原有禁止所有网络guard挡住，日志均保留。验收guard默认仍禁网，只有显式 `RP_ACCEPTANCE_LOOPBACK=1` 允许127.0.0.1 HTTP，不允许外部地址/HTTPS/DNS查询。
+
+实际浏览器在临时测试profile完成：创建林澈、钟楼救援经历、成长提案与人工采纳、erin→bea定向关系、承诺建立/暂停、关闭入口。证据为 `manager-browser.png`、`manager-browser.txt`；服务已经关闭。所有故事为合成测试数据，没有付费调用。
+
+未验证：真实模型长期语义、连续多日使用、真实断电、日常profile迁移；旧Luna/fixture不补足这些缺口。长期存储尚待本阶段实施和验证。
 
 执行日期：2026-10-20（America/Tijuana）；日志保留 UTC 时间戳。此文件记录实际执行，不把方案文件当作通过证据。
 

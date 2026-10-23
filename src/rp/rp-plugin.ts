@@ -22,6 +22,7 @@ import { retrievalEvidence, verifyRetrievalEvidence, type RetrievalEvidence } fr
 import { verifyPacketProof } from './packet-proof.js'
 import { createUltraRpOptimizer } from './memory-optimizer.js'
 import { createPersonBinding, verifyPersonBinding } from './person/binding.js'
+import { openManagementServer } from './person/management-server.js'
 import { observePublicHostSource } from './source-adapter.js'
 import { fullSpan, unwrap } from './retrieval.js'
 import { estimateFinalRequest, type GlobalDependency, type InputBinding, type MemoryPacket, type RuntimeBudget } from './packet.js'
@@ -141,6 +142,10 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     return authority
   })
   let closed = false, closePromise: Promise<void> | undefined
+  const managers=new Map<string,Awaited<ReturnType<typeof openManagementServer>>>()
+  const managerOpenings=new Map<string,object>()
+  const closeManager=async(sessionId:string)=>{managerOpenings.delete(sessionId);const m=managers.get(sessionId);if(m){m.revoke();managers.delete(sessionId);await m.close()}}
+  effects.push(async()=>{for(const id of [...managers.keys()])await closeManager(id)})
   const inputHistory = new Map<string, Map<string, Input>>()
   const runtimeChanges = new Set<Bound>()
   for (const name of (await fs.readdir(hostRoot)).filter(n => /^[a-f0-9]{64}\.json$/u.test(n))) {
@@ -268,6 +273,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       if(!(action==='modules'&&/^disable\s/u.test(arg)))assertIdle(agent)
       let b = bound.get(agent.id)
       if (action === 'status') { if (b) await settle(b); return { kind: 'success', text: JSON.stringify(diagnostic(agent.id)) } }
+      if(action==='person'&&arg==='manage-close'){await closeManager(agent.id);return {kind:'success',text:'Management endpoint closed.'}}
       if (action === 'continue-clean') return await continueClean(agent, b, arg, signal)
       if (action === 'global') {
         const parsed = /^(\S+)\s+([\s\S]+)$/u.exec(arg); if (!parsed) throw new RpError('invalid_record', 'Use /rp global preference|publish|list|adopt <JSON>')
@@ -311,6 +317,18 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       if (action === 'person') {
         const parsed = /^(\S+)(?:\s+([\s\S]+))?$/u.exec(arg); if (!parsed) throw new RpError('invalid_record', 'Use person preview|confirm|show|use')
         const sub = parsed[1], value = parsed[2] ?? ''
+        if(sub==='manage'){
+          if(value)throw new RpError('invalid_record','Use person manage without arguments')
+          await closeManager(agent.id);const generation=b.generation,opening={};managerOpenings.set(agent.id,opening)
+          const controller=memory.management.create(b.authority,()=>live(agent)&&bound.get(agent.id)===b&&!b!.data.blocked&&!b!.recoveryOnly&&b!.generation===generation&&agent.status==='idle')
+          const manager=await openManagementServer(controller,()=>({sessionId:agent.id,personId:b!.data.personBinding?.personId??null,mode:b!.data.runtimeBinding?.config.mode??'rp',config:b!.data.runtimeBinding?.config??null}),async()=>{
+            for(const session of bound.values())if(session.data.request.branchId===b!.data.request.branchId)session.packet=undefined
+            if(!await (root.get('sessions') as any).flush(agent.session))throw new RpError('persistence_uncertain','Management committed; native flush unconfirmed. Inspect current state before another action.')
+          })
+          if(!live(agent)||b.generation!==generation||managerOpenings.get(agent.id)!==opening){await manager.close();throw new RpError('ownership_lost','Management owner changed while opening')}
+          managerOpenings.delete(agent.id)
+          managers.set(agent.id,manager);return {kind:'success',text:JSON.stringify({url:manager.url,notice:'仅本机、仅本会话，手动刷新和确认。关闭页面不会自动改人物；person manage-close 撤销入口。不要分享完整地址。'})}
+        }
         if (sub === 'preview') {
           if (Buffer.byteLength(value, 'utf8') > 65536) throw new RpError('invalid_record', 'Person draft exceeds 64 KiB')
           const draft = commandObject(value, ['schemaVersion', 'kind', 'personId', 'fields', 'relationships', 'goals'])
@@ -513,7 +531,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       await installBound(agent, raw.request.branchId, raw, true)
     } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') { await policy.block(agent.id) } }
   }) as never))
-  effects.push(root.on('agent/disposed', (({ agent }: any) => { const b = bound.get(agent.id); if (b) { b.runtime?.revoke(); b.generation++; admission.retireBinding(owner, agent.id); void policy.block(agent.id).then(() => { admission.release(owner, agent.id); bound.delete(agent.id) }).catch(() => { b.data.blocked = true }) } }) as never))
+  effects.push(root.on('agent/disposed', (({ agent }: any) => { void closeManager(agent.id).catch(()=>{}); const b = bound.get(agent.id); if (b) { b.runtime?.revoke(); b.generation++; admission.retireBinding(owner, agent.id); void policy.block(agent.id).then(() => { admission.release(owner, agent.id); bound.delete(agent.id) }).catch(() => { b.data.blocked = true }) } }) as never))
   // Only read/status tools. They cannot reach commands, approvals, stores or grants.
   const tools: any = root.get('tools'), output = { schema: { type: 'object' as const, additionalProperties: false as const, properties: { text: { type: 'string' as const, required: true as const } } }, render: (_args: unknown, result: { text: string }) => [{ type: 'text' as const, text: result.text }] }
   effects.push(root.on('tools/execute', (async (exec: any, next: () => Promise<any>) => {
@@ -565,7 +583,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     status: diagnostic,
     close() {
       if (closePromise) return closePromise
-      closed = true; admission.retire(owner); for(const b of bound.values()) b.runtime?.revoke(); pendingTools.clear(); shutdown.abort(new Error('RP plugin disposed'))
+      closed = true; admission.retire(owner); for(const m of managers.values())m.revoke(); for(const b of bound.values()) b.runtime?.revoke(); pendingTools.clear(); shutdown.abort(new Error('RP plugin disposed'))
       const errors: unknown[] = [], attempt = async (work: () => unknown) => { try { await work() } catch (e) { errors.push(e) } }
       for (const b of bound.values()) { b.generation++; b.packet = undefined; try { b.agent.cancel({ kind: 'hook', reason: 'RP owner disposed' }) } catch (e) { errors.push(e) } }
       closePromise = (async () => {

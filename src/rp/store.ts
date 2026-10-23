@@ -1,6 +1,7 @@
 /** RP authority store. Only the trusted host retains `control`; tools/generators
  * receive neither it nor write handles. No production hooks are registered. */
 import fs from 'node:fs/promises'
+import {assertPublicationAllowed} from './publication-guard.js'
 import path from 'node:path'
 import { createHash, randomUUID } from 'node:crypto'
 import type { Branch, BranchScope, BranchSourceBinding, CommitBatch, HostAuthority, InputFence, Job, LedgerSnapshot, Result, Scope, SemanticEvent, SourceObservation, SourceRevision, SourceSpan, StoredDerived, Summary, Visibility, Viewpoint, WorkspaceBinding, AuthorityChange, CanonBinding, ForkManifest, PayloadCopy, PrivacyDeletion, ProjectionResult } from './types.js'
@@ -196,6 +197,7 @@ export class RpStore {
     const temporary = file + '.tmp-' + randomUUID()
     let published = false, handle: Awaited<ReturnType<typeof fs.open>> | undefined
     try {
+      if(kind!=='seal')assertPublicationAllowed()
       handle = await fs.open(temporary, 'wx')
       await handle.writeFile(body)
       if (useFault) await this.#options.fault?.(kind === 'blob' ? 'blob_written' : kind === 'seal' ? 'seal_written' : 'transaction_written')
@@ -205,6 +207,7 @@ export class RpStore {
       // The workspace lock serializes destination assignment. Never overwrite an
       // existing immutable commit even on POSIX where rename permits it.
       try { await fs.lstat(file); error('store_corrupt', 'RP immutable destination already exists') } catch (cause) { if ((cause as NodeJS.ErrnoException).code !== 'ENOENT') throw cause }
+      if(kind!=='seal')assertPublicationAllowed()
       await fs.rename(temporary, file); published = true
       // An independent immutable receipt detects single-file tail loss. A crash
       // before the receipt still leaves a valid, unacknowledged transaction;

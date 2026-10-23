@@ -43,6 +43,8 @@
 
 ## 执行账本
 
+- Task 2 complete: 实际浏览器手动全流程，原生SDK管理闭环；只读审阅5项先RED后修复，管理9/9、相关回归37/37、类型检查exit0。截图与命令在同一work证据目录。允许进入Task 3。
+
 - Task 1 complete: scorer RED→2/2 GREEN；四类 core 故事和120干扰4/4；原生SDK12次clean+重建+撤权1/1。首轮脚本/fixture错误保留日志，不是生产回归。实际命令在 work/person-m4-2026-10-23/commands.jsonl。
 
 - 初始：Git clean，HEAD 9eda3d0；PR #1 open，main d114b91。无新增 worktree，沿用用户现有专用开发 checkout。

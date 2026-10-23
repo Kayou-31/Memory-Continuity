@@ -51,11 +51,12 @@ function compile(view:RpReadView,changes:Saved['changes'],known:ReadonlySet<stri
 }
 export function createPersonProposal(store:RpStore,entityIds:readonly string[]) {
   const known=new Set(entityIds)
-  return async (authority:HostAuthority,input:unknown,key:string) => {
+  return async (authority:HostAuthority,input:unknown,key:string,expected?:InputFence) => {
       try {
         text(key,220);const raw=object(cloneInput(input),['changes']);if(!Array.isArray(raw.changes)||!raw.changes.length||raw.changes.length>16)invalid('growth batch count');raw.changes.forEach(validateChange)
         const changes=raw.changes as Change[];if(new Set(changes.map(c=>c.changeId)).size!==changes.length)invalid('duplicate change IDs')
         return await store.withReadView(authority,async view=>{
+          if(expected&&canonical(view.fence)!==canonical(expected))throw new RpError('stale_input','Original growth proposal snapshot changed')
           const candidateId='person_candidate_'+digest([view.fence.branchId,key,changes.slice().sort((a,b)=>a.changeId.localeCompare(b.changeId))]).slice(0,48)
           const ids=new Map(changes.map(c=>[c.changeId,'person_'+digest([candidateId,c.changeId]).slice(0,48)]))
           const compiled=changes.map(c=>{const {previousChangeId,...rest}=c;if(previousChangeId&&!ids.has(previousChangeId))invalid('unknown proposed predecessor');return {...rest,previousEventId:previousChangeId?ids.get(previousChangeId)!:c.previousEventId,eventId:ids.get(c.changeId)!}})
@@ -127,11 +128,11 @@ export function createPersonChanges(store:RpStore,service:ReturnType<typeof crea
         return {ok:true as const,value:{fence}}
       }catch(e){return failure(e)}
     },
-    async reject(authority:HostAuthority,control:SourceRevision,candidateId:string,key:string) {
+    async reject(authority:HostAuthority,control:SourceRevision,candidateId:string,key:string,originalExpected?:InputFence) {
       try { id(candidateId);text(key,220)
         const prior=unwrap(await store.readControlCommit(authority,'person_reject:'+key))
         if(prior){if(!prior.authorityChanges.some(c=>c.kind==='candidate_adoption'&&c.record.candidateId===candidateId&&c.record.decision==='rejected'))throw new RpError('idempotency_conflict','Person rejection changed');unwrap(await store.ensureDurable(authority,unwrap(await store.readFence(authority))));return {ok:true as const,value:prior.fence}}
-        const expected=unwrap(await store.withReadView(authority,async view=>{if(!(await load(authority,view)).some(p=>p.id===candidateId))throw new RpError('source_unavailable','Person candidate unavailable');return view.fence},{audit:true}))
+        const expected=unwrap(await store.withReadView(authority,async view=>{if(originalExpected&&canonical(view.fence)!==canonical(originalExpected))throw new RpError('stale_input','Original rejection snapshot changed');if(!(await load(authority,view)).some(p=>p.id===candidateId))throw new RpError('source_unavailable','Person candidate unavailable');return view.fence},{audit:true}))
         return await service.applyControl(authority,control,{kind:'accept',idempotencyKey:'person_reject:'+key,expected,sourceRevisionIds:[control.id],events:[],personCandidates:[{candidateId,eventIds:[],decision:'rejected'}]})
       }catch(e){return failure(e)}
     },
