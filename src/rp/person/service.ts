@@ -8,12 +8,14 @@ import { hasPersonOwner } from '../semantic-registry.js'
 import { personDraft, personKeys } from './schema.js'
 import { projectPerson } from './projection.js'
 import type { PersonDraft } from './types.js'
+import {createPersonChanges} from './changes.js'
 const digest = (v: unknown) => createHash('sha256').update(canonical(v)).digest('hex')
 export function createPersonService(store: RpStore, service: ReturnType<typeof createCanonicalService>, entityIds: readonly string[]) {
   type Preview = { authority: HostAuthority; draft: PersonDraft; key: string; expected: InputFence; originId: string; draftHash: string }
   const previews = new WeakMap<object, Preview>(), known = new Set(entityIds)
   const operationKey = (key: string) => 'person:' + key
   return Object.freeze({
+    ...createPersonChanges(store,service,entityIds),
     async preview(authority: HostAuthority, input: unknown, key: string) {
       try {
         text(key, 240); const draft = personDraft(input, known), draftHash = digest(draft)

@@ -16,7 +16,7 @@ export interface EventProposal {
 }
 type BaseControl = { readonly idempotencyKey: string; readonly expected: InputFence }
 export type CanonicalControl = BaseControl & (
-  | { readonly kind: 'accept' | 'confirm_replay'; readonly sourceRevisionIds: readonly string[]; readonly events: readonly EventProposal[] }
+  | { readonly kind: 'accept' | 'confirm_replay'; readonly sourceRevisionIds: readonly string[]; readonly events: readonly EventProposal[]; readonly personCandidates?: readonly {candidateId:string;eventIds:readonly string[];decision:'accepted'|'rejected'}[] }
   | { readonly kind: 'reject' | 'retract'; readonly sourceRevisionIds: readonly string[] }
   | { readonly kind: 'replace'; readonly sourceRevisionId: string; readonly replacementSourceRevisionId: string; readonly events: readonly EventProposal[] }
   | { readonly kind: 'retcon'; readonly targetEventIds: readonly string[]; readonly events: readonly EventProposal[] }
@@ -46,7 +46,7 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
         text(value.idempotencyKey, 256); validateFence(value.expected)
         const fields: Record<string, string[]> = { accept: ['sourceRevisionIds', 'events'], confirm_replay: ['sourceRevisionIds', 'events'], reject: ['sourceRevisionIds'], retract: ['sourceRevisionIds'], replace: ['sourceRevisionId', 'replacementSourceRevisionId', 'events'], retcon: ['targetEventIds', 'events'], character_forget: ['knowerId', 'claimId'], privacy_delete: ['sourceRevisionIds', 'affectedBranchIds'] }
         if (!Object.hasOwn(fields, value.kind)) invalid('canonical operation')
-        object(value, ['kind', 'idempotencyKey', 'expected', ...fields[value.kind]])
+        object(value, ['kind', 'idempotencyKey', 'expected', ...fields[value.kind]],value.kind==='accept'?['personCandidates']:[])
         if (value.kind === 'privacy_delete') {
           list(value.sourceRevisionIds); list(value.affectedBranchIds)
           const blocked = await control.privacyDelete(authority, source.id, { idempotencyKey: value.idempotencyKey, expected: value.expected, sourceRevisionIds: value.sourceRevisionIds, affectedBranchIds: value.affectedBranchIds }, affectedAuthorities)
@@ -137,6 +137,17 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
           }
           return event
         })
+        if(value.kind==='accept' && value.personCandidates) {
+          if(!Array.isArray(value.personCandidates)||!value.personCandidates.length||value.personCandidates.length>16)invalid('person decision count')
+          const seen=new Set<string>()
+          for(const d of value.personCandidates) {
+            object(d,['candidateId','eventIds','decision']);id(d.candidateId);list(d.eventIds,false)
+            if(!d.candidateId.startsWith('person_candidate_')||seen.has(d.candidateId)||!['accepted','rejected'].includes(d.decision)||d.eventIds.some((id:string)=>!events.some(e=>e.id===id))||(d.decision==='rejected'&&d.eventIds.length))invalid('person decision')
+            seen.add(d.candidateId)
+            if(ledger.authorityChanges.some(c=>c.kind==='candidate_adoption'&&c.record.candidateId===d.candidateId))invalid('person candidate already decided')
+            growthMarkers.push({kind:'candidate_adoption',recordId:'person_decision_'+digest(d.candidateId),record:{candidateId:d.candidateId,sourceRevisionIds:[],eventIds:d.eventIds,summaryIds:[],decision:d.decision,controlSourceId:source.id}})
+          }
+        }
         return store.commit(authority, { schemaVersion: 1, idempotencyKey: value.idempotencyKey, expected: value.expected, sourceBindings: [...mutations.values()], events, summaries: [], jobs: [], invalidatedIds: [...targets], nextContextRevision: value.expected.contextRevision + 1,
           authorityChanges: [{ kind: 'candidate_adoption', recordId: commandId, record: { candidateId: commandHash, sourceRevisionIds: eventSources.map(s => s.id), eventIds: events.map(e => e.id), summaryIds: [], decision: value.kind === 'reject' ? 'rejected' : 'accepted', controlSourceId: source.id } }, ...growthMarkers] })
       } catch (cause) { return caught(cause) }

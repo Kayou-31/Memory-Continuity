@@ -3,8 +3,8 @@ import { personDraft } from './schema.js'
 import { createDraftIds } from './editor-ids.js'
 import type { PersonDraft, PersonField } from './types.js'
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T
-const kinds = { identity:'身份', background:'背景', voice:'表达', values:'价值观', boundaries:'边界' }
-const policies = { stable:'保持稳定', growable:'可经确认成长' }
+const kinds = { identity:'身份', background:'背景', voice:'表达', values:'价值观', boundaries:'边界', trait:'性格倾向',feeling:'当前感受',stage:'人生阶段' }
+const policies = { stable:'保持稳定', growable:'可经确认成长',situational:'仅在情境内有效' }
 const relations = { trust:'信任', affection:'亲近', loyalty:'忠诚', rivalry:'竞争', debt:'亏欠', promise:'承诺关系', kinship:'亲属', alliance:'同盟', tension:'矛盾' }
 let key: (prefix:string)=>string
 function input(parent: HTMLElement, title: string, value: string, multiline = false) {
@@ -19,7 +19,13 @@ function entry(container: string) { const el=document.createElement('div'); el.c
 const readers = new WeakMap<HTMLElement, () => unknown>()
 function field(value: PersonField) {
   const row=entry('fields'), kind=select(row,'项目',kinds,value.kind), content=input(row,'内容',value.value,true), policy=select(row,'改变方式',policies,value.policy)
-  readers.set(row,()=>({fieldId:value.fieldId,kind:kind.value,value:content.value,policy:policy.value}))
+  const validity=document.createElement('div');row.append(validity)
+  const mode=select(validity,'有效范围',{scene:'指定场景',sequence:'已接受记录序号区间'},value.validity?.kind??'scene')
+  const scene=input(validity,'场景 ID（原生 RP 默认 rp_scene）',value.validity?.kind==='scene'?value.validity.sceneId:'rp_scene')
+  const from=input(validity,'起始接受序号（含）',String(value.validity?.kind==='sequence'?value.validity.from:1)),through=input(validity,'结束接受序号（含）',String(value.validity?.kind==='sequence'?value.validity.through:10))
+  const update=()=>{validity.hidden=policy.value!=='situational';scene.parentElement!.hidden=mode.value!=='scene';from.parentElement!.hidden=through.parentElement!.hidden=mode.value!=='sequence'}
+  policy.onchange=mode.onchange=update;update()
+  readers.set(row,()=>({fieldId:value.fieldId,kind:kind.value,value:content.value,policy:policy.value,...(policy.value==='situational'?{validity:mode.value==='scene'?{kind:'scene',sceneId:scene.value.trim()}:{kind:'sequence',from:Number(from.value),through:Number(through.value)}}:{})}))
 }
 function relationship(value: PersonDraft['relationships'][number]) {
   const row=entry('relationships'), target=input(row,'对方人物 ID',value.targetId), relation=select(row,'关系方向：我 → 对方',relations,value.relation), content=input(row,'起点',value.value)

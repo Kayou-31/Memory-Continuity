@@ -1,9 +1,15 @@
-import { cloneInput, denied, id, invalid, object, text } from '../schema.js'
+import { cloneInput, denied, id, integer, invalid, object, text } from '../schema.js'
 import type { PersonDraft, PersonField } from './types.js'
-export const personKeys: Record<PersonField['kind'], string> = { identity: 'identity', background: 'background', voice: 'voice', values: 'rule', boundaries: 'rule' }
+export const personKeys: Record<PersonField['kind'], string> = { identity: 'identity', background: 'background', voice: 'voice', values: 'rule', boundaries: 'rule', trait:'rule', feeling:'rule', stage:'background' }
 export function personField(input: unknown): asserts input is PersonField {
-  const f = object(input, ['fieldId', 'kind', 'value', 'policy']); id(f.fieldId); text(f.value, 2048, true)
-  if (!Object.hasOwn(personKeys, f.kind) || !['stable', 'growable'].includes(f.policy)) invalid('person field kind/policy')
+  const f = object(input, ['fieldId', 'kind', 'value', 'policy'], ['validity']); id(f.fieldId); text(f.value, 2048, true)
+  if (!Object.hasOwn(personKeys, f.kind) || !['stable', 'growable', 'situational'].includes(f.policy)) invalid('person field kind/policy')
+  if(f.policy==='situational') {
+    const v=object(f.validity,['kind'],['sceneId','from','through'])
+    if(v.kind==='scene') { object(v,['kind','sceneId']);id(v.sceneId) }
+    else if(v.kind==='sequence') {object(v,['kind','from','through']);integer(v.from);integer(v.through);if(v.through<v.from)invalid('person validity interval')}
+    else invalid('person validity kind')
+  } else if(f.validity!==undefined) invalid('only situational fields have validity')
 }
 export function personDraft(input: unknown, known: ReadonlySet<string>): PersonDraft {
   const value = cloneInput(input)

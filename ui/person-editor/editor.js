@@ -38,6 +38,9 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
   function id(v) {
     if (typeof v !== "string" || !/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u.test(v)) invalid("id");
   }
+  function integer(v, min = 0) {
+    if (typeof v !== "number" || !Number.isSafeInteger(v) || v < min) invalid("safe integer");
+  }
   var MAX_RP_JSON_BYTES = 4194304;
   function cloneInput(input2, maxBytes = MAX_RP_JSON_BYTES, capacityError = false) {
     const visit = (v, depth) => {
@@ -74,12 +77,24 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
   }
 
   // src/rp/person/schema.ts
-  var personKeys = { identity: "identity", background: "background", voice: "voice", values: "rule", boundaries: "rule" };
+  var personKeys = { identity: "identity", background: "background", voice: "voice", values: "rule", boundaries: "rule", trait: "rule", feeling: "rule", stage: "background" };
   function personField(input2) {
-    const f = object(input2, ["fieldId", "kind", "value", "policy"]);
+    const f = object(input2, ["fieldId", "kind", "value", "policy"], ["validity"]);
     id(f.fieldId);
     text(f.value, 2048, true);
-    if (!Object.hasOwn(personKeys, f.kind) || !["stable", "growable"].includes(f.policy)) invalid("person field kind/policy");
+    if (!Object.hasOwn(personKeys, f.kind) || !["stable", "growable", "situational"].includes(f.policy)) invalid("person field kind/policy");
+    if (f.policy === "situational") {
+      const v = object(f.validity, ["kind"], ["sceneId", "from", "through"]);
+      if (v.kind === "scene") {
+        object(v, ["kind", "sceneId"]);
+        id(v.sceneId);
+      } else if (v.kind === "sequence") {
+        object(v, ["kind", "from", "through"]);
+        integer(v.from);
+        integer(v.through);
+        if (v.through < v.from) invalid("person validity interval");
+      } else invalid("person validity kind");
+    } else if (f.validity !== void 0) invalid("only situational fields have validity");
   }
   function personDraft(input2, known) {
     const value = cloneInput(input2);
@@ -132,8 +147,8 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
 
   // src/rp/person/editor.ts
   var $ = (id2) => document.getElementById(id2);
-  var kinds = { identity: "身份", background: "背景", voice: "表达", values: "价值观", boundaries: "边界" };
-  var policies = { stable: "保持稳定", growable: "可经确认成长" };
+  var kinds = { identity: "身份", background: "背景", voice: "表达", values: "价值观", boundaries: "边界", trait: "性格倾向", feeling: "当前感受", stage: "人生阶段" };
+  var policies = { stable: "保持稳定", growable: "可经确认成长", situational: "仅在情境内有效" };
   var relations = { trust: "信任", affection: "亲近", loyalty: "忠诚", rivalry: "竞争", debt: "亏欠", promise: "承诺关系", kinship: "亲属", alliance: "同盟", tension: "矛盾" };
   var key;
   function input(parent, title, value, multiline = false) {
@@ -172,7 +187,19 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
   var readers = /* @__PURE__ */ new WeakMap();
   function field(value) {
     const row = entry("fields"), kind = select(row, "项目", kinds, value.kind), content = input(row, "内容", value.value, true), policy = select(row, "改变方式", policies, value.policy);
-    readers.set(row, () => ({ fieldId: value.fieldId, kind: kind.value, value: content.value, policy: policy.value }));
+    const validity = document.createElement("div");
+    row.append(validity);
+    const mode = select(validity, "有效范围", { scene: "指定场景", sequence: "已接受记录序号区间" }, value.validity?.kind ?? "scene");
+    const scene = input(validity, "场景 ID（原生 RP 默认 rp_scene）", value.validity?.kind === "scene" ? value.validity.sceneId : "rp_scene");
+    const from = input(validity, "起始接受序号（含）", String(value.validity?.kind === "sequence" ? value.validity.from : 1)), through = input(validity, "结束接受序号（含）", String(value.validity?.kind === "sequence" ? value.validity.through : 10));
+    const update = () => {
+      validity.hidden = policy.value !== "situational";
+      scene.parentElement.hidden = mode.value !== "scene";
+      from.parentElement.hidden = through.parentElement.hidden = mode.value !== "sequence";
+    };
+    policy.onchange = mode.onchange = update;
+    update();
+    readers.set(row, () => ({ fieldId: value.fieldId, kind: kind.value, value: content.value, policy: policy.value, ...policy.value === "situational" ? { validity: mode.value === "scene" ? { kind: "scene", sceneId: scene.value.trim() } : { kind: "sequence", from: Number(from.value), through: Number(through.value) } } : {} }));
   }
   function relationship(value) {
     const row = entry("relationships"), target = input(row, "对方人物 ID", value.targetId), relation = select(row, "关系方向：我 → 对方", relations, value.relation), content = input(row, "起点", value.value);

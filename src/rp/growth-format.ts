@@ -46,7 +46,7 @@ export function projectedStateKey(event: SemanticEvent): string {
   return g?.channel === 'goal' ? goalValue(g.value).category + ':' + goalValue(g.value).goalId : 'key' in p ? p.key : ''
 }
 export function currentGrowthHeads(events: readonly SemanticEvent[]): SemanticEvent[] {
-  const previous = new Set(events.map(e => growthValue(e)?.previousEventId).filter((id): id is string => !!id))
+  const previous = new Set(events.map(e => growthValue(e)?.previousEventId ?? personValue(e)?.previousEventId).filter((id): id is string => !!id))
   return events.filter(e => !previous.has(e.id))
 }
 export function projectedEventValue(event: SemanticEvent): JsonValue {

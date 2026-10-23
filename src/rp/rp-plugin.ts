@@ -295,13 +295,29 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           return { kind: 'success', text: canonical(result) }
         }
         if (sub === 'show') return { kind: 'success', text: canonical(unwrap(await memory.person.read(b.authority, value || b.data.personBinding?.personId || ''))) }
+        if (sub === 'timeline') return {kind:'success',text:canonical(unwrap(await memory.person.timeline(b.authority,value||b.data.personBinding?.personId||'')))}
+        if (sub === 'candidates') return {kind:'success',text:canonical(unwrap(await memory.person.list(b.authority)))}
+        if (sub === 'propose') {
+          if(Buffer.byteLength(value,'utf8')>65536)throw new RpError('invalid_record','Growth proposal exceeds 64 KiB')
+          const proposal=commandObject(value,['changes'])
+          return {kind:'success',text:canonical(unwrap(await memory.person.propose(b.authority,proposal,commandId)))}
+        }
+        if(['edit','set-policy','adopt','reject'].includes(sub)) {
+          if(Buffer.byteLength(value,'utf8')>65536)throw new RpError('invalid_record','Person control exceeds 64 KiB')
+          const op= sub==='adopt'?commandObject(value,['candidateIds']):sub==='reject'?commandObject(value,['candidateId']):commandObject(value,['personId','fieldId','previousEventId','note',sub==='edit'?'value':'policy'],['validity'])
+          const ctl=unwrap(await controlSource(b,commandId,value))
+          const result=sub==='adopt'?unwrap(await memory.person.adopt(b.authority,ctl,op.candidateIds,commandId)):sub==='reject'?unwrap<any>(await memory.person.reject(b.authority,ctl,op.candidateId,commandId)):unwrap(await memory.person.apply(b.authority,ctl,{...op,operation:sub,expected:unwrap(await memory.store.readFence(b.authority)),idempotencyKey:commandId}))
+          for(const session of bound.values())if(session.data.request.branchId===b.data.request.branchId)session.packet=undefined
+          if(!await (root.get('sessions') as any).flush(agent.session))throw new RpError('persistence_uncertain','Person control flush unconfirmed')
+          return {kind:'success',text:canonical(result)}
+        }
         if (sub === 'use') {
           id(value); if (!safe(agent)) throw new RpError('scope_denied', 'Person switching requires an empty root; use continue-clean first')
           const binding = await createPersonBinding(memory.store, b.authority, value)
           b.generation++; b.packet = undefined; b.data.personBinding = binding; await save(b)
           return { kind: 'success', text: canonical({ personId: value, branchId: binding.boundAt.branchId }) }
         }
-        throw new RpError('invalid_record', 'Use person preview|confirm|show|use')
+        throw new RpError('invalid_record', 'Use person preview|confirm|show|use|edit|set-policy|propose|candidates|adopt|reject|timeline')
       }
       if (action === 'agent') {
         const op = commandObject(arg, ['kind'], ['actorIds', 'description', 'sourceRevisionIds', 'fictionalTime', 'entityId', 'key', 'value', 'fromId', 'toId', 'relation', 'previousEventId', 'causeEventIds', 'note', 'ownerId', 'goalId', 'category', 'objective', 'status', 'progress', 'nextAction', 'targetEntityId'])

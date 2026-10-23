@@ -59,13 +59,18 @@ for (const order of ['standalone', 'engineering-first', 'rp-first']) test('Perso
   const command = async (agent,text) => { const r=await f.command(agent,text); assert.equal(r.kind,'success',r.text); return r }
   try {
     f.ctx.llm.registerAdapter(['person-bundle'],new Capture()); const a=await f.create(); a.options.provider='person-bundle'; await command(a,'start')
-    const d={schemaVersion:1,kind:'person-draft',personId:'erin',fields:[{fieldId:'name',kind:'identity',value:'林澈',policy:'stable'}],relationships:[],goals:[]}
+    const d={schemaVersion:1,kind:'person-draft',personId:'erin',fields:[{fieldId:'name',kind:'identity',value:'林澈',policy:'stable'},{fieldId:'care',kind:'trait',value:'观望',policy:'growable'}],relationships:[],goals:[]}
     const preview=JSON.parse((await command(a,'person preview '+JSON.stringify(d))).text)
-    await command(a,'person confirm '+preview.previewId); await command(a,'person use erin'); await command(a,'input 你是谁'); await a.whenIdle(); await f.rp.ready(a.id)
+    await command(a,'person confirm '+preview.previewId); await command(a,'person use erin')
+    const person=JSON.parse((await command(a,'person show erin')).text),experience=JSON.parse((await command(a,'agent '+JSON.stringify({kind:'experience',actorIds:['erin'],description:'共同探索钟楼',sourceRevisionIds:[]}))).text)
+    const proposed=JSON.parse((await command(a,'person propose '+JSON.stringify({changes:[{changeId:'care',personId:'erin',fieldId:'care',previousEventId:person.fields.find(f=>f.fieldId==='care').eventId,value:'愿意探索',causeEventIds:[experience.eventId],note:'共同经历'}]}))).text)
+    await command(a,'person adopt '+JSON.stringify({candidateIds:[proposed.id]}))
+    await command(a,'input 你是谁'); await a.whenIdle(); await f.rp.ready(a.id)
     assert.equal(requests.length,1); assert.match(JSON.stringify(requests[0]),/primaryPerson/); assert.match(JSON.stringify(requests[0]),/林澈/)
     assert.equal(f.rp.status(a.id).memoryOptimization.packet,order==='standalone'?'standalone':'ultra-rp/v1')
     if(order!=='standalone')assert.equal(f.ctx.get('ultraEvidenceSupport').memory.hasActiveSession(a.id),false)
-    observations.push({personCore:true,order,personId:'erin',actualRequests:1,automaticSummary:false})
+    assert.match(JSON.stringify(requests[0]),/愿意探索/)
+    observations.push({personCore:true,personGrowth:true,order,personId:'erin',actualRequests:1,automaticSummary:false})
   } finally {await f.dispose()}
 })
 

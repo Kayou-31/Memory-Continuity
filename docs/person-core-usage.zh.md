@@ -43,3 +43,20 @@ Journal v2 新增可选人物绑定及每个历史 packet 的原始绑定证明�
 一个草稿/分支只使用一个 audience。当前原生宿主仍为 narrator 模式，不能将个人认知字段理解为完整历史的角色秘密隔离。后台自动摘要、自动采纳、原生压缩和 strict POV 保持关闭。
 
 “完整的人”是用户可构建和持续塑造的产品目标，不表示插件或模型具有人的意识。离线回归与实际 SDK 终端捕获验证的是数据和调用路径；真实模型的长期人物一致性另需独立评估。
+
+人物成长（M2）通过可信命令手动操作，模型工具保持只读。普通编辑不撤销前史，策略切换保持字段值；成长仅允许 growable 字段。`trait`（性格倾向）、`feeling`（当前感受）、`stage`（人生阶段）与原有五类字段共享同一协议。
+
+- `/rp person show erin` 查看当前有效字段、关系和目标。
+- `/rp person timeline erin` 查看字段链、理由、原因 ID、剧情时间、接受序号、当前/过期标记和该人物失效记录 ID。已失效正文不会重新载入；界面中的未设定不能由模型自动补写。
+- `/rp person edit {"personId":"erin","fieldId":"name","previousEventId":"从 show 取得","value":"林川","note":"从今天起使用新名字"}`：明确修订今后的字段值，不 Retcon 过去。
+- `/rp person set-policy {"personId":"erin","fieldId":"care","previousEventId":"当前字段事件 ID","policy":"stable","note":"保持这一点"}`：追加策略记录，旧成长候选过期。
+- `/rp person propose {"changes":[{"changeId":"care1","personId":"erin","fieldId":"care","previousEventId":"当前字段事件 ID","value":"愿意托付","causeEventIds":["已接受的经历事件 ID"],"note":"一起救援后更信任同行者"}]}`：保存可删除的待审正文，不直接改变人物。
+- `/rp person candidates` 列出候选完整内容、基准 fence 与 pending/stale/accepted/rejected 状态。
+- `/rp person adopt {"candidateIds":["候选 ID"]}`：最多16条变化，从同一初始 fence 预演并一次原子提交；排序不取决于勾选顺序，任一冲突整批拒绝。
+- `/rp person reject {"candidateId":"候选 ID"}`：记录拒绝；不采纳正文。拒绝记录是元数据，候选正文仍在可删除存储内，随关联来源的隐私清理删除。
+
+同一提案可用 `previousEventId:null, previousChangeId:"同提案中的 changeId"` 明确串联变化；不允许环、未知前驱、偷偷更换字段、候选改变策略。原因必须是已接受的世界经历；人物初始化起点不能冒充后续真实经历。源数组只保留此次原因与此次控制，前驱沿 dependencyIds 追溯。
+
+`policy:"situational"` 必须带 `validity:{"kind":"scene","sceneId":"rp_scene"}` 或 `validity:{"kind":"sequence","from":1,"through":20}`。有效区间两端均包含，接受序号是插件已接受来源的顺序（包含用户控制），不是消息轮数、电脑日期或年龄；可在 timeline/账本查看。过期后从当前人物和通用 state 投影移除，事件保留，不能回退到前驱值。编辑情境字段时可以明确给出新的 validity。普通关系/目标仍使用已有 `/rp agent` 显式操作和 `/rp relationships`、`/rp goals` 查询，方向与前驱不变；首期新增的成长候选队列专用于人物字段。
+
+静态编辑器可创建情境字段、性格和阶段，生成新草稿；现有人物更新、成长审阅和时间线采用上述可信命令。实时在线页面、自动候选生成、自动采纳、自动推进年龄和后台摘要未开启。旧会话包含已失效检索结果或字段时，门禁可能要求 continue-clean。

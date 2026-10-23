@@ -2,19 +2,21 @@
  * filesystem, implicit co-presence knowledge or last-timestamp conflict winner. */
 import type { ClaimAssessment, InputFence, JsonValue, ProjectionResult, SemanticEvent, SourceSpan, StateProjection, Viewpoint } from './types.js'
 import { currentGrowthHeads, projectedEventValue, projectedStateKey } from './growth-format.js'
+import { personApplies } from './person/format.js'
 
 const stable = (v: unknown): string => v === null || typeof v !== 'object' ? JSON.stringify(v) : Array.isArray(v) ? '[' + v.map(stable).join(',') + ']' : '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + stable((v as Record<string, unknown>)[k])).join(',') + '}'
 const unique = (items: readonly string[]) => [...new Set(items)].sort()
 const sources = (events: readonly SemanticEvent[]): SourceSpan[] => [...new Map(events.flatMap(e => e.sources).map(s => [stable(s), s])).values()]
 const objective = (e: SemanticEvent) => e.epistemic !== 'world' || ['user_canon', 'explicit_ooc', 'accepted_narration'].includes(e.authority)
 
-export function reduceEvents(input: readonly SemanticEvent[], fence: InputFence): ProjectionResult {
+export function reduceEvents(input: readonly SemanticEvent[], fence: InputFence, context?: {sceneId?:string;acceptedSeq:number}): ProjectionResult {
   const events = [...input].sort((a, b) => a.acceptedSeq - b.acceptedSeq || a.id.localeCompare(b.id))
   const superseded = new Set(events.flatMap(e => [...e.supersedes, ...(e.payload.kind === 'correction' ? e.payload.targetEventIds : [])]))
   const active = events.filter(e => !superseded.has(e.id) && objective(e))
   const groups = new Map<string, { subjectId: string; key: string; events: SemanticEvent[]; values: JsonValue[] }>()
   const relations = new Map<string, SemanticEvent[]>(), know = new Map<string, SemanticEvent[]>()
   for (const e of currentGrowthHeads(active)) {
+    if(!personApplies(e,context))continue
     const p = e.payload
     if (p.kind === 'state_change' || p.kind === 'canon_assertion' || p.kind === 'preference_change') {
       const subjectId = p.kind === 'preference_change' ? 'preference' : p.subjectId

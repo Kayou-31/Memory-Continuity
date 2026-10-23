@@ -65,3 +65,20 @@ test('person binding survives actual SDK read-tool loop and cold resume', async 
     success(await cold.command(resumed,'input Continue')); await resumed.whenIdle(); await cold.rp.ready(resumed.id); assert.equal(calls,3,JSON.stringify(cold.rp.status(resumed.id)))
   } finally { if(!disposed)await f.dispose(); await cold?.dispose() }
 })
+test('native person growth review, policy and timeline reach the packaged request path',async()=>{
+ const f=await host({entityIds:['erin']});const requests=[]
+ class Terminal extends LlmAdapter {async *stream(options){requests.push(options);yield {type:'text-delta',index:0,text:'Continue growing'};yield {type:'finish',reason:{kind:'stop'}}}}
+ try{
+  f.ctx.llm.registerAdapter(['person-growth'],new Terminal());const a=await f.create();a.options.provider='person-growth';success(await f.command(a,'start'))
+  const value=draft('erin');value.fields.push({fieldId:'care',kind:'trait',value:'观望',policy:'growable'})
+  const p=JSON.parse(success(await f.command(a,'person preview '+JSON.stringify(value))).text);success(await f.command(a,'person confirm '+p.previewId));success(await f.command(a,'person use erin'))
+  const before=JSON.parse(success(await f.command(a,'person show erin')).text),experience=JSON.parse(success(await f.command(a,'agent '+JSON.stringify({kind:'experience',actorIds:['erin'],description:'完成第一次远行',sourceRevisionIds:[]}))).text)
+  const proposed=JSON.parse(success(await f.command(a,'person propose '+JSON.stringify({changes:[{changeId:'care',personId:'erin',fieldId:'care',previousEventId:before.fields.find(f=>f.fieldId==='care').eventId,value:'敢于探索',causeEventIds:[experience.eventId],note:'远行带来了经验'}]}))).text)
+  assert.equal(JSON.parse(success(await f.command(a,'person candidates')).text)[0].state,'pending')
+  success(await f.command(a,'person adopt '+JSON.stringify({candidateIds:[proposed.id]})))
+  const after=JSON.parse(success(await f.command(a,'person show erin')).text);assert.equal(after.fields.find(f=>f.fieldId==='care').value,'敢于探索')
+  success(await f.command(a,'person set-policy '+JSON.stringify({personId:'erin',fieldId:'care',previousEventId:after.fields.find(f=>f.fieldId==='care').eventId,policy:'stable',note:'保持这一点'})))
+  const timeline=JSON.parse(success(await f.command(a,'person timeline erin')).text);assert.ok(timeline.changes.some(c=>c.operation==='grow'));assert.ok(timeline.changes.some(c=>c.operation==='set-policy'))
+  success(await f.command(a,'input 开始下一段旅途'));await a.whenIdle();await f.rp.ready(a.id);assert.equal(requests.length,1);assert.match(JSON.stringify(requests[0]),/敢于探索/)
+ }finally{await f.dispose()}
+})

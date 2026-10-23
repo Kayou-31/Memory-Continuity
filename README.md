@@ -2,11 +2,11 @@
 
 **独立使用，可选适配 Ultra Mode。** 技术名称 `dsh-ultra-rp-memory`，npm 包名 `@dsh-external/dsh-ultra-rp-memory`。无需安装 Ultra Mode、Ultra Memory 或 Ultra Decision 即可使用 RP 的记忆、检索、分支和人工采纳功能；运行时仅依赖下文列出的 DSH 原生 peers。
 
-产品重点是**让用户自己搭建、持续塑造一个完整的“人”**：定义身份、背景、性格与价值观，让经历、关系、承诺和做事经验在后续互动中延续。Ultra-RP-Memory 自成体系，可发展 RP、陪伴、创作、项目助手等分支；技能与工具作为可选能力。Ultra-Mode 保持独立，双方通过兼容层配合。当前已实现显式经历记录、身份/关系成长、目标/承诺生命周期与有界上下文回忆；完整人物创建界面、人格/价值观规则及能力模块框架尚未实现。用法见 [人物记忆与成长](docs/agent-memory.zh.md)，后续架构见 [人物主体、自有分支与兼容](docs/person-core-direction.zh.md)。
+产品重点是**让用户自己搭建、持续塑造一个完整的“人”**：定义身份、背景、性格与价值观，让经历、关系、承诺和做事经验在后续互动中延续。Ultra-RP-Memory 自成体系，可发展 RP、陪伴、创作、项目助手等分支；技能与工具作为可选能力。Ultra-Mode 保持独立，双方通过兼容层配合。当前已实现人物草稿与原子创建、宿主绑定、稳定/成长/情境字段、显式成长队列、批量确认和时间线，复用经历、定向关系与目标/承诺账本。先打开 [离线人物编辑器](ui/person-editor/index.html)，再按 [人物核心用法](docs/person-core-usage.zh.md) 预览、确认和绑定。实时在线面板、能力模块框架及自主生活仍属后续工作。既有 [人物记忆与成长](docs/agent-memory.zh.md) 和 [产品方向](docs/person-core-direction.zh.md) 保留适用。
 
 此名称已在本地包元数据、入口和 Cordis patch 中统一；已发布 dev.3 仍使用旧包名 `@dsh-external/dsh-rp-memory`，仓库 URL 与历史附件名保持实际值。替换旧入口时更新配置的包名，保留 `rp-memory` 配置节点与原数据目录，避免同时启用新旧两个入口；没有为命名调整执行数据迁移。可选 Ultra 适配使用本包的 ultra-rp/v1 纯排序和预算接口，只处理 RP 已授权记忆，不调用 Ultra 的工程归档/压缩器；默认无 Ultra 时独立运行。
 
-dev.3 修复请求准入、异常诊断/干净续接、retcon 摘要依赖、稳定检索与实际记录回执、全局容量和 seal 恢复、锚点合并及批量撤回。仅 host journal 升级为 v2，branch/global 存储继续使用 v1。升级前阅读 [迁移与恢复规则](docs/rp-memory-dev3/MIGRATION.md)；本轮执行结果及未测边界见 [RESULTS](docs/rp-memory-dev3/RESULTS.md)。历史 dev.1/dev.2 的证据不代替 dev.3 验证。人工采纳、自动功能关闭和默认禁用保持原有约束。
+dev.3 修复请求准入、异常诊断/干净续接、retcon 摘要依赖、稳定检索与实际记录回执、全局容量和 seal 恢复、锚点合并及批量撤回。host journal 使用 v2，branch/global 的 schemaVersion 保持 v1。新人物工作区增加显式 requiredCapabilities 事务扩展：首次启用前自动备份，整个对应工作区要求新版读取，global 和其他工作区不受影响；旧程序不得继续写新人物工作区。升级前阅读 [迁移与恢复规则](docs/rp-memory-dev3/MIGRATION.md)；本轮执行结果及未测边界见 [RESULTS](docs/rp-memory-dev3/RESULTS.md)。历史 dev.1/dev.2 的证据不代替 dev.3 验证。人工采纳、自动功能关闭和默认禁用保持原有约束。
 
 2026-10-22 的 [完整审查与局部重构](docs/rp-memory-dev3/REVIEW-2026-10-22.md) 包含新发现的 8 项正确性问题、已本地修复的分支事务容量问题和历史重放优化；旧 packet 摘要认证、失败全局发布的明文清理等遗留 7 项已在本地后续分支修复，新增先红后绿回归；最新完整验收结果见 RESULTS 最后一节。该本地分支未更新已发布的 dev.3 包，不能用既有测试通过代替这些新增问题的验收。
 

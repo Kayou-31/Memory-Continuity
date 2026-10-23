@@ -61,6 +61,7 @@ export interface AuthorityRequest {
 }
 /** Operation-local data; readSource closes when the callback settles. */
 export interface RpReadView {
+  readonly context: {readonly sceneId?:string;readonly acceptedSeq:number}
   readonly fence: InputFence
   readonly events: readonly SemanticEvent[]
   readonly summaries: readonly Summary[]
@@ -597,7 +598,8 @@ export class RpStore {
         try { sources.push(this.#source(state, branch, request, b.sourceRevisionId)) }
         catch (cause) { if (!(cause instanceof RpError) || !['scope_denied', 'source_unavailable'].includes(cause.code)) throw cause }
       }
-      const data = { fence: branch.fence, events, summaries: await this.#readSummaryBodies(state, branch, request, sourceText, request.viewpoint.kind === 'character' ? allowed : null), projection: reduceEvents(events, branch.fence), sources, ledger: options.audit ? this.#ledger(state, branch, request) : null }
+      const context={sceneId:request.sceneId,acceptedSeq:Math.max(0,...[...branch.bindings.values()].filter(b=>b.disposition==='accepted').map(b=>b.acceptedSeq!))}
+      const data = { context, fence: branch.fence, events, summaries: await this.#readSummaryBodies(state, branch, request, sourceText, request.viewpoint.kind === 'character' ? allowed : null), projection: reduceEvents(events, branch.fence, context), sources, ledger: options.audit ? this.#ledger(state, branch, request) : null }
       // Isolate callback mutation from the original fence and authority state.
       const copy = structuredClone(data); inheritGrowthMarks(data, copy)
       let open = true
@@ -660,7 +662,7 @@ export class RpStore {
     } catch (cause) { return failure(cause) }
   }
   replayProjection(authority: HostAuthority): Promise<Result<ProjectionResult>> {
-    return this.#read(authority, async (state, branch, request) => reduceEvents(eventsForView(await this.#readEventBodies(state, branch, request), branch.fence, request.viewpoint), branch.fence))
+    return this.#read(authority, async (state, branch, request) => reduceEvents(eventsForView(await this.#readEventBodies(state, branch, request), branch.fence, request.viewpoint), branch.fence,{sceneId:request.sceneId,acceptedSeq:Math.max(0,...[...branch.bindings.values()].filter(b=>b.disposition==='accepted').map(b=>b.acceptedSeq!))}))
   }
   readEvents(authority: HostAuthority): Promise<Result<readonly SemanticEvent[]>> { return this.#derivedBodies(authority, 'event') as Promise<Result<SemanticEvent[]>> }
   readSummaries(authority: HostAuthority): Promise<Result<readonly Summary[]>> { return this.#derivedBodies(authority, 'summary') as Promise<Result<Summary[]>> }

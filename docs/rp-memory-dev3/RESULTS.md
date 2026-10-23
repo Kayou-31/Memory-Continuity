@@ -403,3 +403,54 @@ Node **22.23.3**、npm **11.16.0**、TypeScript **5.9.3**、esbuild **0.25.12**�
 
 编辑器浏览器自动化被工具 file URL 策略拦截，未绕过。用户于本轮人工打开本机页面并反馈“页面正常，能生成命令”；标为用户人工验证，不冒充代理浏览器验证。导入/导出其余浏览器交互尚未完整人工验收。新版本未发布、未覆盖稳定包，无付费 API、自动摘要或压缩。
 M1 审阅后完整复验：`m1-verification-2/final-commands.json` 五命令均 exit0，npm test 169/169（单次全量，非定向拼接）。实际包 `m1-final` 打包/解包/逐文件 SHA-256 核验 exit0，实际 TGZ 宿主组合测试 `m1-final-tgz-host.log` exit0（17/17），包括人物 standalone/Ultra-first/RP-first、实际工具循环及冷启动。精确包哈希/文件数见同轮 package-manifest.json。Node 22.23.3、npm 11.16.0、TS 5.9.3、esbuild 0.25.12；DSH 0.2.1-rc.2、Cordis 4.0.5、Schemastery 3.18.5。
+
+## 2026-10-23 人物核心 M2：显式成长与情境状态
+
+M0/M1 验证后继续 M2，仍为一个写入执行者、一个只读审阅者，所有构建和测试串行。本阶段修改 `person/{types,schema,format,projection,service,changes,editor}.ts`、`growth-format.ts`、`reducer.ts`、`store.ts`、`canonical.ts` 和原生命令适配。新增 `test/rp-person-growth.test.mjs`，扩充 `test/rp-person-host.test.mjs` 与实际 TGZ 组合脚本。
+
+已完成行为：
+- init/edit/grow/set-policy 有不同语义。edit 追加并保留历史；set-policy 保留值并使旧前驱候选过期；grow 只允许 growable，必须有有效世界经历、唯一当前前驱和理由，初始化 origin 不能冒充后续经历。
+- trait/feeling/stage 复用明确人物语义标记，普通旧 JSON 不重解释。情境按 scene 或接受序号范围生效，先选择链头再过滤过期，避免复活旧值；人物视图、通用 state、检索和 packet 共用同一上下文。
+- 成长候选正文放 managed job_input payload，登记前驱、原因和来源依赖；不会自动采纳。每次最多16条变化，合并后检查上限，从一个初始 fence 确定排序、预演并一次 canonical commit；冲突/循环/过期整批拒绝。已发布采纳和拒绝同键重试先确认持久性，不重放效果。
+- 原因来源与本次控制进入直接 source 数组，前驱和祖先沿 dependencyIds，16条前驱链验证未发生来源线性膨胀。Retcon 撤销依赖成长和候选，固定子分支保留其快照；明确隐私删除在授权分支范围清理候选及成长正文。
+- 原生命令支持 edit/set-policy/propose/candidates/adopt/reject/timeline；时间线区分当前、过期与失效 ID，正文无法验证或已删时不回填。离线编辑器新增倾向/感受/阶段和有效期；候选审阅及时间线首期使用可信命令。
+
+### 实际执行与失败记录
+
+全部在 `work/person-core-2026-10-23/`，退出码来自真实进程：
+
+| 命令/证据 | 退出码 | 实际结果 |
+|---|---:|---|
+| node --test test/rp-person-growth.test.mjs（m2-fields-red） | 1 | propose 未实现及 M2 字段尚不支持，2失败 |
+| npm run typecheck（m2-typecheck） | 2 | callback隐式any、canonical返回联合类型声明不匹配；已修正 |
+| node --test --test-concurrency=1 test/rp-person-growth.test.mjs test/rp-person.test.mjs（m2-fields-green） | 0 | 6/6 |
+| batch-initial | 1 | 测试代码在同步find回调中错误使用await，修正测试语法 |
+| batch-red（文件名保留） | 0 | 批量/Retcon/隐私额外两项首次有效运行即通过，不宣称这份日志是RED |
+| field-identity-red / green | 1 / 0 | 错用另一字段前驱已复现；修复后5/5 |
+| native-red / green | 1 / 0 | 缺成长命令；实现后真实 SDK 闭环1/1 |
+| boundary-red / green | 1 / 0 | reject重试冲突、时间线混入其他人物失效ID；修复后7/7，含16条链与17条拒绝 |
+| npm run typecheck（m2-typecheck-2） | 0 | 定向修复后类型检查 |
+| npm run typecheck（m2-verification） | 0 | 2026-10-23 11:34:01Z 开始，Node22 |
+| npm run build（m2-verification） | 0 | JS、声明、离线编辑器和源码manifest生成 |
+| npm test（m2-verification） | 0 | **单次完整177/177**，0失败/跳过/取消，67.09秒 |
+| npm run evaluate:fixture（m2-verification） | 0 | 固定标注规则评测，不是模型语义成绩 |
+| npm pack --dry-run（m2-verification） | 0 | 独立包预检成功 |
+| node work/person-core-2026-10-23/pack-artifacts.mjs m2-acceptance | 0 | 实际TGZ打包、解包、116文件和78条manifest逐项校验；不是发布 |
+
+五命令原始结果：`m2-verification/final-commands.json`，连续串行运行，不拼接定向重跑。实际包在独立输出目录，最终交付目录另列于根报告及 package-manifest；文档收尾重打包不改变运行代码，最终 manifest 核对源码/生成文件。SDK和Node版本与M1相同。
+
+### 兼容、边界与未验证
+
+- 保持独立 npm 包、global v1、branch schemaVersion1＋显式能力屏障、journal v2可选人物绑定和sessionMemoryPolicy/v1。新人物workspace要求新版是用户已批准的兼容选择。未对真实日常profile执行迁移或替换；自动备份/旧reader拒绝/测试工作区恢复已有真实文件系统和旧源码验证，整套DSH日常profile降级未实测。
+- 只承诺实际测试的 Ultra 0.6.1-dev.rp.1、Memory/Decision 0.1.1-dev.rp.1；其他Ultra版本、混版SDK及跨SDK历史迁移未验证。
+- 原生 SDK 使用本地合成 Terminal，真实工具注册、session、journal、请求门禁均运行；未调用任何付费API。没有真实模型长期人格一致性、主观关系质量、真实桌面全流程、断电恢复或无限人生容量的证明。
+- 用户已人工确认 M1 编辑器可打开并生成命令。M2新增表单的完整浏览器交互、下载/剪贴板/导入组合仍未人工实测；相关 schema/ID分配/实际宿主导入由自动测试覆盖，二者分开记录。
+- M0基准仅相同100/260阶段持久夹具的单样本读取对照，不是p95、写入性能或真实模型质量。事务链仍整体校验，候选列举目前读取活跃managed copies；大量人物/候选/长历史有成本，未引入分段存储，也未截断历史。
+- 新队列首期覆盖人物字段；关系与目标复用既有显式Agent控制和查询，完整统一审阅UI未实现。情境序号包括控制来源，不是对话轮数；默认原生场景rp_scene，没有自动换场景或按系统时间衰老。
+- 历史packet/工具结果受字段变化、过期、Retcon影响时可要求continue-clean。同一宿主内销毁后重建会话的modeEpoch不同也可能要求clean；不倒填或改写旧认证。
+- 外部草稿/导出/启用前备份不随隐私删除自动清除。拒绝候选不物理删除正文；正文仍可删除并随关联来源清理。模型不能自行解除策略或采纳。
+- M3能力模块/用途分支框架、M4长期体验评测、实时在线人物管理、技能学习、多人物社会和分段容量迁移均未实现。后台自动摘要、自动采纳、原生压缩、strict POV继续关闭。
+
+M2 实际TGZ补验：`m2-actual-host.log` 退出0，**18/18**；运行命令为设置 RP_BUNDLES_ROOT=work/person-core-2026-10-23/m2-acceptance、RP_PERSON_BUNDLE=该目录/rp/package/lib/index.js 后执行 `node --test --test-concurrency=1 scripts/host-acceptance/dev3-companion.test.mjs test/rp-person-host.test.mjs`。新增人物成长在 standalone / Ultra先加载 / RP先加载均进入实际请求；工程归档未取得RP会话，自动摘要与压缩关闭。原始包哈希、SDK版本、每项观察与冷进程退出码在该目录 bundles.json、report.json、cold-*.log。审阅记录见 `PERSON-REVIEW-2026-10-23.md`。
+
+交付状态：**已完成 M0、M1、M2**（按上述首期范围）；**未完成 M3/M4及实时UI/技能/多人物社会/分段容量**；**未验证真实模型语义、生产长期运行、整套桌面交互与真实断电/日常profile迁移**。没有push、Release/npm发布或替换稳定包。
