@@ -13,29 +13,29 @@
 
 ## Task 1 — M4
 
-- [ ] 新增 `test/rp-life-evaluation.test.mjs`：同 source 错误内容不计支持；遗漏/撤销证据不能得分；重复断言不能加分。先 RED。
-- [ ] `scripts/benchmarks/life-score.mjs` 实现明确标注规则 scorer；四类实际 core/SDK 故事，写 JSON 结果到 work。
-- [ ] 定向测试、实际离线 SDK 生命周期和长历史串行验证，报告两个对照及未验证模型质量。
+- [x] 新增 `test/rp-life-evaluation.test.mjs`：同 source 错误内容不计支持；遗漏/撤销证据不能得分；重复断言不能加分。先 RED。
+- [x] `scripts/benchmarks/life-score.mjs` 实现明确标注规则 scorer；四类实际 core/SDK 故事，写 JSON 结果到 work。
+- [x] 定向测试、实际离线 SDK 生命周期和长历史串行验证，报告两个对照及未验证模型质量。
 
 ## Task 2 — 统一管理
 
-- [ ] `src/rp/person/management.ts` 管理快照与显式动作；`management-server.ts` 本机服务；`manager-ui.ts` 自包含页面；`rp-plugin.ts` 手动 open/close 命令与生命周期。
-- [ ] 先 RED：未知 token、外部 Origin、旧快照/篡改动作拒绝；批量候选原子采纳；会话关闭撤权；真实宿主导入/编辑/成长闭环。
-- [ ] 实现并验证人物列表/表单、来源时间线、关系/目标和成长队列；真实浏览器交互与 SDK 数据闭环分别记录。
-- [ ] UI 验收后才能开始 Task 3。
+- [x] `src/rp/person/management.ts` 管理快照与显式动作；`management-server.ts` 本机服务；`manager-ui.ts` 自包含页面；`rp-plugin.ts` 手动 open/close 命令与生命周期。
+- [x] 先 RED：未知 token、外部 Origin、旧快照/篡改动作拒绝；批量候选原子采纳；会话关闭撤权；真实宿主导入/编辑/成长闭环。
+- [x] 实现并验证人物列表/表单、来源时间线、关系/目标和成长队列；真实浏览器交互与 SDK 数据闭环分别记录。
+- [x] UI 验收后才能开始 Task 3。
 
 ## Task 3 — 长期存储
 
-- [ ] 根据基准和当前校验路径补充物理布局/迁移设计。
-- [ ] 先 RED：跨段读取、旧 reader 拒绝、损坏/缺段拒绝、备份核验、恢复/幂等、控制容量保留。
-- [ ] 实现受限显式扩展；证明原历史仍在；记录实际容量、冷读与失败恢复边界。
+- [x] 根据基准和当前校验路径补充物理布局/迁移设计。
+- [x] 先 RED：跨段读取、旧 reader 拒绝、损坏/缺段拒绝、备份核验、恢复/幂等、控制容量保留。
+- [x] 实现受限显式扩展；证明原历史仍在；记录实际容量、冷读与失败恢复边界。
 
 ## Task 4 — 审阅与交付
 
-- [ ] 一个只读审阅者，确认的问题先 RED 再修复。
-- [ ] 独立连续执行 typecheck、build、npm test、evaluate:fixture、evaluate:life、pack --dry-run；实际 TGZ 重跑 SDK 验收。
-- [ ] 更新 RESULTS、迁移/管理说明、旧文档当前状态；源码 ZIP、TGZ、证据 ZIP、SHA256。
-- [ ] 正式更名与 GitHub 分支/PR 更新，不合并 main，不覆盖旧 Release，不发布 npm。
+- [x] 一个只读审阅者，确认的问题先 RED 再修复。
+- [x] 独立连续执行 typecheck、build、npm test、evaluate:fixture、evaluate:life、pack --dry-run；实际 TGZ 重跑 SDK 验收。
+- [x] 更新 RESULTS、迁移/管理说明、旧文档当前状态；源码 ZIP、TGZ、证据 ZIP、SHA256。
+- [x] 正式更名与 GitHub 分支/PR 更新，不合并 main，不覆盖旧 Release，不发布 npm。
 
 ## Review Focus
 
@@ -43,7 +43,7 @@
 
 ## 执行账本
 
-- Task 4 verification: 首轮完整212/213，有一次未解释对象检查异常，定向7/7和20次读取未复现；第二轮从头六命令全exit0、213/213、life4/4。实际TGZ210文件/96hash，宿主31/31。最终浏览器复查受内置崩溃页策略阻断，较早真实交互证据保留；未抹掉失败或声称根因修复。GitHub已更名，待最后审核提交推送。
+- Task 4 delivered: 首轮完整212/213，有一次未解释对象检查异常，定向7/7和20次读取未复现；第二轮从头六命令全exit0、213/213、life4/4。实际TGZ210文件/96hash，宿主31/31。最终浏览器复查受内置崩溃页策略阻断，较早真实交互证据保留；未抹掉失败或声称根因修复。GitHub已更名，957e1d1已推送审核分支，main未合并；归档提交及哈希以delivery-manifest为准。
 
 - Task 3 implemented: 显式全局分段8/12MiB，旧v1默认不动，真实旧reader拒绝/备份恢复通过；3条初始RED、备份和4097边界RED后修复。宿主+旧global回归15/15；容量/旧reader/4097各1/1。详见RESULTS。单只读审阅已关闭已确认备份问题，数组限制最后补RED/GREEN。开始Task 4集中验收。
 

@@ -57,6 +57,8 @@ node --test --test-concurrency=1 scripts/host-acceptance/dev3-companion.test.mjs
 
 已测TGZ同时放入审核分支 `artifacts/0.2.0-dev.1/`，不发布Release/npm；最终交付在 `D:/Codex/2026-10-20/dsh-rp-memory-dev-3-https/outputs/ultra-rp-memory-0.2.0-dev.1-2026-10-23/final`，包含插件TGZ/ZIP、源码ZIP、证据ZIP、中文说明、最新RESULTS和SHA256。公开证据副本去除本机路径，原始失败记录保留，管理凭证/真实profile不上传。
 
+Git push已成功：审核分支从9eda3d0推进至957e1d1，包含M4 a56706e、人物工作室77053da、分段与命名d35c820、构建/包/日志957e1d1；后续提交仅补交付文档状态。PR仍为 `https://github.com/Kayou-31/dsh-ultra-rp-memory/pull/1`，main仍d114b91，没有合并稳定分支。最终源码归档的精确提交和各产物哈希记录在交付目录delivery-manifest.json/SHA256SUMS.txt。
+
 **已完成：M4离线/宿主范围、统一人物管理与成长审阅首期、显式全局分段存储、更名和开发包审核交付。未完成：完整用途产品、技能学习、多人物社会、自主生活、分支持久检索索引及更长历史UI。未验证：单次间歇对象检查异常根因、最终浏览器复查、真实模型长期语义、连续多日使用、真实断电、日常profile迁移、任意Ultra版本。** 旧Luna/fixture不补足这些缺口；历史章节的“尚未M4/实时UI/分段”按当时时点保留。
 
 执行日期：2026-10-20（America/Tijuana）；日志保留 UTC 时间戳。此文件记录实际执行，不把方案文件当作通过证据。
