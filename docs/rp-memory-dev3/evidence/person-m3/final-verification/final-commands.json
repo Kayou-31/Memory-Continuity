@@ -1,0 +1,56 @@
+{
+  "node": "v22.23.3",
+  "npmCache": "<repo>\\work\\npm-cache",
+  "results": [
+    {
+      "command": "npm run typecheck",
+      "executable": "<node22>/node.exe",
+      "npmCli": "<npm>/npm-cli.js",
+      "start": "2026-10-23T12:24:35.073Z",
+      "end": "2026-10-23T12:24:36.792Z",
+      "exit": 0,
+      "signal": null,
+      "log": "final-typecheck.log"
+    },
+    {
+      "command": "npm run build",
+      "executable": "<node22>/node.exe",
+      "npmCli": "<npm>/npm-cli.js",
+      "start": "2026-10-23T12:24:36.793Z",
+      "end": "2026-10-23T12:24:38.780Z",
+      "exit": 0,
+      "signal": null,
+      "log": "final-build.log"
+    },
+    {
+      "command": "npm test",
+      "executable": "<node22>/node.exe",
+      "npmCli": "<npm>/npm-cli.js",
+      "start": "2026-10-23T12:24:38.780Z",
+      "end": "2026-10-23T12:25:49.698Z",
+      "exit": 0,
+      "signal": null,
+      "log": "final-test.log"
+    },
+    {
+      "command": "npm run evaluate:fixture",
+      "executable": "<node22>/node.exe",
+      "npmCli": "<npm>/npm-cli.js",
+      "start": "2026-10-23T12:25:49.700Z",
+      "end": "2026-10-23T12:25:49.892Z",
+      "exit": 0,
+      "signal": null,
+      "log": "final-evaluate-fixture.log"
+    },
+    {
+      "command": "npm pack --dry-run",
+      "executable": "<node22>/node.exe",
+      "npmCli": "<npm>/npm-cli.js",
+      "start": "2026-10-23T12:25:49.892Z",
+      "end": "2026-10-23T12:25:50.404Z",
+      "exit": 0,
+      "signal": null,
+      "log": "final-pack.log"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+TAP version 13
+# Subtest: overlapping runtime configuration commands reject the second mutation before overwriting markers
+not ok 1 - overlapping runtime configuration commands reject the second mutation before overwriting markers
+  ---
+  duration_ms: 127.0467
+  type: 'test'
+  location: '<repo>\\test\\rp-modules-host.test.mjs:71:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    'success' !== 'error'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'error'
+  actual: 'success'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///<repo>/test/rp-modules-host.test.mjs:77:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 448.0529

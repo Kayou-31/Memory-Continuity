@@ -1,0 +1,13 @@
+{
+  "node": "v22.23.3",
+  "name": "@dsh-external/dsh-ultra-rp-memory",
+  "version": "0.1.0-dev.3",
+  "packageFiles": 128,
+  "manifestEntries": 86,
+  "bytes": 575708,
+  "unpackedBytes": 2247350,
+  "sha256": "6b0de5a757f5e7fce47c4248bf6806ef860840b3ef07a49ecbfb66aeea6e7c16",
+  "actualTgzTests": 28,
+  "exitCode": 0,
+  "published": false
+}

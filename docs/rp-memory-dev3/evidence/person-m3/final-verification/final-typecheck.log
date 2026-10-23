@@ -1,0 +1,5 @@
+
+> @dsh-external/dsh-ultra-rp-memory@0.1.0-dev.3 typecheck
+> tsc -p tsconfig.json --noEmit --emitDeclarationOnly false
+
+

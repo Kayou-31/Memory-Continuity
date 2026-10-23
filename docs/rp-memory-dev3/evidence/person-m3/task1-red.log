@@ -1,0 +1,72 @@
+TAP version 13
+# Subtest: module registry and dual-layer constraints reject unknown grants; core survives revoke
+not ok 1 - module registry and dual-layer constraints reject unknown grants; core survives revoke
+  ---
+  duration_ms: 127.732
+  type: 'test'
+  location: '<repo>\\test\\rp-modules.test.mjs:6:1'
+  failureType: 'testCodeFailure'
+  error: 'M3 module runtime missing'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///<repo>/test/rp-modules.test.mjs:7:51)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: module evidence binds actual result, module version, fence and identity; mutation cannot be certified
+not ok 2 - module evidence binds actual result, module version, fence and identity; mutation cannot be certified
+  ---
+  duration_ms: 98.2984
+  type: 'test'
+  location: '<repo>\\test\\rp-modules.test.mjs:17:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'create')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///<repo>/test/rp-modules.test.mjs:18:63)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: module invocation revokes while queued and refuses results assembled across a mutation
+not ok 3 - module invocation revokes while queued and refuses results assembled across a mutation
+  ---
+  duration_ms: 110.8182
+  type: 'test'
+  location: '<repo>\\test\\rp-modules.test.mjs:27:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'create')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///<repo>/test/rp-modules.test.mjs:28:63)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: growth module only creates review candidates; protected fields and output budgets reject before publication
+not ok 4 - growth module only creates review candidates; protected fields and output budgets reject before publication
+  ---
+  duration_ms: 199.626
+  type: 'test'
+  location: '<repo>\\test\\rp-modules.test.mjs:32:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'create')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (file:///<repo>/test/rp-modules.test.mjs:35:27)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 0
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 733.582

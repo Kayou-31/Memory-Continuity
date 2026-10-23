@@ -1,0 +1,5 @@
+
+> @dsh-external/dsh-ultra-rp-memory@0.1.0-dev.3 evaluate:fixture
+> node scripts/benchmarks/rp-memory.mjs --mode fixture --corpus benchmarks/rp/golden.jsonl --output fixture-report.json
+
+

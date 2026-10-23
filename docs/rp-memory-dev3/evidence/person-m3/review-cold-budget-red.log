@@ -1,0 +1,48 @@
+TAP version 13
+# Subtest: cold M3 resume after multiple empty-root configuration changes can send with original proofs
+not ok 1 - cold M3 resume after multiple empty-root configuration changes can send with original proofs
+  ---
+  duration_ms: 462.6759
+  type: 'test'
+  location: '<repo>\\test\\rp-modules-host.test.mjs:61:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"enabled":true,"lifecycle":"open","contextCompression":false,"strictPov":false,"nativeVersions":{"cordis":"4.0.5","dsh-agent":"0.2.1-rc.2","dsh-llm":"0.2.1-rc.2","dsh-session":"0.2.1-rc.2","dsh-system-prompt":"0.2.1-rc.2","dsh-tools":"0.2.1-rc.2","schemastery":"3.18.5"},"memoryOptimization":{"available":"standalone","packet":"standalone"},"policy":{"mode":"rp","epoch":1,"modeEpoch":1},"branchId":"branch_68ceebdae3134c8c9eb8c22724703e75","purpose":{"constraints":{"deniedCapabilities":[],"guidance":[],"maxOutputBytes":16384,"maxReadRecords":16,"protectedFieldIds":[]},"enabledModules":["recall"],"mode":"creation"},"blocked":false,"candidateIds":[],"pendingInputIds":[],"ambiguousInputIds":["source_750c77e2f0f74176b26149e54c9475cf","source_10f3635a32d241b3b02c5a19aa365b21"],"snapshots":2}
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///<repo>/test/rp-modules-host.test.mjs:68:114)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: growth module only creates review candidates; protected fields and output budgets reject before publication
+not ok 2 - growth module only creates review candidates; protected fields and output budgets reject before publication
+  ---
+  duration_ms: 369.6479
+  type: 'test'
+  location: '<repo>\\test\\rp-modules.test.mjs:56:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected rejection.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'rejects'
+  stack: |-
+    async TestContext.<anonymous> (file:///<repo>/test/rp-modules.test.mjs:63:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 0
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1338.3647
