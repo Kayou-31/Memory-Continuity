@@ -120,8 +120,8 @@ test('R18 changed rendered text cannot acquire a receipt for an earlier result',
 test('R19 disposal while evidence validation awaits cannot publish the retired owner receipt', { timeout: 15000 }, async () => {
   const f = await host(), gate = latch(); let remove, restore
   try {
-    const a = await prepared(f), original = f.rp.memory.store.readFence; let armed = false
-    f.rp.memory.store.readFence = async (...args) => { const r = await original(...args); if (armed) { armed = false; await gate.wait() }; return r }; restore = () => f.rp.memory.store.readFence = original
+    const a = await prepared(f), original = f.rp.memory.store.withReadView; let armed = false
+    f.rp.memory.store.withReadView = async (...args) => { const r = await original(...args); if (armed) { armed = false; await gate.wait() }; return r }; restore = () => f.rp.memory.store.withReadView = original
     remove = f.ctx.on('tools/execute', async (_exec, next) => { const r = await next(); armed = true; return r })
     const running = execute(f, a, 'rp_memory_search', { query: 'MEMORY_FACT' }); await gate.entered
     let disposed; const observed = new Promise(r => disposed = r), off = f.ctx.on('agent/disposed', () => disposed())
@@ -133,8 +133,8 @@ test('R19 disposal while evidence validation awaits cannot publish the retired o
 test('R18 receipt validation cannot race a queue journal rename and lose a successful receipt', { timeout: 15000 }, async () => {
   const f = await host(), verifyGate = latch(), saveGate = latch(); let remove, restoreFence, restoreRename
   try {
-    const a = await prepared(f), original = f.rp.memory.store.readFence; let armed = false, blockSave = false
-    f.rp.memory.store.readFence = async (...args) => { const r = await original(...args); if (armed) { armed = false; await verifyGate.wait() }; return r }; restoreFence = () => f.rp.memory.store.readFence = original
+    const a = await prepared(f), original = f.rp.memory.store.withReadView; let armed = false, blockSave = false
+    f.rp.memory.store.withReadView = async (...args) => { const r = await original(...args); if (armed) { armed = false; await verifyGate.wait() }; return r }; restoreFence = () => f.rp.memory.store.withReadView = original
     remove = f.ctx.on('tools/execute', async (_exec, next) => { const r = await next(); armed = true; return r })
     const rename = fs.rename; fs.rename = async (from, to) => { if (blockSave && to === journalPath(f, a)) { blockSave = false; await saveGate.wait() }; return rename(from, to) }; restoreRename = () => fs.rename = rename
     const running = execute(f, a, 'rp_memory_search', { query: 'MEMORY_FACT' }); await verifyGate.entered

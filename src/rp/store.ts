@@ -48,6 +48,16 @@ export interface AuthorityRequest {
   readonly workspaceId: string; readonly campaignId: string; readonly branchId: string; readonly sessionId?: string; readonly sceneId?: string
   readonly viewpoint: Viewpoint; readonly visibility: Visibility; readonly audienceSetIds: readonly string[]; readonly permissions: readonly Permission[]
 }
+/** Operation-local data; readSource closes when the callback settles. */
+export interface RpReadView {
+  readonly fence: InputFence
+  readonly events: readonly SemanticEvent[]
+  readonly summaries: readonly Summary[]
+  readonly projection: ProjectionResult
+  readonly sources: readonly SourceRevision[]
+  readonly ledger: LedgerSnapshot | null
+  readSource(span: SourceSpan): Promise<string>
+}
 interface DirectoryIdentity { readonly dev: string; readonly ino: string; readonly birthtime: string }
 interface RootBinding extends WorkspaceBinding { readonly root: string; readonly directoryIdentity: DirectoryIdentity; readonly markerNonce: string }
 interface Grant { readonly request: AuthorityRequest; readonly migrationRevision: number }
@@ -468,11 +478,11 @@ export class RpStore {
   #boundary(content: string, offset: number): void {
     if (offset > content.length || (offset > 0 && offset < content.length && /[\uD800-\uDBFF]/u.test(content[offset - 1]) && /[\uDC00-\uDFFF]/u.test(content[offset]))) invalid('UTF16 source boundary')
   }
-  async #verifySpan(state: WorkspaceState, branch: BranchState, request: AuthorityRequest, span: SourceSpan): Promise<string> {
+  async #verifySpan(state: WorkspaceState, branch: BranchState, request: AuthorityRequest, span: SourceSpan, sourceText = (id: string) => this.#sourceText(state, branch, request, id)): Promise<string> {
     validateSpan(span)
     const source = this.#source(state, branch, request, span.sourceRevisionId)
     if (source.publicTextSha256 !== span.publicTextSha256) error('source_unavailable', 'RP source revision mismatch')
-    const content = await this.#sourceText(state, branch, request, source.id)
+    const content = await sourceText(source.id)
     this.#boundary(content, span.startUtf16); this.#boundary(content, span.endUtf16)
     const quote = content.slice(span.startUtf16, span.endUtf16)
     if (sha(quote) !== span.quoteSha256) error('source_unavailable', 'RP quote hash mismatch')
@@ -507,7 +517,9 @@ export class RpStore {
     if ([...branch.records.values()].some(record => !this.#visible(record.visibility, request))) denied('audit ledger includes unavailable derived metadata')
   }
   readLedger(authority: HostAuthority): Promise<Result<LedgerSnapshot>> {
-    return this.#read(authority, (state, branch, request) => {
+    return this.#read(authority, (state, branch, request) => this.#ledger(state, branch, request))
+  }
+  #ledger(state: WorkspaceState, branch: BranchState, request: AuthorityRequest): LedgerSnapshot {
       // This is a trusted audit/reducer input, not a public tool projection.
       // Returning partially filtered binding/job/deletion counts would leak IDs.
       this.#assertAuditAudience(state, branch, request)
@@ -515,6 +527,37 @@ export class RpStore {
       sources: [...state.sources.values()].filter(source => this.#scopeMatches(source.scope, request) && (source.scope.kind === 'branch' || source.scope.kind === 'session') && (source.scope.branchId === branch.branch.id || branch.bindings.has(source.id)) && this.#visible(source.visibility, request)),
       sourceBindings: [...branch.bindings.values()], records: [...this.#activeRecords(branch).values()].filter(r => this.#visible(r.visibility, request)), jobs: [...branch.jobs.values()],
       authorityChanges: branch.changes, deletions: branch.changes.flatMap(change => change.kind === 'deletion' ? [change.record] : []) }
+  }
+  /** Two verified loads bracket the whole assembly, without retaining any view
+   * across requests, authorities, revisions or privacy generations. */
+  withReadView<T>(authority: HostAuthority, work: (view: RpReadView) => Promise<T> | T, options: { audit?: boolean } = {}): Promise<Result<T>> {
+    return this.#read(authority, async (state, branch, request) => {
+      const texts = new Map<string, Promise<string>>()
+      const sourceText = (id: string) => {
+        let pending = texts.get(id)
+        if (!pending) { pending = this.#sourceText(state, branch, request, id); texts.set(id, pending) }
+        return pending
+      }
+      const all = await this.#readEventBodies(state, branch, request, sourceText), events = eventsForView(all, branch.fence, request.viewpoint)
+      const allowed = new Set(events.map(e => e.id)), sourceAllowed = (id: string) => request.viewpoint.kind === 'narrator' || (events.some(e => e.sources.some(s => s.sourceRevisionId === id)) && !all.some(e => !allowed.has(e.id) && e.sources.some(s => s.sourceRevisionId === id)))
+      const sources: SourceRevision[] = []
+      for (const b of [...branch.bindings.values()].sort((a, b) => (a.acceptedSeq ?? 0) - (b.acceptedSeq ?? 0))) {
+        if (b.disposition !== 'accepted' || !sourceAllowed(b.sourceRevisionId)) continue
+        try { sources.push(this.#source(state, branch, request, b.sourceRevisionId)) }
+        catch (cause) { if (!(cause instanceof RpError) || !['scope_denied', 'source_unavailable'].includes(cause.code)) throw cause }
+      }
+      const data = { fence: branch.fence, events, summaries: await this.#readSummaryBodies(state, branch, request, sourceText, request.viewpoint.kind === 'character' ? allowed : null), projection: reduceEvents(events, branch.fence), sources, ledger: options.audit ? this.#ledger(state, branch, request) : null }
+      // Isolate callback mutation from the original fence and authority state.
+      const copy = structuredClone(data); inheritGrowthMarks(data, copy)
+      let open = true
+      try { return await work({ ...copy, readSource: async span => {
+        if (!open) denied('read view is closed')
+        const value = cloneInput(span); validateSpan(value)
+        if (!sourceAllowed(value.sourceRevisionId)) error('source_unavailable', 'RP mixed or unavailable source')
+        const result = await this.#verifySpan(state, branch, request, value, sourceText)
+        if (!open) denied('read view is closed')
+        return result
+      } }) } finally { open = false; texts.clear() }
     })
   }
   readSource(authority: HostAuthority, input: SourceSpan): Promise<Result<string>> {
@@ -574,34 +617,33 @@ export class RpStore {
     return this.#read(authority, async (state, branch, request) => {
       if (kind === 'event') return [...eventsForView(await this.#readEventBodies(state, branch, request), branch.fence, request.viewpoint)]
       const allowed = request.viewpoint.kind === 'character' ? new Set(eventsForView(await this.#readEventBodies(state, branch, request), branch.fence, request.viewpoint).map(e => e.id)) : null
-      const records: (SemanticEvent | Summary)[] = []
+      return this.#readSummaryBodies(state, branch, request, id => this.#sourceText(state, branch, request, id), allowed)
+    })
+  }
+  async #readSummaryBodies(state: WorkspaceState, branch: BranchState, request: AuthorityRequest, sourceText: (id: string) => Promise<string>, allowed: Set<string> | null): Promise<Summary[]> {
+      const records: Summary[] = []
       for (const r of this.#activeRecords(branch).values()) {
-        if (r.kind !== kind || !r.active || !this.#visible(r.visibility, request)) continue
+        if (r.kind !== 'summary' || !r.active || !this.#visible(r.visibility, request)) continue
         if (allowed && (r.dependencyIds.some(id => !allowed.has(id)) || !r.dependencyIds.length)) continue
-        for (const sourceId of r.sourceRevisionIds) await this.#sourceText(state, branch, request, sourceId)
-        const body = await this.#readBlob(request.workspaceId, r.blobId, r.bodySha256), parsed = parseRecord({ kind, record: JSON.parse(body) })
-        if (!parsed.ok || (parsed.value.kind !== 'event' && parsed.value.kind !== 'summary') || parsed.value.record.id !== r.id) error('source_unavailable', 'RP derived payload unavailable')
-        if (parsed.value.kind === 'event') {
-          if (hasGrowthMarker(branch.changes, parsed.value.record.id)) markGrowthEvent(parsed.value.record)
-          const { payload: _payload, fictionalTime: _time, ...metadata } = parsed.value.record
-          if (!same(metadata, r.metadata) || !same(eventDependencies(parsed.value.record), r.dependencyIds)) error('source_unavailable', 'RP event authority metadata mismatch')
-        } else {
+        for (const sourceId of r.sourceRevisionIds) await sourceText(sourceId)
+        const body = await this.#readBlob(request.workspaceId, r.blobId, r.bodySha256), parsed = parseRecord({ kind: 'summary', record: JSON.parse(body) })
+        if (!parsed.ok || parsed.value.kind !== 'summary' || parsed.value.record.id !== r.id) error('source_unavailable', 'RP derived payload unavailable')
+        {
           const { text: _text, ...metadata } = parsed.value.record
           if (!same(metadata, r.metadata)) error('source_unavailable', 'RP summary authority metadata mismatch')
         }
         records.push(parsed.value.record)
       }
       return records
-    })
   }
-  async #readEventBodies(state: WorkspaceState, branch: BranchState, request: AuthorityRequest): Promise<SemanticEvent[]> {
+  async #readEventBodies(state: WorkspaceState, branch: BranchState, request: AuthorityRequest, sourceText = (id: string) => this.#sourceText(state, branch, request, id)): Promise<SemanticEvent[]> {
     const records: SemanticEvent[] = []
     for (const r of this.#activeRecords(branch).values()) {
       if (r.kind !== 'event' || !r.active || !this.#visible(r.visibility, request)) continue
       // Check all source partitions before reading payloads. A multi-audience
       // host grant is still required even when knowledge is explicitly learned.
       if (r.sourceRevisionIds.some(id => { const s = state.sources.get(id); return !s || !this.#visible(s.visibility, request) })) continue
-      for (const sourceId of r.sourceRevisionIds) await this.#sourceText(state, branch, request, sourceId)
+      for (const sourceId of r.sourceRevisionIds) await sourceText(sourceId)
       const body = await this.#readBlob(request.workspaceId, r.blobId, r.bodySha256), parsed = parseRecord({ kind: 'event', record: JSON.parse(body) })
       if (!parsed.ok || parsed.value.kind !== 'event') error('source_unavailable', 'RP event payload unavailable')
       if (hasGrowthMarker(branch.changes, parsed.value.record.id)) markGrowthEvent(parsed.value.record)

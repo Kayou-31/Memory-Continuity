@@ -354,3 +354,33 @@ Node **22.23.3**、npm **11.16.0**、TypeScript **5.9.3**、esbuild **0.25.12**�
 用户随后明确产品中心为“让用户自己搭建一个完整的人”，其他插件可在其下面作为能力分支。README、使用指南及新 `docs/person-core-direction.zh.md` 已按此定位更新；人物档案、价值观/人格连续性、人生阶段与可选能力模块列为下一阶段，未冒充本轮实现。此轮补充仅改文档，产品源码与154项完整测试对应版本相同。最终文档包为91文件，重新执行实际包宿主11项；精确结果和包哈希以外部交付manifest为准。
 
 最终定位补充：Ultra-RP-Memory 可以有自己的多条功能/用途分支，Ultra-Mode 保持平行独立，只需兼容；文档已按最新说明修正，不把 Ultra-Mode 纳为必需内部子模块。当前可关闭的纯排序适配保留，不新增自动功能或强制依赖。
+
+## 2026-10-23 人物核心 M0：读取视图（实施基线 fdd9209）
+
+本轮获准串行实施 M0、M1，验收后继续 M2；用户明确接受人物工作区要求新版读取，启用前备份。当前此节只报告 M0，不代表 M1/M2 完成。
+
+- store 新增 operation-local `withReadView`：单次初始完整验证 + 单次结束 authority/fence 验证，共享事件、摘要、来源验证和投影；没有跨请求缓存。回调结束后 readSource 关闭。
+- packet 和 retrieval-index 使用同一视图；工具回执仍认证实际返回数据，分页仍校验固定结果。成长 marker 支持嵌套 clone。
+- 新增 `test/rp-read-view.test.mjs`，覆盖真实加载计数、已验证成长投影、失效回调、伪造 authority、视图内删除后拒绝释放旧事件。
+- 旧竞态测试从 readEvents/readSource/readFence 拦截点迁移至 withReadView 边界，保持 Retcon、删除、owner disposal、journal 竞态断言。
+
+实际命令（Node 22.23.3；日志目录 `work/person-core-2026-10-23/`）：
+
+| 命令 | 退出码 / 实际结果 | 日志 |
+|---|---|---|
+| `node --test --test-concurrency=1 test/rp-read-view.test.mjs`（实现前） | 1；2 个预期 RED，API 不存在 | m0-red.log |
+| `npm run typecheck` | 0 | m0-typecheck.log |
+| `node --test --test-concurrency=1 test/rp-read-view.test.mjs test/rp-retrieval.test.mjs test/rp-growth.test.mjs test/rp-packet-proof.test.mjs test/rp-host-receipts.test.mjs test/rp-native-tool-mixed.test.mjs`（第一轮） | 1；39 通过、2 失败、2 取消；旧注入点未触发 | m0-green.log |
+| 同上（迁移竞态注入点后） | 0；43/43，通过，非全量测试 | m0-green-2.log |
+| `node scripts/benchmarks/person-read-view.mjs` | 0；两组完整 packet 哈希与实际基线源码相同 | m0-benchmark.log |
+
+性能对照为同机串行、每规模每版本 1 次新进程、操作系统暖缓存。100/260 个成长阶段使用真实持久事务、正文与 seal；为隔离读取开销，夹具预先批量提交，不代表逐轮完整交互延迟。没有 p95 或真实模型质量结论。
+
+| 阶段 | packet 耗时：旧→新 | 完整 load 次数 | 正文读取次数 | 读取字节：旧→新 | 进程峰值 RSS KiB：旧→新 |
+|---|---|---|---|---|---|
+| 100 | 544.75 → 109.06 ms | 14 → 2 | 604 → 202 | 5,270,366 → 841,833 | 85,528 → 55,392 |
+| 260 | 1269.74 → 257.16 ms | 14 → 2 | 1564 → 522 | 13,557,772 → 2,167,691 | 93,376 → 65,200 |
+
+100 阶段持久数据 482,514 字节，增量准备 2.38 s；260 阶段 1,245,603 字节，后续准备 14.06 s。原始 `benchmark/2026-10-23T10-50-34-772Z/report.json` 包含夹具哈希、metadata/blob I/O 时长及包含解析/哈希/Schema 的链加载时长。I/O 与包含式 chainLoad 时间不能相加为互斥分项；未单独测量纯校验 CPU。峰值含模块初始化，单样本约 5 倍的本地 packet 组装差异不能外推为所有机器或真实模型端到端加速。
+
+兼容性：M0 未改 branch/global/journal 格式或生产功能开关。仍需 M1 后完整五命令和实际 TGZ 宿主复验；M1/M2 和编辑器尚未在本节验收。

@@ -16,17 +16,18 @@ export async function authorizedRecords(store: RpStore, authority: HostAuthority
 }
 export interface RetrievalView { fence: InputFence; records: RetrievalRecord[] }
 export async function readConsistentRecords(store: RpStore, authority: HostAuthority, inputSourceIds: ReadonlySet<string>): Promise<RetrievalView> {
-  const before = unwrap(await store.readFence(authority))
-  const sources = unwrap(await store.readAcceptedSources(authority)), events = unwrap(await store.readEvents(authority)), summaries = unwrap(await store.readSummaries(authority)), projection = unwrap(await store.replayProjection(authority)), result: RetrievalRecord[] = []
+  const read = await store.withReadView(authority, async view => {
+  const { sources, events, summaries, projection, fence } = view, result: RetrievalRecord[] = []
   for (const source of sources) {
     if (source.origin === 'user_control' && !inputSourceIds.has(source.id)) continue
-    const body = unwrap(await store.readSource(authority, fullSpan(source)))
+    const body = await view.readSource(fullSpan(source))
     result.push({ id: source.id, revision: source.publicTextSha256, body, kind: 'source', entities: [...new Set(events.filter(e => e.sources.some(s => s.sourceRevisionId === source.id)).flatMap(eventEntities))] })
   }
   for (const event of events) { const body = canonical(event); result.push({ id: event.id, revision: sha(body), body, kind: 'event', entities: eventEntities(event) }) }
   for (const summary of summaries) { const body = canonical(summary); result.push({ id: summary.id, revision: sha(body), body, kind: 'summary', entities: [...new Set(events.filter(e => summary.supportEventIds.includes(e.id)).flatMap(eventEntities))] }) }
   for (const state of projection.state) { const { contextRevision: _context, ...content } = state, body = canonical(content); result.push({ id: 'state_' + sha(canonical([state.subjectId, state.key, state.epistemic, state.beliefHolderId ?? null])), revision: sha(body), body, kind: 'state', entities: [state.subjectId] }) }
-  const after = unwrap(await store.readFence(authority))
-  if (canonical(before) !== canonical(after)) throw new RpError('snapshot_changed', 'RP retrieval changed during assembly')
-  return { fence: after, records: result }
+  return { fence, records: result }
+  })
+  if (!read.ok && read.code === 'stale_input') throw new RpError('snapshot_changed', 'RP retrieval changed during assembly')
+  return unwrap(read)
 }

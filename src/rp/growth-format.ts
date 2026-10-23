@@ -5,7 +5,9 @@ export const hasGrowthMarker = (changes: readonly AuthorityChange[], eventId: st
 /** Only a verified authority-ledger marker opts an event into growth semantics. */
 export function markGrowthEvent(event: SemanticEvent) { growthRecords.add(event); if (!growthValue(event)) invalid('marked growth payload missing') }
 export function inheritGrowthMarks(from: unknown, to: unknown) {
-  if (Array.isArray(from) && Array.isArray(to)) from.forEach((event, i) => { if (event && typeof event === 'object' && growthRecords.has(event)) growthRecords.add(to[i]) })
+  if (!from || !to || typeof from !== 'object' || typeof to !== 'object') return
+  if (growthRecords.has(from)) growthRecords.add(to)
+  for (const key of Object.keys(from)) inheritGrowthMarks((from as Record<string, unknown>)[key], (to as Record<string, unknown>)[key])
 }
 
 export interface GrowthValue {
