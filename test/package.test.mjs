@@ -3,11 +3,11 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import * as rp from '../lib/index.js'
 
-test('Ultra RP Memory has a consistent standalone entry and disabled defaults', async () => {
+test('Memory-Continuity has a consistent standalone entry and disabled defaults', async () => {
   const manifest = JSON.parse(await fs.readFile(new URL('../package.json', import.meta.url), 'utf8'))
   const lock = JSON.parse(await fs.readFile(new URL('../package-lock.json', import.meta.url), 'utf8'))
   const patch = await fs.readFile(new URL('../cordis.patch.yml', import.meta.url), 'utf8')
-  assert.equal(rp.name, '@dsh-external/dsh-ultra-rp-memory')
+  assert.equal(rp.name, '@dsh-external/dsh-memory-continuity')
   assert.equal(manifest.name, rp.name)
   assert.equal(lock.name, rp.name)
   assert.equal(lock.packages[''].name, rp.name)

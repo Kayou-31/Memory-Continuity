@@ -28,3 +28,15 @@ test('closing a manager while its listener opens prevents a late live endpoint',
   const pending=f.command(a,'person manage');await entered;ok(await f.command(a,'person manage-close'));release();assert.equal((await pending).kind,'error')
  }finally{release?.();Server.prototype.listen=original;await f.dispose()}
 })
+
+test('workbench injection preview uses bound person and exact planner without mutations or model calls',async()=>{
+ const f=await host({entityIds:['erin']},bundle?{install:bundle.installRpPlugin}:{});
+ try{const a=await f.create();ok(await f.command(a,'start'));const draft={schemaVersion:1,kind:'person-draft',personId:'erin',fields:[{fieldId:'name',kind:'identity',value:'林澈',policy:'stable'}],relationships:[],goals:[]},p=JSON.parse(ok(await f.command(a,'person preview '+JSON.stringify(draft))));ok(await f.command(a,'person confirm '+p.previewId));ok(await f.command(a,'person use erin'));ok(await f.command(a,'injection set {}'))
+  const url=new URL(JSON.parse(ok(await f.command(a,'person manage'))).url),token=url.hash.slice(1);url.hash=''
+  const call=async(data,authorized=true)=>{const r=await fetch(new URL('api/injection-preview',url),{method:'POST',headers:{'content-type':'application/json',...(authorized?{authorization:'Bearer '+token}:{}),origin:url.origin},body:JSON.stringify(data)});return {status:r.status,...await r.json()}}
+  const result=await call({query:'你好'});assert.equal(result.ok,true,JSON.stringify(result));assert.match(result.value.current.text,/林澈/);assert.equal(result.value.current.trace.context.personId,'erin');assert.equal(f.calls(),0)
+  assert.equal((await call({query:'你好'},false)).status,403);assert.equal((await call({query:'你好',personId:'other'})).ok,false)
+  assert.equal((await call({query:'长'.repeat(8193)})).ok,false)
+  const direct=JSON.parse(ok(await f.command(a,'injection preview 你好')));assert.equal(result.value.current.trace.sha256,direct.current.trace.sha256)
+ }finally{await f.dispose()}
+})

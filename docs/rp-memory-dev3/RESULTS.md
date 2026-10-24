@@ -1,4 +1,12 @@
+# 后续开发入口
+
+2026-10-24 的 Memory-Continuity 0.2.0-dev.3 后端补充见 [M5 后端报告](../rp-memory-m5/BACKEND-RESULTS.md)，中文指令见 [COMMANDS](../COMMANDS.zh.md)。以下历史结果保留，不将旧版本结果改写为新版本实测。
+
 # Ultra-RP-Memory 实际执行报告（dev.3 至 0.2.0-dev.1）
+
+## 2026-10-24：Memory-Continuity M5
+
+项目在本轮本地开发版更名为 Memory-Continuity。M5 的完整命令、单次 229/229、回归失败与修复、真实包验证及剩余边界单列于 [M5 RESULTS](../rp-memory-m5/RESULTS.md)；纯功能前端交接见 [功能需求](../rp-memory-m5/FRONTEND-HANDOFF.md)。以下历史记录保留，不能替代 M5 验证。
 
 ## 2026-10-23：0.2 预览版发布前完整复审
 
@@ -647,3 +655,8 @@ node --test --test-concurrency=1 scripts/host-acceptance/dev3-companion.test.mjs
 新增实际包场景覆盖 companion standalone、project Ultra先加载、creation RP先加载；模块查看、完整来源回执、待审成长、用户采纳、用途/规则进入请求，以及停用后新请求拒绝。既有Ultra关闭优化、Memory/Decision各加载顺序、工程隔离、冷恢复和人物工具循环继续通过。
 
 **已完成：M3 首期用途与能力模块框架、双层约束、独立/兼容组合、恢复和并发回归。未完成：M4及完整用途产品、实时UI、第三方模块市场、技能/社会/分段容量。未验证：真实模型长期语义、生产长跑、完整桌面交互、真实断电及日常profile迁移。** 本地功能版本仍dev.3，未push、未发布Release/npm、未覆盖稳定版本。此验收段在包验证后追加；交付目录旁置RESULTS.md和证据ZIP包含最新报告，TGZ保持已测哈希不变。
+
+
+## 2026-10-24 正式版工作台接入
+
+当前 Memory-Continuity 0.2.0 的工作台、完整 253/253、实际插件包、浏览器交互和发布结果统一记录于 [正式版 RESULTS](../releases/0.2.0/RESULTS.md)。本文件以上为原阶段历史证据，保留当时未验证范围，不回填为当时已通过。

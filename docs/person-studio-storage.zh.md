@@ -7,18 +7,18 @@
 在原生宿主中：
 
 ```text
-/rp start
-/rp person manage
+/memcont start
+/memcont person manage
 ```
 
 打开返回的完整 `http://127.0.0.1:随机端口/#临时凭证` 地址。凭证只属于本次原生会话，不复制到聊天或日志；页面读取后从地址栏移除。服务不监听局域网，不加载外部资源。所有变更先预览，再点击确认写入；其他操作改变数据后，旧预览会被拒绝，需要刷新并重新检查。
 
 页面提供人物档案、经历与时间线、定向关系与目标/承诺、成长审阅、用途与规则五个区域。人物创建支持身份/背景/表达/价值观/边界/性格六种初始字段；完整八种字段与情境有效期仍可用离线编辑器和可信命令。关系不自动双向，承诺暂停/完成必须显式记录；成长提案没有成为事实，直到确认采纳。时间线和经历各显示最近200条，原因选择器显示最近50条；更早数据用原有检索/命令访问，不删除历史。
 
-“当前查看人物”仅选择页面对象。改变聊天绑定仍用空root上的 `/rp person use <personId>`；已有历史先干净续接。用途与规则区域展示当前配置，修改使用既有 mode/modules/constraints 命令。这样可保留宿主对上下文切换的检查。
+“当前查看人物”仅选择页面对象。改变聊天绑定仍用空root上的 `/memcont person use <personId>`；已有历史先干净续接。用途与规则区域展示当前配置，修改使用既有 mode/modules/constraints 命令。这样可保留宿主对上下文切换的检查。
 
 ```text
-/rp person manage-close
+/memcont person manage-close
 ```
 
 关闭入口、会话销毁、人物绑定或配置变化后，旧凭证失效。已返回浏览器的文本无法远程抹除；关闭按钮及刷新失败会清空页面。提交前再次检查资格；已经发给文件系统的rename可能完成，重开后检查实际记录，使用原幂等操作恢复，不靠自动重复点击创建新事实。
@@ -28,9 +28,9 @@
 仅升级选中的 profile/world scope，人物分支仍使用原来的事务布局。先查看：
 
 ```text
-/rp global storage-status {"worldId":"my-world"}
-/rp global storage-enable {"worldId":"my-world"}
-/rp global storage-status {"worldId":"my-world"}
+/memcont global storage-status {"worldId":"my-world"}
+/memcont global storage-enable {"worldId":"my-world"}
+/memcont global storage-status {"worldId":"my-world"}
 ```
 
 `{}` 表示 profile scope；可用已授权 entityId 细分世界范围。命令由可信用户执行，不是模型工具。现有权限白名单不会因此放宽。

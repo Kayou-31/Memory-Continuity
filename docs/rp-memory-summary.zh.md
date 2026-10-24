@@ -1,26 +1,26 @@
 # RP 人工结构化候选、分层摘要与作业
 
-P4 扩展 P3 的人工 narrator Memory。普通 `/rp accept <sourceId>` 仍只表示用户选定这一版对白；结构化事件与摘要需要独立提案和采纳。dev.2 升级至 SDK `0.2.1-rc.2` 仍未接通经过可信 admission 的后台候选调用路径，`/rp summarize-auto` 明确返回 `capability_missing`。自动采纳、strict POV、native compaction 均未因此解锁。
+P4 扩展 P3 的人工 narrator Memory。普通 `/memcont accept <sourceId>` 仍只表示用户选定这一版对白；结构化事件与摘要需要独立提案和采纳。dev.2 升级至 SDK `0.2.1-rc.2` 仍未接通经过可信 admission 的后台候选调用路径，`/memcont summarize-auto` 明确返回 `capability_missing`。自动采纳、strict POV、native compaction 均未因此解锁。
 
 ## 实际用户入口
 
-先按 [narrator 使用说明](rp-memory-narrator.zh.md) 建立会话，输入剧情。`/rp status` 返回续写候选 source ID；先执行 `/rp accept <sourceId>` 采纳正式续写，再保留同一个 ID 提交下列人工摘要候选。`SOURCE_ID` 要替换成该实际 ID；这里的 `selection` 是真实用户明确指定的摘要范围，`proposal` 是仍须校验的数据。
+先按 [narrator 使用说明](rp-memory-narrator.zh.md) 建立会话，输入剧情。`/memcont status` 返回续写候选 source ID；先执行 `/memcont accept <sourceId>` 采纳正式续写，再保留同一个 ID 提交下列人工摘要候选。`SOURCE_ID` 要替换成该实际 ID；这里的 `selection` 是真实用户明确指定的摘要范围，`proposal` 是仍须校验的数据。
 
 ```text
-/rp summary {"selection":{"level":"scene","sourceRevisionIds":["SOURCE_ID"],"dependencySummaryIds":[],"supportEventIds":[],"boundary":"explicit"},"proposal":{"schemaVersion":1,"proposedEvents":[],"proposedSummary":{"level":"scene","text":"艾琳把蓝钥匙放在桌上。","sourceRevisionIds":["SOURCE_ID"],"exactAnchors":[]}}}
+/memcont summary {"selection":{"level":"scene","sourceRevisionIds":["SOURCE_ID"],"dependencySummaryIds":[],"supportEventIds":[],"boundary":"explicit"},"proposal":{"schemaVersion":1,"proposedEvents":[],"proposedSummary":{"level":"scene","text":"艾琳把蓝钥匙放在桌上。","sourceRevisionIds":["SOURCE_ID"],"exactAnchors":[]}}}
 ```
 
-返回 `candidate_...` ID，不会立即改变有效事件或摘要。`/rp propose` 接受相同格式。用户必须从自己提交的 JSON 审阅候选内容；当前 `/rp candidate` 仅返回元数据，不能查看候选全文。命令不把正文复制进持久回执，以便原始依赖被隐私删除时清理候选副本。
+返回 `candidate_...` ID，不会立即改变有效事件或摘要。`/memcont propose` 接受相同格式。用户必须从自己提交的 JSON 审阅候选内容；当前 `/memcont candidate` 仅返回元数据，不能查看候选全文。命令不把正文复制进持久回执，以便原始依赖被隐私删除时清理候选副本。
 
 | 命令 | 行为 |
 | --- | --- |
-| `/rp candidates` | 当前范围内候选 ID、pending/stale/accepted/rejected、事件数、是否有摘要 |
-| `/rp candidate <candidateId>` | 校验当前 fence，返回 ID、层级、事件数和原始来源 ID；原文通过既有 `rp_memory_get` 读取 |
-| `/rp adopt <candidateId>` | 真实用户操作，来源/权限/branch/global/policy 复验后，原子提交事件、摘要和采纳记录 |
-| `/rp reject-candidate <candidateId>` | 记录拒绝决定，不采纳事件或摘要；同一候选不会再被反向采纳 |
-| `/rp jobs` | 当前分支作业的状态、总尝试数、ID，以及后台原生生成 blocked 状态 |
-| `/rp recover-jobs` | 将遗留 queued/running/prepared/stale 作业置为 deferred；不会重新调用模型 |
-| `/rp summarize-auto` | 当前始终 `capability_missing`，额外 provider 调用为 0 |
+| `/memcont candidates` | 当前范围内候选 ID、pending/stale/accepted/rejected、事件数、是否有摘要 |
+| `/memcont candidate <candidateId>` | 校验当前 fence，返回 ID、层级、事件数和原始来源 ID；原文通过既有 `rp_memory_get` 读取 |
+| `/memcont adopt <candidateId>` | 真实用户操作，来源/权限/branch/global/policy 复验后，原子提交事件、摘要和采纳记录 |
+| `/memcont reject-candidate <candidateId>` | 记录拒绝决定，不采纳事件或摘要；同一候选不会再被反向采纳 |
+| `/memcont jobs` | 当前分支作业的状态、总尝试数、ID，以及后台原生生成 blocked 状态 |
+| `/memcont recover-jobs` | 将遗留 queued/running/prepared/stale 作业置为 deferred；不会重新调用模型 |
+| `/memcont summarize-auto` | 当前始终 `capability_missing`，额外 provider 调用为 0 |
 
 回执只保存 metadata/ID；候选与 job 输入正文使用 P1 `savePayloadCopy(kind=job_input)` 的可清理 blob，不写入不可删除的 job 记录或事务明文。已发布摘要进入 P3 packet 与实际请求的现有预算/admission 门。发生 retcon、删除或旧宿主历史污染后，既有阻断和干净续接规则仍适用。
 

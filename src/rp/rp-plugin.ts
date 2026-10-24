@@ -1,7 +1,9 @@
+import {createInjectionBinding,verifyInjectionText,injectionMarkerValid,writeInjectionMarker,type InjectionBinding} from './injection-binding.js'
 /** Narrator injection-only adapter for pinned SDK. No automatic canonical selection. */
 import { createRuntimeBinding, type RuntimeConfig } from './modules/contract.js'
 import type { ModuleRuntime } from './modules/runtime.js'
 import { runtimeCommand } from './modules/commands.js'
+import { rpCommandHelp } from './command-help.js'
 import { runtimeMarkerValid, writeRuntimeMarker } from './modules/marker.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -174,11 +176,11 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
   const queue = (b: Bound, work: () => Promise<void>) => { const p = b.queue.catch(() => {}).then(async () => { if (closed) throw new RpError('ownership_lost', 'RP owner closing'); await work() }); b.queue = p; void p.catch(e => { b.data.blocked = true; b.lastError = e instanceof RpError ? e.code : 'persistence_failed' }); return p }
   const drain = async (b: Bound) => { const queueTail = b.queue; await queueTail; const saveTail = b.saveQueue; await saveTail; if (queueTail !== b.queue || saveTail !== b.saveQueue) throw new RpError('stale_input', 'RP queues changed while settling'); if (closed || !live(b.agent) || b.data.blocked) throw new RpError('ownership_lost', 'RP session is unavailable') }
   const settle = async (b: Bound) => { const results = await Promise.allSettled([b.queue, b.saveQueue]); if (results.some(r => r.status === 'rejected')) { b.data.blocked = true; b.lastError ??= 'persistence_failed' } }
-  const diagnostic = (sessionId: string) => { const b = bound.get(sessionId); return { enabled: !closed, lifecycle: closed ? 'closing' : 'open', contextCompression: false, strictPov: false, nativeVersions, memoryOptimization: { available: optimizer()?.protocol ?? 'standalone', packet: b?.packet?.optimizer ?? null }, policy: policy.status(sessionId), branchId: b?.data.request.branchId, personId: b?.data.personBinding?.personId, purpose: b?.data.runtimeBinding?.config ?? null, blocked: !b || closed || b.data.blocked === true || b.recoveryOnly === true, lastError: b?.lastError, candidateIds: b ? Object.values(b.data.hostSources).filter(s => !b.data.inputs.some(i => i.sourceId === s)) : [], pendingInputIds: b?.data.inputs.filter(i => i.phase === 'observed' || i.phase === 'accepted').map(i => i.sourceId) ?? [], ambiguousInputIds: b?.data.inputs.filter(i => i.phase === 'dispatching' || i.phase === 'dispatched').map(i => i.sourceId) ?? [], snapshots: b ? Object.keys(b.data.snapshots).length : 0 } }
+  const diagnostic = (sessionId: string) => { const b = bound.get(sessionId); return { enabled: !closed, lifecycle: closed ? 'closing' : 'open', contextCompression: false, strictPov: false, nativeVersions, memoryOptimization: { available: optimizer()?.protocol ?? 'standalone', packet: b?.packet?.optimizer ?? null }, policy: policy.status(sessionId), branchId: b?.data.request.branchId, personId: b?.data.personBinding?.personId, injection: b?.data.injectionBinding ?? null, purpose: b?.data.runtimeBinding?.config ?? null, blocked: !b || closed || b.data.blocked === true || b.recoveryOnly === true, lastError: b?.lastError, candidateIds: b ? Object.values(b.data.hostSources).filter(s => !b.data.inputs.some(i => i.sourceId === s)) : [], pendingInputIds: b?.data.inputs.filter(i => i.phase === 'observed' || i.phase === 'accepted').map(i => i.sourceId) ?? [], ambiguousInputIds: b?.data.inputs.filter(i => i.phase === 'dispatching' || i.phase === 'dispatched').map(i => i.sourceId) ?? [], snapshots: b ? Object.keys(b.data.snapshots).length : 0 } }
   const assertIdle = (agent: Agent) => { if (!live(agent) || agent.status !== 'idle') throw new RpError('scope_denied', 'RP controls require the exact live idle root session') }
   const requestFor = (session: string, branchId: string): AuthorityRequest => ({ workspaceId: binding.workspaceId, campaignId: config.campaignId ?? 'rp_campaign', branchId, sessionId: session, sceneId: 'rp_scene', viewpoint: { kind: 'narrator' }, visibility, audienceSetIds: ['rp_user'], permissions: ['read', 'observe', 'commit', 'control'] })
   const safe = (agent: Agent) => agent.session.deriveMessages().length === 0 && !agent.session.header.parentSession && !agent.session.header.isSeeded && !(root.get('compaction')) && !(root.get('ultraEvidenceSupport') as any)?.memory?.hasActiveSession(agent.id)
-  const installBound = async (agent: Agent, branchId?: string, existing?: DurableSession, beforePublication = false, freshPersonId?: string, freshRuntime?: RuntimeConfig) => {
+  const installBound = async (agent: Agent, branchId?: string, existing?: DurableSession, beforePublication = false, freshPersonId?: string, freshRuntime?: RuntimeConfig, freshInjection?: InjectionBinding) => {
     verifyNative(); if (agent.session.header.version !== 4) throw new RpError('capability_missing', 'Untested native session format')
     if (!beforePublication) assertIdle(agent)
     if (!existing && !safe(agent)) throw new RpError('scope_denied', 'RP activation needs a fresh drained root session without engineering history or archive readers')
@@ -187,6 +189,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     const authority = unwrap(await memory.control.authorize(data.request))
     if (!existing && freshPersonId) data.personBinding = await createPersonBinding(memory.store, authority, freshPersonId)
     if (!existing) data.runtimeBinding = createRuntimeBinding(freshRuntime)
+    if (!existing && freshInjection && data.personBinding) data.injectionBinding = createInjectionBinding(freshInjection.config)
     const legacy = existing?.schemaVersion === 1
     const legacyTools = legacy && (Object.keys(data.frames).length > 0 || Object.keys(data.receipts).length > 0 || agent.session.deriveMessages().some((m: any) => m.role === 'tool' || m.content?.some((c: any) => c.type === 'tool-call')))
     const missingPacketProof = [...Object.values(data.snapshots), ...Object.values(data.pending), ...Object.values(data.frames)].some(s => (legacy || s.provenance === 'packet' || s.provenance === 'tool-call') && !s.packetProof)
@@ -194,7 +197,9 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     let missingPersonProof = !!existing && (personSnapshots.some(s => canonical(s.personBinding ?? null) !== canonical(data.personBinding ?? null)) || (!data.personBinding && agent.session.deriveMessages().some((m: any) => m.source?.kind === 'runtime-context' && /"primaryPerson"\s*:/u.test(body(m)))))
     if (data.personBinding) try { await verifyPersonBinding(memory.store, authority, data.personBinding) } catch { missingPersonProof = true }
     const missingRuntimeProof = !!existing && ((data.runtimeBinding && !await runtimeMarkerValid(workspaceRoot,agent.id,binding.workspaceId,data.runtimeBinding)) || personSnapshots.some(s => canonical(s.runtimeBinding ?? null) !== canonical(data.runtimeBinding ?? null)) || (!data.runtimeBinding && agent.session.deriveMessages().some((m: any) => m.source?.kind === 'runtime-context' && /"purposeRuntime"\s*:/u.test(body(m)))))
-    const recoveryOnly = legacyTools || missingPacketProof || missingPersonProof || missingRuntimeProof
+    const changedInjectionText=!!existing&&agent.session.deriveMessages().some((m:any)=>{const s=data.snapshots[m.id];if(!s?.injection)return false;try{verifyInjectionText(s.injection,body(m));return false}catch{return true}})
+    const missingInjectionProof = !!existing && (changedInjectionText || !await injectionMarkerValid(hostRoot,agent.id,data.injectionBinding) || personSnapshots.some(s=>canonical(s.injectionBinding??null)!==canonical(data.injectionBinding??null)) || (!data.injectionBinding && agent.session.deriveMessages().some((m:any)=>m.source?.kind==='runtime-context'&&/"personContinuity"\s*:/u.test(body(m)))))
+    const recoveryOnly = legacyTools || missingPacketProof || missingPersonProof || missingRuntimeProof || missingInjectionProof
     if (legacy && !recoveryOnly) {
       // Preserve exactly the checksum-verified original before the atomic upgrade.
       const original = await fs.readFile(file(agent.id)); const backup = file(agent.id) + '.v1-backup'
@@ -205,9 +210,10 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     // Written before agent publication or activation; engineering only treats
     // this as a fail-closed ownership marker, never as authority to read RP.
     if(!existing || !data.runtimeBinding) await writeRuntimeMarker(workspaceRoot,agent.id,binding.workspaceId,data.runtimeBinding,false)
+    if(!existing) await writeInjectionMarker(hostRoot,agent.id,data.injectionBinding,false)
     if (admission.has(agent.id)) throw new RpError('ownership_lost', 'Prior RP binding has not been released')
     if (recoveryOnly) await policy.block(agent.id); else await policy.activate(agent.id, 'rp', { idle: beforePublication || agent.status === 'idle', safe: true })
-    const b: Bound = { agent, authority, data, queue: Promise.resolve(), saveQueue: Promise.resolve(), generation: 0, recoveryOnly, ...(recoveryOnly ? { lastError: missingRuntimeProof ? 'runtime_binding_recovery_only' : missingPersonProof ? 'person_binding_recovery_only' : legacyTools ? 'legacy_tools_recovery_only' : 'legacy_packet_recovery_only' } : {}) }
+    const b: Bound = { agent, authority, data, queue: Promise.resolve(), saveQueue: Promise.resolve(), generation: 0, recoveryOnly, ...(recoveryOnly ? { lastError: missingInjectionProof ? 'injection_binding_recovery_only' : missingRuntimeProof ? 'runtime_binding_recovery_only' : missingPersonProof ? 'person_binding_recovery_only' : legacyTools ? 'legacy_tools_recovery_only' : 'legacy_packet_recovery_only' } : {}) }
     if (recoveryOnly) b.data.blocked = true
     if(data.runtimeBinding && !recoveryOnly) b.runtime = memory.modules.create(authority,data.runtimeBinding.config,()=>live(agent)&&!b.data.blocked)
     admission.bind(owner, agent.id, () => ({ epoch: policy.status(agent.id).epoch, generation: b.generation, active: live(agent) && !b.data.blocked }))
@@ -228,7 +234,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     let created: any, newAgent: Agent | undefined
     try {
       created = await (root.get('agents') as any).create({ sessionId: uid('rp_clean'), meta: { cwd: workspaceRoot }, agentOptions: { ...agent.options }, signal,
-        setup: async (_ctx: Context, next: Agent) => { newAgent = next; await installBound(next, branchId, undefined, true, personId, b?.recoveryOnly ? undefined : b?.data.runtimeBinding?.config); return { commit() { signal.throwIfAborted(); if (closed || !live(agent) || policy.status(agent.id).epoch !== epoch) throw new RpError('stale_input', 'Clean continuation owner changed') } } } })
+        setup: async (_ctx: Context, next: Agent) => { newAgent = next; await installBound(next, branchId, undefined, true, personId, b?.recoveryOnly ? undefined : b?.data.runtimeBinding?.config, b?.recoveryOnly ? undefined : b?.data.injectionBinding); return { commit() { signal.throwIfAborted(); if (closed || !live(agent) || policy.status(agent.id).epoch !== epoch) throw new RpError('stale_input', 'Clean continuation owner changed') } } } })
       signal.throwIfAborted()
       if (closed || !live(agent) || canonical(unwrap(await memory.store.readFence(authority))) !== canonical(expected)) throw new RpError('stale_input', 'Branch changed during clean continuation')
       handles.push(created); return { kind: 'success' as const, text: 'Clean RP root session created: ' + created.agent.id + '. Select that session in the host; the UI tab was not switched.' }
@@ -236,6 +242,33 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       if (newAgent) { admission.retireBinding(owner, newAgent.id); const n = bound.get(newAgent.id); if (n) n.data.blocked = true; await policy.block(newAgent.id); admission.release(owner, newAgent.id); bound.delete(newAgent.id) }
       await created?.dispose(); throw e
     }
+  }
+  const injectionPreview = async (b:Bound, query:string) => {
+    if(Buffer.byteLength(query,'utf8')>8192)throw new RpError('invalid_record','Preview query exceeds 8 KiB')
+    await settle(b)
+    const generation=b.generation,bindingHash=canonical(b.data.injectionBinding??null)
+    const packet=b.data.injectionBinding?unwrap(await memory.packets.prepare(b.authority,{budget:config.budget!,globalAuthorities,inputBindings:b.data.inputs,personId:b.data.personBinding?.personId,injection:b.data.injectionBinding.config,runtime:b.runtime?.context(),query})):undefined
+    const fence=packet?.inputFence??unwrap(await memory.store.readFence(b.authority)),sources=new Set(unwrap(await memory.store.readAcceptedSources(b.authority)).map(s=>s.id)),history=[]
+    for(const message of b.agent.session.deriveMessages() as any[]){
+      const s=b.data.snapshots[message.id]??b.data.frames[message.id]
+      let status='carried',reason='旧宿主消息仍在上下文中；本轮未选中不会删除它。'
+      try{
+        if(b.data.messageHashes[message.id]!==sha(normalizedMessage(message)))throw new RpError('stale_input','未知或改动过的宿主消息')
+        if(s){
+          if(s.injection)verifyInjectionText(s.injection,body(message))
+          if(canonical(s.injectionBinding??null)!==bindingHash||canonical(s.personBinding??null)!==canonical(b.data.personBinding??null)||canonical(s.runtimeBinding??null)!==canonical(b.data.runtimeBinding??null))throw new RpError('stale_input','历史配置绑定不匹配')
+          if(s.provenance==='packet'||s.provenance==='tool-call')await verifyPacketProof(memory.store,b.authority,s.packetProof)
+          if(s.records)await verifyRetrievalEvidence(memory.store,b.authority,{inputFence:s.fence,records:s.records,resultSha256:s.resultSha256!},new Set(b.data.inputs.map(i=>i.sourceId)))
+          if(s.bodyHash!==sha(body(message))||s.modeEpoch!==policy.status(b.agent.id).modeEpoch||s.fence.branchId!==fence.branchId||s.fence.visibilityRevision!==fence.visibilityRevision||s.fence.deletionGeneration!==fence.deletionGeneration||s.fence.canonBindingsHash!==fence.canonBindingsHash||s.fence.policyVersion!==fence.policyVersion||s.dependencyIds.some(id=>!sources.has(id)))throw new RpError('stale_input','历史来源或权限已失效')
+          if(s.globalPolicyHash!==globalPolicyHash()||s.globals.length!==globalAuthorities.length)throw new RpError('scope_denied','历史全局授权已改变')
+          for(const dep of s.globalDependencies){let found=false;for(const g of globalAuthorities){const r=await memory.global.store.readPublication(g,dep.publicationId);if(r.ok&&r.value.source.id===dep.sourceId&&r.value.bodySha256===dep.bodySha256&&canonical(r.value.scope)===canonical(dep.scope)&&(r.value.scope.kind!=='profile'||unwrap(await memory.global.store.listActive(g)).some(x=>x.id===r.value.id)))found=true}if(!found)throw new RpError('scope_denied','历史全局来源已失效')}
+        }else if(!sources.has(b.data.hostSources[message.id]))throw new RpError('scope_denied','宿主原文尚未采纳或已失效')
+      }catch(e){status='blocked';reason=e instanceof Error?e.message:'历史验证失败'}
+      history.push({messageId:message.id,status,reason,kind:s?.provenance??'original',snapshotId:s?.injection?.sha256??s?.packetId??null,selectedIds:s?.injection?.entries.filter(e=>e.selected).map(e=>e.id)??[]})
+    }
+    if(generation!==b.generation||bindingHash!==canonical(b.data.injectionBinding??null)||!live(b.agent)||canonical(fence)!==canonical(unwrap(await memory.store.readFence(b.authority))))throw new RpError('stale_input','预览期间状态改变，请重新预览')
+    if(packet)for(let i=0;i<globalAuthorities.length;i++)if(canonical(packet.globalFences[i])!==canonical(unwrap(await memory.global.store.readFence(globalAuthorities[i]))))throw new RpError('stale_input','预览期间全局记忆改变')
+    return {binding:b.data.injectionBinding??null,current:packet?{text:JSON.parse(packet.text).personContinuity.text,trace:packet.injection,packetId:packet.id}:null,history,blocked:b.data.blocked===true||b.recoveryOnly===true,notice:'只读预览，实际发送会重新组装与验证。当前未选入不等于从旧对话中移除；需要干净上下文请 continue-clean。预算为 UTF-8 字节保守估计，非实际 token。'}
   }
   const controlSource = (b: Bound, commandId: string, value: string) => memory.store.observeSource(b.authority, { idempotencyKey: 'command_' + sha(commandId), origin: 'user_control', role: 'user_control', publicText: value, turnId: uid('control') })
   const canonicalControl = async (b: Bound, commandId: string, operation: any) => {
@@ -270,13 +303,14 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       signal.throwIfAborted(); shutdown.signal.throwIfAborted()
       const match = /^\s*(\S+)?(?:\s+([\s\S]*))?$/u.exec(invocation.rawInput)!, action = match[1] ?? 'status', arg = match[2] ?? ''
       if(!live(agent))throw new RpError('ownership_lost','Exact live session required')
+      if(action==='help')return {kind:'success',text:rpCommandHelp(arg)}
       if(!(action==='modules'&&/^disable\s/u.test(arg)))assertIdle(agent)
       let b = bound.get(agent.id)
       if (action === 'status') { if (b) await settle(b); return { kind: 'success', text: JSON.stringify(diagnostic(agent.id)) } }
       if(action==='person'&&arg==='manage-close'){await closeManager(agent.id);return {kind:'success',text:'Management endpoint closed.'}}
       if (action === 'continue-clean') return await continueClean(agent, b, arg, signal)
       if (action === 'global') {
-        const parsed = /^(\S+)\s+([\s\S]+)$/u.exec(arg); if (!parsed) throw new RpError('invalid_record', 'Use /rp global preference|publish|list|adopt <JSON>')
+        const parsed = /^(\S+)\s+([\s\S]+)$/u.exec(arg); if (!parsed) throw new RpError('invalid_record', 'Use /memcont global preference|publish|list|adopt <JSON>')
         const sub = parsed[1]
         if (!['publish', 'preference', 'list', 'adopt', 'storage-status', 'storage-enable'].includes(sub)) throw new RpError('invalid_record', 'Unknown global control')
         const op = commandObject(parsed[2], sub === 'publish' || sub === 'preference' ? ['key', 'body'] : sub === 'adopt' ? ['publicationId'] : [], ['worldId', 'entityId', 'privateSourceIds', 'supersedes'])
@@ -290,6 +324,38 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       }
       if (action === 'start') { if (b) return { kind: 'success', text: 'RP already active.' }; b = await installBound(agent, arg || undefined) }
       if (!b) throw new RpError('scope_denied', 'Start or restore the RP session first')
+      if(action==='injection'){
+        const m=/^(\S+)(?:\s+([\s\S]*))?$/u.exec(arg),op=m?.[1]??'show',value=m?.[2]??''
+        if(op==='show')return {kind:'success',text:canonical({binding:b.data.injectionBinding??null,notice:'空白根会话绑定人物后 injection set {} 启用；预览不会发送模型。'})}
+        if(op==='preview')return {kind:'success',text:canonical(await injectionPreview(b,value))}
+        if(op!=='set')throw new RpError('invalid_record','Use injection show|set <JSON>|preview <query>')
+        if(Buffer.byteLength(value,'utf8')>32768)throw new RpError('invalid_record','Injection config exceeds 32 KiB')
+        const next=value.trim()==='null'?undefined:createInjectionBinding(commandObject(value,[],['depth','budgets','pin','exclude','aliases','rules']))
+        if(runtimeChanges.has(b))throw new RpError('scope_denied','Configuration change in progress')
+        runtimeChanges.add(b)
+        try{
+          await drain(b)
+          if(!safe(agent)||!b.data.personBinding)throw new RpError('scope_denied','先绑定人物；有历史时先 continue-clean，再设置注入')
+          await verifyPersonBinding(memory.store,b.authority,b.data.personBinding)
+          if(next&&Object.keys(next.config.aliases).some(id=>!(config.entityIds??[]).includes(id)))throw new RpError('scope_denied','Alias entity is not authorized')
+          const initialGeneration=b.generation
+          if(next&&!b.data.injectionBinding){
+            const original=await fs.readFile(file(agent.id)),backup=file(agent.id)+'.pre-m5-backup'
+            try{const h=await fs.open(backup,'wx',0o600);try{await h.writeFile(original);await h.sync()}finally{await h.close()}}
+            catch(e){if((e as NodeJS.ErrnoException).code!=='EEXIST')throw e;const saved=object(await readRpJson(backup),['data','sha256']);if(saved.sha256!==sha(canonical(saved.data))||validateJournal(saved.data).sessionId!==agent.id||saved.data.injectionBinding)throw new RpError('store_corrupt','Pre-M5 backup cannot be verified')}
+          }
+          if(b.generation!==initialGeneration||!live(agent)||!safe(agent)||agent.status!=='idle'||b.data.blocked)throw new RpError('stale_input','Session changed during injection preparation')
+          b.generation++;b.packet=undefined;b.data.blocked=true
+          const generation=b.generation
+          if(next)b.data.injectionBinding=next;else delete b.data.injectionBinding
+          // A failed marker must leave a durable blocked journal when that independent write is still possible.
+          try{await writeInjectionMarker(hostRoot,agent.id,next,true)}catch(e){await save(b).catch(()=>{});throw e}
+          await save(b);if(!live(agent)||b.generation!==generation)throw new RpError('ownership_lost','Injection owner changed')
+          b.data.blocked=false
+          try{await save(b);if(!live(agent)||b.generation!==generation)throw new RpError('ownership_lost','Injection owner changed');await writeInjectionMarker(hostRoot,agent.id,next,false);if(!live(agent)||b.generation!==generation)throw new RpError('ownership_lost','Injection owner changed')}catch(e){b.data.blocked=true;throw e}
+          return {kind:'success',text:canonical({binding:next??null,notice:'已保存本会话的注入配置。未开启后台功能。'})}
+        }finally{runtimeChanges.delete(b)}
+      }
       if (['mode','modules','constraints'].includes(action)) return await runtimeCommand(action,arg,commandId,{
         config:b.data.runtimeBinding?.config ?? createRuntimeBinding().config,runtime:b.runtime,ready:()=>drain(b!),
         change:async(next,disable)=>{
@@ -323,10 +389,10 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           if(value)throw new RpError('invalid_record','Use person manage without arguments')
           await closeManager(agent.id);const generation=b.generation,opening={};managerOpenings.set(agent.id,opening)
           const controller=memory.management.create(b.authority,()=>live(agent)&&bound.get(agent.id)===b&&!b!.data.blocked&&!b!.recoveryOnly&&b!.generation===generation&&agent.status==='idle')
-          const manager=await openManagementServer(controller,()=>({sessionId:agent.id,personId:b!.data.personBinding?.personId??null,mode:b!.data.runtimeBinding?.config.mode??'rp',config:b!.data.runtimeBinding?.config??null}),async()=>{
+          const manager=await openManagementServer(controller,()=>({sessionId:agent.id,personId:b!.data.personBinding?.personId??null,mode:b!.data.runtimeBinding?.config.mode??'rp',config:b!.data.runtimeBinding?.config??null,injection:b!.data.injectionBinding??null}),async()=>{
             for(const session of bound.values())if(session.data.request.branchId===b!.data.request.branchId)session.packet=undefined
             if(!await (root.get('sessions') as any).flush(agent.session))throw new RpError('persistence_uncertain','Management committed; native flush unconfirmed. Inspect current state before another action.')
-          })
+          },async query=>{if(!live(agent)||b!.generation!==generation||b!.data.blocked||agent.status!=='idle')throw new RpError('ownership_lost','工作台会话已变化，请重新打开');return injectionPreview(b!,query)})
           if(!live(agent)||b.generation!==generation||managerOpenings.get(agent.id)!==opening){await manager.close();throw new RpError('ownership_lost','Management owner changed while opening')}
           managerOpenings.delete(agent.id)
           managers.set(agent.id,manager);return {kind:'success',text:JSON.stringify({url:manager.url,notice:'仅本机、仅本会话，手动刷新和确认。关闭页面不会自动改人物；person manage-close 撤销入口。不要分享完整地址。'})}
@@ -386,10 +452,10 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         return { kind: 'success', text: canonical(value) }
       }
       const summaryOptions = { globalAuthorities, policyEpoch: () => { shutdown.signal.throwIfAborted(); if (closed || !live(agent) || policy.status(agent.id).mode !== 'rp') throw new RpError('ownership_lost', 'RP candidate owner changed'); return policy.status(agent.id).epoch } }
-      if (action === 'summarize-auto') throw new RpError('capability_missing', 'No trusted background candidate route; use /rp summary then /rp adopt')
+      if (action === 'summarize-auto') throw new RpError('capability_missing', 'No trusted background candidate route; use /memcont summary then /memcont adopt')
       if (action === 'propose' || action === 'summary') {
         const op = commandObject(arg, ['selection', 'proposal']), candidate = unwrap(await memory.summaries.propose(b.authority, op.proposal, op.selection, summaryOptions))
-        return { kind: 'success', text: 'Structured candidate ' + candidate.id + ' pending. Use /rp candidate ID and /rp adopt ID or /rp reject-candidate ID. No story fact or summary was adopted.' }
+        return { kind: 'success', text: 'Structured candidate ' + candidate.id + ' pending. Use /memcont candidate ID and /memcont adopt ID or /memcont reject-candidate ID. No story fact or summary was adopted.' }
       }
       if (action === 'candidates') return { kind: 'success', text: 'Structured candidate status: ' + canonical(unwrap(await memory.summaries.list(b.authority))) }
       if (action === 'candidate') { const candidate = unwrap(await memory.summaries.get(b.authority, arg, summaryOptions)); return { kind: 'success', text: 'Structured candidate ' + candidate.id + '; events ' + candidate.proposedEvents.length + '; summary ' + (candidate.proposedSummary?.level ?? 'none') + '; original source IDs ' + (candidate.proposedSummary?.sourceRevisionIds ?? candidate.proposedEvents.flatMap(e => e.sources.map(s => s.sourceRevisionId))).join(',') + '. Inspect original source IDs with rp_memory_get. Candidate prose stays in deletable storage; this receipt contains metadata only.' } }
@@ -410,7 +476,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         text(arg, 1048576); const source = unwrap(await controlSource(b, commandId, arg)), accepted = unwrap(await memory.store.readAcceptedSources(b.authority)), latestInput = b.data.inputs.filter(i => accepted.some(s => s.id === i.sourceId)).at(-1), turnId = latestInput && !accepted.some(s => s.role === 'assistant' && s.turnId === latestInput.turnId) ? latestInput.turnId : uid('turn')
         const item: Input = { kind: 'input', sourceId: source.id, messageId: uid('rp_input'), turnId, bodyHash: source.publicTextSha256, dispatched: false, phase: 'observed', operationKey: 'input_' + sha(commandId), expected: unwrap(await memory.store.readFence(b.authority)) }
         b.data.inputs.push(item); const history = inputHistory.get(b.data.request.branchId) ?? new Map<string, Input>(); history.set(item.sourceId, item); inputHistory.set(b.data.request.branchId, history); memory.registerInputBindings(b.data.request.branchId, b.data.inputs); await save(b); await config.inputFault?.('intent_saved'); await dispatchInput(b, item, signal)
-        return { kind: 'success', text: 'Accepted input queued. Generated replies require /rp accept.' }
+        return { kind: 'success', text: 'Accepted input queued. Generated replies require /memcont accept.' }
       }
       if (action === 'resume-input') { const item = b.data.inputs.find(i => i.sourceId === arg); if (!item) throw new RpError('scope_denied', 'Unknown pending input'); await dispatchInput(b, item, signal); return { kind: 'success', text: 'Accepted pending input queued once.' } }
       if (action === 'fork') { const expected = unwrap(await memory.store.readFence(b.authority)), manifest = unwrap(await memory.canonical.forkManifest(b.authority, expected.contextRevision)); signal.throwIfAborted(); const branch = unwrap(await memory.canonical.forkBranch(b.authority, { ...manifest, idempotencyKey: 'fork_' + sha(commandId) })); return { kind: 'success', text: 'Fixed RP branch created: ' + branch.id } }
@@ -419,12 +485,14 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       else if (action === 'delete') { const op = commandObject(arg, ['sourceRevisionIds', 'publicationDisposition']); if (!['retain', 'delete'].includes(op.publicationDisposition)) throw new RpError('invalid_record', 'Choose publicationDisposition retain/delete explicitly'); for (const ga of globalAuthorities) unwrap(await memory.global.control.privateDeletion(ga, memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }), { idempotencyKey: commandId, expected: unwrap(await memory.global.store.readFence(ga)), privateSourceIds: op.sourceRevisionIds, publicationDisposition: op.publicationDisposition })); unwrap<unknown>(await canonicalControl(b, commandId, { kind: 'privacy_delete', sourceRevisionIds: op.sourceRevisionIds, affectedBranchIds: [b.data.request.branchId] })) }
       else if (action === 'publish') { const op = commandObject(arg, ['grantIndex', 'key', 'body', 'privateSourceIds'], ['supersedes']), ga = globalAuthorities[op.grantIndex]; if (!ga) throw new RpError('scope_denied', 'Unknown global grant'); const approval = memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }); unwrap(await memory.global.control.publish(ga, approval, { idempotencyKey: commandId, expected: unwrap(await memory.global.store.readFence(ga)), key: op.key, body: op.body, privateSourceIds: op.privateSourceIds, ...(op.supersedes ? { supersedes: op.supersedes } : {}) })) }
       else if (action === 'adopt-canon') { const op = commandObject(arg, ['grantIndex', 'publicationId']), ga = globalAuthorities[op.grantIndex]; if (!ga) throw new RpError('scope_denied', 'Unknown global grant'); unwrap(await memory.adoptCanon(b.authority, ga, memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }), op.publicationId, commandId)) }
-      else if (action !== 'accept' && action !== 'reject') throw new RpError('invalid_record', 'Use start/status/input/agent/goals/relationships/self/accept/reject/delete/retcon/publish/adopt-canon/continue-clean/resume-input')
+      else if (action !== 'accept' && action !== 'reject') throw new RpError('invalid_record', '未知指令。使用 /memcont help 查看人物、记忆、注入、恢复和存储指令。')
       signal.throwIfAborted(); if (!await (root.get('sessions') as any).flush(agent.session)) throw new RpError('persistence_uncertain', 'Native session flush unconfirmed')
       return { kind: 'success', text: 'RP control committed. Historical native content may require continue-clean.' }
     } catch (e) { const b = bound.get(agent.id); if (b && !(e instanceof RpError)) { b.data.blocked = true; b.lastError = 'persistence_failed' }; return { kind: 'error', text: e instanceof RpError ? e.code + ': ' + e.message : 'RP control failed; inspect status before retry.' } }
   }
-  const commandsFiber = root.inject(['commands'], (owner: any) => { effects.push(owner.get('commands').register({ name: 'rp', description: 'Explicit narrator Memory controls; generated replies remain candidates.', input: { hint: 'start|status|input <text>|accept <sourceId>|summary <JSON>|candidates|adopt <candidateId>|jobs|continue-clean', attachments: false }, recordInput: false, handler: command })) })
+  const commandsFiber = root.inject(['commands'], (owner: any) => {
+    for(const name of ['memcont','rp']) effects.push(owner.get('commands').register({ name, description: name==='memcont'?'Memory-Continuity：人物、长期记忆、注入预览与人工成长；help 查看中文帮助。':'Memory-Continuity 旧命令兼容别名；新操作请使用 /memcont。', input: { hint: 'help [person|injection|recovery|memory|modules|storage] | start | status | person | injection | input <文本> | continue-clean', attachments: false }, recordInput: false, handler: command }))
+  })
   effects.push(() => commandsFiber.dispose())
   effects.push(root.on('session/event', ((session: any, event: any) => {
     const b = bound.get(session.id); if (closed || !b || b.agent.session !== session || policy.status(session.id).mode !== 'rp') return
@@ -437,7 +505,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     }
     if (event.type === 'assistant/message' && message?.content?.some((c: any) => c.type === 'tool-call')) {
       if (!b.packet || !validReadToolContent(message.content)) { b.data.blocked = true; return }
-      b.data.frames[message.id] = { ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), provenance: 'tool-call', packetProof: b.packet.proof, bodyHash: sha(body(message)), packetId: b.packet.id, fence: b.packet.inputFence, globals: [...b.packet.globalFences], globalDependencies: [...b.packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...b.packet.dependencyIds], eventIds: [], modeEpoch: policy.status(session.id).modeEpoch }
+      b.data.frames[message.id] = { ...(b.data.injectionBinding ? {injectionBinding:structuredClone(b.data.injectionBinding)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), provenance: 'tool-call', packetProof: b.packet.proof, bodyHash: sha(body(message)), packetId: b.packet.id, fence: b.packet.inputFence, globals: [...b.packet.globalFences], globalDependencies: [...b.packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...b.packet.dependencyIds], eventIds: [], modeEpoch: policy.status(session.id).modeEpoch }
       b.data.messageHashes[message.id] = sha(normalizedMessage(message)); void queue(b, () => save(b)); return
     }
     if (message?.source?.kind === 'runtime-context') {
@@ -457,20 +525,21 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     const agent: Agent | undefined = request.agent ?? request.scope?.agent, b = agent && bound.get(agent.id)
     if (!b || policy.status(agent!.id).mode !== 'rp') { const assembled = await next(); return { ...assembled, tools: assembled.tools.filter((t: any) => !/^rp_memory_/u.test(t.name)) } }
     await drain(b); request.signal?.throwIfAborted(); const generation = ++b.generation, assembly = await next()
-    let packet = unwrap(await memory.packets.prepare(b.authority, { budget: config.budget!, globalAuthorities, inputBindings: b.data.inputs, personId: b.data.personBinding?.personId, runtime: b.runtime?.context() }))
+    let packet = unwrap(await memory.packets.prepare(b.authority, { budget: config.budget!, globalAuthorities, inputBindings: b.data.inputs, personId: b.data.personBinding?.personId, injection: b.data.injectionBinding?.config, runtime: b.runtime?.context() }))
     request.signal?.throwIfAborted(); if (closed || generation !== b.generation) throw new RpError('stale_input', 'Late RP assembly')
     const compose = (p: MemoryPacket) => ({ ...assembly, tools: assembly.tools.filter((t: any) => ['rp_memory_search', 'rp_memory_get', 'rp_memory_status'].includes(t.name)), contexts: [...assembly.contexts, { name: 'rp-memory', text: canonical({ rpPacketId: p.id, data: JSON.parse(p.text), recentAcceptedOriginals: p.recent }) }] })
     let completed = compose(packet)
     const envelope = () => ({ provider: agent!.options.provider, model: agent!.options.model, maxTokens: agent!.options.maxTokens, system: renderPrompt(completed), tools: completed.tools, toolHistory: { tools: completed.tools, updates: [] }, messages: [...agent!.session.deriveMessages(), { role: 'user', content: [{ type: 'text', text: joinContextSections(renderContextSections(completed)) }] }] })
     const reserve = Math.max(config.budget!.outputReserveTokens, agent!.options.maxTokens ?? 0) + config.budget!.toolReserveTokens
-    if (estimateFinalRequest(envelope()) > Math.min(config.budget!.inputLimit, config.budget!.contextWindow - reserve)) { packet = unwrap(await memory.packets.prepare(b.authority, { budget: config.budget!, globalAuthorities, inputBindings: b.data.inputs, personId: b.data.personBinding?.personId, runtime: b.runtime?.context(), optionalTokens: 0 })); completed = compose(packet) }
-    const fullContext = joinContextSections(renderContextSections(completed)), snapshot: Snapshot = { ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), provenance: 'packet', packetProof: packet.proof, bodyHash: sha(fullContext), packetId: packet.id, fence: packet.inputFence, globals: [...packet.globalFences], globalDependencies: [...packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...packet.dependencyIds], eventIds: packet.proof.records.filter(r => r.kind === 'event').map(e => e.id), modeEpoch: policy.status(b.agent.id).modeEpoch }
+    if (estimateFinalRequest(envelope()) > Math.min(config.budget!.inputLimit, config.budget!.contextWindow - reserve)) { packet = unwrap(await memory.packets.prepare(b.authority, { budget: config.budget!, globalAuthorities, inputBindings: b.data.inputs, personId: b.data.personBinding?.personId, injection: b.data.injectionBinding?.config, runtime: b.runtime?.context(), optionalTokens: 0 })); completed = compose(packet) }
+    const fullContext = joinContextSections(renderContextSections(completed)), snapshot: Snapshot = { ...(packet.injection ? {injection:packet.injection,injectionBinding:structuredClone(b.data.injectionBinding!)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), provenance: 'packet', packetProof: packet.proof, bodyHash: sha(fullContext), packetId: packet.id, fence: packet.inputFence, globals: [...packet.globalFences], globalDependencies: [...packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...packet.dependencyIds], eventIds: packet.proof.records.filter(r => r.kind === 'event').map(e => e.id), modeEpoch: policy.status(b.agent.id).modeEpoch }
     b.packet = packet; b.staticSystem = sha(renderPrompt(completed)); b.staticTools = sha(canonical(completed.tools)); b.data.pending[snapshot.bodyHash] = snapshot
     await save(b); return completed
   }) as never))
   const certify = async (b: Bound, options: any) => {
     if(b.data.runtimeBinding){if(!b.runtime || canonical(b.runtime.binding())!==canonical(b.data.runtimeBinding))throw new RpError('stale_input','Runtime binding changed');b.runtime.context()}
     if (b.data.personBinding) await verifyPersonBinding(memory.store, b.authority, b.data.personBinding)
+    if(!await injectionMarkerValid(hostRoot,b.agent.id,b.data.injectionBinding))throw new RpError('stale_input','Injection marker changed')
     verifyNative()
     if (!b.packet || policy.status(b.agent.id).mode !== 'rp') throw new RpError('scope_denied', 'No prepared RP assembly')
     const sources = unwrap(await memory.store.readAcceptedSources(b.authority)), sourceMap = new Map(sources.map(s => [s.id, s])), fence = unwrap(await memory.store.readFence(b.authority)), events = new Set(unwrap(await memory.store.readEvents(b.authority)).map(e => e.id))
@@ -480,6 +549,9 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       if (b.data.messageHashes[message.id] !== sha(normalizedMessage(message))) throw new RpError('scope_denied', 'Unknown or changed native history/metadata; use clean continuation')
       const snapshot = b.data.snapshots[message.id] ?? b.data.frames[message.id]
       if (snapshot) {
+        if(canonical(snapshot.injectionBinding??null)!==canonical(b.data.injectionBinding??null))throw new RpError('stale_input','Historical injection binding mismatch')
+        if(snapshot.injection)verifyInjectionText(snapshot.injection,body(message))
+        if(snapshot.injection && snapshot.injection.context.personId!==b.data.personBinding?.personId)throw new RpError('stale_input','Historical injection person mismatch')
         if(canonical(snapshot.runtimeBinding ?? null)!==canonical(b.data.runtimeBinding ?? null))throw new RpError('stale_input','Historical runtime binding proof mismatch')
         if (canonical(snapshot.personBinding ?? null) !== canonical(b.data.personBinding ?? null)) throw new RpError('stale_input', 'Historical person binding proof mismatch')
         if (snapshot.provenance === 'packet' || snapshot.provenance === 'tool-call') await verifyPacketProof(memory.store, b.authority, snapshot.packetProof)
@@ -555,7 +627,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         checkPublication()
         await verifyRetrievalEvidence(memory.store, b.authority, pending.proof, new Set(b.data.inputs.map(i => i.sourceId)))
         checkPublication()
-        const snapshot: Snapshot = { ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), provenance: pending.provenance, records: pending.proof.records, resultSha256: pending.proof.resultSha256, bodyHash: sha(pending.text), packetId: pending.packetId, fence: pending.proof.inputFence, globals: [...b.packet!.globalFences], globalDependencies: [...b.packet!.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [], eventIds: [], modeEpoch: policy.status(b.agent.id).modeEpoch }
+        const snapshot: Snapshot = { ...(b.data.injectionBinding ? {injectionBinding:structuredClone(b.data.injectionBinding)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), provenance: pending.provenance, records: pending.proof.records, resultSha256: pending.proof.resultSha256, bodyHash: sha(pending.text), packetId: pending.packetId, fence: pending.proof.inputFence, globals: [...b.packet!.globalFences], globalDependencies: [...b.packet!.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [], eventIds: [], modeEpoch: policy.status(b.agent.id).modeEpoch }
         const data = { ...b.data, receipts: { ...b.data.receipts, [exec.callId]: { contentHash: sha(canonical(result.content)), snapshot } } }
         try { await writeJournal(b, false, data, checkPublication); checkPublication(); b.data = data } catch (e) { b.data.blocked = true; b.lastError = e instanceof RpError ? e.code : 'persistence_failed'; throw e }
       }) } finally { finish() }; return result

@@ -32,7 +32,7 @@ export async function host(config = {}, hooks = {}) {
   const rp = await install(ctx, settings), handles = []
   await hooks.after?.({ ctx, sdk, profile, project, rp })
   const create = async () => { const h = await ctx.agents.create({ sessionId: 'session_' + randomUUID().replaceAll('-', ''), meta: { cwd: project }, agentOptions: { provider: 'rp-dev3', model: 'offline', maxTokens: 128 } }); handles.push(h); return h.agent }
-  const command = async (agent, input) => (await ctx.commands.execute(agent, '/rp ' + input, [], new AbortController().signal)).result
+  const command = async (agent, input) => (await ctx.commands.execute(agent, '/memcont ' + input, [], new AbortController().signal)).result
   const stream = async (agent, options = {}) => { for await (const _ of ctx.llm.stream({ provider: 'rp-dev3', model: 'offline', messages: [], sessionId: agent.id, ...options })) {} }
   const resume = async agent => { const h = await ctx.agents.resume({ resumeSessionId: agent.id, agentOptions: { ...agent.options } }); handles.push(h); return h.agent }
   const drop = async agent => { await ctx.sessions.flush(agent.session); await handles.find(h => h.agent === agent).dispose(); await rp.policy.coordinator.mutate(async () => {}) }

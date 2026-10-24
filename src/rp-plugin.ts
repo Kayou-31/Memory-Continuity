@@ -8,7 +8,7 @@ export type { AgentMemoryControl } from './rp/agent-memory.js'
 export type { RuntimeConfig, RuntimeBinding, ModuleManifest, Capability, Constraints, Purpose } from './rp/modules/contract.js'
 export type { ModuleRuntime, ModuleReceipt, ModuleContext } from './rp/modules/runtime.js'
 export type { RpPluginConfig }
-export const name = '@dsh-external/dsh-ultra-rp-memory'
+export const name = '@dsh-external/dsh-memory-continuity'
 // Disabled installation needs no native services; enabled installation verifies them itself.
 export const inject: string[] = []
 export const Config = z.object({
@@ -27,5 +27,5 @@ export const Config = z.object({
 export type Config = RpPluginConfig
 export async function apply(ctx: Context, config: Config): Promise<void> {
   const handle = await installRpPlugin(ctx, config)
-  ctx.effect(() => () => handle.close(), 'dsh-ultra-rp-memory: owner')
+  ctx.effect(() => () => handle.close(), 'dsh-memory-continuity: owner')
 }

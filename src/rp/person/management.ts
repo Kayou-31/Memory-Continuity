@@ -28,6 +28,7 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
    if(canonical(fence)!==canonical(stamp.fence)||digest(candidates)!==stamp.candidatesHash)throw new RpError('stale_input','Management snapshot changed; refresh and review again')
   }
   return Object.freeze({
+   assertActive:guard,
    revoke(){revoked=true;snapshots.clear();reviews.clear()},
    async snapshot(){return coordinator.mutate(async()=>{
     guard()
@@ -39,7 +40,7 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
     const candidates=unwrap(await person.list(authority)),timelines=[]
     for(const p of data.persons){const t=unwrap(await person.timeline(authority,p.personId));timelines.push({...t,changes:t.changes.slice(-200),changeCount:t.changes.length})}
     const stamp={fence:structuredClone(data.fence),candidatesHash:digest(candidates)};await check(stamp)
-    const id=uid(),result={id,entityIds:[...entities],...data,candidates,timelines,notice:'手动刷新；每次变更先预览再确认。人物变化后，旧聊天可能需要 /rp continue-clean。'}
+    const id=uid(),result={id,entityIds:[...entities],...data,candidates,timelines,notice:'手动刷新；每次变更先预览再确认。人物变化后，旧聊天可能需要 /memcont continue-clean。'}
     if(Buffer.byteLength(canonical(result))>2*1024*1024)throw new RpError('capacity_exceeded','Management snapshot exceeds 2 MiB; use bounded core commands')
     retain(snapshots,id,stamp);return result
    })},

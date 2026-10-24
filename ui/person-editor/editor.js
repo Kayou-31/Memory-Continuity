@@ -216,7 +216,7 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
   }
   function generate() {
     const draft = read(), encoded = JSON.stringify(draft);
-    $("output").value = "/rp person preview " + encoded;
+    $("output").value = "/memcont person preview " + encoded;
     $("status").textContent = `草稿已检查：${draft.fields.length} 项定义，${draft.relationships.length} 条关系，${draft.goals.length} 个目标。宿主仍会核对实体与权限。`;
     return draft;
   }

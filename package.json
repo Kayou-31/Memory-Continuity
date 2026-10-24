@@ -1,7 +1,7 @@
 {
-  "name": "@dsh-external/dsh-ultra-rp-memory",
-  "version": "0.2.0-dev.1",
-  "description": "Ultra-RP-Memory：独立人物、长期记忆与人工成长审阅，可与兼容 Ultra Mode 叠加",
+  "name": "@dsh-external/dsh-memory-continuity",
+  "version": "0.2.0",
+  "description": "Memory-Continuity：独立人物连续性、长期记忆、分层条件注入与人工成长审阅",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/types/rp-plugin.d.ts",
@@ -10,6 +10,7 @@
     "src",
     "ui",
     "scripts/build.mjs",
+    "scripts/workbench-style.mjs",
     "tsconfig.json",
     "SOURCE-MANIFEST.json",
     "UPSTREAM.json",
