@@ -45,7 +45,7 @@
   "author": "Kayou",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Kayou-31/dsh-ultra-rp-memory.git"
+    "url": "git+https://github.com/Kayou-31/Memory-Continuity.git"
   },
   "engines": {
     "node": ">=22",

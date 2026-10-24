@@ -4,6 +4,6 @@
 
 通过宿主插件导入功能选择TGZ；保留默认禁用，按仓库README配置实际profile/workspace/entityIds和可信合作写入者后显式启用。管理页用 `/rp start`、`/rp person manage` 手动打开；存储分段必须另执行明确scope的 `global storage-enable`，不会自动迁移日常库。
 
-源码、测试和构建脚本位于同一提交的仓库根；完整源码 ZIP 与插件下载入口见 [中文发布页](https://github.com/Kayou-31/dsh-ultra-rp-memory/releases/tag/v0.2.0-dev.1)。包内文档为打包时快照，最终验收请看仓库 `docs/rp-memory-dev3/RESULTS.md` 和发行附件中的报告。仅在 GitHub 提供预览版，未发布到 npm；旧版发行附件保留。
+源码、测试和构建脚本位于同一提交的仓库根；完整源码 ZIP 与插件下载入口见 [中文发布页](https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.2.0-dev.1)。包内文档为打包时快照，最终验收请看仓库 `docs/rp-memory-dev3/RESULTS.md` 和发行附件中的报告。仅在 GitHub 提供预览版，未发布到 npm；旧版发行附件保留。
 
 已知未验证：一次未复现的对象检查异常根因、最终浏览器复查、真实模型语义、长期使用、断电及生产数据迁移。此包供审核和隔离profile测试。
