@@ -1,6 +1,6 @@
 # Memory-Continuity 中文指令速查
 
-适用正式版：0.2.0。插件包为 `@dsh-external/dsh-memory-continuity`，宿主主命令为 `/memcont`（Memory + Continuity），旧 `/rp` 保留为兼容别名；旧数据目录不改名。人物工作台已接入真实后端；在会话内执行 /memcont person manage 打开，所有写入须先预览再明确确认。
+适用正式版：0.2.1，兼容 DSH 0.2.1-rc.2 / rc.3，指令与 0.2.0 保持一致。插件包为 `@dsh-external/dsh-memory-continuity`，宿主主命令为 `/memcont`（Memory + Continuity），旧 `/rp` 保留为兼容别名；旧数据目录不改名。人物工作台已接入真实后端；在会话内执行 /memcont person manage 打开，所有写入须先预览再明确确认。
 
 ## 从哪里开始
 

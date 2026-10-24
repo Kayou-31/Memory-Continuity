@@ -5,6 +5,7 @@ import type { ModuleRuntime } from './modules/runtime.js'
 import { runtimeCommand } from './modules/commands.js'
 import { rpCommandHelp } from './command-help.js'
 import { runtimeMarkerValid, writeRuntimeMarker } from './modules/marker.js'
+import { nativeSdkPackages, validateNativeSdkVersions } from './native-sdk.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createHash, randomUUID } from 'node:crypto'
@@ -84,7 +85,12 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
   if (config.knownCooperatingWriters !== true) throw new Error('RP requires a trusted known-writer composition; unknown/private compactors are unsupported')
   const root = context.root ?? context
   const req = createRequire(import.meta.url), nativeVersions: Record<string, string> = {}
-  for (const [name, expected] of Object.entries({ cordis: '4.0.5', 'dsh-agent': '0.2.1-rc.2', 'dsh-llm': '0.2.1-rc.2', 'dsh-session': '0.2.1-rc.2', 'dsh-system-prompt': '0.2.1-rc.2', 'dsh-tools': '0.2.1-rc.2', schemastery: '3.18.5' })) { const entry = req.resolve('@deepseek-ai/' + name), manifest = JSON.parse(await fs.readFile(path.resolve(path.dirname(entry), '../package.json'), 'utf8')); if (manifest.version !== expected) throw new RpError('capability_missing', 'RP native Memory requires @deepseek-ai/' + name + '@' + expected + '; found ' + manifest.version); nativeVersions[name] = manifest.version }
+  for (const name of nativeSdkPackages) {
+    const entry = req.resolve('@deepseek-ai/' + name)
+    const manifest = JSON.parse(await fs.readFile(path.resolve(path.dirname(entry), '../package.json'), 'utf8'))
+    nativeVersions[name] = manifest.version
+  }
+  validateNativeSdkVersions(nativeVersions)
   const nativeServices = { agents: root.get('agents'), llm: root.get('llm'), prompt: root.get('systemPrompt'), sessions: root.get('sessions'), commands: root.get('commands') } as any
   const verifyNative = () => {
     // Cordis returns a fresh trace proxy on each get(); prototype identity is

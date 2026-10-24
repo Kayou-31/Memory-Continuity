@@ -7,16 +7,16 @@
 面向 DSH 的独立人物连续性与长期记忆插件<br>
 由你定义身份，让经历、关系与承诺延续；每一次成长，都由你亲自审阅。
 
-[![正式版 0.2.0](https://img.shields.io/badge/正式版-0.2.0-167d8d)](https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.2.0)
-[![DSH 0.2.1-rc.2](https://img.shields.io/badge/DSH-0.2.1--rc.2-526d82)](package.json)
+[![正式版 0.2.1](https://img.shields.io/badge/正式版-0.2.1-167d8d)](https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.2.1)
+[![DSH rc.2 / rc.3](https://img.shields.io/badge/DSH_0.2.1-rc.2_%7C_rc.3-526d82)](package.json)
 [![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-43853d)](package.json)
 [![BSD-3-Clause](https://img.shields.io/badge/License-BSD--3--Clause-737373)](LICENSE)
 
-[下载插件](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0/dsh-external-dsh-memory-continuity-0.2.0.tgz) · [完整源码](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0/Memory-Continuity-0.2.0-source.zip) · [中文发布说明](docs/releases/0.2.0/RELEASE.zh.md) · [验证报告](docs/releases/0.2.0/RESULTS.md)
+[下载插件](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.1/dsh-external-dsh-memory-continuity-0.2.1.tgz) · [完整源码](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.1/Memory-Continuity-0.2.1-source.zip) · [中文发布说明](docs/releases/0.2.1/RELEASE.zh.md) · [验证报告](docs/releases/0.2.1/RESULTS.md)
 
 </div>
 
-**当前版本：0.2.0，首个正式版。** 无需安装 Ultra Mode；主命令为 `/memcont`。安装后默认禁用，首次启用请先完成下方配置。
+**当前版本：0.2.1，双 SDK 兼容补丁。** 同一个插件包支持 DSH `0.2.1-rc.2` 与 `0.2.1-rc.3`，沿用已交付的双主题人物工作台。无需安装 Ultra Mode；主命令为 `/memcont`。安装后默认禁用，首次启用请先完成下方配置。
 
 [认识项目](#这是什么) · [功能一览](#功能一览) · [快速开始](#快速开始) · [常用命令](#常用命令) · [升级与兼容](#升级与兼容) · [常见问题](#常见问题) · [开发文档](#开发文档)
 
@@ -76,15 +76,15 @@ Memory-Continuity 想解决的，是长期互动里“还是同一个人”的�
 | 组件 | 要求 |
 | --- | --- |
 | Node.js | 22 或更新版本；本次验证使用 22.23.3 |
-| DSH 原生 SDK | **0.2.1-rc.2**，session format 4 |
+| DSH 原生 SDK | **0.2.1-rc.2 或 0.2.1-rc.3**，session format 4 |
 | Cordis | **4.0.5** |
 | Schemastery | **3.18.5** |
 
-启用时会检查精确 SDK 版本和原生服务身份；旧版或混版组件不在本版支持范围内。
+启用时检查精确 SDK 版本、原生服务类型与原型；五个直接 DSH 依赖必须同属 rc.2 或同属 rc.3。旧版、混版、未验证的新版本会被拒绝。本版的兼容证据来自两套实际原生 SDK；完整 rc.3 桌面应用的安装与界面流程尚未验收。
 
 ### 2. 下载插件并配置
 
-从 [0.2.0 发布页](https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.2.0) 下载 `dsh-external-dsh-memory-continuity-0.2.0.tgz`，按同页 `SHA256SUMS.txt` 校验后，通过宿主的本地插件包安装流程加载。
+从 [0.2.1 发布页](https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.2.1) 下载 `dsh-external-dsh-memory-continuity-0.2.1.tgz`，按同页 `SHA256SUMS.txt` 校验后，通过宿主的本地插件包安装流程加载。
 
 插件入口为 `@dsh-external/dsh-memory-continuity`，配置节点仍叫 `rp-memory`。先使用独立 profile，填写真实路径、可信人物/实体 ID 和已核实的请求预算，再显式启用。
 
@@ -188,18 +188,20 @@ Memory-Continuity 想解决的，是长期互动里“还是同一个人”的�
 
 升级前备份完整 profile 和工作区，用独立 profile 验证；不要同时加载新旧入口。首次启用人物或 M5 扩展时，仍执行对应备份与读取器拒绝规则。无法认证的旧工具历史进入恢复流程，不会自动补造证明。
 
+从 0.2.0 升到 0.2.1 无需转换数据格式。升级 DSH 时请使用同一版本的原生组件；只改插件的版本声明无法解决宿主组件混装。0.2.0 的历史标签与发布附件保留原样。
+
 详细规则：[数据迁移与恢复](docs/rp-memory-dev3/MIGRATION.md) · [分层注入的备份与回退](docs/rp-memory-m5/README.md#数据与更名兼容) · [存储升级](docs/person-studio-storage.zh.md) · [仓库地址迁移](docs/REPOSITORY-MIGRATION.zh.md)。
 
 ## 验证与边界
 
-以下是 **0.2.0 发布时**的实际验证，完整命令、失败记录与环境见 [正式版 RESULTS](docs/releases/0.2.0/RESULTS.md)。
+以下是 **0.2.1** 的实际验证，完整命令、失败记录与环境见 [正式版 RESULTS](docs/releases/0.2.1/RESULTS.md)。两套 SDK 分别完整执行，所有重型进程串行运行。
 
 | 验证项 | 结果 |
 | --- | --- |
 | 类型检查、独立构建、打包 | 通过；源码独立重建结果与发布 manifest 一致 |
-| 单次完整测试 | **253/253**，失败、跳过、取消均为 0 |
-| 实际 TGZ + 精确原生 SDK | **19/19**；覆盖人物、注入、管理与命令流程 |
-| 桌面浏览器交互 | 已实测创建、编辑、成长采纳、关系与承诺、注入预览、双主题及入口撤销 |
+| 单次完整测试 | rc.2 **259/259**；rc.3 **259/259**；各自失败、跳过、取消均为 0 |
+| 同一实际 TGZ + 两套原生 SDK | 各 **21/21**；覆盖人物、注入、管理、命令、异常关闭与保存失败后的干净续接 |
+| 桌面浏览器交互 | 沿用 [0.2.0 的主要流程实测](docs/releases/0.2.0/RESULTS.md)；本轮没有完成 rc.3 完整桌面应用验收 |
 | 固定语料 | 12 个样例、49 个标注输出；属于固定记录与协议验证 |
 | 发布物 | 插件、完整源码、证据归档及 SHA-256 校验一并提供 |
 
@@ -207,8 +209,9 @@ Memory-Continuity 想解决的，是长期互动里“还是同一个人”的�
 
 - 未验证真实模型的长期人格与语义质量；固定语料分数不能代替真实模型评测，测试没有调用付费 API。
 - 检索使用有界本地词法规则，没有语义向量检索；长历史仍有认证开销，存储与请求容量均有上限。
-- 已覆盖桌面主要交互；窄屏、移动设备、完整键盘与读屏器矩阵尚未验收。
-- 生产 profile 升级、真实断电、多日长跑、跨 OS/SDK 与负载上限尚未验证。
+- 完整 rc.3 桌面安装与界面、窄屏、移动设备、完整键盘与读屏器矩阵尚未验收。
+- 生产 profile 升级、真实断电、多日长跑、其他 OS/SDK 与负载上限尚未验证。
+- 不支持在插件运行中热替换原生服务；同类实例替换不能仅靠既有原型检查完全识别，升级宿主组件后请完整重启。
 - 不启用后台自动摘要、自动成长采纳或 strict POV；单会话压缩不在当前产品范围内，使用显式干净续接延续记忆。
 
 ## 常见问题
@@ -286,19 +289,19 @@ npm pack --dry-run
 
 | 我想了解 | 文档 |
 | --- | --- |
-| 正式版包含什么、接下来可能做什么 | [0.2.0 中文发布说明](docs/releases/0.2.0/RELEASE.zh.md) |
+| 正式版包含什么、接下来可能做什么 | [0.2.1 中文发布说明](docs/releases/0.2.1/RELEASE.zh.md) |
 | 命令与常见操作 | [中文指令速查](docs/COMMANDS.zh.md) |
 | 五层记忆、条件、深度与原因预览 | [人物连续性与分层注入](docs/rp-memory-m5/README.md) |
 | 人物字段与成长提案 | [人物核心](docs/person-core-usage.zh.md) |
 | 经历、关系和目标 | [Agent 长期记忆](docs/agent-memory.zh.md) |
 | 全局存储升级与备份 | [管理与存储说明](docs/person-studio-storage.zh.md) |
-| 实际测了什么、还有哪些限制 | [正式版验证报告](docs/releases/0.2.0/RESULTS.md) |
+| 实际测了什么、还有哪些限制 | [正式版验证报告](docs/releases/0.2.1/RESULTS.md) |
 | 数据格式、拒绝与恢复规则 | [迁移说明](docs/rp-memory-dev3/MIGRATION.md) |
 
 <details>
 <summary>历史设计与阶段验证</summary>
 
-历史文档保留当时的版本、产品名称和验收边界；当前安装与功能范围以上文和 0.2.0 发布说明为准。
+历史文档保留当时的版本、产品名称和验收边界；当前安装与功能范围以上文和 0.2.1 发布说明为准。
 
 - [原始设计与 SDK 适配](docs/rp-memory-design.zh.md) · [SDK 0.2.1 说明](docs/rp-memory-sdk021.zh.md)
 - [输入、采纳、检索与纠错](docs/rp-memory-narrator.zh.md) · [人工候选与分层摘要](docs/rp-memory-summary.zh.md)

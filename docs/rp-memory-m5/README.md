@@ -1,6 +1,6 @@
 # Memory-Continuity M5：人物连续性
 
-本文说明已随 `0.2.0` 正式版交付的 M5 人物连续性能力。原名 Ultra-RP-Memory；插件包为 `@dsh-external/dsh-memory-continuity`，仓库为 [Kayou-31/Memory-Continuity](https://github.com/Kayou-31/Memory-Continuity)。分层模式直接使用独立 planner，既有全局记忆继续可用，无需 Ultra Mode。完整指令见 [中文速查](../COMMANDS.zh.md)；宿主内使用 `/memcont help`。实际发布验证与未覆盖项见 [正式版 RESULTS](../releases/0.2.0/RESULTS.md)。
+本文说明自 `0.2.0` 正式版交付、在 `0.2.1` 继续提供的 M5 人物连续性能力。0.2.1 兼容 DSH 0.2.1-rc.2 / rc.3。原名 Ultra-RP-Memory；插件包为 `@dsh-external/dsh-memory-continuity`，仓库为 [Kayou-31/Memory-Continuity](https://github.com/Kayou-31/Memory-Continuity)。分层模式直接使用独立 planner，既有全局记忆继续可用，无需 Ultra Mode。完整指令见 [中文速查](../COMMANDS.zh.md)；宿主内使用 `/memcont help`。实际发布验证与未覆盖项见 [正式版 RESULTS](../releases/0.2.1/RESULTS.md)。
 
 ## 启用和查看
 
@@ -70,4 +70,4 @@ branch/global store 的 v1 不变。host journal 仍为 v2，新增严格可选�
 
 正式版工作台已接入真实宿主，提供人物创建与编辑、经历、定向关系、目标/承诺、成长审阅和注入预览，支持浅色/深色/系统主题。每个写操作保持预览→确认；管理入口只监听回环地址，令牌只存页面内存。仅主题偏好保存在 localStorage。重新加载整页后需从宿主重新打开入口；关闭入口会撤销凭证并清空页面。
 
-不做单会话压缩（用户已取消），不做后台自动摘要/反思、自动成长采纳、strict POV 或新 Ultra 兼容验收。管理与预览不调用模型；实际对话使用宿主配置的模型，费用取决于该服务。发布测试没有付费 API 调用。技能经验、更完整的用途界面和更深的长期检索仍是 [未来方向](../releases/0.2.0/RELEASE.zh.md#未来可能做的功能)。
+不做单会话压缩（用户已取消），不做后台自动摘要/反思、自动成长采纳、strict POV 或新 Ultra 兼容验收。管理与预览不调用模型；实际对话使用宿主配置的模型，费用取决于该服务。发布测试没有付费 API 调用。技能经验、更完整的用途界面和更深的长期检索仍是 [未来方向](../releases/0.2.1/RELEASE.zh.md#未来可能做的功能)。

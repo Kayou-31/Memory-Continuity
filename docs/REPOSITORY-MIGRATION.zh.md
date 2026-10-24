@@ -3,9 +3,8 @@
 2026-10-24，仓库由 `Kayou-31/dsh-ultra-rp-memory` 更名为 **`Kayou-31/Memory-Continuity`**。
 
 - 仓库：<https://github.com/Kayou-31/Memory-Continuity>
-- 正式版：<https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.2.0>
-- 安装包：<https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0/dsh-external-dsh-memory-continuity-0.2.0.tgz>
-- 完整源码：<https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0/Memory-Continuity-0.2.0-source.zip>
+- 最新正式版与附件：<https://github.com/Kayou-31/Memory-Continuity/releases/latest>
+- 更名时的正式版：<https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.2.0>
 
 这是同一个仓库的改名，仓库 ID 仍为 `1427477600`。Git 历史、Issues、PR 和 Releases 随原仓库保留；没有新建同名替代仓库或迁移数据。
 
@@ -32,4 +31,4 @@ GitHub 自动把旧仓库地址以及其 PR、Release 等路径重定向到新�
 
 当前 README、包元数据、仓库文档中的导航链接和 GitHub 发布说明使用新地址。历史报告中的旧名称和本地路径属于当时证据，保留原意。已发布的 TGZ、源码 ZIP、校验文件与标签不重写，因此包内历史快照可能仍含旧网址，它们通过重定向继续可用。
 
-npm 包名仍为 `@dsh-external/dsh-memory-continuity`，版本仍为 `0.2.0`；`rp-memory` 配置节点、`.dsh-rp` 数据目录、`/memcont` 主命令与 `/rp` 兼容别名均不变。此次更名不涉及插件运行时或用户数据迁移。
+更名时 npm 包名为 `@dsh-external/dsh-memory-continuity`，版本为 `0.2.0`；此次更名没有修改版本。`rp-memory` 配置节点、`.dsh-rp` 数据目录、`/memcont` 主命令与 `/rp` 兼容别名均不变。更名不涉及插件运行时或用户数据迁移；后续版本和兼容范围以当前 README 为准。
