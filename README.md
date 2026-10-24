@@ -1,52 +1,315 @@
-# Memory-Continuity · 0.2.0
+<div align="center">
 
-**独立的人物连续性与长期记忆插件。** 技术名称 `dsh-memory-continuity`，npm 包名 `@dsh-external/dsh-memory-continuity`。无需安装 Ultra Mode、Ultra Memory 或 Ultra Decision 即可使用 RP 的记忆、检索、分支和人工采纳功能；运行时仅依赖下文列出的 DSH 原生 peers。
+# Memory-Continuity
 
-M5 新增模型视角的五类记忆、三级展开、确定性条件选择与原因预览。完整使用说明见 [M5 使用与迁移](docs/rp-memory-m5/README.md)，[中文指令速查](docs/COMMANDS.zh.md) 对应宿主 `/memcont help`。实际结果见 [M5 RESULTS](docs/rp-memory-m5/RESULTS.md) 、[后端补充验证](docs/rp-memory-m5/BACKEND-RESULTS.md) 和 [dev.4 指令更名验证](docs/rp-memory-m5/COMMAND-RENAME.md)。本版已将交付工作台接入真实宿主，提供人物、经历、定向关系、目标/承诺、成长审阅与注入预览，支持浅色/深色/跟随系统。写入须服务端预览并由你确认；浏览器仅保存主题，关闭入口会撤销凭证。正式版结果和限制见 [0.2.0 验证报告](docs/releases/0.2.0/RESULTS.md)，[中文发布说明与未来计划](docs/releases/0.2.0/RELEASE.zh.md)。没有自动摘要、压缩或付费模型调用；使用显式干净续接衔接会话。
+**让会话可以结束，让你塑造的人物继续。**
 
+面向 DSH 的独立人物连续性与长期记忆插件<br>
+由你定义身份，让经历、关系与承诺延续；每一次成长，都由你亲自审阅。
 
-上一版 **Ultra-RP-Memory 0.2.0-dev.1** 的历史验证：修复一个核心人物入口的实体白名单缺口；修复后单次完整 **214/214**、实际安装包宿主 **31/31**、包内公开接口回归 **1/1**、四类人生故事 **4/4**，类型检查、独立构建和打包通过。[中文发布说明](docs/rp-memory-dev3/RELEASE-0.2.zh.md) · [发布审查报告](docs/rp-memory-dev3/RELEASE-0.2-REVIEW-2026-10-23.md) · [插件包与校验](artifacts/0.2.0-dev.1/)。历史首轮212/213的一次对象描述符异常根因仍未确定，最终浏览器复查仍受历史崩溃阻断；失败及未验证范围保留在 [完整验证报告](docs/rp-memory-dev3/RESULTS.md)。这是预览范围的证据，不是长期生产稳定性声明。
+[![正式版 0.2.0](https://img.shields.io/badge/正式版-0.2.0-167d8d)](https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.2.0)
+[![DSH 0.2.1-rc.2](https://img.shields.io/badge/DSH-0.2.1--rc.2-526d82)](package.json)
+[![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-43853d)](package.json)
+[![BSD-3-Clause](https://img.shields.io/badge/License-BSD--3--Clause-737373)](LICENSE)
 
-产品重点是**让用户自己搭建、持续塑造一个完整的“人”**：定义身份、背景、性格与价值观，让经历、关系、承诺和做事经验在后续互动中延续。Memory-Continuity 自成体系，可发展 RP、陪伴、创作、项目助手等用途。本轮 M5 独立运行，不新增 Ultra Mode 兼容依赖。当前包括人物草稿与原子创建、宿主绑定、稳定/成长/情境字段、显式成长队列、批量确认、时间线、经历、定向关系和目标/承诺账本。四种用途、三个内置能力模块和双层约束来自 M3，模块默认关闭。M4 增加固定故事与实际宿主连续性验证，结果只证明测试范围内的证据和协议，不代表模型人格质量。
+[下载插件](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0/dsh-external-dsh-memory-continuity-0.2.0.tgz) · [完整源码](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0/Memory-Continuity-0.2.0-source.zip) · [中文发布说明](docs/releases/0.2.0/RELEASE.zh.md) · [验证报告](docs/releases/0.2.0/RESULTS.md)
 
-人物管理提供**工作台**：在已启动的 RP 会话手动执行 `/memcont person manage`，打开返回的本机地址，统一创建/编辑人物、记录经历、修改关系/目标、预览并确认成长；没有轮询、自动采纳或后台活动。仍可使用 [离线人物编辑器](ui/person-editor/index.html) 和 [可信命令](docs/person-core-usage.zh.md)。全局长期存储增加先备份再显式启用的分段模式，默认旧布局不变，详见 [管理与存储升级](docs/person-studio-storage.zh.md)。完整用途产品、技能学习、多人物社会和自主生活仍属后续工作。
+</div>
 
-正式名称为 **Memory-Continuity**；历史包、报告、`rp-memory` 配置节点、`.dsh-rp` 数据目录保留；主命令改为 `/memcont`，旧 `/rp` 作为兼容别名。替换旧入口时更新包名，不同时启用新旧两个入口；更名不触发数据迁移。GitHub 仓库已更名为 [Kayou-31/Memory-Continuity](https://github.com/Kayou-31/Memory-Continuity)，旧地址保留 GitHub 自动跳转。已有克隆更新 remote 的方法见 [仓库迁移说明](docs/REPOSITORY-MIGRATION.zh.md)。
+**当前版本：0.2.0，首个正式版。** 无需安装 Ultra Mode；主命令为 `/memcont`。安装后默认禁用，首次启用请先完成下方配置。
 
-dev.3 修复请求准入、异常诊断/干净续接、retcon 摘要依赖、稳定检索与实际记录回执、全局容量和 seal 恢复、锚点合并及批量撤回。host journal 使用 v2，branch/global 的 schemaVersion 保持 v1。新人物工作区增加显式 requiredCapabilities 事务扩展：首次启用前自动备份，整个对应工作区要求新版读取，global 和其他工作区不受影响；旧程序不得继续写新人物工作区。升级前阅读 [迁移与恢复规则](docs/rp-memory-dev3/MIGRATION.md)；本轮执行结果及未测边界见 [RESULTS](docs/rp-memory-dev3/RESULTS.md)。历史 dev.1/dev.2 的证据不代替 dev.3 验证。人工采纳、自动功能关闭和默认禁用保持原有约束。
+[认识项目](#这是什么) · [功能一览](#功能一览) · [快速开始](#快速开始) · [常用命令](#常用命令) · [升级与兼容](#升级与兼容) · [常见问题](#常见问题) · [开发文档](#开发文档)
 
-2026-10-22 的 [完整审查与局部重构](docs/rp-memory-dev3/REVIEW-2026-10-22.md) 包含新发现的 8 项正确性问题、已本地修复的分支事务容量问题和历史重放优化；旧 packet 摘要认证、失败全局发布的明文清理等遗留 7 项已在本地后续分支修复，新增先红后绿回归；最新完整验收结果见 RESULTS 最后一节。该本地分支未更新已发布的 dev.3 包，不能用既有测试通过代替这些新增问题的验收。
+## 这是什么
 
-默认禁用；本版精确适配宿主 SDK **0.2.1-rc.2 / session format 4**，Cordis **4.0.5**、Schemastery **3.18.5**。0.2.0-rc.2 请使用冻结的 dev.1；本版拒绝旧版或混版 native peers。来源为 Kayou-31/dsh-ultra-mode 的本地 RP 开发分支；专用源码仓库为 [Memory-Continuity](https://github.com/Kayou-31/Memory-Continuity)。BSD-3-Clause。
+Memory-Continuity 想解决的，是长期互动里“还是同一个人”的问题。
 
-中文文档：[安装、启用与能力边界](docs/rp-memory-design.zh.md) · [输入、采纳、检索与纠错](docs/rp-memory-narrator.zh.md) · [人工候选与分层摘要](docs/rp-memory-summary.zh.md) · [固定标注评价及未测项](docs/rp-memory-evaluation.zh.md)。原始设计另见 [开发包](docs/rp-memory-devkit/01_RP_MEMORY_SPEC.md)。
+你可以为人物写下身份、背景、性格、价值观与边界，记录一起经历过的事、对不同对象的关系，以及尚未兑现的承诺。开启新的会话后，这些经过确认的记录仍可以沿着同一条人生线延续。
 
-本轮宿主变化、实际验证和历史证据分列见 [SDK021 适配说明](docs/rp-memory-sdk021.zh.md)。
+它也让你看见记忆如何进入对话：哪些内容本轮会被选入、为什么选中、展开到什么程度，以及最终供模型阅读的文字。人物怎样变化、哪些记忆成为事实，始终有明确的审阅入口。
 
-支持用户明确采纳的剧情修订、固定分支、来源检索、全局发布/采用、结构化人工候选和分层摘要。候选生成接口仅经离线固定输出验证。后台原生自动候选、strict POV、原生压缩/恢复、UI 自动切换、真实模型语义质量及长期运行均未通过验收。`/memcont compact`、`/memcont strict-pov`、`/memcont summarize-auto` 拒绝为 capability_missing。
+- **你来塑造**：定义人物，审阅变化，决定哪些经历被接受。
+- **记忆有依据**：记录保留来源、版本与分支；纠正历史时同步处理依赖内容。
+- **本地可管理**：工作台、存储与注入预览在本机运行，工作台资源随插件分发。
+- **独立可使用**：只依赖声明的 DSH 原生组件，不需要其他 Ultra 插件。
 
-安装本 TGZ 本身不启用。先在独立测试 profile 中配置实际 profileRoot/workspaceRoot、可信 entityIds、已核实预算与 knownCooperatingWriters；保留 enabled:false、contextCompression:false、strictPov:false。确认只有已声明的合作写入者后显式 enabled:true，再使用 `/memcont start`。不要把示例路径/预算直接套入日常 profile。实际激活配置和完整命令见发行包中文使用说明。
+## 工作台
 
-**历史共存证据（非本轮 M5 验收）**：此前使用兼容开发包：Ultra 0.6.1-dev.rp.1、Memory/Decision 0.1.1-dev.rp.1，其代码与 TGZ 沿用 dev.1 同哈希附件；其它旧公开版本没有共同 policy，不承诺可同时工作。无需为 RP 单独安装这些工程包。dev.3 补验已在精确 SDK 中加载实际 TGZ，覆盖 RP 与 Memory、Ultra+Memory、Decision+Memory 的两种顺序，以及冷启动禁用门禁/ambiguous 干净续接；7项原生验收通过。合成 terminal 不代表真实模型或桌面 UI。结果、哈希及其余边界见 [RESULTS](docs/rp-memory-dev3/RESULTS.md)。
+人物、经历、关系、目标、成长审阅与注入预览，在同一个中文工作台中管理。支持浅色、深色和跟随系统主题。
 
-2026-10-23 本地成长开发版重新执行一次完整 **154/154** 回归，并以实际新 TGZ 完成 **11/11** 原生补验，新增独立 Agent 流程、优化开关和双顺序实际请求去重。260 阶段持久化及祖先删除测试通过，但耗时约640秒；长链性能仍待改善，没有无限容量或真实模型“完整人生”质量的承诺。
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-dark.jpg">
+  <img src="docs/assets/workbench-light.jpg" alt="Memory-Continuity 工作台：预览本轮记忆选择、注入原因和供模型阅读的人物连续性文本" width="1100">
+</picture>
 
-本次升级保留实际服务身份、session format、正文/元数据哈希、来源、分支、预算、租约及全局权限门。SDK021 在发送前刷新 runtime contexts；未获既有认证的动态正文变化仍会被拒绝。跨 SDK 历史迁移未测，不能直接把 dev.1 日常 profile 当作迁移验收。
+<sub>0.2.0 验收期间的真实宿主截图。预览使用后端实际结果，展示本轮选择与原因。</sub>
 
-最终 Release RP TGZ 来自独立 RP 源码根：单份 src/rp 与 src/rp-plugin.ts、专用 build、对应 RP 类型；不包含 core-src。完整 core-src 调试快照仅留在本地开发树；公开完整开发源码归档保留原始 src 与生成脚本，可以重建这些快照，不携带其生成重复。最终运行入口只依赖声明的原生 peers；构建/打包不运行模型或 live driver。
+<details>
+<summary>查看深色模式</summary>
 
-## 从独立源码构建
+![深色工作台](docs/assets/workbench-dark.jpg)
 
-Node 22.23.3 为本次验证运行时。安装声明依赖后执行：
+</details>
+
+## 功能一览
+
+| 能力 | 当前可以做什么 |
+| --- | --- |
+| 人物档案 | 创建人物，管理身份、背景、性格、价值观、边界与表达；设置稳定、允许成长或情境性变化策略 |
+| 经历与时间线 | 记录有来源的经历，回看已经确认的变化、理由与证据 |
+| 关系与承诺 | 管理有方向的关系，以及目标、承诺及其进展状态 |
+| 成长审阅 | 提交有经历依据的成长提案，预览后人工采纳、批量采纳或拒绝 |
+| 分层记忆 | 将自我核心、当前处境、关系背景、相关往事、未完成事项分开组织 |
+| 条件注入 | 按话题、人物、场景、用途等条件选择内容；支持概览、关联、证据三级展开 |
+| 原因预览 | 查看选中与未选原因、来源与版本、字节用量，以及本轮实际注入文本 |
+| 会话延续 | 显式创建干净的新会话，继承有效人生线、人物与可认证配置 |
+| 全局记忆 | 保存通用偏好，按授权发布、采用或撤销世界记忆；支持显式启用分段存储 |
+| 历史修订 | 分支、来源检索、人工分层摘要、纠正与撤回；相关摘要随依赖失效 |
+| 用途与约束 | RP、陪伴、创作、项目助手用途框架；三个内置模块默认关闭，按需手动启用 |
+
+工作台写入采用 **读取当前状态 → 预览变更 → 明确确认**。模型的记忆工具只读，不能自行采纳成长、纠正事实或发布全局记忆。
+
+## 快速开始
+
+### 1. 确认运行环境
+
+| 组件 | 要求 |
+| --- | --- |
+| Node.js | 22 或更新版本；本次验证使用 22.23.3 |
+| DSH 原生 SDK | **0.2.1-rc.2**，session format 4 |
+| Cordis | **4.0.5** |
+| Schemastery | **3.18.5** |
+
+启用时会检查精确 SDK 版本和原生服务身份；旧版或混版组件不在本版支持范围内。
+
+### 2. 下载插件并配置
+
+从 [0.2.0 发布页](https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.2.0) 下载 `dsh-external-dsh-memory-continuity-0.2.0.tgz`，按同页 `SHA256SUMS.txt` 校验后，通过宿主的本地插件包安装流程加载。
+
+插件入口为 `@dsh-external/dsh-memory-continuity`，配置节点仍叫 `rp-memory`。先使用独立 profile，填写真实路径、可信人物/实体 ID 和已核实的请求预算，再显式启用。
+
+<details>
+<summary><b>展开配置说明</b></summary>
+
+发行包中的 [cordis.patch.yml](cordis.patch.yml) 默认只注册禁用入口，不会代填你的路径或模型容量。在宿主对应节点配置以下项目：
+
+| 配置 | 填写方式 |
+| --- | --- |
+| `enabled` | 默认 `false`；完成配置并核对后改为 `true` |
+| `profileRoot` | 宿主实际使用的 profile 目录 |
+| `workspaceRoot` | 当前项目的真实工作区目录 |
+| `entityIds` | 明确授权的人物/实体 ID，例如 `erin`；人物创建和别名不能越过此名单 |
+| `budget` | 填写下表全部字段；使用已核实容量，不直接照搬测试预算 |
+| `knownCooperatingWriters` | 确认参与上下文写入的插件遵守共享策略后，才设为 `true`；它是部署者声明，不是自动检测 |
+| `contextCompression`、`strictPov` | 保持 `false`，本版不启用 |
+| `globalGrants` | 可选的全局作用域授权；世界记忆需明确授权 |
+
+`budget` 需要以下字段：
+
+| 字段 | 含义 |
+| --- | --- |
+| `recentCompleteTurns` | 保留的完整轮次数，至少 8 |
+| `targetTotalTokens`、`triggerTotalTokens` | 请求目标与阈值 |
+| `outputReserveTokens`、`toolReserveTokens` | 输出与工具预留 |
+| `packetSoftTokens` | 可选记忆内容的软预算 |
+| `contextWindow`、`inputLimit` | 已核实的上下文与输入容量 |
+
+容量字段沿用历史名称，实际请求采用 UTF-8 字节的保守估算，不等同于精确 tokenizer 或费用估算。强制内容超过容量时拒绝发送，提示诊断或干净续接。
+
+旧配置中的 `ultraMemoryOptimization` 是保留的历史兼容选项；分层注入使用独立 planner，不需要 Ultra。不要同时启用旧包和新包。
+
+</details>
+
+### 3. 创建第一个人物
+
+在已配置的工作区中，打开空白根会话：
+
+```text
+/memcont start
+/memcont person manage
+```
+
+打开命令返回的本机地址，在工作台点击“新建人物”，填写已授权的 ID 与人物内容，核对预览后确认。首次创建人物前备份 profile 与工作区；启用人物能力后，该工作区需要新版读取。
+
+也可以使用 [离线人物编辑器](ui/person-editor/index.html) 生成命令，或参考 [完整命令创建示例](docs/COMMANDS.zh.md#建立人物并启用分层记忆)。
+
+### 4. 绑定人物，预览记忆
+
+假设刚创建的人物 ID 是 `erin`，回到仍为空白的根会话：
+
+```text
+/memcont person use erin
+/memcont injection set {}
+/memcont injection preview 你记得钟楼附近发生过的事吗
+```
+
+`{}` 使用默认分层配置。预览不调用模型；它显示当前有效记忆的选择结果与原因。之后可以重新执行 `/memcont person manage` 打开最新工作台入口。
+
+已有消息历史时，先 `/memcont continue-clean`，在宿主中选择返回的新会话，再绑定或调整注入配置。
+
+### 5. 开始对话，确认留下什么
+
+```text
+/memcont input 我们再去看看钟楼吧
+/memcont status
+```
+
+`input` 会调用宿主已配置的模型，是否收费取决于你的模型服务。回复不会自动成为已采纳事实；核对来源后，用 `/memcont accept <sourceId>` 明确接受。经历与成长也可以在工作台中手动记录、预览和确认。
+
+## 常用命令
+
+| 想做什么 | 命令 |
+| --- | --- |
+| 查看帮助 | `/memcont help`，或 `/memcont help person`、`/memcont help injection` |
+| 启动当前会话 | `/memcont start` |
+| 打开 / 关闭工作台 | `/memcont person manage` / `/memcont person manage-close` |
+| 查看人物 / 时间线 | `/memcont person show [personId]` / `/memcont person timeline [personId]` |
+| 绑定当前聊天人物 | `/memcont person use <personId>` |
+| 查看 / 预览注入 | `/memcont injection show` / `/memcont injection preview <话题>` |
+| 发送输入 / 接受来源 | `/memcont input <文本>` / `/memcont accept <sourceId>` |
+| 诊断 / 干净续接 | `/memcont status` / `/memcont continue-clean [branchId]` |
+| 查看用途 / 模块 / 约束 | `/memcont mode show` / `/memcont modules list` / `/memcont constraints show` |
+| 查看全局记忆 | `/memcont global list {}` |
+
+完整参数、JSON 示例和恢复步骤见 [中文指令速查](docs/COMMANDS.zh.md)。`<...>` 是需要替换的参数，`[...]` 表示可选参数；不要把括号原样输入。
+
+## 升级与兼容
+
+原名 **Ultra-RP-Memory**，现统一使用 **Memory-Continuity**。更名不自动搬动记忆数据。
+
+| 项目 | 正式版约定 |
+| --- | --- |
+| npm 包名 | `@dsh-external/dsh-memory-continuity`；当前通过 GitHub TGZ 分发，未发布 npm registry |
+| 主命令 | `/memcont`；旧 `/rp` 保留为兼容别名，没有 `/mc` |
+| 配置、目录、工具名 | 保留 `rp-memory`、`.dsh-rp` / `.dsh-rp-policy`、`rp_memory_*` |
+| 数据格式 | branch/global store v1、host journal v2；人物与分层注入扩展要求支持它们的新版读取器 |
+| 与 Ultra 的关系 | 独立使用；本版没有新增 Ultra Mode 组合验收，历史共存证据不代表任意版本可叠加 |
+| GitHub 地址 | [Kayou-31/Memory-Continuity](https://github.com/Kayou-31/Memory-Continuity)；历史仓库地址保留自动跳转 |
+
+升级前备份完整 profile 和工作区，用独立 profile 验证；不要同时加载新旧入口。首次启用人物或 M5 扩展时，仍执行对应备份与读取器拒绝规则。无法认证的旧工具历史进入恢复流程，不会自动补造证明。
+
+详细规则：[数据迁移与恢复](docs/rp-memory-dev3/MIGRATION.md) · [分层注入的备份与回退](docs/rp-memory-m5/README.md#数据与更名兼容) · [存储升级](docs/person-studio-storage.zh.md) · [仓库地址迁移](docs/REPOSITORY-MIGRATION.zh.md)。
+
+## 验证与边界
+
+以下是 **0.2.0 发布时**的实际验证，完整命令、失败记录与环境见 [正式版 RESULTS](docs/releases/0.2.0/RESULTS.md)。
+
+| 验证项 | 结果 |
+| --- | --- |
+| 类型检查、独立构建、打包 | 通过；源码独立重建结果与发布 manifest 一致 |
+| 单次完整测试 | **253/253**，失败、跳过、取消均为 0 |
+| 实际 TGZ + 精确原生 SDK | **19/19**；覆盖人物、注入、管理与命令流程 |
+| 桌面浏览器交互 | 已实测创建、编辑、成长采纳、关系与承诺、注入预览、双主题及入口撤销 |
+| 固定语料 | 12 个样例、49 个标注输出；属于固定记录与协议验证 |
+| 发布物 | 插件、完整源码、证据归档及 SHA-256 校验一并提供 |
+
+**仍有这些边界：**
+
+- 未验证真实模型的长期人格与语义质量；固定语料分数不能代替真实模型评测，测试没有调用付费 API。
+- 检索使用有界本地词法规则，没有语义向量检索；长历史仍有认证开销，存储与请求容量均有上限。
+- 已覆盖桌面主要交互；窄屏、移动设备、完整键盘与读屏器矩阵尚未验收。
+- 生产 profile 升级、真实断电、多日长跑、跨 OS/SDK 与负载上限尚未验证。
+- 不启用后台自动摘要、自动成长采纳或 strict POV；单会话压缩不在当前产品范围内，使用显式干净续接延续记忆。
+
+## 常见问题
+
+<details>
+<summary><b>换一个会话，人物和记忆还在吗？</b></summary>
+
+使用 `/memcont continue-clean`，并在宿主中选择返回的新根会话，可继承有效人生线、人物与可认证配置。它不复制旧宿主消息和工具结果，也不自动重发状态不确定的输入。随意打开一个未绑定的新聊天，不等于完成续接。
+
+</details>
+
+<details>
+<summary><b>工作台切换人物，会改变当前聊天使用的人物吗？</b></summary>
+
+不会。侧栏选择的是“正在查看的人物”；聊天绑定通过 `/memcont person use <personId>` 明确设置。注入预览始终以当前聊天绑定人物为准，避免把查看对象当成对话对象。
+
+</details>
+
+<details>
+<summary><b>本轮排除了一条记忆，模型就再也看不到了吗？</b></summary>
+
+不能这样理解。本轮选择与已有宿主历史是两回事；排除不会擦除旧消息。纠正、删除或过期导致旧证明失效时，插件会拒绝继续发送；诊断后可干净续接。隐私删除不承诺物理擦除宿主 JSONL、外部模型或备份。
+
+</details>
+
+<details>
+<summary><b>为什么刷新网页后需要重新打开工作台？</b></summary>
+
+管理凭证只保存在页面内存中，浏览器仅持久化主题。重新加载整个页面后，应从宿主再次执行 `/memcont person manage` 获取入口。工作台内的手动刷新可以更新数据；关闭入口会撤销凭证并清空页面。
+
+</details>
+
+<details>
+<summary><b>需要付费模型或 Ultra Mode 吗？</b></summary>
+
+不需要安装 Ultra Mode，工作台管理与注入预览也不调用模型。实际对话通过宿主配置的模型运行，服务可用性与费用由该模型服务决定。本项目的发布验收使用离线终端适配器，没有付费 API 调用。
+
+</details>
+
+<details>
+<summary><b>保存失败或会话被封锁后怎么办？</b></summary>
+
+先 `/memcont status` 查看错误与不确定输入，不要盲目重复提交。旧会话不能继续发送时使用 `/memcont continue-clean [branchId]`；无法验证的 journal 不能作为可信分支来源。详细步骤见 [故障处理](docs/COMMANDS.zh.md#故障处理)。
+
+</details>
+
+## 未来可能做的功能
+
+这些是后续方向，**尚未在本版实现，也不是交付承诺**：
+
+- 技能与做事经验：从可核对经历中整理可复用经验，经人工审阅后采用。
+- 更完整的用途界面：为陪伴、创作、长期项目提供各自适合的交互。
+- 长期检索与维护：改善大历史查询、认证、归档、备份和空间管理。
+- 更丰富的人物编辑与协作：字段增删、关系展示、日期规则，以及明确授权的多人物协作。
+- 跨模型、跨设备和长期使用评测：分别衡量记忆一致性与模型表现。
+
+## 从源码构建
+
+使用包含历史的 Git 克隆，安装锁定依赖后依次执行：
 
 ```sh
+git clone https://github.com/Kayou-31/Memory-Continuity.git
+cd Memory-Continuity
 npm ci --ignore-scripts
+npm run typecheck
 npm run build
 npm test
 npm run evaluate:fixture
-npm pack --ignore-scripts
+npm pack --dry-run
 ```
 
-默认 build 只构建 RP。依赖安装可能访问 npm；本次验收使用锁定的本地依赖副本，没有执行联网安装。离线环境须预备 lock 中的平台所需依赖。独立 suite 含来源/分支/检索/摘要/评分和默认入口，完整开发回归、native与工程共存的来源见 UPSTREAM.json 和发行报告。没有把原Ultra整个Git历史迁入新仓库；固定上游基线链接与本地checkpoint/源归档校验链保留来源。
+源码 ZIP 可以独立构建；部分旧读取器回归通过 `git archive` 获取历史提交，因此完整测试需要 Git 历史。依赖安装可能联网；构建、打包和默认固定语料评测不会发起模型调用。需要生成本地插件包时执行 `npm pack --ignore-scripts`。
 
-源码ZIP可独立构建；旧reader兼容回归使用 `git archive` 读取历史提交，因此运行完整 `npm test` 请使用包含历史的Git克隆。实际TGZ的Ultra/Memory/Decision组合验收另需报告所列兼容附件。不要将源码构建成功解释为所有外部组合已在自己的环境验证。
+## 开发文档
+
+| 我想了解 | 文档 |
+| --- | --- |
+| 正式版包含什么、接下来可能做什么 | [0.2.0 中文发布说明](docs/releases/0.2.0/RELEASE.zh.md) |
+| 命令与常见操作 | [中文指令速查](docs/COMMANDS.zh.md) |
+| 五层记忆、条件、深度与原因预览 | [人物连续性与分层注入](docs/rp-memory-m5/README.md) |
+| 人物字段与成长提案 | [人物核心](docs/person-core-usage.zh.md) |
+| 经历、关系和目标 | [Agent 长期记忆](docs/agent-memory.zh.md) |
+| 全局存储升级与备份 | [管理与存储说明](docs/person-studio-storage.zh.md) |
+| 实际测了什么、还有哪些限制 | [正式版验证报告](docs/releases/0.2.0/RESULTS.md) |
+| 数据格式、拒绝与恢复规则 | [迁移说明](docs/rp-memory-dev3/MIGRATION.md) |
+
+<details>
+<summary>历史设计与阶段验证</summary>
+
+历史文档保留当时的版本、产品名称和验收边界；当前安装与功能范围以上文和 0.2.0 发布说明为准。
+
+- [原始设计与 SDK 适配](docs/rp-memory-design.zh.md) · [SDK 0.2.1 说明](docs/rp-memory-sdk021.zh.md)
+- [输入、采纳、检索与纠错](docs/rp-memory-narrator.zh.md) · [人工候选与分层摘要](docs/rp-memory-summary.zh.md)
+- [dev.3 稳定性修复与验证](docs/rp-memory-dev3/RESULTS.md)
+- [0.2.0-dev.1 发布审查](docs/rp-memory-dev3/RELEASE-0.2-REVIEW-2026-10-23.md)
+- [M5 阶段结果](docs/rp-memory-m5/RESULTS.md) · [后端补充验证](docs/rp-memory-m5/BACKEND-RESULTS.md) · [命令更名验证](docs/rp-memory-m5/COMMAND-RENAME.md)
+
+</details>
+
+## 来源与许可
+
+采用 [BSD-3-Clause](LICENSE) 许可。项目从 Kayou-31/dsh-ultra-mode 的本地 RP 分支独立发展；固定上游基线、来源与校验说明见 [UPSTREAM.json](UPSTREAM.json)。
+
+README 编排参考了 [LAN-TINA-WS 的重构版本](https://github.com/LAN-TINA-WS/dsh-ultra-rp-memory/blob/docs/readme-restructure/README.md)，内容按 Memory-Continuity 正式版的实际功能与验证范围重新整理。

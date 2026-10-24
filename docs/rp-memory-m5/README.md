@@ -1,6 +1,6 @@
 # Memory-Continuity M5：人物连续性
 
-当前为 `0.2.0-dev.4` 开发预览。原名 Ultra-RP-Memory；插件包更名为 `@dsh-external/dsh-memory-continuity`。专用 GitHub 仓库尚未迁址，远程旧名不代表运行时依赖 Ultra。分层模式直接使用独立 planner，既有全局记忆继续可用。完整指令见 [中文速查](../COMMANDS.zh.md)；宿主内使用 `/memcont help`。
+本文说明已随 `0.2.0` 正式版交付的 M5 人物连续性能力。原名 Ultra-RP-Memory；插件包为 `@dsh-external/dsh-memory-continuity`，仓库为 [Kayou-31/Memory-Continuity](https://github.com/Kayou-31/Memory-Continuity)。分层模式直接使用独立 planner，既有全局记忆继续可用，无需 Ultra Mode。完整指令见 [中文速查](../COMMANDS.zh.md)；宿主内使用 `/memcont help`。实际发布验证与未覆盖项见 [正式版 RESULTS](../releases/0.2.0/RESULTS.md)。
 
 ## 启用和查看
 
@@ -64,10 +64,10 @@ branch/global store 的 v1 不变。host journal 仍为 v2，新增严格可选�
 
 首次在已有空白根启用前，将原 journal 原样 fsync 备份为 `.json.pre-m5-backup`；独立 `.injection.json` marker 防止删除配置字段后无声降级。备份不授权旧程序继续读取新的 M5 历史；如果回退软件，请保留新版资料并使用独立 profile/干净新会话。手动备份完整 profile 仍是跨版本升级的建议流程。备份属于受控留存副本，不承诺随隐私删除自动清除。
 
-包名变为 `@dsh-external/dsh-memory-continuity`；配置节点和 `.dsh-rp` 路径保留；主命令使用 `/memcont`，旧 `/rp` 保留为兼容别名。按新的 cordis.patch.yml 替换入口，不能同时启用旧包和新包。没有自动改名 GitHub 仓库、push 或发布 Release。
+包名变为 `@dsh-external/dsh-memory-continuity`；配置节点和 `.dsh-rp` 路径保留；主命令使用 `/memcont`，旧 `/rp` 保留为兼容别名。按新的 cordis.patch.yml 替换入口，不能同时启用旧包和新包。GitHub 仓库已正式更名，旧地址保留自动跳转；见 [仓库迁移说明](../REPOSITORY-MIGRATION.zh.md)。更名不触发记忆数据迁移。
 
 ## 工作台与未开启的能力
 
-参考工作台提供中文导航、只读注入预览、浅色/深色/系统主题；前端已交外包继续设计，参见 [前端功能需求](FRONTEND-HANDOFF.md)。每个写操作保持预览→确认；管理入口只监听回环地址，令牌只存页面内存。仅主题偏好保存在 localStorage。
+正式版工作台已接入真实宿主，提供人物创建与编辑、经历、定向关系、目标/承诺、成长审阅和注入预览，支持浅色/深色/系统主题。每个写操作保持预览→确认；管理入口只监听回环地址，令牌只存页面内存。仅主题偏好保存在 localStorage。重新加载整页后需从宿主重新打开入口；关闭入口会撤销凭证并清空页面。
 
-不做单会话压缩（用户已取消），不做后台自动摘要/反思、自动成长采纳、strict POV、付费模型调用或新 Ultra 兼容。未来前端、技能经验和更深的长期检索另行验收。
+不做单会话压缩（用户已取消），不做后台自动摘要/反思、自动成长采纳、strict POV 或新 Ultra 兼容验收。管理与预览不调用模型；实际对话使用宿主配置的模型，费用取决于该服务。发布测试没有付费 API 调用。技能经验、更完整的用途界面和更深的长期检索仍是 [未来方向](../releases/0.2.0/RELEASE.zh.md#未来可能做的功能)。
