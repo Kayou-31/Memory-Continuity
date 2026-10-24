@@ -8,11 +8,11 @@
 
 | 你要做什么 | 下载入口 |
 | --- | --- |
-| 安装插件 | [插件安装包（TGZ）](https://github.com/Kayou-31/dsh-ultra-rp-memory/releases/download/v0.2.0-dev.1/dsh-external-dsh-ultra-rp-memory-0.2.0-dev.1.tgz) |
-| 查看、修改或审核代码 | [完整源码（ZIP）](https://github.com/Kayou-31/dsh-ultra-rp-memory/releases/download/v0.2.0-dev.1/ultra-rp-memory-0.2.0-dev.1-source.zip) |
-| 从旧版升级或准备回退 | [升级与回退说明](https://github.com/Kayou-31/dsh-ultra-rp-memory/releases/download/v0.2.0-dev.1/MIGRATION.md) |
-| 核对实际执行结果 | [完整验证报告](https://github.com/Kayou-31/dsh-ultra-rp-memory/releases/download/v0.2.0-dev.1/RESULTS.md) · [发布审查报告](https://github.com/Kayou-31/dsh-ultra-rp-memory/releases/download/v0.2.0-dev.1/REVIEW.md) |
-| 复核日志与文件完整性 | [本轮验证证据](https://github.com/Kayou-31/dsh-ultra-rp-memory/releases/download/v0.2.0-dev.1/ultra-rp-memory-0.2.0-dev.1-evidence.zip) · [SHA-256 校验值](https://github.com/Kayou-31/dsh-ultra-rp-memory/releases/download/v0.2.0-dev.1/SHA256SUMS.txt) |
+| 安装插件 | [插件安装包（TGZ）](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0-dev.1/dsh-external-dsh-ultra-rp-memory-0.2.0-dev.1.tgz) |
+| 查看、修改或审核代码 | [完整源码（ZIP）](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0-dev.1/ultra-rp-memory-0.2.0-dev.1-source.zip) |
+| 从旧版升级或准备回退 | [升级与回退说明](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0-dev.1/MIGRATION.md) |
+| 核对实际执行结果 | [完整验证报告](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0-dev.1/RESULTS.md) · [发布审查报告](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0-dev.1/REVIEW.md) |
+| 复核日志与文件完整性 | [本轮验证证据](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0-dev.1/ultra-rp-memory-0.2.0-dev.1-evidence.zip) · [SHA-256 校验值](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.0-dev.1/SHA256SUMS.txt) |
 
 使用 DSH 的本地 TGZ／插件包导入功能安装。包名为 `@dsh-external/dsh-ultra-rp-memory`，本次仅在 GitHub 发布，未发布到 npm 软件包仓库。
 

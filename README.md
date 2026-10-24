@@ -11,13 +11,13 @@ M5 新增模型视角的五类记忆、三级展开、确定性条件选择与�
 
 人物管理提供**工作台**：在已启动的 RP 会话手动执行 `/memcont person manage`，打开返回的本机地址，统一创建/编辑人物、记录经历、修改关系/目标、预览并确认成长；没有轮询、自动采纳或后台活动。仍可使用 [离线人物编辑器](ui/person-editor/index.html) 和 [可信命令](docs/person-core-usage.zh.md)。全局长期存储增加先备份再显式启用的分段模式，默认旧布局不变，详见 [管理与存储升级](docs/person-studio-storage.zh.md)。完整用途产品、技能学习、多人物社会和自主生活仍属后续工作。
 
-正式名称为 **Memory-Continuity**；历史包、报告、`rp-memory` 配置节点、`.dsh-rp` 数据目录保留；主命令改为 `/memcont`，旧 `/rp` 作为兼容别名。替换旧入口时更新包名，不同时启用新旧两个入口；更名不触发数据迁移。GitHub 地址在发布迁移前继续使用原仓库。
+正式名称为 **Memory-Continuity**；历史包、报告、`rp-memory` 配置节点、`.dsh-rp` 数据目录保留；主命令改为 `/memcont`，旧 `/rp` 作为兼容别名。替换旧入口时更新包名，不同时启用新旧两个入口；更名不触发数据迁移。GitHub 仓库已更名为 [Kayou-31/Memory-Continuity](https://github.com/Kayou-31/Memory-Continuity)，旧地址保留 GitHub 自动跳转。已有克隆更新 remote 的方法见 [仓库迁移说明](docs/REPOSITORY-MIGRATION.zh.md)。
 
 dev.3 修复请求准入、异常诊断/干净续接、retcon 摘要依赖、稳定检索与实际记录回执、全局容量和 seal 恢复、锚点合并及批量撤回。host journal 使用 v2，branch/global 的 schemaVersion 保持 v1。新人物工作区增加显式 requiredCapabilities 事务扩展：首次启用前自动备份，整个对应工作区要求新版读取，global 和其他工作区不受影响；旧程序不得继续写新人物工作区。升级前阅读 [迁移与恢复规则](docs/rp-memory-dev3/MIGRATION.md)；本轮执行结果及未测边界见 [RESULTS](docs/rp-memory-dev3/RESULTS.md)。历史 dev.1/dev.2 的证据不代替 dev.3 验证。人工采纳、自动功能关闭和默认禁用保持原有约束。
 
 2026-10-22 的 [完整审查与局部重构](docs/rp-memory-dev3/REVIEW-2026-10-22.md) 包含新发现的 8 项正确性问题、已本地修复的分支事务容量问题和历史重放优化；旧 packet 摘要认证、失败全局发布的明文清理等遗留 7 项已在本地后续分支修复，新增先红后绿回归；最新完整验收结果见 RESULTS 最后一节。该本地分支未更新已发布的 dev.3 包，不能用既有测试通过代替这些新增问题的验收。
 
-默认禁用；本版精确适配宿主 SDK **0.2.1-rc.2 / session format 4**，Cordis **4.0.5**、Schemastery **3.18.5**。0.2.0-rc.2 请使用冻结的 dev.1；本版拒绝旧版或混版 native peers。来源为 Kayou-31/dsh-ultra-mode 的本地 RP 开发分支；专用源码仓库为 [dsh-ultra-rp-memory](https://github.com/Kayou-31/dsh-ultra-rp-memory)。BSD-3-Clause。
+默认禁用；本版精确适配宿主 SDK **0.2.1-rc.2 / session format 4**，Cordis **4.0.5**、Schemastery **3.18.5**。0.2.0-rc.2 请使用冻结的 dev.1；本版拒绝旧版或混版 native peers。来源为 Kayou-31/dsh-ultra-mode 的本地 RP 开发分支；专用源码仓库为 [Memory-Continuity](https://github.com/Kayou-31/Memory-Continuity)。BSD-3-Clause。
 
 中文文档：[安装、启用与能力边界](docs/rp-memory-design.zh.md) · [输入、采纳、检索与纠错](docs/rp-memory-narrator.zh.md) · [人工候选与分层摘要](docs/rp-memory-summary.zh.md) · [固定标注评价及未测项](docs/rp-memory-evaluation.zh.md)。原始设计另见 [开发包](docs/rp-memory-devkit/01_RP_MEMORY_SPEC.md)。
 

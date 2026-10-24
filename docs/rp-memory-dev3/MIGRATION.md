@@ -1,8 +1,12 @@
 # dev.3 兼容、容量与恢复
 
-## 0.2 预览版当前说明（2026-10-23）
+## 当前仓库（2026-10-24）
 
-当前项目和入口已正式更名为 **Ultra-RP-Memory**，仓库为 `Kayou-31/dsh-ultra-rp-memory`，包为 `@dsh-external/dsh-ultra-rp-memory@0.2.0-dev.1`。下文按日期保留的“尚未发布”“本地未修复”等描述属于当时状态；本次发布审查及实际结果以 [RESULTS.md](RESULTS.md) 和 [发布审查报告](RELEASE-0.2-REVIEW-2026-10-23.md) 为准。
+当前产品和 GitHub 仓库为 **Memory-Continuity**：<https://github.com/Kayou-31/Memory-Continuity>。正式版包名为 `@dsh-external/dsh-memory-continuity`，主命令 `/memcont`，旧 `/rp` 兼容。旧仓库地址保留跳转，安装包与数据目录不因仓库更名而改动。详见 [仓库迁移说明](../REPOSITORY-MIGRATION.zh.md)。
+
+## 0.2 预览版历史说明（2026-10-23）
+
+当时项目和入口正式更名为 **Ultra-RP-Memory**，仓库为 `Kayou-31/dsh-ultra-rp-memory`，包为 `@dsh-external/dsh-ultra-rp-memory@0.2.0-dev.1`。下文按日期保留的“尚未发布”“本地未修复”等描述属于当时状态；本次发布审查及实际结果以 [RESULTS.md](RESULTS.md) 和 [发布审查报告](RELEASE-0.2-REVIEW-2026-10-23.md) 为准。
 
 升级请先备份日常使用配置及全部相关数据；替换包名，保留 `rp-memory` 配置节点、`/rp` 命令、`.dsh-rp` 和 `.dsh-rp-policy` 数据目录，不同时激活新旧入口。人物工作区启用前备份且要求新版读取；全局分段存储需另行手动启用，默认布局不变。宿主日志继续 v2，无法认证的旧工具／记忆包历史只允许恢复和干净续接，不补造证明。具体备份与回退步骤见[人物工作室与存储说明](../person-studio-storage.zh.md)。本轮没有对日常使用数据执行迁移。
 

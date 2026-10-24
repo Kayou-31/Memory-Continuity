@@ -2,6 +2,8 @@
 
 让会话可以结束，让你塑造的人物继续。
 
+项目仓库：[Kayou-31/Memory-Continuity](https://github.com/Kayou-31/Memory-Continuity)。旧地址自动跳转；已有克隆的 remote 更新方式见 [仓库迁移说明](../../REPOSITORY-MIGRATION.zh.md)。发布包与标签保留发布时内容和校验值。
+
 Memory-Continuity 是面向 DSH 的独立人物连续性与长期记忆插件。你可以定义人物的身份、背景、性格、价值观与边界，记录共同经历、定向关系和未完成的承诺，再明确审阅人物怎样发生变化。这个正式版确定的是当前功能与协议边界，并不声称模型拥有真实人生或已经证明长期人格质量。
 
 ## 本版包含
