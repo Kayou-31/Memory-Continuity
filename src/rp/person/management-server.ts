@@ -4,7 +4,7 @@ import {object,RpError} from '../schema.js'
 import type {ManagementController} from './management.js'
 import {managerPage} from './manager-ui.js'
 
-export async function openManagementServer(controller:ManagementController,context:()=>unknown=()=>({}),changed:()=>Promise<void>=async()=>{}){
+export async function openManagementServer(controller:ManagementController,context:()=>unknown=()=>({}),changed:()=>Promise<void>=async()=>{},injectionPreview?:(query:string)=>Promise<unknown>){
  const token=randomBytes(32).toString('hex');let revoked=false,origin=''
  const auth=(req:IncomingMessage)=>{
   const actual=Buffer.from(req.headers.authorization??''),expected=Buffer.from('Bearer '+token)
@@ -17,13 +17,18 @@ export async function openManagementServer(controller:ManagementController,conte
   try{
    if(req.headers.host!==origin.slice(7)||req.headers.origin!==undefined&&req.headers.origin!==origin)throw new RpError('scope_denied','Local management origin denied')
    if(req.method==='GET'&&req.url==='/'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(managerPage(nonce));return}
-   if(req.method!=='POST'||!auth(req)||!['/api/snapshot','/api/prepare','/api/confirm','/api/close'].includes(req.url??''))throw new RpError('scope_denied','Management authorization denied')
+   if(req.method!=='POST'||!auth(req)||!['/api/snapshot','/api/prepare','/api/confirm','/api/close','/api/injection-preview'].includes(req.url??''))throw new RpError('scope_denied','Management authorization denied')
    if(req.headers['content-type']!=='application/json')throw new RpError('invalid_record','JSON content type required')
    const chunks:Buffer[]=[];let size=0
    for await(const part of req){size+=part.length;if(size>131072)throw new RpError('capacity_exceeded','Management request exceeds 128 KiB');chunks.push(part)}
    if(!auth(req))throw new RpError('ownership_lost','Management revoked')
    const input=JSON.parse(Buffer.concat(chunks).toString('utf8'));let value:unknown
    if(req.url==='/api/snapshot'){object(input,[]);value={...await controller.snapshot(),context:context()}}
+   else if(req.url==='/api/injection-preview'){
+    const q=object(input,['query']);if(typeof q.query!=='string'||Buffer.byteLength(q.query,'utf8')>8192)throw new RpError('invalid_record','Preview query exceeds 8 KiB')
+    if(!injectionPreview)throw new RpError('capability_missing','当前宿主没有注入预览入口')
+    await controller.snapshot();value=await injectionPreview(q.query);if(!auth(req))throw new RpError('ownership_lost','Management revoked during preview')
+   }
    else if(req.url==='/api/prepare')value=await controller.prepare(input)
    else if(req.url==='/api/confirm'){const op=object(input,['id']);value=await controller.confirm(op.id);await changed()}
    else{object(input,[]);revoked=true;controller.revoke();value={closed:true}}

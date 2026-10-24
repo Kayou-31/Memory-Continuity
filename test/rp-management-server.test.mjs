@@ -11,7 +11,7 @@ test('manual management server binds loopback, rejects foreign callers and never
  const f=await setup();let server
  try{
   server=await openManagementServer(f.management.create(f.authority));const url=new URL(server.url),token=url.hash.slice(1);url.hash=''
-  const html=await fetch(url);assert.equal(html.status,200);const body=await html.text();assert.match(body,/Ultra-RP-Memory/);assert.ok(!body.includes(token));assert.match(html.headers.get('content-security-policy'),/default-src 'none'/)
+  const html=await fetch(url);assert.equal(html.status,200);const body=await html.text();assert.match(body,/Memory-Continuity/);assert.ok(!body.includes(token));assert.match(html.headers.get('content-security-policy'),/default-src 'none'/)
   const call=(headers={},data={})=>fetch(new URL('api/snapshot',url),{method:'POST',headers:{'content-type':'application/json',...headers},body:JSON.stringify(data)})
   assert.equal((await call()).status,403);assert.equal((await call({authorization:'Bearer '+token,origin:'https://untrusted.example'})).status,403)
   assert.equal((await call({authorization:'Bearer '+token,origin:'null'})).status,403)

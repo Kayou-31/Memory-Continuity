@@ -49,8 +49,18 @@
     },
     {
       "path": "src/rp/host-journal.ts",
-      "bytes": 6565,
-      "sha256": "d3361198c560f20925c9479113755cb3f3e13ea0f00eb1be0d39dbafe767092d"
+      "bytes": 7936,
+      "sha256": "5173f2b7cf85f923ac0f26a92af3fe7693690be8a3048ed73ad3da4090d6ee30"
+    },
+    {
+      "path": "src/rp/injection-binding.ts",
+      "bytes": 4680,
+      "sha256": "d3ec7259fbb755e27366d5c46cdd1246d8c71fd28da51d76baed933aff8eff3f"
+    },
+    {
+      "path": "src/rp/injection.ts",
+      "bytes": 12850,
+      "sha256": "7092d7760120acf6b90277b3376467fd7d58bec6c815f96ebb17ebc0d364eae8"
     },
     {
       "path": "src/rp/jobs.ts",
@@ -99,8 +109,8 @@
     },
     {
       "path": "src/rp/packet.ts",
-      "bytes": 12313,
-      "sha256": "b5266489f3e5a770e945c71fa5262e072c6f7b519638cbeb0654dca4e0347808"
+      "bytes": 14639,
+      "sha256": "3359e17546591bbc961e6d6fd8e05b63e27866a56e665fb4ca5d3644f54d3bd1"
     },
     {
       "path": "src/rp/person/binding.ts",
@@ -129,8 +139,8 @@
     },
     {
       "path": "src/rp/person/management-server.ts",
-      "bytes": 3643,
-      "sha256": "a1995ea206f70a4fbc10476669f50fcb09078dabf8f581bdb2f52158778d8dd4"
+      "bytes": 4203,
+      "sha256": "95e56e824a9a787b5d117fc305cfef456f515127f1919f18fb12f1b8ce54d1e4"
     },
     {
       "path": "src/rp/person/management.ts",
@@ -139,8 +149,8 @@
     },
     {
       "path": "src/rp/person/manager-ui.ts",
-      "bytes": 16537,
-      "sha256": "86e5572c98e49fb003118b8f8cdde96280b6c11d1bfc167bb98b9f7500fa4ef0"
+      "bytes": 25846,
+      "sha256": "e3e93e5b47616cb777c9ecd981dc214c44ede95f53bf543442f08d4609845bfc"
     },
     {
       "path": "src/rp/person/projection.ts",
@@ -189,8 +199,8 @@
     },
     {
       "path": "src/rp/rp-plugin.ts",
-      "bytes": 74449,
-      "sha256": "7cdd48fff1d34adbb7a3d927051a6309969009d71331abe72e917eee86ece601"
+      "bytes": 84383,
+      "sha256": "95a9a1dd2734cf3ef51220cb101321b2701644abdabbb2594205671351753f66"
     },
     {
       "path": "src/rp/schema.ts",
@@ -229,18 +239,18 @@
     },
     {
       "path": "src/rp-plugin.ts",
-      "bytes": 1605,
-      "sha256": "51340c142336015b4d490c07087aa3ca89826d9dbba06adc8da6025dffe1325b"
+      "bytes": 1609,
+      "sha256": "3cd119c8bc5ae1b34e508878f8ad24f10f8f1b7b0cf231a42ff0ed6965286702"
     },
     {
       "path": "lib/index.js",
-      "bytes": 414558,
-      "sha256": "9c847ede528676d99d548c10604b88db47df4858ef9055bd117d4fae883a89be"
+      "bytes": 456977,
+      "sha256": "1edc13d87604c3d56a3727cbd8160219602878cce3cc251815b7194d13336f10"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 746923,
-      "sha256": "7846e924caf713b0fdd8f72854d4e2ce2af6325e11b9709f58c2f61b67175f16"
+      "bytes": 813956,
+      "sha256": "77938b76f4ea0c838a9ede00141f05b295a60377f5d8a0f8c13518716e8a6e17"
     },
     {
       "path": "lib/types/rp/admission.d.ts",
@@ -289,8 +299,18 @@
     },
     {
       "path": "lib/types/rp/host-journal.d.ts",
-      "bytes": 1855,
-      "sha256": "3e9ea4757e8bfdcd7f5a3b41eadaeacaf37cf52b91e3786b58a8a95bd52ad88f"
+      "bytes": 2087,
+      "sha256": "defdbfeb69a2a6e8c484f67f0a4af8d44dd7f9ad791a9a50c61c7015b066e12b"
+    },
+    {
+      "path": "lib/types/rp/injection-binding.d.ts",
+      "bytes": 959,
+      "sha256": "a1b5fb6e0d8d25eb7eb7529e4944f11e898d713667a154d4cfc85f212ec4649e"
+    },
+    {
+      "path": "lib/types/rp/injection.d.ts",
+      "bytes": 2572,
+      "sha256": "62ad9829c0f9a24ecd9b8289e2faa8e5c9e11c7af663297f36a9146842892672"
     },
     {
       "path": "lib/types/rp/jobs.d.ts",
@@ -309,8 +329,8 @@
     },
     {
       "path": "lib/types/rp/memory.d.ts",
-      "bytes": 25543,
-      "sha256": "d414db9600cf9bc67ec4de2708314ce20bd0c57df5fb0d3c4e087ca6ad1920fb"
+      "bytes": 25604,
+      "sha256": "c5eb8902a10634721478f4ea1a0286dcc8b36bd082ac1518cdd5a3c937bdecc2"
     },
     {
       "path": "lib/types/rp/modules/commands.d.ts",
@@ -339,8 +359,8 @@
     },
     {
       "path": "lib/types/rp/packet.d.ts",
-      "bytes": 2694,
-      "sha256": "86e7a34a8ebcf26d6a929db48d26501f576c4179298252fc4ee647918d401ca8"
+      "bytes": 2833,
+      "sha256": "e3c9ebc786afc14eed4baabdfa41c8a9727c30e57da583c71e69fd65f30d7c39"
     },
     {
       "path": "lib/types/rp/person/binding.d.ts",
@@ -369,8 +389,8 @@
     },
     {
       "path": "lib/types/rp/person/management-server.d.ts",
-      "bytes": 276,
-      "sha256": "78ad3783f19d99c100eb2be36dedf74a53ebbaad881858148c59beba9cae381c"
+      "bytes": 332,
+      "sha256": "745760d9c978e557407418f92409efb14c6c7ce669db7872e4a98905b9180022"
     },
     {
       "path": "lib/types/rp/person/management.d.ts",
@@ -429,8 +449,8 @@
     },
     {
       "path": "lib/types/rp/rp-plugin.d.ts",
-      "bytes": 28590,
-      "sha256": "094190a75acc3edd86c6d7ba78b11bf3c7f56a320af8131714aeff827c8b1e78"
+      "bytes": 28767,
+      "sha256": "1777e481ff71a98300c4dbb6df0f03ac8d32deb6d62c7133a96bdf313239e0f2"
     },
     {
       "path": "lib/types/rp/schema.d.ts",
@@ -469,8 +489,8 @@
     },
     {
       "path": "lib/types/rp-plugin.d.ts",
-      "bytes": 2051,
-      "sha256": "7d13095bb62840c5a2a81b071b3e8bcec95d4c0037fcbd290836aa654bcc7c2e"
+      "bytes": 2053,
+      "sha256": "28e8500111843ec7e2d9261c3f4db3120a4ccfe1c2c077f9adcea600da37189c"
     },
     {
       "path": "ui/person-editor/editor.js",
@@ -479,8 +499,8 @@
     },
     {
       "path": "ui/person-editor/index.html",
-      "bytes": 4991,
-      "sha256": "6ac4dd6351ed2d555428f0abc987554cac92743a77090e6e81593337ac0aaea2"
+      "bytes": 4995,
+      "sha256": "f68e4e0a494ebdd64474f7bd6503ccb4ee7e75e9b8d8b10e6e075c0ddce4f8ac"
     }
   ]
 }
