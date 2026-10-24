@@ -62,7 +62,7 @@
 | `/memcont person reject {"candidateId":"实际候选ID"}` | 拒绝候选 |
 | `/memcont agent <JSON>` | 人工记录经历、关系、目标等 |
 | `/memcont goals`、`/memcont relationships`、`/memcont self` | 原有基础状态视图；完整人物优先用 person show |
-| `/memcont person manage`、`/memcont person manage-close` | 手动开启/撤销本机参考工作台入口 |
+| `/memcont person manage`、`/memcont person manage-close` | 手动开启/撤销本机工作台入口 |
 
 字段和成长 JSON 示例见 [人物核心](person-core-usage.zh.md)；经历/关系/目标见 [Agent 长期记忆](agent-memory.zh.md)。
 
