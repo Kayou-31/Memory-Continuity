@@ -1,6 +1,6 @@
 {
   "name": "@dsh-external/dsh-memory-continuity",
-  "version": "0.2.0-dev.4",
+  "version": "0.2.0",
   "description": "Memory-Continuity：独立人物连续性、长期记忆、分层条件注入与人工成长审阅",
   "type": "module",
   "main": "./lib/index.js",
@@ -10,6 +10,7 @@
     "src",
     "ui",
     "scripts/build.mjs",
+    "scripts/workbench-style.mjs",
     "tsconfig.json",
     "SOURCE-MANIFEST.json",
     "UPSTREAM.json",

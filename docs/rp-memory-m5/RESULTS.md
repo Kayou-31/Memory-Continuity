@@ -96,3 +96,8 @@ branch/global v1 未升级。host journal 保持 v2，新增严格注入字段�
 - 令 `RP_PERSON_BUNDLE` 指向解包后的 `package/lib/index.js`，执行 `node --test --test-concurrency=1 test/rp-injection-host.test.mjs test/rp-person-host.test.mjs test/rp-management-host.test.mjs`：退出 0，**13/13，0 失败/跳过/取消，8.684 秒**。这些测试通过真实 SDK 安装包内插件，覆盖实际终端请求、工具循环、冷恢复、人物/成长、管理预览与会话延续；终端是离线测试适配器，不是在线模型。
 - 实际包验收是补充证据，与此前单次完整 229/229 分开记录。打包后仅补充报告与计划状态，没有修改源代码或构建文件。
 - 交付目录：`D:/Codex/2026-10-20/dsh-rp-memory-dev-3-https/outputs/memory-continuity-0.2.0-dev.2-m5-2026-10-24`。最终源码 ZIP、逐条验证及证据日志记录见该目录旁置 RESULTS 和 SHA256SUMS；插件内报告保留打包前时点。
+
+
+## 2026-10-24 正式版工作台接入
+
+当前 Memory-Continuity 0.2.0 的工作台、完整 253/253、实际插件包、浏览器交互和发布结果统一记录于 [正式版 RESULTS](../releases/0.2.0/RESULTS.md)。本文件以上为原阶段历史证据，保留当时未验证范围，不回填为当时已通过。

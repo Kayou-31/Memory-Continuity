@@ -1,3 +1,4 @@
+import './workbench-style.mjs';
 import {build,stop} from 'esbuild';import fs from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {createRequire} from 'node:module';import {spawnSync} from 'node:child_process';import {createHash} from 'node:crypto';
 const root=fileURLToPath(new URL('../',import.meta.url)),require=createRequire(import.meta.url);const tsc=spawnSync(process.execPath,[require.resolve('typescript/bin/tsc'),'-p',path.join(root,'tsconfig.json')],{cwd:root,stdio:'inherit',windowsHide:true});if(tsc.status!==0)process.exit(tsc.status??1);
 const result=await build({absWorkingDir:root,entryPoints:['src/rp-plugin.ts'],outfile:path.join(root,'lib/index.js'),bundle:true,format:'esm',platform:'node',target:'node22',charset:'utf8',sourcemap:'linked',sourcesContent:true,external:['node:*','@deepseek-ai/*'],metafile:true});

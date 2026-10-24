@@ -655,3 +655,8 @@ node --test --test-concurrency=1 scripts/host-acceptance/dev3-companion.test.mjs
 新增实际包场景覆盖 companion standalone、project Ultra先加载、creation RP先加载；模块查看、完整来源回执、待审成长、用户采纳、用途/规则进入请求，以及停用后新请求拒绝。既有Ultra关闭优化、Memory/Decision各加载顺序、工程隔离、冷恢复和人物工具循环继续通过。
 
 **已完成：M3 首期用途与能力模块框架、双层约束、独立/兼容组合、恢复和并发回归。未完成：M4及完整用途产品、实时UI、第三方模块市场、技能/社会/分段容量。未验证：真实模型长期语义、生产长跑、完整桌面交互、真实断电及日常profile迁移。** 本地功能版本仍dev.3，未push、未发布Release/npm、未覆盖稳定版本。此验收段在包验证后追加；交付目录旁置RESULTS.md和证据ZIP包含最新报告，TGZ保持已测哈希不变。
+
+
+## 2026-10-24 正式版工作台接入
+
+当前 Memory-Continuity 0.2.0 的工作台、完整 253/253、实际插件包、浏览器交互和发布结果统一记录于 [正式版 RESULTS](../releases/0.2.0/RESULTS.md)。本文件以上为原阶段历史证据，保留当时未验证范围，不回填为当时已通过。

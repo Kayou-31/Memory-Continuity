@@ -143,6 +143,11 @@
       "sha256": "00b64c6eba58154a28cb032f156f818354967f6ce679834478c8e0a27edecd56"
     },
     {
+      "path": "src/rp/person/management-client.ts",
+      "bytes": 2058,
+      "sha256": "75a3f057f31bac9ac5f7919c97fdac5e89405ba1f534790d63b31135c517b15e"
+    },
+    {
       "path": "src/rp/person/management-server.ts",
       "bytes": 4370,
       "sha256": "12660a086df43ae6ad4582970d4f980738a0160c3d1ad61356fd28e024f7cd11"
@@ -154,8 +159,8 @@
     },
     {
       "path": "src/rp/person/manager-ui.ts",
-      "bytes": 25876,
-      "sha256": "32dabcb05a5348341282f5670037689992728f81e8bbcafb33d1d82dc67b4276"
+      "bytes": 155,
+      "sha256": "5b1ea04df0cad5ac3d31ac463c7be1ed33782b18bd9329d37bd8c210163e5b84"
     },
     {
       "path": "src/rp/person/projection.ts",
@@ -176,6 +181,21 @@
       "path": "src/rp/person/types.ts",
       "bytes": 948,
       "sha256": "70546f689fbe8a53f43f90c8060a9cb98e9509a2c59e982c2deabac61d3015a9"
+    },
+    {
+      "path": "src/rp/person/workbench-client.ts",
+      "bytes": 35115,
+      "sha256": "66cc3eb8e35511d79a9248112e1c9010cdf81189b4db18125f39326be4fb0796"
+    },
+    {
+      "path": "src/rp/person/workbench-page.ts",
+      "bytes": 3887,
+      "sha256": "0dd7a76e3477ba9ec301339ca4581aafc065cbb6cade4be97f8ef7285aa57d1b"
+    },
+    {
+      "path": "src/rp/person/workbench-style.ts",
+      "bytes": 65238,
+      "sha256": "51a49fc0c79e514dbdd415ff9fcf37c41e8ab95c459250b46755f6e8de8bcb8c"
     },
     {
       "path": "src/rp/publication-guard.ts",
@@ -249,13 +269,13 @@
     },
     {
       "path": "lib/index.js",
-      "bytes": 463787,
-      "sha256": "ef1171fbb103e9b0461f0f64ddc854697fe6d651dcd689ceb9593ff7da8e5e16"
+      "bytes": 545618,
+      "sha256": "2a75d09e580d52d04579896884211ae78be8d219f247dddffb09dceb9daf0498"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 822045,
-      "sha256": "a258ea01f8dabca06a1efcf38699da5b35344692729442562ea73d597d32d963"
+      "bytes": 916634,
+      "sha256": "a7dad7662d78b11dc96bf1481947bc165966961a1c61365b20f2de56ccc250c3"
     },
     {
       "path": "lib/types/rp/admission.d.ts",
@@ -398,6 +418,11 @@
       "sha256": "7f6383f4b54a9133197bdab6eed2cd3603c4442c7857ca0ef25513435f16fa3f"
     },
     {
+      "path": "lib/types/rp/person/management-client.d.ts",
+      "bytes": 309,
+      "sha256": "d900fe79bf777ee188bd4fd662a3c3e7a8e017409941d813a6aec1e35cfa8b49"
+    },
+    {
       "path": "lib/types/rp/person/management-server.d.ts",
       "bytes": 332,
       "sha256": "745760d9c978e557407418f92409efb14c6c7ce669db7872e4a98905b9180022"
@@ -409,8 +434,8 @@
     },
     {
       "path": "lib/types/rp/person/manager-ui.d.ts",
-      "bytes": 139,
-      "sha256": "064e6d64112a7ab8ae1e8b1168be40a69b66004d840ee49d4cb7b48245b53278"
+      "bytes": 159,
+      "sha256": "941156953d517e59e6b8f01fbe2a432b87fc9af9fdbe74a902f8e0a4b7db2529"
     },
     {
       "path": "lib/types/rp/person/projection.d.ts",
@@ -431,6 +456,21 @@
       "path": "lib/types/rp/person/types.d.ts",
       "bytes": 1120,
       "sha256": "69f0bada8b48299b305437b94e7934b61c7d8b5bc10d4b503a449714938e0fab"
+    },
+    {
+      "path": "lib/types/rp/person/workbench-client.d.ts",
+      "bytes": 237,
+      "sha256": "c1094ca85ef13a4df4d039c44e42c51a0c7dd27a20b9ad8b94fb4fead94d3c25"
+    },
+    {
+      "path": "lib/types/rp/person/workbench-page.d.ts",
+      "bytes": 254,
+      "sha256": "229c720e081ee3d899ba691ef905c00ec815b8e161d8fd8bbfc0d3835b7ef8ee"
+    },
+    {
+      "path": "lib/types/rp/person/workbench-style.d.ts",
+      "bytes": 65716,
+      "sha256": "a6576dc08c22d4fc8b413d09812baa13f1458b19842abbd5e5a41f0d8e8a8986"
     },
     {
       "path": "lib/types/rp/publication-guard.d.ts",
@@ -511,6 +551,11 @@
       "path": "ui/person-editor/index.html",
       "bytes": 5020,
       "sha256": "98d3d44baf8de6e417c741db8524bed732464f39a3b654463137fc2ad433b5ef"
+    },
+    {
+      "path": "ui/workbench/styles.css",
+      "bytes": 64179,
+      "sha256": "6b19f8bd66e0c418417945b4940429bc938fbc7fabcfafa2d24aebdf37f0dc3c"
     }
   ]
 }
