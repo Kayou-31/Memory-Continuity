@@ -29,7 +29,9 @@ export async function host(config = {}, hooks = {}) {
   const settings = { enabled: true, profileRoot: profile, workspaceRoot: project, campaignId: 'dev3', knownCooperatingWriters: true, entityIds: ['key'], budget, ...config }
   const install = hooks.install ?? installRpPlugin
   await hooks.before?.({ ctx, sdk, profile, project })
-  const rp = await install(ctx, settings), handles = []
+  let rp
+  try { rp = await install(ctx, settings) } catch (error) { await ctx.fiber.dispose(); throw error }
+  const handles = []
   await hooks.after?.({ ctx, sdk, profile, project, rp })
   const create = async () => { const h = await ctx.agents.create({ sessionId: 'session_' + randomUUID().replaceAll('-', ''), meta: { cwd: project }, agentOptions: { provider: 'rp-dev3', model: 'offline', maxTokens: 128 } }); handles.push(h); return h.agent }
   const command = async (agent, input) => (await ctx.commands.execute(agent, '/memcont ' + input, [], new AbortController().signal)).result

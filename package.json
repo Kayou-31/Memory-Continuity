@@ -1,6 +1,6 @@
 {
   "name": "@dsh-external/dsh-memory-continuity",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Memory-Continuity：独立人物连续性、长期记忆、分层条件注入与人工成长审阅",
   "type": "module",
   "main": "./lib/index.js",
@@ -29,11 +29,11 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "4.0.5",
-    "@deepseek-ai/dsh-agent": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-llm": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-session": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-system-prompt": "0.2.1-rc.2",
-    "@deepseek-ai/dsh-tools": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-agent": "0.2.1-rc.2 || 0.2.1-rc.3",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.2 || 0.2.1-rc.3",
+    "@deepseek-ai/dsh-session": "0.2.1-rc.2 || 0.2.1-rc.3",
+    "@deepseek-ai/dsh-system-prompt": "0.2.1-rc.2 || 0.2.1-rc.3",
+    "@deepseek-ai/dsh-tools": "0.2.1-rc.2 || 0.2.1-rc.3",
     "@deepseek-ai/schemastery": "3.18.5"
   },
   "dsh": {
@@ -49,7 +49,7 @@
   },
   "engines": {
     "node": ">=22",
-    "dsh": "0.2.1-rc.2"
+    "dsh": "0.2.1-rc.2 || 0.2.1-rc.3"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
