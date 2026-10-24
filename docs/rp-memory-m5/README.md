@@ -1,23 +1,23 @@
 # Memory-Continuity M5：人物连续性
 
-当前为 `0.2.0-dev.3` 开发预览。原名 Ultra-RP-Memory；插件包更名为 `@dsh-external/dsh-memory-continuity`。专用 GitHub 仓库尚未迁址，远程旧名不代表运行时依赖 Ultra。分层模式直接使用独立 planner，既有全局记忆继续可用。完整指令见 [中文速查](../COMMANDS.zh.md)；宿主内使用 `/rp help`。
+当前为 `0.2.0-dev.4` 开发预览。原名 Ultra-RP-Memory；插件包更名为 `@dsh-external/dsh-memory-continuity`。专用 GitHub 仓库尚未迁址，远程旧名不代表运行时依赖 Ultra。分层模式直接使用独立 planner，既有全局记忆继续可用。完整指令见 [中文速查](../COMMANDS.zh.md)；宿主内使用 `/memcont help`。
 
 ## 启用和查看
 
 沿用 README 的精确 SDK 配置、预算与可信写入者要求。新模式需要空白根会话和显式人物绑定：
 
 ```text
-/rp start
-/rp person use erin
-/rp injection set {}
-/rp injection show
-/rp injection preview 我想去钟楼，回忆与小贝的往事
-/rp person manage
+/memcont start
+/memcont person use erin
+/memcont injection set {}
+/memcont injection show
+/memcont injection preview 我想去钟楼，回忆与小贝的往事
+/memcont person manage
 ```
 
-`erin` 必须是已授权并创建的人物。创建流程仍是 `person preview <草稿>` → `person confirm <previewId>`。已有历史时先 `/rp continue-clean`，在新宿主会话选择返回的新根，再设置配置。干净续接继承有效剧情分支、人物及注入配置，不复制旧宿主消息、不重发 ambiguous 输入。
+`erin` 必须是已授权并创建的人物。创建流程仍是 `person preview <草稿>` → `person confirm <previewId>`。已有历史时先 `/memcont continue-clean`，在新宿主会话选择返回的新根，再设置配置。干净续接继承有效剧情分支、人物及注入配置，不复制旧宿主消息、不重发 ambiguous 输入。
 
-关闭注入：空白且已绑定人物的根会话执行 `/rp injection set null`。不在旧上下文上伪装“已清除”。旧模式保持可用；升级不会自动启用分层功能。
+关闭注入：空白且已绑定人物的根会话执行 `/memcont injection set null`。不在旧上下文上伪装“已清除”。旧模式保持可用；升级不会自动启用分层功能。
 
 ## 五类记忆、三级深度
 
@@ -64,7 +64,7 @@ branch/global store 的 v1 不变。host journal 仍为 v2，新增严格可选�
 
 首次在已有空白根启用前，将原 journal 原样 fsync 备份为 `.json.pre-m5-backup`；独立 `.injection.json` marker 防止删除配置字段后无声降级。备份不授权旧程序继续读取新的 M5 历史；如果回退软件，请保留新版资料并使用独立 profile/干净新会话。手动备份完整 profile 仍是跨版本升级的建议流程。备份属于受控留存副本，不承诺随隐私删除自动清除。
 
-包名变为 `@dsh-external/dsh-memory-continuity`；配置节点、`.dsh-rp` 路径和 `/rp` 命令保留。按新的 cordis.patch.yml 替换入口，不能同时启用旧包和新包。没有自动改名 GitHub 仓库、push 或发布 Release。
+包名变为 `@dsh-external/dsh-memory-continuity`；配置节点和 `.dsh-rp` 路径保留；主命令使用 `/memcont`，旧 `/rp` 保留为兼容别名。按新的 cordis.patch.yml 替换入口，不能同时启用旧包和新包。没有自动改名 GitHub 仓库、push 或发布 Release。
 
 ## 工作台与未开启的能力
 

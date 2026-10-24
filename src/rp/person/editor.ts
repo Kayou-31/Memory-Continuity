@@ -40,7 +40,7 @@ function read() {
   const raw={schemaVersion:1,kind:'person-draft',personId:$<HTMLInputElement>('personId').value.trim(),fields:readRows('fields'),relationships:readRows('relationships'),goals:readRows('goals')} as PersonDraft
   return personDraft(raw,new Set([raw.personId,...raw.relationships.map(r=>r.targetId),...raw.goals.flatMap(g=>g.targetEntityId?[g.targetEntityId]:[])]))
 }
-function generate() { const draft=read(), encoded=JSON.stringify(draft); $<HTMLTextAreaElement>('output').value='/rp person preview '+encoded; $('status').textContent=`草稿已检查：${draft.fields.length} 项定义，${draft.relationships.length} 条关系，${draft.goals.length} 个目标。宿主仍会核对实体与权限。`; return draft }
+function generate() { const draft=read(), encoded=JSON.stringify(draft); $<HTMLTextAreaElement>('output').value='/memcont person preview '+encoded; $('status').textContent=`草稿已检查：${draft.fields.length} 项定义，${draft.relationships.length} 条关系，${draft.goals.length} 个目标。宿主仍会核对实体与权限。`; return draft }
 function run(work:()=>unknown) { try { work() } catch(e) { $('status').textContent='未生成：'+(e instanceof Error?e.message:String(e)); $<HTMLTextAreaElement>('output').value='' } }
 function load(draft:PersonDraft) {
   key=createDraftIds(draft)

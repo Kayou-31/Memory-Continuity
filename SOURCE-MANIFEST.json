@@ -29,8 +29,8 @@
     },
     {
       "path": "src/rp/command-help.ts",
-      "bytes": 5635,
-      "sha256": "8eaa6e24f55e6dfa84952ba0cc2262cc9b213a9d2d5c874bdbc0c1cd61550577"
+      "bytes": 5985,
+      "sha256": "920f0a13fdf94e2bc6905fb5be689e44e7b8750b29aed851a807fa469b4a67dd"
     },
     {
       "path": "src/rp/global-segments.ts",
@@ -134,8 +134,8 @@
     },
     {
       "path": "src/rp/person/editor.ts",
-      "bytes": 7576,
-      "sha256": "eda814cd518be285507b4a48cfad15f5e912230bf18b8d8c345794b86a4c9702"
+      "bytes": 7581,
+      "sha256": "fc00d5113e165a284f372f93399987c0ef049f7b8afa425aa609254d30dc52bb"
     },
     {
       "path": "src/rp/person/format.ts",
@@ -149,13 +149,13 @@
     },
     {
       "path": "src/rp/person/management.ts",
-      "bytes": 7636,
-      "sha256": "fc9a4c4809408f627e819b66e92918ef3ae19611b5e8c36559b225239db2ffbc"
+      "bytes": 7641,
+      "sha256": "59912486c1ec329e1d6bd1c9aa7a6a076433798299e7535389b96f079708e5bd"
     },
     {
       "path": "src/rp/person/manager-ui.ts",
-      "bytes": 25846,
-      "sha256": "e3e93e5b47616cb777c9ecd981dc214c44ede95f53bf543442f08d4609845bfc"
+      "bytes": 25876,
+      "sha256": "32dabcb05a5348341282f5670037689992728f81e8bbcafb33d1d82dc67b4276"
     },
     {
       "path": "src/rp/person/projection.ts",
@@ -204,8 +204,8 @@
     },
     {
       "path": "src/rp/rp-plugin.ts",
-      "bytes": 84675,
-      "sha256": "4997e150267ea1f6ed289a2cb2eac977d9108659d66935476ce1f539414d6aed"
+      "bytes": 84843,
+      "sha256": "2a38576399f5f07a3895e4fe0a32997c53a8a2cabb26f93fdebd2f13ee97c1f8"
     },
     {
       "path": "src/rp/schema.ts",
@@ -249,13 +249,13 @@
     },
     {
       "path": "lib/index.js",
-      "bytes": 463223,
-      "sha256": "eb61a9870481d8e2615f09e176d7e8eeece2e6ebf2d01e79273ced2cbf7255a4"
+      "bytes": 463787,
+      "sha256": "ef1171fbb103e9b0461f0f64ddc854697fe6d651dcd689ceb9593ff7da8e5e16"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 821438,
-      "sha256": "fadd6edd84293633d83781b5025cc83da71ce4cc0bc1daf9ca725f27783621fb"
+      "bytes": 822045,
+      "sha256": "a258ea01f8dabca06a1efcf38699da5b35344692729442562ea73d597d32d963"
     },
     {
       "path": "lib/types/rp/admission.d.ts",
@@ -504,13 +504,13 @@
     },
     {
       "path": "ui/person-editor/editor.js",
-      "bytes": 14762,
-      "sha256": "d6a1a5b07155b5dc01b9de8e0213f44450900eb63549f0ca4bff8d1f26a687fd"
+      "bytes": 14767,
+      "sha256": "3e48ddb31c905ccbacf4ea45905f264f4b553fc22b448fc6643d32b6c3392b8f"
     },
     {
       "path": "ui/person-editor/index.html",
-      "bytes": 4995,
-      "sha256": "f68e4e0a494ebdd64474f7bd6503ccb4ee7e75e9b8d8b10e6e075c0ddce4f8ac"
+      "bytes": 5020,
+      "sha256": "98d3d44baf8de6e417c741db8524bed732464f39a3b654463137fc2ad433b5ef"
     }
   ]
 }

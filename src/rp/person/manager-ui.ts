@@ -33,7 +33,7 @@ function managerClient(){
  const renderInjection=(root:HTMLElement)=>{
   const bound=snapshot.context?.personId,layerNames:Record<string,string>={self:'自我核心',situation:'当前处境',relationships:'关系背景',recollection:'相关往事',unfinished:'未完成事项'},reasonNames:Record<string,string>={mandatory:'必须保留',excluded:'手动排除',pinned:'手动固定',rule_matched:'条件规则命中',relevant:'相关或当前有效',condition_not_matched:'条件未命中',budget_exceeded:'本层或总预算不足'}
   elem('p','预览绑定的聊天人物：'+(bound??'未绑定')+'。上方查看人物不会改变聊天身份。',root).className='notice'
-  if(!snapshot.context?.injection){elem('p','请在空白会话先 /rp person use 人物ID，再执行 /rp injection set {}。有历史时先 /rp continue-clean。',root).className='empty';return}
+  if(!snapshot.context?.injection){elem('p','请在空白会话先 /memcont person use 人物ID，再执行 /memcont injection set {}。有历史时先 /memcont continue-clean。',root).className='empty';return}
   const form=elem('div','',root);form.className='preview-query';const query=input(form,'本次对话的主题或问题','');query.maxLength=8192;query.setAttribute('placeholder','例如：回忆与小贝修好钟楼的那一天')
   const output=elem('div','',root)
   const run=button(form,'预览注入',async()=>{
@@ -57,7 +57,7 @@ function managerClient(){
   $('page-heading').textContent=page==='注入预览'?'记忆如何进入这次对话':page;$('page-subtitle').textContent=page==='注入预览'?'每一段记忆，都有进入上下文的理由。':'由你定义起点，让经历留下原因。';
   if(!snapshot)return;if(page==='注入预览'){renderInjection(root);return}const p=current();if(!p&&page!=='用途与规则'){elem('p','还没有人物。点击“创建人物”设置起点。',root).className='empty';return}
   if(page==='人物档案'){
-   elem('h2','人物档案',root);elem('p','查看人物不会切换聊天身份。要绑定当前聊天，请在空会话执行 /rp person use '+selected,root).className='muted'
+   elem('h2','人物档案',root);elem('p','查看人物不会切换聊天身份。要绑定当前聊天，请在空会话执行 /memcont person use '+selected,root).className='muted'
    const grid=elem('div','',root);grid.className='grid';for(const f of p.fields){const c=elem('article','',grid);elem('h3',names[f.kind]+' · '+f.fieldId,c);const v=input(c,'当前内容',f.value,true),note=input(c,'修改理由'),policy=select(c,'字段策略',{stable:'保持稳定',growable:'可经确认成长',situational:'情境内有效'},f.policy)
     elem('small','前驱 '+f.eventId,c);if(f.validity)elem('pre','情境有效期 '+JSON.stringify(f.validity),c)
     button(c,'预览修改',()=>preview('edit',{personId:selected,fieldId:f.fieldId,value:v.value,note:note.value,...(f.validity?{validity:f.validity}:{})}))
@@ -81,12 +81,12 @@ function managerClient(){
    }button(root,'预览批量采纳',()=>preview('adopt',{candidateIds:chosen}))
    elem('h2','提出一次成长',root);const fields=Object.fromEntries(p.fields.filter((f:any)=>f.policy==='growable').map((f:any)=>[f.fieldId,(names[f.kind]??f.kind)+' · '+f.fieldId])),field=select(root,'可成长字段',fields),value=input(root,'建议的新状态','',true),note=input(root,'成长理由'),support=causes(root)
    button(root,'预览成长提案',()=>{const old=p.fields.find((f:any)=>f.fieldId===field.value);if(!old)throw Error('没有可成长字段');return preview('propose',{changes:[{changeId:'change_'+crypto.randomUUID().replaceAll('-',''),personId:selected,fieldId:old.fieldId,previousEventId:old.eventId,value:value.value,causeEventIds:support,note:note.value}]})})
-  }else{elem('h2','当前用途与规则',root);elem('pre',JSON.stringify(snapshot.context,null,2),root);elem('p','模式和模块配置通过可信宿主命令调整。有历史的会话先 /rp continue-clean，管理页不会自动切换上下文。',root)}
+  }else{elem('h2','当前用途与规则',root);elem('pre',JSON.stringify(snapshot.context,null,2),root);elem('p','模式和模块配置通过可信宿主命令调整。有历史的会话先 /memcont continue-clean，管理页不会自动切换上下文。',root)}
  }
  $('person').onchange=()=>{selected=($('person') as HTMLSelectElement).value;render()}
  $('new').onclick=()=>{if(snapshot&&!busy)create()};$('refresh').onclick=()=>refresh().catch(e=>status(e.message,true))
  $('cancel').onclick=()=>($('review') as HTMLDialogElement).close()
  $('confirm').onclick=async()=>{if(busy)return;busy=true;($('confirm') as HTMLButtonElement).disabled=true;try{await api('confirm',{id:reviewId});($('review') as HTMLDialogElement).close();await refresh();status('已写入。旧聊天如果提示上下文失效，请干净续接。')}catch(e){status((e as Error).message,true)}finally{busy=false;($('confirm') as HTMLButtonElement).disabled=false}}
  $('close').onclick=async()=>{try{await api('close');clear();status('管理入口已关闭。需要时在宿主重新打开。')}catch(e){status((e as Error).message,true)}}
- if(!token)status('缺少本次管理凭证。请在宿主执行 /rp person manage，打开返回的完整地址。',true);else refresh().catch(e=>status(e.message,true))
+ if(!token)status('缺少本次管理凭证。请在宿主执行 /memcont person manage，打开返回的完整地址。',true);else refresh().catch(e=>status(e.message,true))
 }

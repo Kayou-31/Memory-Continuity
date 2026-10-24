@@ -310,7 +310,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       if(action==='person'&&arg==='manage-close'){await closeManager(agent.id);return {kind:'success',text:'Management endpoint closed.'}}
       if (action === 'continue-clean') return await continueClean(agent, b, arg, signal)
       if (action === 'global') {
-        const parsed = /^(\S+)\s+([\s\S]+)$/u.exec(arg); if (!parsed) throw new RpError('invalid_record', 'Use /rp global preference|publish|list|adopt <JSON>')
+        const parsed = /^(\S+)\s+([\s\S]+)$/u.exec(arg); if (!parsed) throw new RpError('invalid_record', 'Use /memcont global preference|publish|list|adopt <JSON>')
         const sub = parsed[1]
         if (!['publish', 'preference', 'list', 'adopt', 'storage-status', 'storage-enable'].includes(sub)) throw new RpError('invalid_record', 'Unknown global control')
         const op = commandObject(parsed[2], sub === 'publish' || sub === 'preference' ? ['key', 'body'] : sub === 'adopt' ? ['publicationId'] : [], ['worldId', 'entityId', 'privateSourceIds', 'supersedes'])
@@ -452,10 +452,10 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         return { kind: 'success', text: canonical(value) }
       }
       const summaryOptions = { globalAuthorities, policyEpoch: () => { shutdown.signal.throwIfAborted(); if (closed || !live(agent) || policy.status(agent.id).mode !== 'rp') throw new RpError('ownership_lost', 'RP candidate owner changed'); return policy.status(agent.id).epoch } }
-      if (action === 'summarize-auto') throw new RpError('capability_missing', 'No trusted background candidate route; use /rp summary then /rp adopt')
+      if (action === 'summarize-auto') throw new RpError('capability_missing', 'No trusted background candidate route; use /memcont summary then /memcont adopt')
       if (action === 'propose' || action === 'summary') {
         const op = commandObject(arg, ['selection', 'proposal']), candidate = unwrap(await memory.summaries.propose(b.authority, op.proposal, op.selection, summaryOptions))
-        return { kind: 'success', text: 'Structured candidate ' + candidate.id + ' pending. Use /rp candidate ID and /rp adopt ID or /rp reject-candidate ID. No story fact or summary was adopted.' }
+        return { kind: 'success', text: 'Structured candidate ' + candidate.id + ' pending. Use /memcont candidate ID and /memcont adopt ID or /memcont reject-candidate ID. No story fact or summary was adopted.' }
       }
       if (action === 'candidates') return { kind: 'success', text: 'Structured candidate status: ' + canonical(unwrap(await memory.summaries.list(b.authority))) }
       if (action === 'candidate') { const candidate = unwrap(await memory.summaries.get(b.authority, arg, summaryOptions)); return { kind: 'success', text: 'Structured candidate ' + candidate.id + '; events ' + candidate.proposedEvents.length + '; summary ' + (candidate.proposedSummary?.level ?? 'none') + '; original source IDs ' + (candidate.proposedSummary?.sourceRevisionIds ?? candidate.proposedEvents.flatMap(e => e.sources.map(s => s.sourceRevisionId))).join(',') + '. Inspect original source IDs with rp_memory_get. Candidate prose stays in deletable storage; this receipt contains metadata only.' } }
@@ -476,7 +476,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         text(arg, 1048576); const source = unwrap(await controlSource(b, commandId, arg)), accepted = unwrap(await memory.store.readAcceptedSources(b.authority)), latestInput = b.data.inputs.filter(i => accepted.some(s => s.id === i.sourceId)).at(-1), turnId = latestInput && !accepted.some(s => s.role === 'assistant' && s.turnId === latestInput.turnId) ? latestInput.turnId : uid('turn')
         const item: Input = { kind: 'input', sourceId: source.id, messageId: uid('rp_input'), turnId, bodyHash: source.publicTextSha256, dispatched: false, phase: 'observed', operationKey: 'input_' + sha(commandId), expected: unwrap(await memory.store.readFence(b.authority)) }
         b.data.inputs.push(item); const history = inputHistory.get(b.data.request.branchId) ?? new Map<string, Input>(); history.set(item.sourceId, item); inputHistory.set(b.data.request.branchId, history); memory.registerInputBindings(b.data.request.branchId, b.data.inputs); await save(b); await config.inputFault?.('intent_saved'); await dispatchInput(b, item, signal)
-        return { kind: 'success', text: 'Accepted input queued. Generated replies require /rp accept.' }
+        return { kind: 'success', text: 'Accepted input queued. Generated replies require /memcont accept.' }
       }
       if (action === 'resume-input') { const item = b.data.inputs.find(i => i.sourceId === arg); if (!item) throw new RpError('scope_denied', 'Unknown pending input'); await dispatchInput(b, item, signal); return { kind: 'success', text: 'Accepted pending input queued once.' } }
       if (action === 'fork') { const expected = unwrap(await memory.store.readFence(b.authority)), manifest = unwrap(await memory.canonical.forkManifest(b.authority, expected.contextRevision)); signal.throwIfAborted(); const branch = unwrap(await memory.canonical.forkBranch(b.authority, { ...manifest, idempotencyKey: 'fork_' + sha(commandId) })); return { kind: 'success', text: 'Fixed RP branch created: ' + branch.id } }
@@ -485,12 +485,14 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       else if (action === 'delete') { const op = commandObject(arg, ['sourceRevisionIds', 'publicationDisposition']); if (!['retain', 'delete'].includes(op.publicationDisposition)) throw new RpError('invalid_record', 'Choose publicationDisposition retain/delete explicitly'); for (const ga of globalAuthorities) unwrap(await memory.global.control.privateDeletion(ga, memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }), { idempotencyKey: commandId, expected: unwrap(await memory.global.store.readFence(ga)), privateSourceIds: op.sourceRevisionIds, publicationDisposition: op.publicationDisposition })); unwrap<unknown>(await canonicalControl(b, commandId, { kind: 'privacy_delete', sourceRevisionIds: op.sourceRevisionIds, affectedBranchIds: [b.data.request.branchId] })) }
       else if (action === 'publish') { const op = commandObject(arg, ['grantIndex', 'key', 'body', 'privateSourceIds'], ['supersedes']), ga = globalAuthorities[op.grantIndex]; if (!ga) throw new RpError('scope_denied', 'Unknown global grant'); const approval = memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }); unwrap(await memory.global.control.publish(ga, approval, { idempotencyKey: commandId, expected: unwrap(await memory.global.store.readFence(ga)), key: op.key, body: op.body, privateSourceIds: op.privateSourceIds, ...(op.supersedes ? { supersedes: op.supersedes } : {}) })) }
       else if (action === 'adopt-canon') { const op = commandObject(arg, ['grantIndex', 'publicationId']), ga = globalAuthorities[op.grantIndex]; if (!ga) throw new RpError('scope_denied', 'Unknown global grant'); unwrap(await memory.adoptCanon(b.authority, ga, memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }), op.publicationId, commandId)) }
-      else if (action !== 'accept' && action !== 'reject') throw new RpError('invalid_record', '未知指令。使用 /rp help 查看人物、记忆、注入、恢复和存储指令。')
+      else if (action !== 'accept' && action !== 'reject') throw new RpError('invalid_record', '未知指令。使用 /memcont help 查看人物、记忆、注入、恢复和存储指令。')
       signal.throwIfAborted(); if (!await (root.get('sessions') as any).flush(agent.session)) throw new RpError('persistence_uncertain', 'Native session flush unconfirmed')
       return { kind: 'success', text: 'RP control committed. Historical native content may require continue-clean.' }
     } catch (e) { const b = bound.get(agent.id); if (b && !(e instanceof RpError)) { b.data.blocked = true; b.lastError = 'persistence_failed' }; return { kind: 'error', text: e instanceof RpError ? e.code + ': ' + e.message : 'RP control failed; inspect status before retry.' } }
   }
-  const commandsFiber = root.inject(['commands'], (owner: any) => { effects.push(owner.get('commands').register({ name: 'rp', description: 'Memory-Continuity：人物、长期记忆、注入预览与人工成长；help 查看中文帮助。', input: { hint: 'help [person|injection|recovery|memory|modules|storage] | start | status | person | injection | input <文本> | continue-clean', attachments: false }, recordInput: false, handler: command })) })
+  const commandsFiber = root.inject(['commands'], (owner: any) => {
+    for(const name of ['memcont','rp']) effects.push(owner.get('commands').register({ name, description: name==='memcont'?'Memory-Continuity：人物、长期记忆、注入预览与人工成长；help 查看中文帮助。':'Memory-Continuity 旧命令兼容别名；新操作请使用 /memcont。', input: { hint: 'help [person|injection|recovery|memory|modules|storage] | start | status | person | injection | input <文本> | continue-clean', attachments: false }, recordInput: false, handler: command }))
+  })
   effects.push(() => commandsFiber.dispose())
   effects.push(root.on('session/event', ((session: any, event: any) => {
     const b = bound.get(session.id); if (closed || !b || b.agent.session !== session || policy.status(session.id).mode !== 'rp') return

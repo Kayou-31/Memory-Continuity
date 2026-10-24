@@ -14,27 +14,27 @@ P3 提供手动采纳的 narrator Memory。RP 默认关闭；没有自动将 com
 
 所有命令经真实 `dsh-commands`。普通 user-role 消息、历史对白和模型工具均没有控制授权。命令不记录 rawInput；回执只包含简短状态或记录 ID，不复制正文。
 
-1. 在新建、排空的 root 会话执行 `/rp start`，创建剧情分支。已有工程 run、工程历史、归档恢复入口或 native compactor 的会话不能直接切换。
-2. 用 `/rp input 你的剧情输入` 明确采纳输入后驱动宿主。助手完成仅成为候选。用 `/rp status` 查看可选候选来源 ID；执行 `/rp accept <sourceId>` 选择该版本后继续下一轮。`rp_memory_status` 也是只读模型工具，不能执行选择。
-3. `/rp reject <sourceId>` 拒绝候选；`/rp retcon {"targetEventIds":[...],"events":[...]}` 修改现有事件。新的提示不能抹掉原生旧历史；旧原文或旧 runtime snapshot 已失效时实际请求被拒绝。
-4. `/rp continue-clean [branchId]` 创建全新原生 root session，在原生 setup 中绑定选定的既有 RP 分支，不使用 resume/fork seed，不复制污染的宿主历史。命令返回 sessionId；用户通过宿主已有会话选择入口进入它。没有自动切换 UI tab 的承诺。
-5. `/rp fork` 固定当前分支前缀并返回新 branchId；再用 continue-clean 进入它。后续父分支消息不进入该子分支。
-6. `/rp delete {"sourceRevisionIds":["..."],"publicationDisposition":"retain"}` 明确选择保留独立批准发布；用 `"delete"` 选择同时删除已授权发布副本。多分支物理别名仍须 P2 所需的全部授权；当前简单命令不暗中获得其他分支权限。
+1. 在新建、排空的 root 会话执行 `/memcont start`，创建剧情分支。已有工程 run、工程历史、归档恢复入口或 native compactor 的会话不能直接切换。
+2. 用 `/memcont input 你的剧情输入` 明确采纳输入后驱动宿主。助手完成仅成为候选。用 `/memcont status` 查看可选候选来源 ID；执行 `/memcont accept <sourceId>` 选择该版本后继续下一轮。`rp_memory_status` 也是只读模型工具，不能执行选择。
+3. `/memcont reject <sourceId>` 拒绝候选；`/memcont retcon {"targetEventIds":[...],"events":[...]}` 修改现有事件。新的提示不能抹掉原生旧历史；旧原文或旧 runtime snapshot 已失效时实际请求被拒绝。
+4. `/memcont continue-clean [branchId]` 创建全新原生 root session，在原生 setup 中绑定选定的既有 RP 分支，不使用 resume/fork seed，不复制污染的宿主历史。命令返回 sessionId；用户通过宿主已有会话选择入口进入它。没有自动切换 UI tab 的承诺。
+5. `/memcont fork` 固定当前分支前缀并返回新 branchId；再用 continue-clean 进入它。后续父分支消息不进入该子分支。
+6. `/memcont delete {"sourceRevisionIds":["..."],"publicationDisposition":"retain"}` 明确选择保留独立批准发布；用 `"delete"` 选择同时删除已授权发布副本。多分支物理别名仍须 P2 所需的全部授权；当前简单命令不暗中获得其他分支权限。
 
 最近窗口按可信持久 input 操作绑定及 accepted assistant 配对。普通控制命令不计轮；修订不重复计轮；拒绝版本不计轮。未完成的输入组在干净续接中保留，并可由新的明确输入继续该组。packet 中的原文窗口与结构化数据分开。
 
-`/rp status` 显示候选、pending input 和 ambiguous dispatch ID。输入先保存 intent，再提交采纳，再记录 dispatching，最后唤醒宿主。`/rp resume-input <sourceId>` 对未 dispatch 的 intent 幂等完成采纳并发送一次。若进程在 dispatch marker 后中断，无法证明是否唤醒时状态为 ambiguous，禁止自动重发；应检查旧会话或显式创建干净续接。测试覆盖三个持久边界中断和独立冷进程恢复；这不是断电耐久性承诺。
+`/memcont status` 显示候选、pending input 和 ambiguous dispatch ID。输入先保存 intent，再提交采纳，再记录 dispatching，最后唤醒宿主。`/memcont resume-input <sourceId>` 对未 dispatch 的 intent 幂等完成采纳并发送一次。若进程在 dispatch marker 后中断，无法证明是否唤醒时状态为 ambiguous，禁止自动重发；应检查旧会话或显式创建干净续接。测试覆盖三个持久边界中断和独立冷进程恢复；这不是断电耐久性承诺。
 
 ## 独立全局控制
 
 全局操作不需要先创建剧情 branch，也不需要手填随机 profileId：宿主从可信 profile 身份解析。以下都是命令平面的用户操作：
 
 ```text
-/rp global preference {"key":"language","body":"中文"}
-/rp global publish {"worldId":"world_demo","key":"rule","body":"选定并批准公开的设定"}
-/rp global list {"worldId":"world_demo"}
-/rp start
-/rp global adopt {"worldId":"world_demo","publicationId":"上一步返回的ID"}
+/memcont global preference {"key":"language","body":"中文"}
+/memcont global publish {"worldId":"world_demo","key":"rule","body":"选定并批准公开的设定"}
+/memcont global list {"worldId":"world_demo"}
+/memcont start
+/memcont global adopt {"worldId":"world_demo","publicationId":"上一步返回的ID"}
 ```
 
 profile 偏好只允许 language/person/dialogue_format/prose_style。world/character 发布可附 entityId；新 revision 必须显式 supersedes 当前发布。私有剧情 source 与 approved_publication source 独立，读取批准快照不会开放私有原文。分支只采用显式选中的 world revision；发布新版不会自动升级旧剧情。撤回 profile 最新偏好不会复活被其替代的旧偏好。
@@ -71,4 +71,4 @@ strict POV/full filtering、自动采纳、原生持久替换和压缩仍关闭�
 
 ## 长期 Agent 控制（2026-10-23 本地开发版）
 
-新增 `/rp agent <JSON>`（experience/state/relationship/goal），以及只读的 `/rp goals`、`/rp relationships`、`/rp self`。这些显式命令会将用户控制原文写入来源账本，读取命令会显示当前事实正文；它们不注册为模型写工具。完整示例、前驱与来源约束、目标状态机和 continue-clean 流程见 [长期 Agent 记忆与成长](agent-memory.zh.md)。
+新增 `/memcont agent <JSON>`（experience/state/relationship/goal），以及只读的 `/memcont goals`、`/memcont relationships`、`/memcont self`。这些显式命令会将用户控制原文写入来源账本，读取命令会显示当前事实正文；它们不注册为模型写工具。完整示例、前驱与来源约束、目标状态机和 continue-clean 流程见 [长期 Agent 记忆与成长](agent-memory.zh.md)。
