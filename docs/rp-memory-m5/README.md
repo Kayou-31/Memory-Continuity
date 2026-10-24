@@ -1,6 +1,6 @@
 # Memory-Continuity M5：人物连续性
 
-本轮为 `0.2.0-dev.2` 开发预览。原名 Ultra-RP-Memory；插件包更名为 `@dsh-external/dsh-memory-continuity`。专用 GitHub 仓库尚未迁址，远程旧名不代表运行时依赖 Ultra。分层模式直接使用独立 planner，既有全局记忆继续可用。
+当前为 `0.2.0-dev.3` 开发预览。原名 Ultra-RP-Memory；插件包更名为 `@dsh-external/dsh-memory-continuity`。专用 GitHub 仓库尚未迁址，远程旧名不代表运行时依赖 Ultra。分层模式直接使用独立 planner，既有全局记忆继续可用。完整指令见 [中文速查](../COMMANDS.zh.md)；宿主内使用 `/rp help`。
 
 ## 启用和查看
 

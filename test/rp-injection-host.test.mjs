@@ -5,7 +5,7 @@ import path from 'node:path'
 import {createHash} from 'node:crypto'
 import {LlmAdapter} from '@deepseek-ai/dsh-llm'
 import {pathToFileURL} from 'node:url'
-import {host as nativeHost} from './fixtures/rp/native-host.mjs'
+import {host as nativeHost,latch} from './fixtures/rp/native-host.mjs'
 const bundle=process.env.RP_PERSON_BUNDLE?await import(pathToFileURL(path.resolve(process.env.RP_PERSON_BUNDLE)).href):undefined
 const host=(config,hooks={})=>nativeHost(config,{...hooks,...(bundle?{install:bundle.installRpPlugin}:{})})
 const ok=r=>{assert.equal(r.kind,'success',r.text);return r}
@@ -61,5 +61,24 @@ test('changed historical trace cannot be authenticated by unchanged native packe
  const f=await host({entityIds:['erin']});try{const a=await setup(f);ok(await f.command(a,'input 钟楼'));await a.whenIdle();await f.rp.ready(a.id);await f.drop(a)
  const file=path.join(f.profile,'.dsh-rp/v1/host',sha(a.id)+'.json'),env=JSON.parse(await fs.readFile(file,'utf8'));for(const s of Object.values(env.data.snapshots)){if(!s.injection)continue;s.injection.query='不是当时的话题';s.injection.querySha256=sha(canonical(s.injection.query));const {sha256,...data}=s.injection;s.injection.sha256=sha(canonical(data))}
  env.sha256=sha(canonical(env.data));await fs.writeFile(file,JSON.stringify(env));const resumed=await f.resume(a);assert.equal(f.rp.status(a.id).blocked,true);assert.equal((await f.command(resumed,'input 拒绝发送')).kind,'error');assert.equal(f.calls(),1)
+ }finally{await f.dispose()}
+})
+
+test('injection preview rejects a real concurrent retcon after packet assembly instead of returning old text',{timeout:15000},async()=>{
+ const f=await host({entityIds:['erin']}),gate=latch();let original
+ try{const a=await setup(f),person=value(await f.command(a,'person show erin')),field=person.fields.find(x=>x.fieldId==='past')
+  original=f.rp.memory.packets;f.rp.memory.packets={...original,async prepare(...args){const result=await original.prepare(...args);await gate.wait();return result}}
+  const pending=f.command(a,'injection preview 钟楼');await gate.entered
+  ok(await f.command(a,'person edit '+JSON.stringify({personId:'erin',fieldId:'past',previousEventId:field.eventId,value:'海港旁长大',note:'纠正背景'})))
+  gate.release();const result=await pending;assert.equal(result.kind,'error');assert.match(result.text,/stale_input/);assert.doesNotMatch(result.text,/钟楼旁长大/);assert.equal(f.calls(),0)
+  f.rp.memory.packets=original;const fresh=value(await f.command(a,'injection preview 海港'));assert.match(fresh.current.text,/海港旁长大/);assert.doesNotMatch(fresh.current.text,/钟楼旁长大/)
+ }finally{gate.release();if(original)f.rp.memory.packets=original;await f.dispose()}
+})
+
+test('corrupt pre-M5 backup refuses re-enable without overwriting evidence or blocking legacy diagnosis',async()=>{
+ const f=await host({entityIds:['erin']});try{const a=await setup(f);ok(await f.command(a,'injection set null'))
+  const file=path.join(f.profile,'.dsh-rp/v1/host',sha(a.id)+'.json.pre-m5-backup'),damaged='{"data":"damaged"}'
+  await fs.writeFile(file,damaged);assert.equal((await f.command(a,'injection set {}')).kind,'error');assert.equal(await fs.readFile(file,'utf8'),damaged)
+  assert.equal(value(await f.command(a,'injection show')).binding,null);ok(await f.command(a,'status'));assert.equal(f.rp.status(a.id).blocked,false);assert.equal(f.calls(),0)
  }finally{await f.dispose()}
 })

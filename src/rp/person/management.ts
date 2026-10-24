@@ -28,6 +28,7 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
    if(canonical(fence)!==canonical(stamp.fence)||digest(candidates)!==stamp.candidatesHash)throw new RpError('stale_input','Management snapshot changed; refresh and review again')
   }
   return Object.freeze({
+   assertActive:guard,
    revoke(){revoked=true;snapshots.clear();reviews.clear()},
    async snapshot(){return coordinator.mutate(async()=>{
     guard()

@@ -1,8 +1,8 @@
-# Memory-Continuity · 0.2.0-dev.2
+# Memory-Continuity · 0.2.0-dev.3
 
 **独立的人物连续性与长期记忆插件。** 技术名称 `dsh-memory-continuity`，npm 包名 `@dsh-external/dsh-memory-continuity`。无需安装 Ultra Mode、Ultra Memory 或 Ultra Decision 即可使用 RP 的记忆、检索、分支和人工采纳功能；运行时仅依赖下文列出的 DSH 原生 peers。
 
-M5 新增模型视角的五类记忆、三级展开、确定性条件选择与原因预览。完整使用说明见 [M5 使用与迁移](docs/rp-memory-m5/README.md)，本轮实际结果见 [M5 RESULTS](docs/rp-memory-m5/RESULTS.md)。前端已交由外包继续设计，[前端功能需求](docs/rp-memory-m5/FRONTEND-HANDOFF.md) 和参考图随源码提供；当前参考工作台含浅色/深色/跟随系统。没有自动摘要、压缩或付费模型调用；使用显式干净续接衔接会话。
+M5 新增模型视角的五类记忆、三级展开、确定性条件选择与原因预览。完整使用说明见 [M5 使用与迁移](docs/rp-memory-m5/README.md)，[中文指令速查](docs/COMMANDS.zh.md) 对应宿主 `/rp help`。实际结果见 [M5 RESULTS](docs/rp-memory-m5/RESULTS.md) 和 [后端补充验证](docs/rp-memory-m5/BACKEND-RESULTS.md)。前端已交由外包继续设计，[前端功能需求](docs/rp-memory-m5/FRONTEND-HANDOFF.md) 和参考图随源码提供；当前参考工作台含浅色/深色/跟随系统。没有自动摘要、压缩或付费模型调用；使用显式干净续接衔接会话。
 
 
 上一版 **Ultra-RP-Memory 0.2.0-dev.1** 的历史验证：修复一个核心人物入口的实体白名单缺口；修复后单次完整 **214/214**、实际安装包宿主 **31/31**、包内公开接口回归 **1/1**、四类人生故事 **4/4**，类型检查、独立构建和打包通过。[中文发布说明](docs/rp-memory-dev3/RELEASE-0.2.zh.md) · [发布审查报告](docs/rp-memory-dev3/RELEASE-0.2-REVIEW-2026-10-23.md) · [插件包与校验](artifacts/0.2.0-dev.1/)。历史首轮212/213的一次对象描述符异常根因仍未确定，最终浏览器复查仍受历史崩溃阻断；失败及未验证范围保留在 [完整验证报告](docs/rp-memory-dev3/RESULTS.md)。这是预览范围的证据，不是长期生产稳定性声明。

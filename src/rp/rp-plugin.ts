@@ -3,6 +3,7 @@ import {createInjectionBinding,verifyInjectionText,injectionMarkerValid,writeInj
 import { createRuntimeBinding, type RuntimeConfig } from './modules/contract.js'
 import type { ModuleRuntime } from './modules/runtime.js'
 import { runtimeCommand } from './modules/commands.js'
+import { rpCommandHelp } from './command-help.js'
 import { runtimeMarkerValid, writeRuntimeMarker } from './modules/marker.js'
 import fs from 'node:fs/promises'
 import path from 'node:path'
@@ -302,6 +303,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       signal.throwIfAborted(); shutdown.signal.throwIfAborted()
       const match = /^\s*(\S+)?(?:\s+([\s\S]*))?$/u.exec(invocation.rawInput)!, action = match[1] ?? 'status', arg = match[2] ?? ''
       if(!live(agent))throw new RpError('ownership_lost','Exact live session required')
+      if(action==='help')return {kind:'success',text:rpCommandHelp(arg)}
       if(!(action==='modules'&&/^disable\s/u.test(arg)))assertIdle(agent)
       let b = bound.get(agent.id)
       if (action === 'status') { if (b) await settle(b); return { kind: 'success', text: JSON.stringify(diagnostic(agent.id)) } }
@@ -345,8 +347,9 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           if(b.generation!==initialGeneration||!live(agent)||!safe(agent)||agent.status!=='idle'||b.data.blocked)throw new RpError('stale_input','Session changed during injection preparation')
           b.generation++;b.packet=undefined;b.data.blocked=true
           const generation=b.generation
-          await writeInjectionMarker(hostRoot,agent.id,next,true)
           if(next)b.data.injectionBinding=next;else delete b.data.injectionBinding
+          // A failed marker must leave a durable blocked journal when that independent write is still possible.
+          try{await writeInjectionMarker(hostRoot,agent.id,next,true)}catch(e){await save(b).catch(()=>{});throw e}
           await save(b);if(!live(agent)||b.generation!==generation)throw new RpError('ownership_lost','Injection owner changed')
           b.data.blocked=false
           try{await save(b);if(!live(agent)||b.generation!==generation)throw new RpError('ownership_lost','Injection owner changed');await writeInjectionMarker(hostRoot,agent.id,next,false);if(!live(agent)||b.generation!==generation)throw new RpError('ownership_lost','Injection owner changed')}catch(e){b.data.blocked=true;throw e}
@@ -482,12 +485,12 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       else if (action === 'delete') { const op = commandObject(arg, ['sourceRevisionIds', 'publicationDisposition']); if (!['retain', 'delete'].includes(op.publicationDisposition)) throw new RpError('invalid_record', 'Choose publicationDisposition retain/delete explicitly'); for (const ga of globalAuthorities) unwrap(await memory.global.control.privateDeletion(ga, memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }), { idempotencyKey: commandId, expected: unwrap(await memory.global.store.readFence(ga)), privateSourceIds: op.sourceRevisionIds, publicationDisposition: op.publicationDisposition })); unwrap<unknown>(await canonicalControl(b, commandId, { kind: 'privacy_delete', sourceRevisionIds: op.sourceRevisionIds, affectedBranchIds: [b.data.request.branchId] })) }
       else if (action === 'publish') { const op = commandObject(arg, ['grantIndex', 'key', 'body', 'privateSourceIds'], ['supersedes']), ga = globalAuthorities[op.grantIndex]; if (!ga) throw new RpError('scope_denied', 'Unknown global grant'); const approval = memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }); unwrap(await memory.global.control.publish(ga, approval, { idempotencyKey: commandId, expected: unwrap(await memory.global.store.readFence(ga)), key: op.key, body: op.body, privateSourceIds: op.privateSourceIds, ...(op.supersedes ? { supersedes: op.supersedes } : {}) })) }
       else if (action === 'adopt-canon') { const op = commandObject(arg, ['grantIndex', 'publicationId']), ga = globalAuthorities[op.grantIndex]; if (!ga) throw new RpError('scope_denied', 'Unknown global grant'); unwrap(await memory.adoptCanon(b.authority, ga, memory.global.control.approval({ commandId: 'command_' + sha(commandId), sessionId: agent.id }), op.publicationId, commandId)) }
-      else if (action !== 'accept' && action !== 'reject') throw new RpError('invalid_record', 'Use start/status/input/agent/goals/relationships/self/accept/reject/delete/retcon/publish/adopt-canon/continue-clean/resume-input')
+      else if (action !== 'accept' && action !== 'reject') throw new RpError('invalid_record', '未知指令。使用 /rp help 查看人物、记忆、注入、恢复和存储指令。')
       signal.throwIfAborted(); if (!await (root.get('sessions') as any).flush(agent.session)) throw new RpError('persistence_uncertain', 'Native session flush unconfirmed')
       return { kind: 'success', text: 'RP control committed. Historical native content may require continue-clean.' }
     } catch (e) { const b = bound.get(agent.id); if (b && !(e instanceof RpError)) { b.data.blocked = true; b.lastError = 'persistence_failed' }; return { kind: 'error', text: e instanceof RpError ? e.code + ': ' + e.message : 'RP control failed; inspect status before retry.' } }
   }
-  const commandsFiber = root.inject(['commands'], (owner: any) => { effects.push(owner.get('commands').register({ name: 'rp', description: 'Explicit narrator Memory controls; generated replies remain candidates.', input: { hint: 'start|status|input <text>|accept <sourceId>|summary <JSON>|candidates|adopt <candidateId>|jobs|continue-clean', attachments: false }, recordInput: false, handler: command })) })
+  const commandsFiber = root.inject(['commands'], (owner: any) => { effects.push(owner.get('commands').register({ name: 'rp', description: 'Memory-Continuity：人物、长期记忆、注入预览与人工成长；help 查看中文帮助。', input: { hint: 'help [person|injection|recovery|memory|modules|storage] | start | status | person | injection | input <文本> | continue-clean', attachments: false }, recordInput: false, handler: command })) })
   effects.push(() => commandsFiber.dispose())
   effects.push(root.on('session/event', ((session: any, event: any) => {
     const b = bound.get(session.id); if (closed || !b || b.agent.session !== session || policy.status(session.id).mode !== 'rp') return

@@ -1,5 +1,7 @@
 # Memory-Continuity M5 实际执行报告
 
+后续 0.2.0-dev.3 后端加固、指令更新和补充验证见 [BACKEND-RESULTS](BACKEND-RESULTS.md)。以下保留 0.2.0-dev.2 的原始结果。
+
 日期：2026-10-24。版本：0.2.0-dev.2，包名 `@dsh-external/dsh-memory-continuity`。开发基线 ee6b5a1898f128a0baf953ea192ba80795ac674d；隔离分支 `feat/m5-layered-continuity`。原 main 与发布包不覆盖。
 
 ## 范围与当前结论

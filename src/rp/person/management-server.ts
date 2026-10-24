@@ -32,6 +32,7 @@ export async function openManagementServer(controller:ManagementController,conte
    else if(req.url==='/api/prepare')value=await controller.prepare(input)
    else if(req.url==='/api/confirm'){const op=object(input,['id']);value=await controller.confirm(op.id);await changed()}
    else{object(input,[]);revoked=true;controller.revoke();value={closed:true}}
+   if(req.url!=='/api/close'){if(!auth(req))throw new RpError('ownership_lost','管理入口已撤销；请重新打开并核对状态。');controller.assertActive()}
    res.setHeader('Content-Type','application/json; charset=utf-8');res.end(JSON.stringify({ok:true,value}))
    if(req.url==='/api/close')server.close()
   }catch(e){

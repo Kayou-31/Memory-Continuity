@@ -1,3 +1,7 @@
+# 后续开发入口
+
+2026-10-24 的 Memory-Continuity 0.2.0-dev.3 后端补充见 [M5 后端报告](../rp-memory-m5/BACKEND-RESULTS.md)，中文指令见 [COMMANDS](../COMMANDS.zh.md)。以下历史结果保留，不将旧版本结果改写为新版本实测。
+
 # Ultra-RP-Memory 实际执行报告（dev.3 至 0.2.0-dev.1）
 
 ## 2026-10-24：Memory-Continuity M5
