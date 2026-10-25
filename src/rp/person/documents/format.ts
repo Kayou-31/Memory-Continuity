@@ -1,17 +1,17 @@
-import {hash, id, integer, invalid, object} from '../../schema.js'
+import {hash, id, integer, invalid, object, text} from '../../schema.js'
 import {documentCandidate, semanticProtocol} from '../../semantic-registry.js'
 import type {AuthorityChange, SemanticEvent} from '../../types.js'
-import {DOCUMENT_CATEGORIES, type DocumentManifest, type DocumentValue} from './types.js'
+import {DOCUMENT_CATEGORIES, type DocumentManifest, type DocumentValue, type DocumentSectionPolicy} from './types.js'
 import {documentTitle, MAX_DOCUMENT_BYTES, MAX_DOCUMENT_CHUNKS, MAX_DOCUMENT_CHUNK_BYTES, MAX_DOCUMENT_SECTIONS, validatePersonDocument} from './schema.js'
 
 /** Structural validation here; the store verifies the actual accepted source bytes. */
 export function validateDocumentValue(input: unknown): asserts input is DocumentValue {
-  const v = object(input, ['protocol','operation','documentId','personId','originEventId','previousEventId','manifest'])
+  const v = object(input, ['protocol','operation','documentId','personId','originEventId','previousEventId','manifest'], ['policies'])
   if (v.protocol !== 'person-document/v1' || !['import','revise','retract'].includes(v.operation)) invalid('document operation')
   id(v.documentId); id(v.personId); id(v.originEventId)
   if (v.operation === 'import') { if (v.previousEventId !== null) invalid('document import predecessor') }
   else id(v.previousEventId)
-  if (v.operation === 'retract') { if (v.manifest !== null) invalid('withdrawn document manifest'); return }
+  if (v.operation === 'retract') { if (v.manifest !== null || v.policies !== undefined) invalid('withdrawn document manifest'); return }
   const m = object(v.manifest, ['documentId','personId','title','format','sha256','utf8Bytes','sections','chunks','sourceRevisionId','textLengthUtf16'])
   id(m.sourceRevisionId); documentTitle(m.title); hash(m.sha256); integer(m.utf8Bytes,1); integer(m.textLengthUtf16,1)
   if (m.documentId !== v.documentId || m.personId !== v.personId || !['text','markdown'].includes(m.format) || m.utf8Bytes > MAX_DOCUMENT_BYTES || m.textLengthUtf16 > MAX_DOCUMENT_BYTES) invalid('document manifest identity or size')
@@ -37,6 +37,26 @@ export function validateDocumentValue(input: unknown): asserts input is Document
     sectionEnd = s.endUtf16
   }
   if (sectionEnd !== m.textLengthUtf16 || chunkIndex !== m.chunks.length || bytes !== m.utf8Bytes) invalid('document manifest coverage')
+  documentPolicies(v.policies, sectionIds)
+}
+export function documentPolicies(input:unknown,sectionIds:ReadonlySet<string>):DocumentSectionPolicy[] {
+  const values=input??[]
+  if(!Array.isArray(values)||values.length>MAX_DOCUMENT_SECTIONS)invalid('document policy count')
+  const seen=new Set<string>()
+  for(const input of values){
+    const p=object(input,['sectionId','category','label','tags','enabled','when']);id(p.sectionId);text(p.label,128)
+    if(!sectionIds.has(p.sectionId)||seen.has(p.sectionId)||!DOCUMENT_CATEGORIES.includes(p.category)||typeof p.enabled!=='boolean')invalid('document policy identity or category')
+    seen.add(p.sectionId)
+    const list=(v:unknown,max:number)=>{if(!Array.isArray(v)||!v.length||v.length>max||new Set(v).size!==v.length)invalid('document policy list');v.forEach(s=>text(s,256))}
+    if(!Array.isArray(p.tags)||p.tags.length>16||new Set(p.tags).size!==p.tags.length)invalid('document policy tags');p.tags.forEach((s:unknown)=>text(s,64))
+    const w=object(p.when,['kind'],['platform','accountId','senderIds','groupIds','sceneIds'])
+    if(!['all','direct','group'].includes(w.kind))invalid('document audience kind')
+    if(w.platform!==undefined)text(w.platform,128);if(w.accountId!==undefined)text(w.accountId,256)
+    for(const key of ['senderIds','groupIds','sceneIds'])if(w[key]!==undefined)list(w[key],32)
+    if((w.senderIds||w.groupIds)&&(!w.platform||!w.accountId))invalid('specific audience requires platform and bot account')
+    if(w.groupIds&&w.kind!=='group')invalid('group condition requires group context')
+  }
+  return structuredClone(values) as DocumentSectionPolicy[]
 }
 export function documentValue(event: SemanticEvent): DocumentValue | null {
   if (semanticProtocol(event) !== 'person-document/v1') return null

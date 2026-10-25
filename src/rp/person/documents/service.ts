@@ -5,13 +5,13 @@ import type {HostAuthority, InputFence, SourceRevision} from '../../types.js'
 import {cloneInput, denied, failure, fence, id, invalid, object, RpError, text} from '../../schema.js'
 import {unwrap} from '../../retrieval.js'
 import {projectPerson} from '../projection.js'
-import {documentFromManifest, documentHead, documentValue} from './format.js'
+import {documentFromManifest, documentHead, documentPolicies, documentValue} from './format.js'
 import {validatePersonDocument} from './schema.js'
-import type {DocumentManifest, DocumentValue, PersonDocumentDraft} from './types.js'
+import type {DocumentManifest, DocumentValue, DocumentSectionPolicy, PersonDocumentDraft} from './types.js'
 
 const digest = (v:unknown) => createHash('sha256').update(canonical(v)).digest('hex')
 export function createDocumentService(store:RpStore, service:ReturnType<typeof createCanonicalService>, entityIds:readonly string[]) {
-  type Preview = {authority:HostAuthority; draft:PersonDocumentDraft; previousEventId:string|null; originEventId:string; eventId:string; key:string; expected:InputFence}
+  type Preview = {authority:HostAuthority; draft:PersonDocumentDraft; policies:DocumentSectionPolicy[]; previousEventId:string|null; originEventId:string; eventId:string; key:string; expected:InputFence}
   const previews = new WeakMap<object,Preview>(), known = new Set(entityIds)
   const keyFor = (key:string) => {text(key,230);return 'person-document:'+key}
   const owner = (personId:string,documentId:string) => {id(personId);id(documentId);if(!known.has(personId))denied('unknown document person')}
@@ -38,19 +38,19 @@ export function createDocumentService(store:RpStore, service:ReturnType<typeof c
     async preview(authority:HostAuthority,input:unknown,key:string) {
       try {
         keyFor(key)
-        const v=object(cloneInput(input),['draft'],['previousEventId']), draft=validatePersonDocument(v.draft)
+        const v=object(cloneInput(input),['draft'],['previousEventId','policies']), draft=validatePersonDocument(v.draft),policies=documentPolicies(v.policies,new Set(draft.sections.map(s=>s.sectionId)))
         owner(draft.personId,draft.documentId)
         const previousEventId=v.previousEventId??null; if(previousEventId!==null)id(previousEventId)
         const view=unwrap(await store.withReadView(authority,view=>({ledger:view.ledger!,person:projectPerson(view,draft.personId),events:view.events}),{audit:true}))
-        const eventId='document_'+digest([view.ledger.branch.workspaceId,view.ledger.branch.id,key,draft,previousEventId]).slice(0,48)
+        const eventId='document_'+digest([view.ledger.branch.workspaceId,view.ledger.branch.id,key,draft,previousEventId,...(policies.length?[policies]:[])]).slice(0,48)
         if (!await priorResult(authority,key,eventId)) {
           const head=documentHead(view.ledger.authorityChanges,draft.personId,draft.documentId)
           if(head!==previousEventId)invalid('document predecessor changed')
           if(head) {const e=view.events.find(e=>e.id===head),p=e&&documentValue(e);if(!p||p.operation==='retract')invalid('document predecessor unavailable or withdrawn')}
         }
-        const handle=Object.freeze({}),p={authority,draft,previousEventId,originEventId:view.person.originEventId,eventId,key,expected:view.ledger.fence}
+        const handle=Object.freeze({}),p={authority,draft,policies,previousEventId,originEventId:view.person.originEventId,eventId,key,expected:view.ledger.fence}
         previews.set(handle,p)
-        return {ok:true as const,value:{handle,documentId:draft.documentId,personId:draft.personId,sha256:draft.sha256,utf8Bytes:draft.utf8Bytes,inputFence:structuredClone(p.expected),operation:previousEventId?'revise':'import',draft:structuredClone(draft)}}
+        return {ok:true as const,value:{handle,documentId:draft.documentId,personId:draft.personId,sha256:draft.sha256,utf8Bytes:draft.utf8Bytes,inputFence:structuredClone(p.expected),operation:previousEventId?'revise':'import',draft:structuredClone(draft),policies:structuredClone(policies)}}
       }catch(e){return failure(e)}
     },
     async confirm(authority:HostAuthority,handle:object,source:SourceRevision) {
@@ -63,7 +63,7 @@ export function createDocumentService(store:RpStore, service:ReturnType<typeof c
         const original=unwrap(await store.observeSource(authority,{idempotencyKey:'document-source:'+p.eventId,origin:'user_control',role:'user_control',turnId:'turn_'+p.eventId,publicText:p.draft.text}))
         const {text:_text,protocol:_protocol,...metadata}=p.draft
         const manifest:DocumentManifest={...metadata,sourceRevisionId:original.id,textLengthUtf16:p.draft.text.length}
-        const value:DocumentValue={protocol:'person-document/v1',operation:p.previousEventId?'revise':'import',documentId:p.draft.documentId,personId:p.draft.personId,originEventId:p.originEventId,previousEventId:p.previousEventId,manifest}
+        const value:DocumentValue={protocol:'person-document/v1',operation:p.previousEventId?'revise':'import',documentId:p.draft.documentId,personId:p.draft.personId,originEventId:p.originEventId,previousEventId:p.previousEventId,manifest,...(p.policies.length?{policies:p.policies}:{})}
         return {ok:true as const,value:await publish(authority,ctl,value,p.eventId,p.key,p.expected)}
       }catch(e){return failure(e)}
     },
@@ -77,7 +77,7 @@ export function createDocumentService(store:RpStore, service:ReturnType<typeof c
           if(!value.manifest)return {status:'withdrawn' as const,eventId:event.id,draft:null,fence:view.fence}
           const m=value.manifest,span=event.sources.find(s=>s.sourceRevisionId===m.sourceRevisionId)
           if(!span)throw new RpError('source_unavailable','Document original unavailable')
-          return {status:'active' as const,eventId:event.id,draft:documentFromManifest(m,await view.readSource(span)),fence:view.fence}
+          return {status:'active' as const,eventId:event.id,draft:documentFromManifest(m,await view.readSource(span)),policies:structuredClone(value.policies??[]),fence:view.fence}
         },{audit:true})
       }catch(e){return failure(e)}
     },

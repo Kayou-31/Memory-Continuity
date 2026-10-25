@@ -107,6 +107,14 @@ Task2 RED：4/4失败、退出1，缺少文档服务。实现后的4项通过，
 
 真实旧读取器取自已发布0.2.1源码提交 `1d997516a3cb0621163a94a2bb16b1a7bd28243c`，确实拒绝新能力；合成profile的完整备份逐文件校验后恢复，旧版重新读到人物。没有迁移或还原真实用户数据。首次Task2类型检查暴露两处新事件类型联合的错误，修正后 `npm run typecheck` 单独执行退出0（`task-2-typecheck.log`）。
 
-尚未验证：原始超限迁移案例、实际 tokenizer 32K 边界、真实用户大文档迁移、独立 RPC 权限、真实 AstrBot 生命周期、NapCat/Snow Luma 真实 QQ 收发、跨平台账号映射、全新工作台交互与长期负载。
+Task3新增 `person/documents/{audience,selection}.ts` 和受众/真实宿主回归。显式保存每节分类、标签与条件，默认仅归档；通过可信宿主能力区分平台、机器人账号、私聊、发送者、群和场景，正文不能授予身份。检索不返回原始文档清单，证据展开只读取已选片段，置顶不能越过条件或恢复已撤回内容。旧人物voice仍保持必需语义。分类编辑与管理快照界面统一留给Task5，避免提前加入尚未接通的按钮。
+
+Task3初始4/4失败（未支持policies），实现后4/4通过。真实DSH rc.2测试进一步复现了文档片段与host journal原事件证明不匹配，以及“旧文档仍保留为历史导致旧注入被放行”两个问题。现已将片段绑定原文档事件证明，并在历史验证时要求文档仍为当前有效版本，验证过程使用同一read view。
+
+Task3定向命令 `node --test --test-concurrency=1 test/rp-person-audience.test.mjs test/rp-person-document-host.test.mjs test/rp-person-document-store.test.mjs test/rp-injection.test.mjs test/rp-injection-host.test.mjs test/rp-injection-compat.test.mjs`：第一次27/28通过、退出1；原因是新增测试错误地期望插件主动关闭后原会话自动恢复准入。检查关闭实现后保留原有撤权规则，改为验收冷启动后的授权干净续接。修正后同一完整定向命令28/28、失败0/跳过0/取消0、退出0、12999.3812ms；日志 `task-3-final-2.log`。`npm run typecheck`退出0，日志 `task-3-typecheck.log`。没有把两次运行拼成一次通过。
+
+新增真实SDK测试验证：文档片段进入请求、修订后旧历史被拒绝且不增加下游调用、干净续接选入新资料、关闭后冷启动仍可干净续接；使用离线终端，网络守卫无外发。测试准备曾因两个fixture并行启动/停止esbuild服务出现未完成顶层await，已改为串行加载；干净续接创建的agent不属于fixture原handle列表，关闭时沿用实际插件关闭流程。这些准备错误保留在日志中。
+
+受众测试目前是核心可信能力测试，不能视为QQ平台身份验收；DSH无平台身份时只选择无账号限制的通用条件。尚未验证：原始超限迁移案例、实际 tokenizer 32K 边界、真实用户大文档迁移、独立 RPC 权限、真实 AstrBot 生命周期、NapCat/Snow Luma 真实 QQ 收发、跨平台账号映射、全新工作台交互与长期负载。
 
 除上述完整基线和定向测试/类型检查外，尚未执行本轮生产变更后的 `npm run build`、完整 `npm test`、`npm run evaluate:fixture`、`npm pack --dry-run`。基线和诊断不能代替下一版完整验收，也没有将定向结果拼成全量通过。

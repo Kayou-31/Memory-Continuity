@@ -4,6 +4,7 @@ import { canonical, type RpStore } from './store.js'
 import type { HostAuthority, ProjectionResult, SemanticEvent, Summary } from './types.js'
 import { hash, id, object, RpError } from './schema.js'
 import { unwrap } from './retrieval.js'
+import {documentHead,documentValue} from './person/documents/format.js'
 
 export interface PacketProof {
   readonly records: readonly { readonly id: string; readonly kind: 'event' | 'summary'; readonly revision: string }[]
@@ -30,8 +31,10 @@ export function capturePacketProof(events: readonly SemanticEvent[], summaries: 
 export async function verifyPacketProof(store: RpStore, authority: HostAuthority, proof: PacketProof | undefined): Promise<void> {
   if (!proof) throw new RpError('stale_input', 'Historical packet has no original proof; use clean continuation')
   validatePacketProof(proof)
-  const before = unwrap(await store.readFence(authority)), events = unwrap(await store.readEvents(authority)), summaries = unwrap(await store.readSummaries(authority)), projection = unwrap(await store.replayProjection(authority))
-  const records = new Map<string, { kind: 'event' | 'summary'; revision: string }>([...events.map(event => [event.id, { kind: 'event', revision: digest(event) }] as const), ...summaries.map(summary => [summary.id, { kind: 'summary', revision: digest(summary) }] as const)])
-  if (proof.projectionSha256 !== projectionHash(projection) || proof.records.some(record => records.get(record.id)?.kind !== record.kind || records.get(record.id)?.revision !== record.revision)) throw new RpError('stale_input', 'Historical packet records changed; use clean continuation')
-  if (canonical(before) !== canonical(unwrap(await store.readFence(authority)))) throw new RpError('stale_input', 'Packet proof changed during validation')
+  unwrap(await store.withReadView(authority,view=>{
+    const events=view.events.filter(event=>{const d=documentValue(event);return !d||!!view.ledger&&!!d.manifest&&documentHead(view.ledger.authorityChanges,d.personId,d.documentId)===event.id})
+    const records = new Map<string, { kind: 'event' | 'summary'; revision: string }>([...events.map(event => [event.id, { kind: 'event', revision: digest(event) }] as const), ...view.summaries.map(summary => [summary.id, { kind: 'summary', revision: digest(summary) }] as const)])
+    if (proof.projectionSha256 !== projectionHash(view.projection) || proof.records.some(record => records.get(record.id)?.kind !== record.kind || records.get(record.id)?.revision !== record.revision)) throw new RpError('stale_input', 'Historical packet records changed; use clean continuation')
+    return true
+  },{audit:authority.viewpoint.kind==='narrator'}))
 }

@@ -43,4 +43,13 @@ export interface DocumentValue {
   originEventId: string
   previousEventId: string | null
   manifest: DocumentManifest | null
+  policies?: DocumentSectionPolicy[]
+}
+export interface DocumentSectionPolicy {
+  sectionId: string
+  category: DocumentCategory
+  label: string
+  tags: string[]
+  enabled: boolean
+  when: {kind:'all'|'direct'|'group';platform?:string;accountId?:string;senderIds?:string[];groupIds?:string[];sceneIds?:string[]}
 }
