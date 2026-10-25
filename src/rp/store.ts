@@ -8,7 +8,8 @@ import type { Branch, BranchScope, BranchSourceBinding, CommitBatch, HostAuthori
 import { RpError, batch as validateBatch, binding as validateBinding, branch as validateBranch, checkedRpJson, cloneInput, denied, failure, fence as validateFence, hash, id, hostId, integer, invalid, job as validateJob, object, observation as validateObservation, parseRecord, scope as validateScope, sourceSpan as validateSpan, text, visibility as validateVisibility, authorityChange as validateChange, wellFormed } from './schema.js'
 import { reduceEvents, eventsForView } from './reducer.js'
 import { checkGrowthTransition, growthValue, inheritGrowthMarks, markGrowthEvent } from './growth-format.js'
-import { hasPersonOwner, markerProtocol, markSemantic, requiresPerson, semanticProtocol } from './semantic-registry.js'
+import { hasPersonOwner, markerProtocol, markSemantic, requiredSemanticCapabilities, semanticProtocol } from './semantic-registry.js'
+import {documentFromManifest, documentHead, documentValue} from './person/documents/format.js'
 import { checkPersonTransition, personValue } from './person/format.js'
 export { parseRecord } from './schema.js'
 /** Trusted storage adapters reuse the same verified lock/read protocol. */
@@ -27,6 +28,8 @@ const newId = (prefix: string) => prefix + '_' + randomUUID().replaceAll('-', ''
 const ok = <T>(value: T): Result<T> => { const copy = structuredClone(value); inheritGrowthMarks(value, copy); return { ok: true, value: copy } }
 const same = (a: unknown, b: unknown) => canonical(a) === canonical(b)
 function eventDependencies(event: SemanticEvent): string[] {
+  const document = documentValue(event)
+  if (document) return [...new Set([document.originEventId, ...(document.previousEventId ? [document.previousEventId] : [])])]
   const payload = event.payload
   const base = payload.kind === 'knowledge_change' ? [payload.claimId] : payload.kind === 'relationship_change' ? [...payload.triggerEventIds] : payload.kind === 'correction' ? [...payload.replacementEventIds] : []
   const growth = growthValue(event)
@@ -35,10 +38,11 @@ function eventDependencies(event: SemanticEvent): string[] {
 }
 function authenticateEvent(event: SemanticEvent, changes: readonly AuthorityChange[]) {
   const protocol = markerProtocol(changes, event)
-  if (!protocol) return
+  if (!protocol) { if (event.payload.kind === 'person_document') denied('document requires authenticated semantic marker'); return }
   markSemantic(event, protocol)
   if (protocol === 'agent-memory/v1') markGrowthEvent(event)
   else if (protocol === 'person-core/v1') personValue(event)
+  else if (protocol === 'person-document/v1') documentValue(event)
   else if (event.payload.kind !== 'occurrence' || event.epistemic !== 'world' || !['user_canon', 'explicit_ooc'].includes(event.authority) || event.supersedes.length) denied('person origin must be explicit initial definition')
 }
 function error(code: import('./types.js').ErrorCode, message: string): never { throw new RpError(code, message) }
@@ -326,8 +330,8 @@ export class RpStore {
         if (tx.schemaVersion !== 1 || tx.workspaceId !== workspaceId || tx.sequence !== state.transactions.length + 1 || tx.previousHash !== (state.hashes.at(-1) ?? ZERO) || envelope.sha256 !== digest(tx)) invalid('transaction chain')
         text(tx.idempotencyKey, 512); hash(tx.effectHash); this.#validateOperation(tx.operation)
         const caps = tx.requiredCapabilities ?? []
-        if (!Array.isArray(caps) || caps.some(c => c !== 'rp.person-core/v1')) error('capability_missing', 'Unsupported workspace reader capability')
-        if (!same(caps, [...new Set(caps)].sort()) || state.requiredCapabilities.some(c => !caps.includes(c)) || (tx.operation.kind === 'commit' && requiresPerson(tx.operation.authorityChanges) && !caps.includes('rp.person-core/v1'))) invalid('workspace capability regression or missing person barrier')
+        if (!Array.isArray(caps) || caps.some(c => !['rp.person-core/v1','rp.person-documents/v1'].includes(c))) error('capability_missing', 'Unsupported workspace reader capability')
+        if (!same(caps, [...new Set(caps)].sort()) || state.requiredCapabilities.some(c => !caps.includes(c)) || (tx.operation.kind === 'commit' && requiredSemanticCapabilities(tx.operation.authorityChanges).some(c=>!caps.includes(c)))) invalid('workspace capability regression or missing semantic barrier')
         state.requiredCapabilities = caps
         if (effects.has(tx.idempotencyKey)) invalid('duplicate transaction effect')
         this.#apply(state, tx.operation)
@@ -419,7 +423,7 @@ export class RpStore {
     return new Map([...branch.records].map(([id, r]) => [id, { ...r, active: !blocked.has(id) }]))
   }
   async #append(workspaceId: string, state: WorkspaceState, key: string, effectHash: string, operation: Operation, useFault = true, publishPayloads?: () => Promise<void>): Promise<void> {
-    const caps = [...new Set([...state.requiredCapabilities, ...(operation.kind === 'commit' && requiresPerson(operation.authorityChanges) ? ['rp.person-core/v1'] : [])])].sort()
+    const caps = [...new Set([...state.requiredCapabilities, ...(operation.kind === 'commit' ? requiredSemanticCapabilities(operation.authorityChanges) : [])])].sort()
     const transaction: Transaction = { schemaVersion: 1, workspaceId, sequence: state.transactions.length + 1, previousHash: state.hashes.at(-1) ?? ZERO, idempotencyKey: key, effectHash, operation, ...(caps.length ? { requiredCapabilities: caps } : {}) }
     this.#validateOperation(operation)
     // Run the same metadata replay validator before publishing.
@@ -703,6 +707,13 @@ export class RpStore {
       const body = await this.#readBlob(request.workspaceId, r.blobId, r.bodySha256), parsed = parseRecord({ kind: 'event', record: JSON.parse(body) })
       if (!parsed.ok || parsed.value.kind !== 'event') error('source_unavailable', 'RP event payload unavailable')
       authenticateEvent(parsed.value.record, branch.changes)
+      const document = documentValue(parsed.value.record)
+      if (document?.manifest) {
+        const m = document.manifest
+        const span = parsed.value.record.sources.find(s=>s.sourceRevisionId===m.sourceRevisionId && s.startUtf16===0 && s.endUtf16===m.textLengthUtf16 && s.publicTextSha256===m.sha256 && s.quoteSha256===m.sha256)
+        if (!span) error('source_unavailable','RP document original coverage unavailable')
+        documentFromManifest(m, await this.#verifySpan(state,branch,request,span,sourceText))
+      }
       const { payload: _payload, fictionalTime: _time, ...metadata } = parsed.value.record
       if (!same(metadata, r.metadata) || !same(eventDependencies(parsed.value.record), r.dependencyIds)) error('source_unavailable', 'RP event authority metadata mismatch')
       records.push(parsed.value.record)
@@ -831,7 +842,8 @@ export class RpStore {
       return await lock(this.#workspacePath(grant.request.workspaceId), async () => {
         await this.#authorize(authority, 'commit')
         const state = await this.#load(grant.request.workspaceId), current = this.#branch(state, grant.request)
-        const key = 'branch:' + grant.request.branchId + ':' + sha(batch.idempotencyKey), effect = requiresPerson(batch.authorityChanges) ? digest({ batch, requiredCapabilities: ['rp.person-core/v1'] }) : digest(batch), existing = state.transactions.find(tx => tx.idempotencyKey === key)
+        const requiredCapabilities = requiredSemanticCapabilities(batch.authorityChanges)
+        const key = 'branch:' + grant.request.branchId + ':' + sha(batch.idempotencyKey), effect = requiredCapabilities.length ? digest({ batch, requiredCapabilities }) : digest(batch), existing = state.transactions.find(tx => tx.idempotencyKey === key)
         if (existing) { if (existing.effectHash !== effect || existing.operation.kind !== 'commit') error('idempotency_conflict', 'RP commit idempotency key has different effects'); await this.#seal(grant.request.workspaceId, existing.sequence, digest(existing)); return ok(existing.operation.result) }
         if (!same(current.fence, batch.expected) || batch.nextContextRevision !== current.fence.contextRevision + 1) error('stale_input', 'RP input fence changed')
         const next: BranchState = structuredClone(current), touched = new Set<string>()
@@ -900,7 +912,7 @@ export class RpStore {
         const records: Derived[] = [], payloads = new Map<string, string>(), identifiers = new Set([...next.records.keys(), ...next.jobs.keys()])
         let growthHistory: SemanticEvent[] | undefined
         batch.events.forEach(e => authenticateEvent(e, changes))
-        const newPeople = new Set<string>()
+        const newPeople = new Set<string>(), documentChanges = new Set<string>()
         for (const event of batch.events) if (semanticProtocol(event) === 'person-origin/v1' && event.payload.kind === 'occurrence') {
           const personId = event.payload.actorIds[0]
           if (newPeople.has(personId) || hasPersonOwner(inheritedBase.changes, personId)) invalid('person already initialized in life branch')
@@ -943,6 +955,28 @@ export class RpStore {
               if (original.value.record.payload.kind === 'canon_assertion' && original.value.record.payload.locked && !['explicit_ooc', 'user_canon'].includes(record.authority)) denied('locked canon requires explicit user correction')
             }
             dependencies = eventDependencies(record)
+            const document = documentValue(record)
+            if (document) {
+              if (batch.invalidatedIds.length || batch.events.some(e=>e.supersedes.length || e.payload.kind==='correction')) invalid('document changes and retcon must be separate controls')
+              const identity = canonical([document.personId, document.documentId])
+              if (documentChanges.has(identity)) invalid('multiple document changes in one commit')
+              documentChanges.add(identity)
+              growthHistory ??= await this.#readEventBodies(state, inheritedBase, grant.request)
+              const origin = growthHistory.find(e=>e.id===document.originEventId)
+              if (!origin || semanticProtocol(origin)!=='person-origin/v1' || origin.payload.kind!=='occurrence' || origin.payload.actorIds[0]!==document.personId) denied('document person origin unavailable')
+              const head = documentHead(inheritedBase.changes,document.personId,document.documentId)
+              if (head !== document.previousEventId || (document.operation==='import') !== (head===null)) invalid('document predecessor changed')
+              if (head) {
+                const prior = growthHistory.find(e=>e.id===head), value = prior && documentValue(prior)
+                if (!value || value.originEventId!==document.originEventId || value.operation==='retract') invalid('document predecessor unavailable or withdrawn')
+              }
+              if (document.manifest) {
+                const m = document.manifest, original = state.sources.get(m.sourceRevisionId)
+                const span = record.sources.find(s=>s.sourceRevisionId===m.sourceRevisionId && s.startUtf16===0 && s.endUtf16===m.textLengthUtf16 && s.publicTextSha256===m.sha256 && s.quoteSha256===m.sha256)
+                if (!original || original.origin!=='user_control' || !span) denied('document requires original user source')
+                documentFromManifest(m,await this.#verifySpan(state,next,grant.request,span))
+              }
+            }
             const growth = growthValue(record), person = personValue(record)
             if (person?.operation === 'init' && !batch.events.some(e => e.id === person.causeEventIds[0] && semanticProtocol(e) === 'person-origin/v1')) invalid('initial person fields require the same origin transaction')
             if (growth || person) {

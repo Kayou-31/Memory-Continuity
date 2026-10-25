@@ -101,6 +101,12 @@ RED：新测试5/5失败，退出1，原因是新导出尚不存在。实现后5
 
 一次独立只读设计审阅已完成，未创建递归代理。根据审阅收紧了三处：分别保留未分段 3/4 MiB 与分段 8/12 MiB 的存储预算；QQ 接入实例标识必须跨重连持久化；32K 注入计入同轮和请求中保留的记忆工具结果。审阅未发现必须由用户补充选择的关键接口缺口，但这不代替实现和宿主验收。
 
-尚未验证：原始超限迁移案例、实际 tokenizer 32K 边界、大文档迁移与旧读取器、独立 RPC 权限、真实 AstrBot 生命周期、NapCat/Snow Luma 真实 QQ 收发、跨平台账号映射、全新工作台交互与长期负载。
+Task2新增 `person/documents/{format,service}.ts`，提供预览、确认、读取、修订和撤回；修改 `store.ts`、`canonical.ts`、`semantic-registry.ts`、`schema.ts`、`types.ts`、`growth-format.ts` 与 `memory.ts` 接入受认证的文档事件。原文单独存为来源，事件只保留定位与哈希；文档不进入普通事实状态。新工作区能力为 `rp.person-documents/v1`，第一次使用前复用完整备份，branch/global v1不变。修订保留旧证据，最新版失效后拒绝读取，不能自动回退旧稿；兄弟分支按固定历史独立。
 
-除上述完整基线外，尚未执行本轮生产变更后的 `npm run typecheck`、`npm run build`、`npm test`、`npm run evaluate:fixture`、`npm pack --dry-run`。基线和诊断不能代替下一版完整验收，也没有将定向结果拼成全量通过。
+Task2 RED：4/4失败、退出1，缺少文档服务。实现后的4项通过，补充真实旧读取器、备份/发布故障、retcon、隐私删除和底层绕过测试后8/8通过。定向回归一次运行 `node --test --test-concurrency=1 test/rp-person-documents.test.mjs test/rp-person-document-store.test.mjs test/rp-person-document-compat.test.mjs test/rp-person.test.mjs test/rp-person-compat.test.mjs test/rp-person-growth.test.mjs test/rp-store.test.mjs test/rp-read-view.test.mjs`，59/59、失败0/跳过0/取消0、退出0、15618.5593ms。日志为 `task-2-final.log`。这只是相关测试集合，不是完整 `npm test`。
+
+真实旧读取器取自已发布0.2.1源码提交 `1d997516a3cb0621163a94a2bb16b1a7bd28243c`，确实拒绝新能力；合成profile的完整备份逐文件校验后恢复，旧版重新读到人物。没有迁移或还原真实用户数据。首次Task2类型检查暴露两处新事件类型联合的错误，修正后 `npm run typecheck` 单独执行退出0（`task-2-typecheck.log`）。
+
+尚未验证：原始超限迁移案例、实际 tokenizer 32K 边界、真实用户大文档迁移、独立 RPC 权限、真实 AstrBot 生命周期、NapCat/Snow Luma 真实 QQ 收发、跨平台账号映射、全新工作台交互与长期负载。
+
+除上述完整基线和定向测试/类型检查外，尚未执行本轮生产变更后的 `npm run build`、完整 `npm test`、`npm run evaluate:fixture`、`npm pack --dry-run`。基线和诊断不能代替下一版完整验收，也没有将定向结果拼成全量通过。

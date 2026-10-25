@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto'
 import type { RpStore } from './store.js'
 import type { AuthorityChange, BranchSourceBinding, EventPayload, ForkManifest, HostAuthority, InputFence, Result, SemanticEvent, SourceRevision } from './types.js'
 import { cloneInput, event as validateEvent, failure, fence as validateFence, id, invalid, object, denied, text } from './schema.js'
-import { personOriginCandidate } from './semantic-registry.js'
+import { personOriginCandidate, documentCandidate } from './semantic-registry.js'
 export { assessClaim, reduceEvents } from './reducer.js'
 export { applyNativeCanonicalEvent } from './host-adapter.js'
 
@@ -12,7 +12,7 @@ export interface EventProposal {
   readonly id: string; readonly payload: EventPayload; readonly epistemic: SemanticEvent['epistemic']; readonly beliefHolderId?: string
   readonly fictionalTime?: string | null; readonly sourceRevisionIds?: readonly string[]; readonly supersedes?: readonly string[]
   readonly growthProtocol?: 'agent-memory/v1'
-  readonly personProtocol?: 'person-core/v1' | 'person-origin/v1'
+  readonly personProtocol?: 'person-core/v1' | 'person-origin/v1' | 'person-document/v1'
 }
 type BaseControl = { readonly idempotencyKey: string; readonly expected: InputFence }
 export type CanonicalControl = BaseControl & (
@@ -130,7 +130,12 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
             growthMarkers.push({ kind: 'candidate_adoption', recordId: 'growth_' + event.id, record: { candidateId: 'agent_memory_v1', sourceRevisionIds: support.map(s => s.id), eventIds: [event.id], summaryIds: [], decision: 'accepted', controlSourceId: source.id } })
           }
           if (proposal.personProtocol !== undefined) {
-            if (proposal.growthProtocol !== undefined || !['person-core/v1', 'person-origin/v1'].includes(proposal.personProtocol)) invalid('person protocol')
+            if (proposal.growthProtocol !== undefined || !['person-core/v1', 'person-origin/v1', 'person-document/v1'].includes(proposal.personProtocol)) invalid('person protocol')
+            if (proposal.personProtocol === 'person-document/v1') {
+              if (event.payload.kind !== 'person_document' || !entities.has(event.payload.value.personId)) denied('unknown document person or payload')
+              growthMarkers.push({kind:'candidate_adoption',recordId:'document_'+event.id,record:{candidateId:documentCandidate(event.payload.value.personId,event.payload.value.documentId),sourceRevisionIds:support.map(s=>s.id),eventIds:[event.id],summaryIds:[],decision:'accepted',controlSourceId:source.id}})
+              return event
+            }
             const origin = proposal.personProtocol === 'person-origin/v1'
             if (origin && (event.payload.kind !== 'occurrence' || event.payload.actorIds.length !== 1)) invalid('person origin actors')
             // Public core controls share the same trusted entity registry as person drafts.

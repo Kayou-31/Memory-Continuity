@@ -54,11 +54,11 @@
 
 **Interfaces:** `memory.documents.preview(authority,input,key)` 返回不透明预览句柄、内容哈希、fence 与差异；`confirm(authority,handle,controlSource)` 原子发布；`read(authority,documentId)` 在当前认证 read view 上还原文档；`retract` 复用人工控制和依赖失效。新的 semantic marker 与 `rp.person-documents/v1` workspace capability 一同验证，不接受正文自报协议。
 
-- [ ] 写失败测试：原文保存/关闭/重新打开字节一致；被改写 chunk 哈希拒绝；过期/跨权限/重复确认行为；故障注入不发布半份文档；实际旧 0.2.1 reader 拒绝新能力、完整备份可恢复。
-- [ ] 运行 `node --test --test-concurrency=1 test/rp-person-document-store.test.mjs` 并记录失败。
-- [ ] 复用源 blob、来源 span 与受认证语义标记。原文一次存储，事件只保存必要定位/分类，不在每块重复整篇文档。完整事务 envelope 预检失败后旧版本仍可读取。
-- [ ] 验证撤销、retcon、privacyDelete 与兄弟分支隔离；静态blob扫描不能返回未接受内容。执行文档、store、read-view 相关测试及 typecheck。
-- [ ] 提交文档持久化功能及证据。
+- [x] 写失败测试：原文保存/关闭/重新打开字节一致；被改写 chunk 哈希拒绝；过期/跨权限/重复确认行为；故障注入不发布半份文档；实际旧 0.2.1 reader 拒绝新能力、完整备份可恢复。
+- [x] 运行 `node --test --test-concurrency=1 test/rp-person-document-store.test.mjs` 并记录失败。
+- [x] 复用源 blob、来源 span 与受认证语义标记。原文一次存储，事件只保存必要定位/分类，不在每块重复整篇文档。完整事务 envelope 预检失败后旧版本仍可读取。
+- [x] 验证撤销、retcon、privacyDelete 与兄弟分支隔离；静态blob扫描不能返回未接受内容。执行文档、store、read-view 相关测试及 typecheck。59/59定向回归、类型检查退出0。
+- [x] 提交文档持久化功能及证据。
 
 ### Task 3: 细分类与受众条件
 

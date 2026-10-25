@@ -38,6 +38,7 @@ export interface InputFence {
   readonly visibilityRevision: Revision; readonly deletionGeneration: Revision; readonly policyVersion: string
 }
 export type EventPayload =
+  | { readonly kind: 'person_document'; readonly value: import('./person/documents/types.js').DocumentValue }
   | { readonly kind: 'canon_assertion'; readonly subjectId: Id; readonly key: string; readonly value: JsonValue; readonly locked: boolean }
   | { readonly kind: 'occurrence'; readonly actorIds: readonly Id[]; readonly description: string }
   | { readonly kind: 'state_change'; readonly subjectId: Id; readonly key: string; readonly before?: JsonValue; readonly after: JsonValue }

@@ -31,3 +31,16 @@ export interface PersonDocumentDraft extends PersonDocumentInput {
   sections: DocumentSection[]
   chunks: DocumentChunk[]
 }
+export interface DocumentManifest extends Omit<PersonDocumentDraft, 'text' | 'protocol'> {
+  sourceRevisionId: string
+  textLengthUtf16: number
+}
+export interface DocumentValue {
+  protocol: 'person-document/v1'
+  operation: 'import' | 'revise' | 'retract'
+  documentId: string
+  personId: string
+  originEventId: string
+  previousEventId: string | null
+  manifest: DocumentManifest | null
+}

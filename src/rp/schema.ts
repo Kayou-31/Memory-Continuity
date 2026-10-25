@@ -1,4 +1,5 @@
 import type { Result, RpRecord, CommitBatch, SourceObservation, SourceSpan, Scope, Visibility, EventPayload, SemanticEvent, Summary, Branch, BranchSourceBinding, InputFence, Job, AuthorityChange } from './types.js'
+import {validateDocumentValue} from './person/documents/format.js'
 
 export class RpError extends Error {
   constructor(readonly code: import('./types.js').ErrorCode, message: string) { super(message) }
@@ -79,6 +80,7 @@ export function payload(v: unknown): asserts v is EventPayload {
   const kind = (v as any)?.kind
   let r: Record<string, any>
   switch (kind) {
+    case 'person_document': r = object(v, ['kind','value']); validateDocumentValue(r.value); break
     case 'canon_assertion': r = object(v, ['kind', 'subjectId', 'key', 'value', 'locked']); id(r.subjectId); choice(r.key, stateKeys); value(r.value); if (typeof r.locked !== 'boolean') invalid('locked'); break
     case 'occurrence': r = object(v, ['kind', 'actorIds', 'description']); ids(r.actorIds, 1); text(r.description, 65536); break
     case 'state_change': r = object(v, ['kind', 'subjectId', 'key', 'after'], ['before']); id(r.subjectId); choice(r.key, stateKeys); value(r.after); if (r.before !== undefined) value(r.before); break
