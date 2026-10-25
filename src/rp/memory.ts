@@ -32,15 +32,15 @@ export * from './session-policy.js'
 export * from './packet.js'
 export * from './retrieval.js'
 export { canonical } from './store.js'
-export async function openRpMemory(input: { profileRoot: string; entityIds: readonly string[]; coordinator?: MemoryCoordinator; memoryParts?:PacketServiceOptions['memoryParts']; optimizer?: () => RecallOptimizer | undefined; verification?: (recordId: string) => Promise<'source-match' | 'unavailable' | 'hash-mismatch'> }) {
+export async function openRpMemory(input: { profileRoot: string; entityIds: readonly string[]; active?:()=>void; coordinator?: MemoryCoordinator; memoryParts?:PacketServiceOptions['memoryParts']; optimizer?: () => RecallOptimizer | undefined; verification?: (recordId: string) => Promise<'source-match' | 'unavailable' | 'hash-mismatch'> }) {
   const coordinator = input.coordinator ?? new MemoryCoordinator()
   let global: Awaited<ReturnType<typeof openRpGlobalStore>>
   type Adoption = { authority: object; approval: object; binding: CanonBinding }
   const adoptions = new WeakMap<object, Adoption>(); let consumingAdoption: Adoption | undefined
-  const opened = await openRpStore({ profileRoot: input.profileRoot, verifyCanonBinding: async binding => {
+  const opened = await openRpStore({ profileRoot: input.profileRoot, active:input.active, verifyCanonBinding: async binding => {
     const current = consumingAdoption; if (!current || canonical(current.binding) !== canonical(binding)) return false; if (!global.control.isApproval(current.approval)) throw new RpError('scope_denied', 'Canon adoption approval revoked before commit'); return global.store.verifyBinding(current.authority, binding)
   } })
-  global = await openRpGlobalStore(input.profileRoot, coordinator)
+  global = await openRpGlobalStore(input.profileRoot, coordinator,input.active)
   // Every known writer, including later P4 job publication, shares this gate.
   const writes = new Set(['observeSource', 'commit', 'savePayloadCopy', 'transitionJob'])
   const store = new Proxy(opened.store, { get(target, key) { const value = Reflect.get(target, key, target); if (typeof value !== 'function') return value; return (...args: unknown[]) => writes.has(String(key)) ? coordinator.mutate(async () => { const previous = consumingAdoption; if (key === 'commit') consumingAdoption = adoptions.get(args[1] as object); try { return await value.apply(target, args) } finally { consumingAdoption = previous } }) : value.apply(target, args) } })

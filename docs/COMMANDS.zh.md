@@ -129,4 +129,15 @@
 
 同一宿主中销毁后重建会话，历史认证中的 `modeEpoch` 可能已失效，需要 `continue-clean`；这项限制保留。若 provider/model 已改变，新会话还要重新 `/memcont budget set {}`。普通预算不足先检查输出预留和已保留的工具历史，不要靠删除 journal 绕过检查。
 
-`/memcont compact`、`/memcont strict-pov`、`/memcont summarize-auto` 保持拒绝。当前模型只读工具不具备自动写入、自动采纳或外部行动权限。
+`/memcont compact`、`/memcont strict-pov`、`/memcont summarize-auto` 保持拒绝。普通检索工具只读；共同日记的专用写入工具仅在明确启用后、当前有效会话内可用，不授予人物编辑、事实采纳或其他外部行动权限。
+
+### 开发版：跨宿主占用诊断
+
+新版 DSH 插件与独立核心会拒绝同时写同一 profile。正常切换前关闭旧实例；异常退出后使用独立核心包中的本机指令：
+
+```text
+memcont-core owner inspect --profile <profile绝对路径>
+memcont-core owner recover --profile <profile绝对路径> --expected <诊断中的sha256>
+```
+
+先确认路径与进程，再复制该次诊断的摘要。恢复只接受已确认死亡的旧进程；记录已变更、进程仍活着、无法确认或记录损坏都会拒绝。不要自行删除锁文件。事务写锁仍由原有事务恢复流程处理；占用恢复不等于会话恢复，旧会话仍可能需要 `continue-clean`，结果不明的输入不会自动重发。旧版程序没有这项占用协议，升级前仍需明确停止旧实例。

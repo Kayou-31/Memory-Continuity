@@ -5,6 +5,7 @@
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/types/core/index.d.ts",
+  "bin": {"memcont-core": "./lib/cli.js"},
   "exports": {
     ".": {"types": "./lib/types/core/index.d.ts", "default": "./lib/index.js"},
     "./package.json": "./package.json"

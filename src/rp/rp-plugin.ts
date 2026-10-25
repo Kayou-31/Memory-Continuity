@@ -20,7 +20,7 @@ import { renderPrompt, renderContextSections, joinContextSections, SystemPrompt 
 import { SESSION_FORMAT_VERSION } from '@deepseek-ai/dsh-session'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { canonical, readRpJson } from './store.js'
-import { openRpMemory } from './memory.js'
+import { openMemoryCore as openRpMemory } from '../core/owned-memory.js'
 import { acquireSessionPolicy, engineeringAllowed, type SessionMemoryPolicy } from './session-policy.js'
 import { acquireRpAdmission } from './admission.js'
 import { retrievalEvidence, verifyRetrievalEvidence, type RetrievalEvidence } from './retrieval-evidence.js'
@@ -119,8 +119,8 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     return config.ultraMemoryOptimization !== false && support?.protocol === 'dsh-ultra-evidence/v2' && typeof support.memory?.hasActiveSession === 'function' && support.status?.().leases > 0 && !support.status?.().transitioning ? ultraOptimizer : undefined
   }
   const certifiedMemory=new WeakMap<object,{authority:HostAuthority;packet:MemoryPacket;digest:string;parts:MemoryPart[]}>()
-  const memory = await openRpMemory({memoryParts:(authority,packet,request)=>{const proof=certifiedMemory.get(request);if(!proof||proof.authority!==authority||proof.packet!==packet||proof.digest!==sha(canonical(request)))throw new RpError('scope_denied','Host memory classification is not certified for this exact request');return proof.parts}, profileRoot: config.profileRoot, entityIds: config.entityIds ?? [], coordinator: policy.coordinator, optimizer })
-  startupCleanups.push(() => memory.retrieval.dispose(), () => memory.jobs.close())
+  const memory = await openRpMemory({ownerKind:'embedded-dsh',memoryParts:(authority,packet,request)=>{const proof=certifiedMemory.get(request);if(!proof||proof.authority!==authority||proof.packet!==packet||proof.digest!==sha(canonical(request)))throw new RpError('scope_denied','Host memory classification is not certified for this exact request');return proof.parts}, profileRoot: config.profileRoot, entityIds: config.entityIds ?? [], coordinator: policy.coordinator, optimizer })
+  startupCleanups.push(() => memory.close())
   const workspaceRoot = await fs.realpath(config.workspaceRoot), hostRoot = path.join(config.profileRoot, '.dsh-rp', 'v1', 'host')
   await fs.mkdir(hostRoot, { recursive: true })
   let workspace = await memory.control.openWorkspace(workspaceRoot)
@@ -865,7 +865,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           b.data.blocked = true; await attempt(() => save(b, true))
         }
         for (const dispose of effects.reverse()) if (typeof dispose === 'function') await attempt(dispose)
-        await attempt(() => memory.retrieval.dispose()); for (const h of handles.reverse()) await attempt(() => h.dispose()); await attempt(() => lease.release()); admission.unreserve(owner)
+        await attempt(() => memory.retrieval.dispose()); for (const h of handles.reverse()) await attempt(() => h.dispose()); await attempt(() => lease.release()); await attempt(() => memory.close()); admission.unreserve(owner)
         if (errors.length) throw new AggregateError(errors, 'RP close failed; request ownership remains retired')
       })(); return closePromise
     },

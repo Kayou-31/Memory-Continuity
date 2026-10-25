@@ -18,7 +18,7 @@ await fs.copyFile(path.join(root,'LICENSE'),path.join(output,'LICENSE'))
 const types=spawnSync(process.execPath,[req.resolve('typescript/bin/tsc'),'-p',path.join(root,'tsconfig.core.json'),'--declarationDir',path.join(output,'lib/types')],{cwd:root,stdio:'inherit',windowsHide:true})
 if(types.status!==0)process.exit(types.status??1)
 try{
- const built=await build({absWorkingDir:root,entryPoints:['src/core/index.ts'],outfile:path.join(output,'lib/index.js'),bundle:true,format:'esm',platform:'node',target:'node22',charset:'utf8',sourcemap:'linked',sourcesContent:true,external:['node:*'],metafile:true,logLevel:'silent'})
+ const built=await build({absWorkingDir:root,entryPoints:{index:'src/core/index.ts',cli:'src/core/cli.ts'},outdir:path.join(output,'lib'),bundle:true,format:'esm',platform:'node',target:'node22',charset:'utf8',sourcemap:'linked',sourcesContent:true,external:['node:*'],metafile:true,logLevel:'silent'})
  for(const o of Object.values(built.metafile.outputs))for(const i of o.imports)if(i.external&&!i.path.startsWith('node:'))throw Error('Core runtime must not import external package '+i.path)
  for(const name of Object.keys(built.metafile.inputs))if(name.includes('node_modules')||name.includes('rp-plugin'))throw Error('Unexpected host dependency in core '+name)
  await fs.cp(path.join(root,'assets'),path.join(output,'assets'),{recursive:true})

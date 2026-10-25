@@ -59,6 +59,8 @@ type Permission = 'read' | 'observe' | 'commit' | 'control'
 export type FaultStage = 'profile_locked' | 'metadata_listed' | 'blob_written' | 'blob_synced' | 'blob_published' | 'transaction_written' | 'transaction_synced' | 'transaction_published' | 'seal_written' | 'seal_synced' | 'seal_published' | 'directory_synced'
 export interface StoreOptions {
   readonly profileRoot: string
+  /** Official owner lifecycle, checked again immediately before publication. */
+  readonly active?:()=>void
   /** Trusted filesystem fault seam; never supplied by model/tool input. */
   readonly fault?: (stage: FaultStage) => void | Promise<void>
   readonly onBlobRead?: () => void
@@ -192,6 +194,7 @@ export class RpStore {
   }
   #workspacePath(workspaceId: string): string { id(workspaceId); return path.join(this.#root, 'workspaces', workspaceId) }
   async #profileCheck(): Promise<void> {
+    this.#options.active?.()
     if (!same(await directoryIdentity(this.#profileRoot), this.#profileIdentity)) denied('profile directory changed')
     const p = object(await readJson(path.join(this.#root, 'identity.json')), ['schemaVersion', 'profileId', 'rootHash', 'directoryIdentity'])
     if (p.schemaVersion !== 1 || p.profileId !== this.#profileId || p.rootHash !== sha(this.#profileRoot) || !same(p.directoryIdentity, this.#profileIdentity)) denied('profile identity changed')
@@ -209,7 +212,7 @@ export class RpStore {
     const temporary = file + '.tmp-' + randomUUID()
     let published = false, handle: Awaited<ReturnType<typeof fs.open>> | undefined
     try {
-      if(kind!=='seal')assertPublicationAllowed()
+      if(kind!=='seal'){this.#options.active?.();assertPublicationAllowed()}
       handle = await fs.open(temporary, 'wx')
       await handle.writeFile(body)
       if (useFault) await this.#options.fault?.(kind === 'blob' ? 'blob_written' : kind === 'seal' ? 'seal_written' : 'transaction_written')
@@ -219,7 +222,7 @@ export class RpStore {
       // The workspace lock serializes destination assignment. Never overwrite an
       // existing immutable commit even on POSIX where rename permits it.
       try { await fs.lstat(file); error('store_corrupt', 'RP immutable destination already exists') } catch (cause) { if ((cause as NodeJS.ErrnoException).code !== 'ENOENT') throw cause }
-      if(kind!=='seal')assertPublicationAllowed()
+      if(kind!=='seal'){this.#options.active?.();assertPublicationAllowed()}
       await fs.rename(temporary, file); published = true
       // An independent immutable receipt detects single-file tail loss. A crash
       // before the receipt still leaves a valid, unacknowledged transaction;

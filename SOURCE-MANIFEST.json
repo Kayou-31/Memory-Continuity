@@ -514,8 +514,8 @@
     },
     {
       "path": "assets/fonts/noto-serif-sc/UPSTREAM.json",
-      "bytes": 30853,
-      "sha256": "da9f6fd73d0ae2e504ad4daffbc3225fb9b06587c57c32abb5e0a1e71cab7140"
+      "bytes": 30240,
+      "sha256": "b10972d789b9e6f6e48633aabbd886a9c0bf6f301abb65cdb1c5524ed166e338"
     },
     {
       "path": "assets/tokenizers/deepseek-v3.2/LICENSE",
@@ -538,9 +538,24 @@
       "sha256": "5ae835c23fc603962861a40111b0771c327a2f49bba4b0531cdb7dc78b528fc2"
     },
     {
+      "path": "src/core/cli.ts",
+      "bytes": 1405,
+      "sha256": "647702a22957555ccaf5a22c1096e6a27452f5469a22a93a0721d02304e70825"
+    },
+    {
       "path": "src/core/index.ts",
-      "bytes": 1126,
-      "sha256": "0d960c5a75fb8e41acbfc40cccc92d82ca9e3437de1b53a838156bd70f07dc4b"
+      "bytes": 1199,
+      "sha256": "927015607a982ab7cd9ad213bfe7d662d547623cf6f8173cb74d829c44ccb0a0"
+    },
+    {
+      "path": "src/core/owned-memory.ts",
+      "bytes": 1227,
+      "sha256": "9be817d850ed24f36b6042a82178396fab916bb2773fbcec6a344833653757cc"
+    },
+    {
+      "path": "src/core/owner.ts",
+      "bytes": 7868,
+      "sha256": "0a09221e8cfff7d5d4e86dd637c4c3ad2adeafbb49ec0c5b193d4306ae135805"
     },
     {
       "path": "src/rp/admission.ts",
@@ -624,8 +639,8 @@
     },
     {
       "path": "src/rp/global.ts",
-      "bytes": 24044,
-      "sha256": "eb4bdc31dc20ad3fc9bcf37b3a04db18624adc42fe6b2cd3c5477ceca7c13380"
+      "bytes": 24337,
+      "sha256": "27021f1e3044c3f07b830c1a3437739d7f1ad9d69a52e0e4cebf181a28179f5e"
     },
     {
       "path": "src/rp/growth-format.ts",
@@ -669,8 +684,8 @@
     },
     {
       "path": "src/rp/memory.ts",
-      "bytes": 7285,
-      "sha256": "da3da212dd4ae6120926d307b0fe344afac221050e4fbb1d1264b571246058a1"
+      "bytes": 7337,
+      "sha256": "821cf9a1cf75b00648fb62b2fdeb3266ca66c123040e8ee8e8c8f739aff09912"
     },
     {
       "path": "src/rp/modules/commands.ts",
@@ -884,8 +899,8 @@
     },
     {
       "path": "src/rp/rp-plugin.ts",
-      "bytes": 104365,
-      "sha256": "57cde6fc262adfe788f622f63e767fce12b57a7c10eeacd6542706473a15f6af"
+      "bytes": 104418,
+      "sha256": "c795c6811246c44b6c2ed472fa62a299e4e5a8dad6fcc56d3029b4ceebe53c77"
     },
     {
       "path": "src/rp/schema.ts",
@@ -909,8 +924,8 @@
     },
     {
       "path": "src/rp/store.ts",
-      "bytes": 130766,
-      "sha256": "84944982053699c48b85dff0952cf69aafe689244f121187295ad668de1a8485"
+      "bytes": 130958,
+      "sha256": "db0bdd5a708506c3e6be52838a8996c8dad0f11c37d9928c412a42e8f6e48c8c"
     },
     {
       "path": "src/rp/summarizer.ts",
@@ -964,18 +979,33 @@
     },
     {
       "path": "lib/index.js",
-      "bytes": 918269,
-      "sha256": "986ab436da81d3acd79b53c92c824c05eee9499dcb5fe029c898b14453df6666"
+      "bytes": 924304,
+      "sha256": "909cf4df3595429a8424200c957b725fdf3bab50d96cbbbd42c8aa8405dedb6f"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 1478028,
-      "sha256": "4da3f11b5b72aa0ca9efa8f2a808d055b5ea755ae4a85dc769191a8d47b8502e"
+      "bytes": 1492239,
+      "sha256": "0dc685076c587e686cc7fa281b361546144fc5f592905883c22d985b475c56bb"
+    },
+    {
+      "path": "lib/types/core/cli.d.ts",
+      "bytes": 31,
+      "sha256": "43e818adf60173644896298637f47b01d5819b17eda46eaa32d0c7d64724d012"
     },
     {
       "path": "lib/types/core/index.d.ts",
-      "bytes": 1181,
-      "sha256": "e83d86fc4584e752692ec29215677da3f9e2c979275d86bfef920c0bf2c695e8"
+      "bytes": 1259,
+      "sha256": "6b4b32dfaaa9c6804ab7a52f9ffbe124f0acbc49f11f925dffbfdf931cb56396"
+    },
+    {
+      "path": "lib/types/core/owned-memory.d.ts",
+      "bytes": 39149,
+      "sha256": "b43dc795a97fe8227e12048fa912b2dff9364c4616ab58151be89cfa55cc46a3"
+    },
+    {
+      "path": "lib/types/core/owner.d.ts",
+      "bytes": 877,
+      "sha256": "e0415414364d6c01c627af98fbfb835bf58a155e40448cef18c6708853dbc1a3"
     },
     {
       "path": "lib/types/rp/admission.d.ts",
@@ -1059,8 +1089,8 @@
     },
     {
       "path": "lib/types/rp/global.d.ts",
-      "bytes": 3196,
-      "sha256": "e7a4ec12a9d8e025315d123708661a5f2147ecdb21ce56bd9d3a056077373210"
+      "bytes": 3217,
+      "sha256": "0eeff54f61b66d6619d185f368d117df4c37723ba907b0ae3d1267900261c38e"
     },
     {
       "path": "lib/types/rp/growth-format.d.ts",
@@ -1104,8 +1134,8 @@
     },
     {
       "path": "lib/types/rp/memory.d.ts",
-      "bytes": 38551,
-      "sha256": "785c0f6d6cd402e6a948b05fd225c75f969fd99004b95ca4947bb71e31e15b88"
+      "bytes": 38576,
+      "sha256": "fdb4fbdcf4cac5990a533851e752dd0618c4402effbdee449ee5241aa5dccc7c"
     },
     {
       "path": "lib/types/rp/modules/commands.d.ts",
@@ -1319,8 +1349,8 @@
     },
     {
       "path": "lib/types/rp/rp-plugin.d.ts",
-      "bytes": 42153,
-      "sha256": "f4eec51d2510889a9cdf355141539446e6f3906fb5338bca8ebcae719b95a17d"
+      "bytes": 42185,
+      "sha256": "0189d164ea1da4d4335bef64e0c4d1817da317a859ac112fd43e1c04fdafeb71"
     },
     {
       "path": "lib/types/rp/schema.d.ts",
@@ -1344,8 +1374,8 @@
     },
     {
       "path": "lib/types/rp/store.d.ts",
-      "bytes": 8332,
-      "sha256": "64efb417c967453eaafbe12d76eb334dc80493d24e91eabc08ef806a2e305870"
+      "bytes": 8449,
+      "sha256": "2304c758185af19bf801a09e833d95f2087a8a7940584ad01725a272d51529b3"
     },
     {
       "path": "lib/types/rp/summarizer.d.ts",

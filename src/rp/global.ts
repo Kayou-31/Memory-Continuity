@@ -6,6 +6,7 @@ import { canonical, withRpWriterLock, recoverRpWriterLock, readRpJson } from './
 import { checkedRpJson, MAX_RP_JSON_BYTES, MAX_RP_PUBLISH_BYTES, cloneInput, denied, failure, id, hostId, hash, integer, invalid, object, parseRecord, RpError, scope as validateScope, text, visibility as validateVisibility } from './schema.js'
 import type { CanonBinding, Result, Scope, SourceRevision, Visibility } from './types.js'
 import { MemoryCoordinator } from './session-policy.js'
+import {assertPublicationAllowed} from './publication-guard.js'
 import { SEGMENT_FORMAT, SEGMENT_PUBLISH_BYTES, SEGMENT_CONTROL_BYTES, type SegmentLayout, readSegmentState, encodeSegments, writeSegments, backupGlobal } from './global-segments.js'
 export type GlobalScope = Extract<Scope, { kind: 'profile' | 'world' }>
 export interface GlobalFence { scope: GlobalScope; scopeRevision: number; visibilityRevision: number; deletionGeneration: number }
@@ -18,21 +19,23 @@ const ok = <T>(value: T): Result<T> => ({ ok: true, value })
 const same = (a: unknown, b: unknown) => canonical(a) === canonical(b)
 export interface Grant { scope: GlobalScope; visibility: Visibility; audienceSetIds: string[]; write: boolean }
 type Publish = { idempotencyKey: string; expected: GlobalFence; key: string; body: string; privateSourceIds: readonly string[]; supersedes?: string }
-export async function openRpGlobalStore(profileRoot: string, coordinator = new MemoryCoordinator()) {
+export async function openRpGlobalStore(profileRoot: string, coordinator = new MemoryCoordinator(),active?:()=>void) {
   const root = path.join(await fs.realpath(profileRoot), '.dsh-rp', 'v1'), identity = object(await readRpJson(path.join(root, 'identity.json')), ['schemaVersion', 'profileId', 'rootHash', 'directoryIdentity'])
   id(identity.profileId); hash(identity.rootHash); object(identity.directoryIdentity, ['dev', 'ino', 'birthtime']); if (identity.schemaVersion !== 1) invalid('global profile schema')
   const identityText = canonical(identity), globalRoot = path.join(root, 'global'), grants = new WeakMap<object, Grant>(), approvals = new WeakSet<object>()
   const layouts = new WeakMap<State, SegmentLayout>()
   await fs.mkdir(globalRoot, { recursive: true })
-  const check = async () => { if (canonical(await readRpJson(path.join(root, 'identity.json'))) !== identityText) denied('global profile identity changed') }
+  const check = async () => { active?.(); if (canonical(await readRpJson(path.join(root, 'identity.json'))) !== identityText) denied('global profile identity changed') }
   const grant = async (authority: object, write = false) => { await check(); const g = grants.get(authority); if (!g || (write && !g.write)) denied('global authority'); return g! }
   const directory = (scope: GlobalScope) => path.join(globalRoot, sha(canonical(scope)))
   const atomic = async (file: string, body: string) => {
+    const guard=()=>{if(path.basename(file)!=='seal.json'){active?.();assertPublicationAllowed()}}
+    guard()
     await fs.mkdir(path.dirname(file), { recursive: true }); const tmp = file + '.tmp-' + uid('write')
     try {
       const h = await fs.open(tmp, 'wx', 0o600)
       try { await h.writeFile(body); await h.sync() } finally { await h.close() }
-      await fs.rename(tmp, file)
+      guard(); await fs.rename(tmp, file)
     } catch (e) { await fs.rm(tmp, { force: true }).catch(() => {}); throw e }
   }
   const validateState = (input: unknown, g: Grant, segmented = false): State => {
@@ -168,7 +171,7 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
           return result ? read(authority, result) : ok(next.fence)
         })
       })
-    } catch (e) { return failure(e instanceof RpError ? e : new RpError(published ? 'persistence_uncertain' : 'persistence_failed', e instanceof Error ? e.message : 'Global persistence failure')) }
+    } catch (e) { return failure(published ? new RpError('persistence_uncertain',e instanceof Error?e.message:'Global publication needs inspection') : e instanceof RpError ? e : new RpError('persistence_failed', e instanceof Error ? e.message : 'Global persistence failure')) }
   }
   const store = {
     async storageStatus(authority: object) { try { const g = await grant(authority), state = await load(g), layout = layouts.get(state); return ok({ format: layout ? SEGMENT_FORMAT : 'v1', ...layout, logicalBytes: Buffer.byteLength(canonical({ state, sha256: sha(canonical(state)) })), seq: state.seq, publicationLimitBytes: layout ? SEGMENT_PUBLISH_BYTES : MAX_RP_PUBLISH_BYTES, controlLimitBytes: layout ? SEGMENT_CONTROL_BYTES : MAX_RP_JSON_BYTES }) } catch (e) { return failure(e) } },

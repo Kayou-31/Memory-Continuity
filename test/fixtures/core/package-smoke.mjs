@@ -12,6 +12,7 @@ if(process.argv[2]==='corrupt'){await assert.rejects(api.openMemoryMeter(budget,
 const must=r=>{assert.equal(r.ok,true,JSON.stringify(r));return r.value}
 const profileRoot=path.resolve('profile'),project=path.resolve('project');await fs.mkdir(project,{recursive:true})
 const core=await api.openMemoryCore({profileRoot,entityIds:['erin']}),writing=process.argv[2]==='write'
+if(process.argv[2]==='owner-crash')process.exit(0)
 let request
 if(writing){const ws=must(await core.control.createWorkspace(project)),branch=must(await core.control.createBranch(ws.workspaceId,'life'));request={workspaceId:ws.workspaceId,campaignId:'life',branchId:branch.id,sessionId:'core_test',sceneId:'scene',viewpoint:{kind:'narrator'},visibility:{policyId:'policy',revision:0,audienceSetId:'public'},audienceSetIds:['public'],permissions:['read','observe','commit','control']};await fs.writeFile('request.json',JSON.stringify(request))}
 else {request=JSON.parse(await fs.readFile('request.json','utf8'));must(await core.control.openWorkspace(project))}
@@ -31,4 +32,4 @@ try{
  const workbench=await api.openWorkbench(core.management.create(authority))
  try{const url=new URL(workbench.url),token=url.hash.slice(1);url.hash='';const response=await fetch(new URL('api/snapshot',url),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:'{}'}),body=await response.json();assert.equal(body.ok,true);assert.equal(body.value.persons[0].personId,'erin');const font=await fetch(new URL('assets/fonts/noto-serif-sc-000.woff2',url));assert.equal(font.status,200);assert.equal((await font.arrayBuffer()).byteLength>0,true)}finally{await workbench.close()}
  console.log(JSON.stringify({name:person.fields[0].value,documentSha:createHash('sha256').update(doc.draft.text).digest('hex'),diary:diary.draft.body,tokenMode:meter.identity.mode,fence:await fence()}))
-}finally{core.retrieval.dispose();await core.jobs.close()}
+}finally{await core.close()}
