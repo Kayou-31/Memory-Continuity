@@ -1261,6 +1261,9 @@ export class RpStore {
   /** Internal trusted-host API: never register these methods as model tools. */
   hostControl() {
     return Object.freeze({
+      checkManagement: async (authority: HostAuthority): Promise<Result<null>> => {
+        try { const {grant}=await this.#authorize(authority,'control'); if(grant.request.viewpoint.kind!=='narrator')denied('management requires narrator control'); return ok(null) } catch(cause){return failure(cause)}
+      },
       forkBranch: (authority: HostAuthority, input: ForkManifest & { readonly idempotencyKey: string }) => this.#fork(authority, input),
       privacyDelete: (authority: HostAuthority, controlSourceId: string, input: { readonly idempotencyKey: string; readonly expected: InputFence; readonly sourceRevisionIds: readonly string[]; readonly affectedBranchIds: readonly string[] }, authorities: readonly HostAuthority[]) => this.#privacyDelete(authority, controlSourceId, input, authorities),
       purgePrivacy: (authority: HostAuthority, key: string, authorities: readonly HostAuthority[] = [authority]) => this.#purgePrivacy(authority, key, authorities),

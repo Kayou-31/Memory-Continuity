@@ -352,7 +352,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     b.agent.followup(message)
     item.dispatched = true; item.phase = 'dispatched'; await save(b)
   }
-  const command = async (invocation: { commandId: string; agent: Agent; rawInput: string; signal: AbortSignal }) => {
+  const command = async (invocation: { commandId: string; agent: Agent; rawInput: string; signal: AbortSignal; managementCheck?:()=>Promise<void> }):Promise<{kind:string;text:string}> => {
     const { agent, commandId, signal } = invocation
     try {
       signal.throwIfAborted(); shutdown.signal.throwIfAborted()
@@ -395,6 +395,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
             try{const h=await fs.open(backup,'wx',0o600);try{await h.writeFile(original);await h.sync()}finally{await h.close()}}
             catch(e){if((e as NodeJS.ErrnoException).code!=='EEXIST')throw e;const saved=object(await readRpJson(backup),['data','sha256']);if(saved.sha256!==sha(canonical(saved.data))||validateJournal(saved.data).sessionId!==agent.id||saved.data.memoryBudget)throw new RpError('store_corrupt','Pre-budget backup cannot be verified')}
           }
+          await invocation.managementCheck?.()
           if(b.generation!==initialGeneration||!live(agent)||!safe(agent)||agent.status!=='idle'||b.data.blocked)throw new RpError('stale_input','Session changed during budget preparation')
           b.generation++;b.packet=undefined;b.data.blocked=true;b.lastMemoryUsage=undefined
           const generation=b.generation
@@ -426,6 +427,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
             try{const h=await fs.open(backup,'wx',0o600);try{await h.writeFile(original);await h.sync()}finally{await h.close()}}
             catch(e){if((e as NodeJS.ErrnoException).code!=='EEXIST')throw e;const saved=object(await readRpJson(backup),['data','sha256']);if(saved.sha256!==sha(canonical(saved.data))||validateJournal(saved.data).sessionId!==agent.id||saved.data.injectionBinding)throw new RpError('store_corrupt','Pre-M5 backup cannot be verified')}
           }
+          await invocation.managementCheck?.()
           if(b.generation!==initialGeneration||!live(agent)||!safe(agent)||agent.status!=='idle'||b.data.blocked)throw new RpError('stale_input','Session changed during injection preparation')
           b.generation++;b.packet=undefined;b.data.blocked=true
           const generation=b.generation
@@ -464,6 +466,13 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         }
       })
       await drain(b); signal.throwIfAborted()
+      if(action==='document'){
+        const m=/^(preview|confirm|discard)\s+([a-f0-9]{32})$/u.exec(arg),manager=managers.get(agent.id)
+        if(!m||!manager)throw new RpError('scope_denied','先打开 person manage 并上传文档；使用本窗口返回的短句柄')
+        const c=manager.controller
+        const result=m[1]==='preview'?await c.prepare({snapshotId:(await c.snapshot()).id,action:'document-import',payload:{uploadId:m[2]}}):m[1]==='confirm'?await manager.confirm(m[2]):await c.discardUpload(m[2])
+        return {kind:'success',text:canonical(result)}
+      }
       if(action==='diary')return {kind:'success',text:canonical(await diaryCommand(arg,{
         diary:memory.diary,authority:b.authority,personId:b.data.personBinding?.personId,commandId,
         control:async value=>unwrap(await controlSource(b!,commandId,value)),fence:async()=>unwrap(await memory.store.readFence(b!.authority)),
@@ -477,9 +486,26 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         const sub = parsed[1], value = parsed[2] ?? ''
         if(sub==='manage'){
           if(value)throw new RpError('invalid_record','Use person manage without arguments')
-          await closeManager(agent.id);const generation=b.generation,opening={};managerOpenings.set(agent.id,opening)
-          const controller=memory.management.create(b.authority,()=>live(agent)&&bound.get(agent.id)===b&&!b!.data.blocked&&!b!.recoveryOnly&&b!.generation===generation&&agent.status==='idle')
-          const manager=await openManagementServer(controller,()=>({sessionId:agent.id,personId:b!.data.personBinding?.personId??null,mode:b!.data.runtimeBinding?.config.mode??'rp',config:b!.data.runtimeBinding?.config??null,injection:b!.data.injectionBinding??null}),async()=>{
+          await closeManager(agent.id);let generation=b.generation;const opening={};managerOpenings.set(agent.id,opening)
+          const hostSnapshot=()=>({generation:b!.generation,person:b!.data.personBinding??null,injection:b!.data.injectionBinding??null,budget:b!.data.memoryBudget??null,provider:agent.options.provider??'',model:agent.options.model??'',clean:safe(agent)})
+          const controller=memory.management.create(b.authority,()=>live(agent)&&bound.get(agent.id)===b&&!b!.data.blocked&&!b!.recoveryOnly&&b!.generation===generation&&agent.status==='idle',{
+            snapshot:hostSnapshot,
+            async prepare(action,payload){
+              if(!safe(agent))throw new RpError('scope_denied','请先干净续接，再修改会话配置')
+              if(action==='host-person'){const p=object(payload,['personId']);id(p.personId);return {payload:await createPersonBinding(memory.store,b!.authority,p.personId),command:'person use '+p.personId}}
+              const p=object(payload,['config']),json=canonical(p.config)
+              if(action==='host-budget')return {payload:{binding:p.config===null?null:createMemoryBudget({provider:agent.options.provider??'',model:agent.options.model??''},p.config)},command:'budget set '+json}
+              if(!b!.data.personBinding)throw new RpError('scope_denied','请先绑定聊天人物')
+              return {payload:{binding:p.config===null?null:createInjectionBinding(p.config)},command:'injection set '+json}
+            },
+            async apply(rawInput,key,check){
+              const before=generation,result=await command({agent,commandId:key,rawInput,signal:new AbortController().signal,managementCheck:check})
+              if(result.kind!=='success')throw new RpError('persistence_uncertain',result.text+' 请刷新或重新打开工作台，核对实际状态。')
+              if(!live(agent)||bound.get(agent.id)!==b||b!.generation!==before+1||b!.data.blocked)throw new RpError('ownership_lost','宿主配置已变化，请重新打开工作台')
+              generation=b!.generation;return JSON.parse(result.text)
+            },
+          })
+          const manager=await openManagementServer(controller,()=>({sessionId:agent.id,personId:b!.data.personBinding?.personId??null,mode:b!.data.runtimeBinding?.config.mode??'rp',config:b!.data.runtimeBinding?.config??null,injection:b!.data.injectionBinding??null,memoryBudget:b!.data.memoryBudget??null,memoryUsage:b!.lastMemoryUsage??null,model:{provider:agent.options.provider??'',model:agent.options.model??''},cleanRoot:safe(agent)}),async()=>{
             for(const session of bound.values())if(session.data.request.branchId===b!.data.request.branchId)session.packet=undefined
             if(!await (root.get('sessions') as any).flush(agent.session))throw new RpError('persistence_uncertain','Management committed; native flush unconfirmed. Inspect current state before another action.')
           },async query=>{if(!live(agent)||b!.generation!==generation||b!.data.blocked||agent.status!=='idle')throw new RpError('ownership_lost','工作台会话已变化，请重新打开');return injectionPreview(b!,query)})
@@ -524,6 +550,8 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         if (sub === 'use') {
           id(value); if (!safe(agent)) throw new RpError('scope_denied', 'Person switching requires an empty root; use continue-clean first')
           const binding = await createPersonBinding(memory.store, b.authority, value)
+          await invocation.managementCheck?.()
+          if(!live(agent)||!safe(agent)||agent.status!=='idle'||b.data.blocked)throw new RpError('stale_input','人物绑定期间会话已改变')
           b.generation++; b.packet = undefined; b.data.personBinding = binding; await save(b)
           return { kind: 'success', text: canonical({ personId: value, branchId: binding.boundAt.branchId }) }
         }

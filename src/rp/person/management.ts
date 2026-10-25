@@ -11,27 +11,40 @@ import {unwrap} from '../retrieval.js'
 import {withPublicationGuard} from '../publication-guard.js'
 import type {HostAuthority,InputFence} from '../types.js'
 import type {MemoryCoordinator} from '../session-policy.js'
+import {workbenchSettings,type WorkbenchSettings} from './management-settings.js'
+import {managementExtensions,managementImpact,type ExtensionReview} from './management-extensions.js'
 
 const digest=(v:unknown)=>createHash('sha256').update(canonical(v)).digest('hex')
 const uid=()=>randomUUID().replaceAll('-','')
-export function createManagementService(store:RpStore,control:Parameters<typeof createCanonicalService>[1],entities:readonly string[],coordinator:MemoryCoordinator){
+export interface ManagementHost {
+ snapshot():unknown
+ prepare(action:string,payload:unknown):Promise<{payload:unknown;command:string}>
+ apply(command:string,key:string,check:()=>Promise<void>):Promise<unknown>
+}
+export function createManagementService(store:RpStore,control:Parameters<typeof createCanonicalService>[1],entities:readonly string[],coordinator:MemoryCoordinator,profileRoot:string){
  const canonicalService=createCanonicalService(store,control,{entityIds:entities}),person=createPersonService(store,canonicalService,entities),agent=createAgentMemory(store,canonicalService,entities)
- return Object.freeze({create(authority:HostAuthority,active:()=>boolean=()=>true){
+ const settings=workbenchSettings(profileRoot)
+ return Object.freeze({create(authority:HostAuthority,active:()=>boolean=()=>true,host?:ManagementHost){
   let revoked=false
   const guard=()=>{if(revoked||!active())throw new RpError('ownership_lost','Management capability revoked')}
-  type Stamp={fence:InputFence;candidatesHash:string}
-  type Review={stamp:Stamp;action:string;payload:any;handle?:object;key:string;result?:unknown;done?:boolean;attempted?:boolean}
+  const authorize=async()=>{guard();unwrap(await control.checkManagement(authority));guard()}
+  const extra=managementExtensions(store,canonicalService,entities,authority,guard,settings)
+  type Stamp={fence:InputFence;candidatesHash:string;preferences:WorkbenchSettings;hostHash:string}
+  type Review={stamp:Stamp;action:string;payload:any;handle?:object;extension?:ExtensionReview;hostCommand?:string;key:string;result?:unknown;done?:boolean;attempted?:boolean}
   const snapshots=new Map<string,Stamp>(),reviews=new Map<string,Review>()
   const retain=<T>(map:Map<string,T>,id:string,value:T)=>{if(map.size>=32)map.delete(map.keys().next().value!);map.set(id,value)}
   const check=async(stamp:Stamp)=>{
-   guard();const fence=unwrap(await store.readFence(authority)),candidates=unwrap(await person.list(authority));guard()
-   if(canonical(fence)!==canonical(stamp.fence)||digest(candidates)!==stamp.candidatesHash)throw new RpError('stale_input','Management snapshot changed; refresh and review again')
+   await authorize();const fence=unwrap(await store.readFence(authority)),candidates=unwrap(await person.list(authority));guard()
+   if(canonical(fence)!==canonical(stamp.fence)||digest(candidates)!==stamp.candidatesHash||canonical(await settings.read())!==canonical(stamp.preferences)||digest(host?.snapshot()??null)!==stamp.hostHash)throw new RpError('stale_input','Management snapshot changed; refresh and review again')
   }
   return Object.freeze({
    assertActive:guard,
-   revoke(){revoked=true;snapshots.clear();reviews.clear()},
+   revoke(){revoked=true;snapshots.clear();reviews.clear();extra.revoke()},
+   async upload(input:unknown){return coordinator.mutate(async()=>{await authorize();const result=await extra.upload(input);guard();return result})},
+   async discardUpload(id:string){await authorize();return extra.discardUpload(id)},
+   async read(input:unknown){await authorize();const result=await extra.read(input);guard();return result},
    async snapshot(){return coordinator.mutate(async()=>{
-    guard()
+    await authorize()
     const data=unwrap(await store.withReadView(authority,view=>{
      const ids=[...new Set(view.events.flatMap(e=>semanticProtocol(e)==='person-origin/v1'&&e.payload.kind==='occurrence'?[e.payload.actorIds[0]]:[]))]
      const events=view.events.filter(e=>e.payload.kind==='occurrence'&&semanticProtocol(e)!=='person-origin/v1')
@@ -39,8 +52,9 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
     },{audit:true}))
     const candidates=unwrap(await person.list(authority)),timelines=[]
     for(const p of data.persons){const t=unwrap(await person.timeline(authority,p.personId));timelines.push({...t,changes:t.changes.slice(-200),changeCount:t.changes.length})}
-    const stamp={fence:structuredClone(data.fence),candidatesHash:digest(candidates)};await check(stamp)
-    const id=uid(),result={id,entityIds:[...entities],...data,candidates,timelines,notice:'手动刷新；每次变更先预览再确认。人物变化后，旧聊天可能需要 /memcont continue-clean。'}
+    const extension=await extra.snapshot(data.persons.map(p=>p.personId))
+    const stamp={fence:structuredClone(data.fence),candidatesHash:digest(candidates),preferences:extension.preferences,hostHash:digest(host?.snapshot()??null)};await check(stamp)
+    const id=uid(),result={id,entityIds:[...entities],...data,...extension,candidates,timelines,notice:'手动刷新；每次变更先预览再确认。人物变化后，旧聊天可能需要 /memcont continue-clean。'}
     if(Buffer.byteLength(canonical(result))>2*1024*1024)throw new RpError('capacity_exceeded','Management snapshot exceeds 2 MiB; use bounded core commands')
     retain(snapshots,id,stamp);return result
    })},
@@ -62,21 +76,40 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
      else if(r.action==='agent'){
       object(r.payload,['kind'],['actorIds','description','sourceRevisionIds','fictionalTime','fromId','toId','relation','value','previousEventId','causeEventIds','note','ownerId','goalId','category','objective','status','progress','nextAction','targetEntityId'])
       if(!['experience','relationship','goal'].includes(r.payload.kind))throw new RpError('scope_denied','Unsupported management Agent operation')
-     }else throw new RpError('scope_denied','Unsupported management action')
+     }else if(['host-budget','host-injection','host-person'].includes(r.action)){
+      if(!host)throw new RpError('capability_missing','当前宿主不支持此工作台控制')
+      const next=await host.prepare(r.action,r.payload);review.payload=next.payload;review.hostCommand=next.command
+     }else{
+      const extension=await extra.prepare(r.action,r.payload,review.key,stamp.fence,stamp.preferences)
+      if(!extension)throw new RpError('scope_denied','Unsupported management action')
+      review.extension=extension;review.payload=extension.payload
+     }
      await check(stamp);retain(reviews,id,review)
-     return {id,action:review.action,payload:structuredClone(review.payload),fence:structuredClone(stamp.fence),notice:'确认才会写入；此预览不能跨会话、版本或管理窗口使用。'}
+     const impact=managementImpact(review.action,review.payload,stamp.fence.branchId)
+     return {id,action:review.action,payload:structuredClone(review.payload),impact,showImpactDialog:impact.mandatory||review.action!=='settings'&&stamp.preferences.impactConfirmation,fence:structuredClone(stamp.fence),notice:'确认才会写入；此预览不能跨会话、版本或管理窗口使用。'}
     })
    },
-   async confirm(id:string){return coordinator.mutate(()=>withPublicationGuard(guard,async()=>{
-    guard();text(id,64);const r=reviews.get(id);if(!r)throw new RpError('scope_denied','Unknown management review')
+   async confirm(id:string){
+    text(id,64);const candidate=reviews.get(id)
+    if(candidate?.hostCommand){
+     // Host commands drain this coordinator themselves. Reserve the review under
+     // the lock, then execute outside it to avoid a queue/coordinator deadlock.
+     await coordinator.mutate(async()=>{await authorize();if(candidate.done)return;if(candidate.attempted)throw new RpError('persistence_uncertain','宿主变更已尝试；请先刷新核对，不要重复提交');await check(candidate.stamp);candidate.attempted=true})
+     if(candidate.done)return structuredClone(candidate.result)
+     const result=await host!.apply(candidate.hostCommand,candidate.key,()=>coordinator.mutate(()=>check(candidate.stamp)))
+     candidate.result=result;candidate.done=true;guard();return structuredClone(result)
+    }
+    return coordinator.mutate(()=>withPublicationGuard(guard,async()=>{
+    await authorize();text(id,64);const r=reviews.get(id);if(!r)throw new RpError('scope_denied','Unknown management review')
     if(r.done){unwrap(await store.ensureDurable(authority,unwrap(await store.readFence(authority))));guard();return structuredClone(r.result)}
     const prefix=r.action==='create'?'person:':r.action==='edit'||r.action==='set-policy'?'person_edit:':r.action==='adopt'?'person_adopt:':r.action==='reject'?'person_reject:':''
     const prior=r.attempted&&r.action!=='propose'?unwrap(await store.readControlCommit(authority,prefix+r.key)):null
-    if(!prior)await check(r.stamp)
+    if(!prior&&!(r.attempted&&r.extension))await check(r.stamp)
     r.attempted=true
     const ctl=unwrap(await store.observeSource(authority,{idempotencyKey:r.key,origin:'user_control',role:'user_control',turnId:r.key,publicText:'用户在本机管理页明确确认 '+r.action+' '+digest(r.payload)}));guard()
     let result:unknown
-    if(r.action==='create')result=unwrap(await person.confirm(authority,r.handle!,ctl))
+    if(r.extension)result=await r.extension.execute(ctl)
+    else if(r.action==='create')result=unwrap(await person.confirm(authority,r.handle!,ctl))
     else if(r.action==='edit'||r.action==='set-policy')result=unwrap(await person.apply(authority,ctl,{...r.payload,expected:r.stamp.fence,idempotencyKey:r.key}))
     else if(r.action==='adopt')result=unwrap(await person.adopt(authority,ctl,r.payload.candidateIds,r.key))
     else if(r.action==='reject')result=unwrap<unknown>(await person.reject(authority,ctl,r.payload.candidateId,r.key,r.stamp.fence))

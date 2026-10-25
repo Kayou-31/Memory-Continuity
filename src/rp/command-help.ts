@@ -2,6 +2,16 @@
 import {RpError} from './schema.js'
 
 const topics:Record<string,string>={
+ document:`完整人物资料
+/memcont person manage：打开工作台，在“完整人物资料”页上传 UTF-8 文本或 Markdown，单份最多 1 MiB。
+原文、BOM 与换行完整保留；先检查章节分类和条件，再预览并明确确认。未知章节保留，默认仅保存、不注入。
+/memcont document preview <uploadId>：用工作台返回的临时上传句柄生成确认预览，不写入人物。
+/memcont document confirm <reviewId>：确认实际返回的预览句柄；不能用 uploadId 代替 reviewId。
+/memcont document discard <uploadId>：取消尚未导入的临时草稿，不撤回已经保存的资料。
+上传句柄最多保留 10 分钟，与当前管理入口、人物和人生线版本绑定；过期或数据变化后重新上传。
+短指令使用上传时的默认分类，不包含网页中尚未保存的分类与条件调整；这些调整应在网页预览并确认。
+修订原文后须重新解析、核对分类与注入资格；不会自动沿用旧章节的权限。
+导入、查看和导出不会调用模型。故障或保存不确定时先诊断，不盲目重试。`,
  budget:`记忆 token 预算
 /memcont budget show：查看本会话绑定、计量方式与最近实际用量；故障状态也能诊断。
 /memcont budget set {}：空白根会话显式启用总计 32,768 token。首次启用先保留 .pre-budget-v2-backup。
@@ -84,6 +94,7 @@ export function rpCommandHelp(topic:string=''):string{
  return `Memory-Continuity 中文指令帮助
 帮助只读，不写入记忆、不调用模型；主命令 /memcont；旧 /rp 作为兼容别名。
 /memcont help person：人物、成长审阅、管理入口
+/memcont help document：完整原文、分类条件、临时上传与确认
 /memcont help diary：共同日记、明确授权、原稿与修订
 /memcont help injection：五类记忆、条件注入、原因预览
 /memcont help budget：32K 总记忆预算、模型绑定、计量方式

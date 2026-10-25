@@ -54,6 +54,7 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
+    "build:core": "node scripts/build-core.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit --emitDeclarationOnly false",
     "test": "node --test --test-concurrency=1 test/*.test.mjs",
     "evaluate:fixture": "node scripts/benchmarks/rp-memory.mjs --mode fixture --corpus benchmarks/rp/golden.jsonl --output fixture-report.json",

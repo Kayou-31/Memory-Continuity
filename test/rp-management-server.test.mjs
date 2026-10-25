@@ -16,6 +16,15 @@ async function setup(){
  return {...memory,authority,async close(){memory.retrieval.dispose();await memory.jobs.close()}}
 }
 
+test('workbench serves only pinned local font bytes and does not expose other assets',async()=>{
+ const f=await setup();let server;try{
+  server=await openManagementServer(f.management.create(f.authority));const url=new URL(server.url);url.hash=''
+  const font=await fetch(new URL('/assets/fonts/noto-serif-sc-000.woff2',url));assert.equal(font.status,200);assert.equal(font.headers.get('content-type'),'font/woff2');assert.deepEqual(Buffer.from(await font.arrayBuffer()),await fs.readFile('assets/fonts/noto-serif-sc/noto-serif-sc-000.woff2'))
+  const page=await fetch(url);assert.match(page.headers.get('content-security-policy'),/font-src 'self'/);assert.doesNotMatch(await page.text(),/fonts\.googleapis\.com|cdn\.jsdelivr/)
+  for(const route of ['/assets/fonts/../../package.json','/assets/fonts/OFL.txt','/assets/fonts/noto-serif-sc-999.woff2'])assert.notEqual((await fetch(new URL(route,url))).status,200)
+ }finally{await server?.close();await f.close()}
+})
+
 for(const revocation of ['endpoint','owner'])test('revoking '+revocation+' while a snapshot response waits cannot release old person data',async()=>{
  const f=await setup();let server,release,enter,active=true
  const gate=new Promise(r=>release=r),entered=new Promise(r=>enter=r)
@@ -37,5 +46,19 @@ test('manual management server binds loopback, rejects foreign callers and never
   assert.equal((await call({authorization:'Bearer '+token,origin:'null'})).status,403)
   assert.equal((await call({authorization:'Bearer '+token,origin:url.origin})).status,200)
   server.revoke();assert.equal((await call({authorization:'Bearer '+token})).status,403)
+ }finally{await server?.close();await f.close()}
+})
+
+test('authenticated UTF8 upload has its own bounded route; cancel never publishes and normal actions retain the smaller limit',async()=>{
+ const f=await setup();let server
+ try{
+  server=await openManagementServer(f.management.create(f.authority));const url=new URL(server.url),token=url.hash.slice(1);url.hash=''
+  const call=(route,data,headers={})=>fetch(new URL('api/'+route,url),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token,...headers},body:JSON.stringify(data)})
+  const input={personId:'erin',documentId:'large',title:'完整原稿',mime:'text/plain',encoding:'utf8',base64:Buffer.from('内容🐉'.repeat(30000)).toString('base64')}
+  assert.equal((await call('upload',input,{origin:'https://foreign.example'})).status,403)
+  const uploaded=await call('upload',input);assert.equal(uploaded.status,200);const u=(await uploaded.json()).value;assert.equal(u.draft.text,'内容🐉'.repeat(30000))
+  assert.equal((await call('discard-upload',{id:u.id})).status,200)
+  assert.equal((await call('prepare',{snapshotId:'x',action:'create',payload:{text:'x'.repeat(131073)}})).status,413)
+  server.revoke();assert.equal((await call('upload',input)).status,403)
  }finally{await server?.close();await f.close()}
 })
