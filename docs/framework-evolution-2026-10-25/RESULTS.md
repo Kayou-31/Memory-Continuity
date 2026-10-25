@@ -2,7 +2,7 @@
 
 日期：2026-10-25。基线：Memory-Continuity 0.2.1，`1d997516a3cb0621163a94a2bb16b1a7bd28243c`。
 
-本轮已完成附件静态审查、现有代码诊断和下一轮设计。用户已确认设计、要求按平台分包，并新增双方共同日记能力，现进入串行实施。**尚未实现 32K token、新人物文档、共同日记、AstrBot 或 QQ 兼容**。方案见 [设计文档](../superpowers/specs/2026-10-25-person-capacity-multihost-design.md)，执行顺序见 [实施计划](../superpowers/plans/2026-10-25-person-capacity-multihost.md)。
+本轮已完成附件静态审查、现有代码诊断、设计和人物原文草稿解析。用户已确认设计、要求按平台分包，并新增双方共同日记能力与工作台可关闭的统一影响提醒。**32K token、文档持久化/工作台、共同日记、AstrBot 或 QQ 兼容仍未完成**。方案见 [设计文档](../superpowers/specs/2026-10-25-person-capacity-multihost-design.md)，执行顺序见 [实施计划](../superpowers/plans/2026-10-25-person-capacity-multihost.md)。
 
 ## 附件与原件保全
 
@@ -93,7 +93,11 @@ DSH 原生 SDK：`0.2.1-rc.2`；Cordis `4.0.5`，Schemastery `3.18.5`。这次�
 
 ## 修改与未验证项
 
-本次跟踪文件仅为本报告和设计文档；没有修改生产代码、依赖、稳定版或真实宿主配置，没有发布新版本。
+Task1新增 `src/rp/person/documents/{types,schema,import}.ts`，从 `memory.ts` 导出无损导入/验证函数；新增 `test/rp-person-documents.test.mjs`。草稿保留完整原文与哈希，分块最多8192字节，最多256节/512块以约束元数据；一份原文最大1MiB，不执行Markdown/HTML。此阶段只产出未采纳草稿，未写入人物存储或接入UI。
+
+RED：新测试5/5失败，退出1，原因是新导出尚不存在。实现后5/5通过；补查对象属性名标题时新增回归6/7通过、1失败（`constructor` 被继承属性误识别），修正为只检查自有属性后最终7/7通过、退出0。`npm run typecheck`在最终Task1代码上退出0。日志位于 `.superpowers/sdd/2026-10-25-person-capacity-multihost/`，分别为 `task-1-red.log`、`task-1-heading-red.log`、`task-1-final.log`、`task-1-typecheck-final.log`。
+
+未更改稳定版、依赖或真实宿主配置，没有发布新版本。新增用户参考项目的静态调查见 [RETCON-FORM](RETCON-FORM.md)；用户已同意吸收其可修订理解与来源定位思路。
 
 一次独立只读设计审阅已完成，未创建递归代理。根据审阅收紧了三处：分别保留未分段 3/4 MiB 与分段 8/12 MiB 的存储预算；QQ 接入实例标识必须跨重连持久化；32K 注入计入同轮和请求中保留的记忆工具结果。审阅未发现必须由用户补充选择的关键接口缺口，但这不代替实现和宿主验收。
 
