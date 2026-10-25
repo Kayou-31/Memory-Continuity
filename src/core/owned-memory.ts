@@ -1,6 +1,7 @@
 import {openRpMemory} from '../rp/memory.js'
 import {RpError} from '../rp/validation.js'
 import {acquireProfileOwner} from './owner.js'
+import fs from 'node:fs/promises'
 
 /** Both official entry points acquire this lease before opening any store. */
 export async function openMemoryCore(input:Parameters<typeof openRpMemory>[0]&{ownerKind?:'application'|'service'|'embedded-dsh'}){
@@ -9,7 +10,7 @@ export async function openMemoryCore(input:Parameters<typeof openRpMemory>[0]&{o
  const active=()=>{owner.assertActive();if(retiring)throw new RpError('ownership_lost','Memory owner is closing; reopen after it has stopped');input.active?.()}
  try{
   const memory=await openRpMemory({...input,active})
-  return{...memory,close(){
+  return{...memory,profileRoot:await fs.realpath(input.profileRoot),close(){
    if(closePromise)return closePromise
    retiring=true
    closePromise=(async()=>{

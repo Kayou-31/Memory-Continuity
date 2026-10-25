@@ -2,9 +2,9 @@
 
 日期：2026-10-25。基线：Memory-Continuity 0.2.1，`1d997516a3cb0621163a94a2bb16b1a7bd28243c`。
 
-当前已完成 Task1–4、Task6 核心分包，并推进 Task5 工作台与 Task7 单写入者保护：人物原文、分类条件、共同日记、32,768 token 总预算，以及工作台资料/日记/预算/提醒设置页面已接入。旧版审查中的权限、复制与恢复诊断问题已修复。使用者要求先完成功能，视觉调整暂停且**未验收通过**。本阶段最新单次完整测试为 **345/345**，下文分别保留各阶段失败、定向检查和实际宿主证据。
+当前已完成 Task1–4、Task6 核心分包，并推进 Task5 工作台与 Task7 单写入者及本机服务：人物原文、分类条件、共同日记、32,768 token 总预算，以及工作台资料/日记/预算/提醒设置页面已接入。旧版审查中的权限、复制与恢复诊断问题已修复。使用者要求先完成功能，视觉调整暂停且**未验收通过**。本阶段最新单次完整测试为 **359/359**，下文分别保留各阶段失败、定向检查和实际宿主证据。
 
-**仍未完成**：工作台其余后端能力的页面覆盖、完整界面验收与使用者视觉认可、本机认证 RPC 服务、AstrBot 插件和 NapCat/Snow Luma 验证。保留用户提供的原稿，待功能完成再逐页对照。当前仍是未发布开发分支，0.2.1 发行物未覆盖。方案见 [设计文档](../superpowers/specs/2026-10-25-person-capacity-multihost-design.md)，执行顺序见 [实施计划](../superpowers/plans/2026-10-25-person-capacity-multihost.md)。
+**仍未完成**：工作台其余后端能力的页面覆盖、完整界面验收与使用者视觉认可、跨进程模型准入与日记工具接线、AstrBot 插件和 NapCat/Snow Luma 验证。本机认证 RPC 当前只提供管理和只读检索。保留用户提供的原稿，待功能完成再逐页对照。当前仍是未发布开发分支，0.2.1 发行物未覆盖。方案见 [设计文档](../superpowers/specs/2026-10-25-person-capacity-multihost-design.md)，执行顺序见 [实施计划](../superpowers/plans/2026-10-25-person-capacity-multihost.md)。
 
 ## 附件与原件保全
 
@@ -367,3 +367,52 @@ Task5/6 已保存为本地提交 `36dd329`。本节继续完成 Task7 的占用�
 | `npm pack --dry-run --json` | 0 | 480 文件，压缩估计 11,395,503 字节，展开 21,690,897 字节 |
 
 仍使用 Node 22.23.3 和原有 SDK 版本；branch/global v1、host journal v2 未升级。新增 `.memory-continuity-owner` 是本机占用与恢复证据，不是剧情来源。此协议只约束新版官方入口，旧版或绕过入口的程序仍须管理员先停止。PID 被复用、权限不足无法验证死亡、损坏证据、文件系统不支持硬链接时都不会强行开启写入。未验证跨操作系统文件系统、真实断电、长期压力，也未发布此次开发包。
+
+## Task7 阶段二：本机认证服务、持久回执与实际进程恢复
+
+本阶段复用独立核心接通管理和检索，尚未把服务变成模型请求网关。用户询问后续是否需要逐张截图：原始 HTML 已保留，视觉工作继续暂停，之后先由开发者逐页对照，只在原稿缺少特定状态时补充参考。
+
+- `src/core/server.ts`、`rpc.ts`：仅 loopback、强随机管理凭据与短期只读工具令牌分离，真实 Authority 留在服务端。拒绝伪造权限、未知操作、错误 Host/Origin；请求/响应各 128 KiB，最多 16 个连接、32 个在途请求、64 个会话，每会话最长十分钟和 128 个检索回执。并发签发先预留容量，并发打开工作台复用同一个 listener；撤销或过期同时停止工具资格和对应工作台。
+- 检索回执来自实际返回的 record/revision/content hash，并在返回前复核；更正后原回执失效，不能借另一会话的回执或用新版本认证旧内容。状态固定显示 `modelDispatch: false`，不把检索认证解释成模型发送准入。
+- `src/core/confirmations.ts`：管理预览、尝试和完成各有不可变摘要链。冷启动重复确认已完成操作只返回原回执；旧未确认预览拒绝执行，尝试过但完成回执丢失时保留 `persistence_uncertain`，不自动重做。原始人物/日记正文不另存一份。读取回执前还要验证实际存储，不能让一张完好回执掩盖底层历史损坏。
+- `src/core/cli-service.ts`、`cli.ts`：新增实际打进 TGZ 的 `memcont-core serve`。管理员显式提供配置和新的连接文件；不覆盖已有文件，不打印管理 token。正常 `quit` 关闭服务和占用，异常退出保留诊断证据。配置使用已建立的工作区和分支，暂未提供一键初始化。
+- `src/core/index.ts`、`owned-memory.ts`：导出服务入口和绑定类型，使用已验证的 canonical profile 根路径保存确认元数据。`packages/core/README.md` 与 `docs/COMMANDS.zh.md` 同步开发命令、配置、错误恢复和尚未接通的功能。
+
+### 回归与失败记录
+
+`test/core-service.test.mjs` 覆盖认证边界、实际检索证据、撤销/过期、输入上限、并发工作台、最后一个会话槽位争抢、撤权中的迟到读取、冷启动凭据失效、不完整 HTTP 请求超时、在途请求上限、持久确认、回执丢失、损坏历史，最终 **14/14**（3518.3624ms）。
+
+- 初始 4 项因服务不存在而失败。首次实现发现请求授权要求 sessionId 与 sceneId 成对，补齐真实授权字段；随后两项测试问题分别是 fetch 不采用手写 Host，以及人物编辑缺少原契约的 operation/previousEventId，改为真实 node:http 和合法编辑输入后 4/4。
+- 并发回归先 4/6，实际复现重复创建工作台及超额签发会话。修正共享打开 promise 和同步预留后 6/6。失败测试曾留下一个合成验收 listener，使用其自己的关闭接口清理；未停止用户预览。测试 finally 也补上失败时的清理。
+- 不完整请求超时先 8/9，再 9/9；并发上限先 9/10，再 10/10。类型检查发现泛型联合解包问题，明确未知返回类型后通过。
+- 持久确认入口缺失先 10/13，接通后 13/13；之后新增“底层历史损坏仍返回成功回执”的回归，先 13/14，增加实际 readFence 校验后 14/14。完成回执写入 EIO 时，人物修改已存在但冷重试不新增事务；损坏证据原样保留。
+- CLI serve 最初因缺少子命令失败。`test/core-package.test.mjs` 与 `test/fixtures/core/service-process.mjs` 在真实离线安装的 TGZ 中启动独立服务进程，经真实 HTTP 修改人物后 SIGKILL；第二个进程被占用锁拒绝，CLI 诊断旧 PID 死亡并显式恢复后，新的服务拒绝旧凭据，同一确认返回原回执且版本不再增长，最后 `quit` 退出 0 并释放占用。该独立验收 **1/1**（9593.5038ms），不是进程模拟。
+
+全量测试中的核心包验收另留回执 `work/core-package-tests/9ed2f872-8450-42c1-8a89-e6b08a709896/receipt.json`：实际包清单 **185 个文件**逐一核对大小、SHA-256 和完整文件集合；隔离目录无法解析 DSH/Cordis，两个进程写入和冷读人物、原文与日记一致，CLI 崩溃恢复及词表篡改拒绝通过。所有早期失败和退出码保留在 `work/task7-service/`，没有用定向重跑拼接全量通过。
+
+### 本阶段连续验证与限制
+
+`work/task7-service/final/verification-receipts.json` 记录同一源码上五项连续串行命令：
+
+| 命令 | 退出码 | 实际结果 |
+| --- | --- | --- |
+| `npm run typecheck` | 0 | 类型检查完成 |
+| `npm run build` | 0 | DSH 插件、声明、编辑器和源码清单构建完成 |
+| `npm test` | 0 | **一次完整 359/359**，失败/取消/跳过均 0，187086.7261ms |
+| `npm run evaluate:fixture` | 0 | 固定语料检查完成，不是实际模型效果结论 |
+| `npm pack --dry-run --json` | 0 | DSH 插件打包预检完成；随后文档补充不改变运行代码 |
+
+在最终运行代码上再用实际 rc.3 SDK 串行运行 `core-native-owner`、`rp-host-lifecycle`、`rp-management-host-extension`：**12/12**、退出 0，4260.5973ms，网络保护未观察到外部模型请求。回执为 `work/task7-service/final/rc3-receipt.json`；它是明确范围的 rc.3 原生验收，不是 rc.3 全量。
+
+额外实际打包：`npm pack --json --pack-destination work/task7-service/artifacts`、`node scripts/build-core.mjs --out work/task7-service/artifacts/core-stage`、在 core-stage 内执行 `npm pack --json --pack-destination ..` 均退出 0。Python 实包核验退出 0：DSH 归档 488 个文件，其中源码清单覆盖的 294 个文件大小与 SHA-256 一致；核心归档 186 个文件，清单覆盖除清单自身外的全部 185 个文件，无外部 runtime/peer 依赖。包内与工作区源码清单均核对通过，回执保存于 `work/task7-service/artifacts/pack-verification.json`。这是本地工程核验快照，不是新发行版；DSH package identity 暂沿用 0.2.1，正式发布时仍须确定新版本并重打包，不覆盖已有发行物。
+
+打包命令后的 `git diff --check` 单独发现本报告追加段末尾的 CRLF 空白问题，首次组合命令因此退出 1；仅规范化报告换行后检查退出 0，运行代码未改动。上述五项完整验证没有因此被改写或拼接。归档中的报告是打包当时的版本，最终交付还需包含之后补充的实包回执说明。
+
+环境：Node 22.23.3、TypeScript 5.9.3、esbuild 0.25.12、DSH rc.2（全量中的实际 SDK）和 rc.3（上述单独验收）、Cordis 4.0.5、Schemastery 3.18.5。branch/global v1、host journal v2 未升级；确认元数据是单独的本机管理回执，不是剧情证据。公开输出不包含私密附件、配置或连接 token。
+
+仍然存在的限制：
+
+- Task7 的跨进程模型准备/准入/取消，以及 Task8 平台事件绑定、模型侧日记工具和实际 AstrBot 运行尚未接通。已验证的管理/检索 HTTP 不能替代每次实际 provider 调用前的校验。静态调查发现 AstrBot v4.29.3 的工具循环和 provider 内部重试有独立发送路径，正在核查可维护接入方式；没有修改宿主来冒充兼容。
+- 确认历史最多 4096 份预览，不自动截断；达到上限后拒绝新预览，目前没有归档工具。回执内容只记录摘要，但目录规模、长期使用成本和容量边界的压力实测尚未完成。
+- 未实测真实断电、跨操作系统文件系统、完整网络断开与写入各阶段的排列组合、实际用户长历史、真实模型语义效果、QQ 账号登录/发信、NapCat/Snow Luma 整链。进程 SIGKILL、写入 EIO 与 HTTP 超时各有独立证据，不能概括成所有故障均验证。
+- 仍需补齐工作台的其余功能页和完整交互验收，再按原稿调整视觉。当前页面未得到用户视觉认可。本轮没有后台自动行为、付费 API、push 或 Release，也没有覆盖稳定 0.2.1。

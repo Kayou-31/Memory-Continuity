@@ -1,6 +1,8 @@
 /** Trusted application API. Keep this bootstrap out of model-facing tools. */
 export {openMemoryCore} from './owned-memory.js'
 export {acquireProfileOwner,inspectProfileOwner,recoverProfileOwner} from './owner.js'
+export {openCoreService} from './server.js'
+export type {CoreBinding,CoreServiceInput} from './rpc.js'
 export {openManagementServer as openWorkbench} from '../rp/person/management-server.js'
 export {createMemoryBudget,validateMemoryBudget,openMemoryMeter,measureMemoryParts} from '../rp/token-budget.js'
 export {importPersonDocument} from '../rp/person/documents/import.js'

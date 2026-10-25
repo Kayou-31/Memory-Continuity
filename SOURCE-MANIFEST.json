@@ -538,24 +538,44 @@
       "sha256": "5ae835c23fc603962861a40111b0771c327a2f49bba4b0531cdb7dc78b528fc2"
     },
     {
+      "path": "src/core/cli-service.ts",
+      "bytes": 3539,
+      "sha256": "acca831fffdc5d4236397cc0bb3a2bda97dda10e9896e51b452aca3e2d39c486"
+    },
+    {
       "path": "src/core/cli.ts",
-      "bytes": 1405,
-      "sha256": "647702a22957555ccaf5a22c1096e6a27452f5469a22a93a0721d02304e70825"
+      "bytes": 1782,
+      "sha256": "13c13c5c5d24d3160a6fa36ecb7a1f8c55e86cf467b498cc4ed06917b42f8440"
+    },
+    {
+      "path": "src/core/confirmations.ts",
+      "bytes": 8292,
+      "sha256": "8393fd56f67d8f9b89bae07761f592c16362fddab8f3b79bd2ea7ac57a470891"
     },
     {
       "path": "src/core/index.ts",
-      "bytes": 1199,
-      "sha256": "927015607a982ab7cd9ad213bfe7d662d547623cf6f8173cb74d829c44ccb0a0"
+      "bytes": 1302,
+      "sha256": "2b5d9d278a842ad5467ec6f416beb289731b601e6ebdfed174665be9bf684824"
     },
     {
       "path": "src/core/owned-memory.ts",
-      "bytes": 1227,
-      "sha256": "9be817d850ed24f36b6042a82178396fab916bb2773fbcec6a344833653757cc"
+      "bytes": 1310,
+      "sha256": "21a0234c50332974d0f26b45e03ec6664cbb26daf36f2c555b6309fae312f912"
     },
     {
       "path": "src/core/owner.ts",
       "bytes": 7868,
       "sha256": "0a09221e8cfff7d5d4e86dd637c4c3ad2adeafbb49ec0c5b193d4306ae135805"
+    },
+    {
+      "path": "src/core/rpc.ts",
+      "bytes": 8573,
+      "sha256": "c2e0c7e4b0621bb919c93cec944a24ed59f955907c13c05dc525ab8ece2ec28f"
+    },
+    {
+      "path": "src/core/server.ts",
+      "bytes": 5702,
+      "sha256": "ffa1adb030c016b6f5955c7dce790a4abbbe5f7477975829707f0d8b49db9761"
     },
     {
       "path": "src/rp/admission.ts",
@@ -979,13 +999,18 @@
     },
     {
       "path": "lib/index.js",
-      "bytes": 924304,
-      "sha256": "909cf4df3595429a8424200c957b725fdf3bab50d96cbbbd42c8aa8405dedb6f"
+      "bytes": 924394,
+      "sha256": "2a9a771457c1487f1e67cc34cf8db336395428faa4c00b9eb963c02a458362c6"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 1492239,
-      "sha256": "0dc685076c587e686cc7fa281b361546144fc5f592905883c22d985b475c56bb"
+      "bytes": 1492381,
+      "sha256": "d8f5cc0c6feeeb82e21041f2393c685c59fc24fee6ba9de354e7962b1d3c1ea3"
+    },
+    {
+      "path": "lib/types/core/cli-service.d.ts",
+      "bytes": 181,
+      "sha256": "348c845dd331d0a2a362f0e22b5265ecbcee47e26c03e23c1e38c01a3db440ac"
     },
     {
       "path": "lib/types/core/cli.d.ts",
@@ -993,19 +1018,34 @@
       "sha256": "43e818adf60173644896298637f47b01d5819b17eda46eaa32d0c7d64724d012"
     },
     {
+      "path": "lib/types/core/confirmations.d.ts",
+      "bytes": 7013,
+      "sha256": "1e642d7797bc0787d1206277ed60fc773a7122426752621e1c200641019220dd"
+    },
+    {
       "path": "lib/types/core/index.d.ts",
-      "bytes": 1259,
-      "sha256": "6b4b32dfaaa9c6804ab7a52f9ffbe124f0acbc49f11f925dffbfdf931cb56396"
+      "bytes": 1369,
+      "sha256": "ce75937fa514de1d075fcc4318f6d5910d3266adbfb77f14c447d2fd39d118dd"
     },
     {
       "path": "lib/types/core/owned-memory.d.ts",
-      "bytes": 39149,
-      "sha256": "b43dc795a97fe8227e12048fa912b2dff9364c4616ab58151be89cfa55cc46a3"
+      "bytes": 39174,
+      "sha256": "d8b68a9ede0d524d4074f78009f49b4b0cd89373818ec06b362dac7aa478fc82"
     },
     {
       "path": "lib/types/core/owner.d.ts",
       "bytes": 877,
       "sha256": "e0415414364d6c01c627af98fbfb835bf58a155e40448cef18c6708853dbc1a3"
+    },
+    {
+      "path": "lib/types/core/rpc.d.ts",
+      "bytes": 1686,
+      "sha256": "552a9c32712befe2ae4bf1147864a517bf176388463981383661360dff820a6b"
+    },
+    {
+      "path": "lib/types/core/server.d.ts",
+      "bytes": 292,
+      "sha256": "959ac3557e874e133b12109b22a5b3d6b534b9aac50617d40d1cef1e15fd4035"
     },
     {
       "path": "lib/types/rp/admission.d.ts",
@@ -1349,8 +1389,8 @@
     },
     {
       "path": "lib/types/rp/rp-plugin.d.ts",
-      "bytes": 42185,
-      "sha256": "0189d164ea1da4d4335bef64e0c4d1817da317a859ac112fd43e1c04fdafeb71"
+      "bytes": 42214,
+      "sha256": "96de018a580d0b7e196054410f356d8491ac4c6364fc0991e95051c1f4d6c96b"
     },
     {
       "path": "lib/types/rp/schema.d.ts",

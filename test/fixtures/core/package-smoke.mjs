@@ -13,7 +13,7 @@ const must=r=>{assert.equal(r.ok,true,JSON.stringify(r));return r.value}
 const profileRoot=path.resolve('profile'),project=path.resolve('project');await fs.mkdir(project,{recursive:true})
 const core=await api.openMemoryCore({profileRoot,entityIds:['erin']}),writing=process.argv[2]==='write'
 if(process.argv[2]==='owner-crash')process.exit(0)
-let request
+let request,service
 if(writing){const ws=must(await core.control.createWorkspace(project)),branch=must(await core.control.createBranch(ws.workspaceId,'life'));request={workspaceId:ws.workspaceId,campaignId:'life',branchId:branch.id,sessionId:'core_test',sceneId:'scene',viewpoint:{kind:'narrator'},visibility:{policyId:'policy',revision:0,audienceSetId:'public'},audienceSetIds:['public'],permissions:['read','observe','commit','control']};await fs.writeFile('request.json',JSON.stringify(request))}
 else {request=JSON.parse(await fs.readFile('request.json','utf8'));must(await core.control.openWorkspace(project))}
 const authority=must(await core.control.authorize(request)),ctl=async key=>must(await core.store.observeSource(authority,{idempotencyKey:key,origin:'user_control',role:'user_control',turnId:key,publicText:'明确确认 '+key})),fence=async()=>must(await core.store.readFence(authority))
@@ -31,5 +31,9 @@ try{
  assert.equal(doc.draft.text,original);assert.ok(meter.count('你好，世界！')>0)
  const workbench=await api.openWorkbench(core.management.create(authority))
  try{const url=new URL(workbench.url),token=url.hash.slice(1);url.hash='';const response=await fetch(new URL('api/snapshot',url),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:'{}'}),body=await response.json();assert.equal(body.ok,true);assert.equal(body.value.persons[0].personId,'erin');const font=await fetch(new URL('assets/fonts/noto-serif-sc-000.woff2',url));assert.equal(font.status,200);assert.equal((await font.arrayBuffer()).byteLength>0,true)}finally{await workbench.close()}
+ service=await api.openCoreService({memory:core,bindings:[{id:'local',request,personId:'erin'}]})
+ const sessionResponse=await fetch(service.url+'/v1/admin/session',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+service.adminToken},body:JSON.stringify({bindingId:'local'})}),session=must(await sessionResponse.json())
+ const searchResponse=await fetch(service.url+'/v1/tool/search',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+session.toolToken},body:JSON.stringify({query:'林澈'})})
+ assert.ok(must(await searchResponse.json()).result.items.length>0)
  console.log(JSON.stringify({name:person.fields[0].value,documentSha:createHash('sha256').update(doc.draft.text).digest('hex'),diary:diary.draft.body,tokenMode:meter.identity.mode,fence:await fence()}))
-}finally{await core.close()}
+}finally{await service?.close();await core.close()}
