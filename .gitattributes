@@ -1,0 +1,5 @@
+# Pinned upstream bytes are verified at runtime; checkout must not rewrite EOLs.
+assets/tokenizers/deepseek-v3.2/* -text whitespace=cr-at-eol
+src/rp/tokenizers/vendor/* -text
+test/fixtures/tokenizers/*.json text eol=lf
+docs/framework-evolution-2026-10-25/evidence/* text eol=lf

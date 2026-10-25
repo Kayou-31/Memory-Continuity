@@ -6,6 +6,7 @@
   "main": "./lib/index.js",
   "types": "./lib/types/rp-plugin.d.ts",
   "files": [
+    "assets",
     "lib",
     "src",
     "ui",

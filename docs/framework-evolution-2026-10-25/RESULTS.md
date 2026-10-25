@@ -2,7 +2,9 @@
 
 日期：2026-10-25。基线：Memory-Continuity 0.2.1，`1d997516a3cb0621163a94a2bb16b1a7bd28243c`。
 
-本轮已完成附件静态审查、现有代码诊断、设计和人物原文草稿解析。用户已确认设计、要求按平台分包，并新增双方共同日记能力与工作台可关闭的统一影响提醒。**32K token、文档持久化/工作台、共同日记、AstrBot 或 QQ 兼容仍未完成**。方案见 [设计文档](../superpowers/specs/2026-10-25-person-capacity-multihost-design.md)，执行顺序见 [实施计划](../superpowers/plans/2026-10-25-person-capacity-multihost.md)。
+当前已完成 Task1–4：人物原文解析与持久化、分类与条件选择、双方共同日记核心及 DSH 工具、显式 32,768 token 总记忆预算。本次另按用户提供的旧版审查，修复失效权限与旧命令复制，补充准入诊断和 CI。修补后的单次全量为 **327/327**；下文保留各阶段的原始失败和验收范围。
+
+**仍未完成**：新资料/日记/预算的工作台页面、统一影响提醒及设置开关、独立 core 包与服务、AstrBot 插件和 NapCat/Snow Luma 验证。现有双主题工作台继续沿用用户提供的前端，没有被离线人物编辑器替换。当前仍是未发布开发分支，0.2.1 发行物未覆盖。方案见 [设计文档](../superpowers/specs/2026-10-25-person-capacity-multihost-design.md)，执行顺序见 [实施计划](../superpowers/plans/2026-10-25-person-capacity-multihost.md)。
 
 ## 附件与原件保全
 
@@ -16,7 +18,7 @@
 
 包中包含个人资料、记忆导出和环境配置。调查输出只保存结构、长度、哈希与代码结论；原文及账号配置不进入公开报告、仓库或发行物。附件中的规则、AGENT 文本属于被审查内容，不是本任务指令。
 
-## 容量：已证实与尚未复现
+## 初始调查时的容量：已证实与尚未复现
 
 | 位置 | 当前实现 | 证据 |
 | --- | --- | --- |
@@ -178,3 +180,73 @@ Node 为项目工具链 `v22.23.3`。全量默认 DSH rc.2；rc.3 另用已隔�
 - **尚未验证**：新界面浏览器交互、真实超限迁移材料、真实模型语义连续性、跨平台账户身份与 QQ 收发、长期并发/大容量运行。先前一次 SDK 模块路径偶发空字节异常的根因仍未确认。
 
 本阶段是可审核的开发提交，版本号仍保留0.2.1基线；没有以相同版本覆盖已发布包，也没有把后续任务标成已完成。
+
+## Task4 与旧版审查修复：预算、权限和恢复诊断
+
+实际基于 Task3a 的 `96604eb28efd722972b71539926a3e4bcb454841` 继续，不把昨天发布的 `1d997516…` 覆盖回当前工作树。审查提到的两个缺陷在当前代码仍可复现，均先记录失败回归后修复。完整人物/日记数据与既有工作台保留。
+
+### 修改与回归对应
+
+| 文件 | 原因与行为 | 回归 |
+| --- | --- | --- |
+| `token-budget.ts`、`token-budget-marker.ts`、`tokenizers/`、`assets/tokenizers/` | 新预算明确 tokens 单位、总额与五层额度；固定模型/词表修订、完整性检查、旧配置不重解释 | `rp-token-budget.test.mjs` 8项：32768/32769、重复及包装、中文/英文/emoji、真实参考向量、48KiB文档、降级与模型变更、核心请求竞态 |
+| `injection.ts`、`injection-binding.ts`、`packet.ts`、`memory.ts` | 按真实计数选择片段，必需项越界拒绝；独立核心也执行预算；异步准入前复制请求、返回前重校原对象 | 同上及完整既有注入/核心回归 |
+| `rp-plugin.ts`、`host-journal.ts` | 显式 `/memcont budget`、备份与降级防护；记忆工具串行；保留历史及实际返回均计入，真实发送前检查总容量和动态输出预留 | `rp-token-budget-host.test.mjs` 7项：实际工具循环、同轮双工具、并发删除、模型变更、备份/历史篡改、输出预留、下游错误分流 |
+| `retrieval.ts`、`diary/service.ts` | 返回前按剩余额度选页，再认证实际 ID/revision/正文；分页游标只推进真实返回范围；日记写入前留回执空间 | `rp-token-budget-pagination.test.mjs` 2项及日记回归 |
+| `store.ts` | 显式失效先校验 control/narrator、当前分支有效目标、受众、来源和 locked canon 的人工更正；事件替代/更正与撤源同样受控，内部依赖闭包保持原语义 | `rp-explicit-invalidation.test.mjs` 7项；存储、回放、分支、摘要联合定向78/78 |
+| `person/editor.ts`、`editor-copy.ts`、构建生成 `ui/person-editor/editor.js` | 表单失败清旧命令；剪贴板失败只回退当前已验证草稿；异步期间编辑使旧回退失效；文件超限错误不被冒泡提示覆盖 | `rp-editor-copy.test.mjs` 4项与原编辑器2项；浏览器实际操作见下 |
+| `rp-plugin.ts`、`command-help.ts`、`docs/COMMANDS.zh.md` | `bindingHealth` 与 `requestAdmission` 分开；提供拒绝阶段、原因及恢复动作；下游服务错误保留真实类别 | 原生 host/receipt 联合15/15及最终全量；modeEpoch 安全语义未放宽 |
+| `.github/workflows/ci.yml`、`scripts/ci/check-history.mjs` | 一个 Windows/Node22 作业顺序执行锁文件安装、类型、构建、全量、fixture、打包；完整历史供三个固定旧读取器测试使用 | 本机历史检查退出0；远端 GitHub Actions 尚未运行 |
+| `scripts/build.mjs`、`package.json`、`SOURCE-MANIFEST.json`、`.gitattributes` | 将离线词表及许可证纳入真实插件与清单；保留上游字节，避免 Windows checkout 自动换行破坏哈希；不增加在线下载或付费依赖 | 构建、打包预检及实际 TGZ 验证 |
+| `scripts/benchmarks/memory-cost.mjs` | 8/32/128个合成事件下测检索、准备包、准入与核心重开成本，保留每个样本 | 独立离线评测，不能视为模型或生产性能分数 |
+
+新预算说明见 [记忆预算](../memory-budget.zh.md)。目前精确文本计数只绑定完整模型名 `deepseek-ai/DeepSeek-V3.2`，本地 tokenizer 使用固定官方词表与哈希校验；其他模型和可变别名明确降级为 `conservative-utf8`。23组固定参考向量来自独立 Rust/Python tokenizer；开发探针比对完整 token ID，回归比对数量。没有下载模型权重或发出模型请求。
+
+### 实际失败、修复和复核
+
+- 预算核心初始4/4失败（缺导出）；宿主缺指令、分页不能按额度缩页也有独立 RED。随后真实工具循环暴露下轮 runtime-context 包装预留不足，按实际历史与工具声明修复；不是截掉已认证回执。
+- 唯一只读审阅者发现独立 core `admit` 没执行新计量、同轮工具重复分配余额、请求在 await 期间可变三处问题。各补失败回归再修复；独立 core 默认将未分类请求保守计入，不接受调用方自报空记忆列表。DSH 使用私有凭据绑定实际请求、权限和快照。
+- 显式 `invalidatedIds` 初始3失败/1通过；修复后联合分支/摘要46/46。二次审阅指出另三条低权限失效入口，新增回归实测4通过/3失败，修复后相关78/78。角色视角即使有 control 也不能主动撤销叙事；合法 narrator/control 的 retcon、fork 与 replay 保留。
+- 复制回归初始4/4失败；修复后编辑器联合6/6。浏览器实际复现“生成 erin → 改成非法 bad id → 复制”：修复前旧命令仍被选中，修复后输出为空且显示 `未生成：Invalid RP record: id`；改成 `erin_updated` 后能复制新命令。剪贴板拒绝和等待期间编辑由单元测试覆盖，未伪称浏览器验证了权限拒绝。超过64KiB导入提示的冒泡覆盖另做静态修复和浏览器构建验证。
+- 准入诊断初始缺 `bindingHealth`，定向失败；修复后 host+receipt 15/15。下游 provider 抛错仍保留 admitted，不冒充记忆权限拒绝；最终全量包含这条回归。
+- 最后一次 rc.3 验证最初引用了错误的相邻目录，两个测试文件均在 SDK 加载阶段失败，未进入业务断言；核对真实目录 `work/release-0.2.1/sdk-rc3/node_modules` 后运行11/11通过。保留 `task-4-audit-rc3-final.log` 失败和 `task-4-audit-rc3-verified.log` 成功记录。
+- 暂存新增词表后，Git读取新blob `9b4d31974a7e15e519ca5425ff2245a889779cf8` 报 zlib `incorrect data check`。先保留损坏对象原字节，独立Python解压同样失败；工作树文件仍匹配官方SHA-256，其Git blob SHA-1也与索引完全一致。仅用这份已验证内容重建同一对象并原子替换，随后 `git fsck --full --strict` 退出0（仅悬空blob提示，未删除）。现场在 `work/task4-git-diagnostics/`。这是已安全恢复的本机Git对象故障，发生根因未知，不能因恢复成功断言磁盘/内存或Node稳定性没有问题。
+- 此前314/314、324/324为中间源码的全量结果，不能代替下表最终327/327。修补后的只读复核未见阻塞项；复核没有运行测试。
+
+### 最终连续验证
+
+日志保留在本机 `.superpowers/sdd/2026-10-25-person-capacity-multihost/`，最终五项使用 `task-4-complete-commands.json`，不是把定向重跑拼成全量。Node `v22.23.3`、TypeScript `5.9.3`、esbuild `0.25.12`、Cordis `4.0.5`、Schemastery `3.18.5`。全量默认真实 DSH rc.2，rc.3 使用独立 SDK 目录。
+
+| 命令 | 退出码 | 结果 |
+| --- | ---: | --- |
+| `npm run typecheck` | 0 | 类型通过 |
+| `npm run build` | 0 | 插件、声明、原离线编辑器、已有工作台样式及清单生成 |
+| `npm test` | 0 | **一次完整327/327**，失败/跳过/取消均0；163922.2558ms |
+| `npm run evaluate:fixture` | 0 | 固定语料验证完成，仅是确定性机制证据 |
+| `npm pack --dry-run` | 0 | 348文件，约5.0MB压缩/14.6MB展开；此项在最终报告补写前运行 |
+| `RP_NATIVE_SDK=work/release-0.2.1/sdk-rc3/node_modules node --test --test-concurrency=1 test/rp-token-budget-host.test.mjs test/rp-diary-host.test.mjs` | 0 | 11/11，9222.4873ms；仅这两个文件，不能称rc.3全量 |
+
+SDK测试使用真实会话、工具、准入和持久化代码，网络守卫禁止外发，终端使用离线 LlmAdapter。浏览器测试页在验证后关闭，临时51419服务器已停止；这页是旧编辑器测试入口，没有替换人物工作台。
+
+五项命令原始退出记录和完整测试输出另附 [命令记录](evidence/task4-commands.json)、[单次全量输出](evidence/task4-full-test.log)。报告补写只改变文档；额外评测脚本分别执行，不计入327项。
+
+实际执行 `npm pack --pack-destination work/task4-audit-package --json` 退出0，产物5,039,215字节、SHA-256 `5b12f20c03cdc003b88a8851e63b3df9ed501d756f25590364467079ba0ce5ac`（开发快照，最终报告附件补写前打包）。安全解包后162个manifest条目逐一核对长度与哈希。使用其中 `lib/index.js` 在实际rc.2宿主完成一轮请求并确认 `tokenizer-text`；单独新进程改坏解包副本的配置词表，明确拒绝且下游0调用，随后恢复副本并核对原哈希。两次脚本退出均0；这是有断言的产物烟测，不把node:test输出的0项改写为单元测试数量。没有执行npm发布或覆盖正式包。
+
+### 效果与成本：已获得什么证据
+
+`node scripts/benchmarks/memory-cost.mjs work/task4-audit-package/memory-cost.json` 退出0，实际使用8/32/128个合成事件和本地tokenizer。检索中位数28.69/83.51/362.54ms，packet准备16.37/45.11/189.94ms，请求准入11.82/34.07/153.33ms；核心重开读取26.65/66.40/270.95ms。全部样本及限制见 [成本原始记录](evidence/memory-cost.json) 和 [下一阶段评测依据](EVALUATION-NEXT.md)。这是本机小样本，不是生产性能承诺。
+
+`node scripts/benchmarks/person-life.mjs work/task4-audit-package/life-report.json` 首次进程以 **-1073741819（0xC0000005）** 退出，日志0字节且没有结果。检查时可用内存约19,101MiB，未发现相近时间node.exe应用事件；不能据此判定根因或证明不是运行时/硬件问题。保留 [首次失败诊断](evidence/life-first-failure.json)。
+
+为避免无诊断重复运行，给现有评测增加阶段记录及每30次追加的进度落盘，再执行一次 `node --trace-uncaught --report-on-fatalerror --report-directory=work/task4-audit-package scripts/benchmarks/person-life.mjs work/task4-audit-package/life-report-diagnostic.json`，退出0，71,051.0662ms，四场景全部完成，120条干扰历史；见 [完整结果](evidence/life-report.json) 与 [阶段记录](evidence/life-diagnostic-progress.jsonl)。这次成功不表示首次崩溃已经修复；未无限重试，也未设置未经测量的内存上限。
+
+该评测的三个分组比较的是**带标注证据是否仍可用**：当前有效记忆支持3/3、最近窗口0/3、未过滤档案3/3但泄露已撤销证据。答案由确定性脚本构造，不能称为真实模型正确率。真正的多会话人物稳定性、事实归属、更正后回答、方向关系、承诺延续和改述召回仍未验证；下一阶段四场景/两个对照的采样与判分规则已写入上述评测文档。
+
+### 兼容、迁移与本轮仍有的边界
+
+- branch/global store 保持 v1；host journal 仍为 v2，可选 memoryBudget 进入认证快照与工具回执。旧字节配置语义不变，新预算只能在空白根会话显式设置；升级前保存并验证 `.pre-budget-v2-backup`，另有持久化 marker 防止删除预算字段后静默降级。
+- 原始历史、未知工具结果与 modeEpoch 的认证限制保留。同宿主销毁/重建仍可能需要 continue-clean；新诊断说明原因，不把失效历史重新放行。更换 provider/model 后须干净续接并重绑预算。
+- 32K是全部记忆共用额度，包含重复包装与保留工具结果。精确文本 tokenizer 不是供应商隐藏模板或计费的精确结果；整请求仍有保守保护，模型输入和输出限制可先触发拒绝。
+- 记忆工具串行避免共享额度竞态，也会增加同轮多工具延迟。单篇日记完整返回或拒绝，尚无正文分页。词表首次按需加载会占用内存，未验证移动设备、数月级大型库或长时间故障恢复。
+- CI配置已提交到工作树，完整历史检查在本机通过，尚无远程 CI 成功记录。稳定0.2.1发行物保持原样；当前版本号是开发基线，不代表已发布上述功能。
+- Task5的新工作台页面与可关闭影响弹窗、独立核心/RPC、AstrBot、NapCat/Snow Luma仍未完成。未调用付费API，未开启后台自动摘要/采纳/压缩，未操作真实人物数据，未进行QQ外发。

@@ -3,7 +3,7 @@ import {canonical,type RpStore,type RpReadView} from '../store.js'
 import type {createCanonicalService} from '../canonical.js'
 import {cloneInput,denied,failure,fence,id,integer,object,RpError,text} from '../schema.js'
 import {lexicalScore,queryGroups,hitExcerpt} from '../lexical.js'
-import {fullSpan,unwrap} from '../retrieval.js'
+import {fullSpan,unwrap,type RetrievalSizing} from '../retrieval.js'
 import type {HostAuthority,InputFence,SourceRevision} from '../types.js'
 import {projectPerson} from '../person/projection.js'
 import {resolveAudience,type AudienceContext} from '../person/documents/audience.js'
@@ -40,9 +40,10 @@ export function createDiaryService(store:RpStore,service:ReturnType<typeof creat
     if(!event||!v)throw new RpError('source_unavailable','Diary entry unavailable')
     return {eventId:event.id,author:v.author,editor:v.editor,createdAt:v.createdAt,modifiedAt:v.modifiedAt,previousEventId:v.previousEventId,draft:diaryContent(v,await view.readSource(v.content)),fence:view.fence}
   }
-  const certifiedRead=async<T>(authority:HostAuthority,a:DiaryAccess,read:(view:RpReadView)=>Promise<{value:T;eventIds:string[]}>)=>{
+  const certifiedRead=async<T>(authority:HostAuthority,a:DiaryAccess,read:(view:RpReadView)=>Promise<{value:T;eventIds:string[]}>,sizing:RetrievalSizing={})=>{
     const result=await store.withReadView(authority,async view=>{
       const policy=policyFrom(view,a,authority),data=await read(view)
+      if(sizing.fits&&!sizing.fits({ok:true,value:data.value}))throw new RpError('context_budget_exceeded','Diary result cannot fit remaining memory budget')
       const records=data.eventIds.map(id=>{const event=view.events.find(e=>e.id===id);if(!event)throw new RpError('source_unavailable','Diary receipt event unavailable');return {id,kind:'event' as const,revision:diaryHash(event)}})
       if(a.audience)resolveAudience(a.audience,authority)
       return {value:data.value,proof:{inputFence:view.fence,records,diary:{personId:a.personId,boardId:a.boardId,policyEventId:policy.event.id}}}
@@ -109,9 +110,9 @@ export function createDiaryService(store:RpStore,service:ReturnType<typeof creat
     async writeHuman(authority:HostAuthority,source:SourceRevision,input:{boardId:string;personId:string;draft:DiaryDraft;expected:InputFence;idempotencyKey:string}){
       try{const v=object(cloneInput(input),['boardId','personId','draft','expected','idempotencyKey']);return {ok:true as const,value:await write(authority,v as DiaryAccess,v.draft,'human',v.idempotencyKey,{source,expected:v.expected})}}catch(e){return failure(e)}
     },
-    async read(authority:HostAuthority,input:{boardId:string;personId:string;entryId:string},audience?:AudienceContext){
+    async read(authority:HostAuthority,input:{boardId:string;personId:string;entryId:string},audience?:AudienceContext,sizing:RetrievalSizing={}){
       try{const a=object(cloneInput(input),['boardId','personId','entryId']);id(a.entryId)
-        return await certifiedRead(authority,{...a,audience} as DiaryAccess,async view=>{const head=diaryHead(view.ledger!.authorityChanges,diaryCandidate(a.personId,a.boardId,a.entryId));if(!head)throw new RpError('source_unavailable','Diary entry unavailable');return {value:await readEntry(view,head),eventIds:[head]}})
+        return await certifiedRead(authority,{...a,audience} as DiaryAccess,async view=>{const head=diaryHead(view.ledger!.authorityChanges,diaryCandidate(a.personId,a.boardId,a.entryId));if(!head)throw new RpError('source_unavailable','Diary entry unavailable');return {value:await readEntry(view,head),eventIds:[head]}},sizing)
       }catch(e){return failure(e)}
     },
     async history(authority:HostAuthority,input:{boardId:string;personId:string;entryId:string}){
@@ -119,7 +120,7 @@ export function createDiaryService(store:RpStore,service:ReturnType<typeof creat
         return await store.withReadView(authority,async view=>{policyFrom(view,a as DiaryAccess,authority);const entries=view.events.filter(e=>{const v=diaryValue(e);return v&&v.personId===a.personId&&v.boardId===a.boardId&&v.entryId===a.entryId});if(entries.length>256)throw new RpError('capacity_exceeded','Diary history requires pagination');const result=[];for(const e of entries)result.push(await readEntry(view,e.id));return result},{audit:true})
       }catch(e){return failure(e)}
     },
-    async list(authority:HostAuthority,input:{boardId:string;personId:string;query?:string;limit?:number},audience?:AudienceContext){
+    async list(authority:HostAuthority,input:{boardId:string;personId:string;query?:string;limit?:number},audience?:AudienceContext,sizing:RetrievalSizing={}){
       try{const a=object(cloneInput(input),['boardId','personId'],['query','limit']);text(a.query??'',4096,true);const limit=a.limit??16;integer(limit,1);if(limit>32)denied('Diary list limit exceeded')
         return await certifiedRead(authority,{...a,audience} as DiaryAccess,async view=>{
           policyFrom(view,{...a,audience} as DiaryAccess,authority);const items=[]
@@ -129,8 +130,10 @@ export function createDiaryService(store:RpStore,service:ReturnType<typeof creat
           }
           if(audience)resolveAudience(audience,authority)
           items.sort((a,b)=>b.score-a.score||a.eventId.localeCompare(b.eventId))
-          return {value:{items:items.slice(0,limit).map(({score:_score,...v})=>v),truncated:items.length>limit,fence:view.fence},eventIds:items.slice(0,limit).map(e=>e.eventId)}
-        })
+          const selected=items.slice(0,limit),result=()=>({items:selected.map(({score:_score,...v})=>v),truncated:items.length>selected.length,fence:view.fence})
+          while(sizing.fits&&!sizing.fits({ok:true,value:result()})){if(selected.length<=1)throw new RpError('context_budget_exceeded','Diary search item cannot fit');selected.pop()}
+          return {value:result(),eventIds:selected.map(e=>e.eventId)}
+        },sizing)
       }catch(e){return failure(e)}
     },
     async privacyDelete(authority:HostAuthority,source:SourceRevision,input:{boardId:string;personId:string;entryId:string;expected:InputFence;idempotencyKey:string;affectedBranchIds:string[]},affectedAuthorities:readonly HostAuthority[]=[authority]){

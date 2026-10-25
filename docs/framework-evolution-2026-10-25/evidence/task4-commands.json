@@ -1,0 +1,37 @@
+[
+  {
+    "finished": "2026-10-25T17:33:24.7499408Z",
+    "log": ".superpowers\\sdd\\2026-10-25-person-capacity-multihost\\task-4-complete-typecheck.log",
+    "command": "npm run typecheck",
+    "exitCode": 0,
+    "started": "2026-10-25T17:33:22.5848209Z"
+  },
+  {
+    "finished": "2026-10-25T17:33:27.1379345Z",
+    "log": ".superpowers\\sdd\\2026-10-25-person-capacity-multihost\\task-4-complete-build.log",
+    "command": "npm run build",
+    "exitCode": 0,
+    "started": "2026-10-25T17:33:24.7668589Z"
+  },
+  {
+    "finished": "2026-10-25T17:36:11.2380471Z",
+    "log": ".superpowers\\sdd\\2026-10-25-person-capacity-multihost\\task-4-complete-test.log",
+    "command": "npm test",
+    "exitCode": 0,
+    "started": "2026-10-25T17:33:27.1412974Z"
+  },
+  {
+    "finished": "2026-10-25T17:36:11.4202162Z",
+    "log": ".superpowers\\sdd\\2026-10-25-person-capacity-multihost\\task-4-complete-fixture.log",
+    "command": "npm run evaluate:fixture",
+    "exitCode": 0,
+    "started": "2026-10-25T17:36:11.2395497Z"
+  },
+  {
+    "finished": "2026-10-25T17:36:12.9680731Z",
+    "log": ".superpowers\\sdd\\2026-10-25-person-capacity-multihost\\task-4-complete-pack.log",
+    "command": "npm pack --dry-run",
+    "exitCode": 0,
+    "started": "2026-10-25T17:36:11.4214528Z"
+  }
+]

@@ -3,6 +3,26 @@
   "entry": "src/rp-plugin.ts",
   "files": [
     {
+      "path": "assets/tokenizers/deepseek-v3.2/LICENSE",
+      "bytes": 1084,
+      "sha256": "f2c6c602815669d292889e5be8c802f2ed950653b77999b1584e8e6aed25d040"
+    },
+    {
+      "path": "assets/tokenizers/deepseek-v3.2/tokenizer_config.json",
+      "bytes": 795,
+      "sha256": "b5de6cc1c6758d02c0d3cec0efa062f1161654475458003f6f293f6ef28acdaa"
+    },
+    {
+      "path": "assets/tokenizers/deepseek-v3.2/tokenizer.json",
+      "bytes": 7847502,
+      "sha256": "cd050be35cae877f8f0aa847f45aa87e23835a56ca32b29b28545597852784e5"
+    },
+    {
+      "path": "assets/tokenizers/README.md",
+      "bytes": 1988,
+      "sha256": "5ae835c23fc603962861a40111b0771c327a2f49bba4b0531cdb7dc78b528fc2"
+    },
+    {
       "path": "src/rp/admission.ts",
       "bytes": 3119,
       "sha256": "581e7c4c3f9bb37ed1f8de64ad8ca277d805ae0359a95a6cf87dab711b1d04b0"
@@ -29,8 +49,8 @@
     },
     {
       "path": "src/rp/command-help.ts",
-      "bytes": 7307,
-      "sha256": "cb61c68dfd43df73044f268e6c2b9efaca9014b2e22649a702f9ab61d46ef32c"
+      "bytes": 8949,
+      "sha256": "107af8c68966b253bd8b09ae8524a8f89427797dfe793a0c6bc4597188c122f2"
     },
     {
       "path": "src/rp/diary/admission.ts",
@@ -64,8 +84,8 @@
     },
     {
       "path": "src/rp/diary/service.ts",
-      "bytes": 15961,
-      "sha256": "4e0c5a3aa429fe0738771f03ef963d3cbb7bd58efad3832143d36a86e6a7c00b"
+      "bytes": 16469,
+      "sha256": "780074a3f2b3823535c27129aeb82248150c31ea595258096acdabe4e34b5eb8"
     },
     {
       "path": "src/rp/diary/transition.ts",
@@ -99,18 +119,18 @@
     },
     {
       "path": "src/rp/host-journal.ts",
-      "bytes": 8634,
-      "sha256": "c1c00f05e5bc12910026c22612708b7315820aa4a8fa029b4ba46403b072d958"
+      "bytes": 9279,
+      "sha256": "214ceb3a5d3cd18865e92e82f7cea509bc2f7b0871bb207feac512f8b98d2035"
     },
     {
       "path": "src/rp/injection-binding.ts",
-      "bytes": 5096,
-      "sha256": "0da4586c31f6f841f2781a12f7076d25cb9f1a6f27e0fb003197e0587c30639a"
+      "bytes": 5357,
+      "sha256": "935ecca6711088de5d2f307e7d1fad769d856d3d0a59c5b0a6d9fb1f5be2bc06"
     },
     {
       "path": "src/rp/injection.ts",
-      "bytes": 14199,
-      "sha256": "c8d1f111c0f76bd7ffc06053aa415424c88318d0b8a3bc42b9019f5da5a8058e"
+      "bytes": 14759,
+      "sha256": "1076067555962fda90a3388d03445351e5aaae913ae3876d4565a3c25f861a01"
     },
     {
       "path": "src/rp/jobs.ts",
@@ -129,8 +149,8 @@
     },
     {
       "path": "src/rp/memory.ts",
-      "bytes": 7057,
-      "sha256": "805562aa33421f463bfb0c7e7536b1ab02a708727fe01404082ed7e54e1d245f"
+      "bytes": 7272,
+      "sha256": "98c5c5b62507615fa5e5e068835e234dea7b96f8818cb2c8a6534b2058c1dc9a"
     },
     {
       "path": "src/rp/modules/commands.ts",
@@ -164,8 +184,8 @@
     },
     {
       "path": "src/rp/packet.ts",
-      "bytes": 15481,
-      "sha256": "81bc4a19ecfb1ba86b67a7d5621d2402a5731ac76c623db8f37dc73c1ba9739e"
+      "bytes": 17117,
+      "sha256": "d38f399606d030d4f90b2fa8419ffd2e84c710cfe76fced1982a96a38ffe5c0e"
     },
     {
       "path": "src/rp/person/binding.ts",
@@ -213,14 +233,19 @@
       "sha256": "0cb6c62aae1601eb821ab04e715d446ccb6bc6e24ac551d1aa8a36a1a943a9fe"
     },
     {
+      "path": "src/rp/person/editor-copy.ts",
+      "bytes": 785,
+      "sha256": "2fd40bd0358445082cb82d105bb24378911db150af1e1ecfea992510622f9baa"
+    },
+    {
       "path": "src/rp/person/editor-ids.ts",
       "bytes": 428,
       "sha256": "749faf0cf0213d955ad24e8aaf782bedcf9d29ee758f3cb45b1ea1f791390afb"
     },
     {
       "path": "src/rp/person/editor.ts",
-      "bytes": 7581,
-      "sha256": "fc00d5113e165a284f372f93399987c0ef049f7b8afa425aa609254d30dc52bb"
+      "bytes": 8408,
+      "sha256": "79f033ddea3621518487886e7bc88ab953e4faa21ba7039bb460349ce0345b82"
     },
     {
       "path": "src/rp/person/format.ts",
@@ -304,13 +329,13 @@
     },
     {
       "path": "src/rp/retrieval.ts",
-      "bytes": 7176,
-      "sha256": "52e4bb3279b215b4906363ffd761d3e57a39e75f3dabb846405eecb1ae506616"
+      "bytes": 8098,
+      "sha256": "dda70b1d6f535c03f86f7f6b360f3e8dfe014c36f90716e784ef11c4fe784ab3"
     },
     {
       "path": "src/rp/rp-plugin.ts",
-      "bytes": 90082,
-      "sha256": "0540fbc9333247d2f427e52d5d385c4e318b964b31e20add3f2e999925b71b4a"
+      "bytes": 101431,
+      "sha256": "6e0ceb0fceaba736edd79ad658d2cd4d803a5b2b6d9aaaebdadefe1e4955cbb4"
     },
     {
       "path": "src/rp/schema.ts",
@@ -334,13 +359,43 @@
     },
     {
       "path": "src/rp/store.ts",
-      "bytes": 128075,
-      "sha256": "45cb0c4d680513b7bf5ea8645e11792c4c3fa4fa84dd96fb53bca50f82fa0844"
+      "bytes": 130454,
+      "sha256": "3d6e7de6319a53c8911db14d875d5a229025ef408525118a7dd6fb6a0f31d0d1"
     },
     {
       "path": "src/rp/summarizer.ts",
       "bytes": 16174,
       "sha256": "befbf6ac4edead97c81a0fa2f6863ca929c8cca70a268e674e61d1665368ca25"
+    },
+    {
+      "path": "src/rp/token-budget-marker.ts",
+      "bytes": 1426,
+      "sha256": "1de64a9c4db0bb14d7d7106bc86e33915243101b506f7c405bb6544bc1e0f206"
+    },
+    {
+      "path": "src/rp/token-budget.ts",
+      "bytes": 5083,
+      "sha256": "0893ae290617af43b7f34b4d1330dd6f6d028c8a621b3885dbf8a93ba556269b"
+    },
+    {
+      "path": "src/rp/tokenizers/deepseek.ts",
+      "bytes": 1675,
+      "sha256": "95b273dca287a7fbfca3f923a97ebffb47cc12faf485141a943e7c47af38a173"
+    },
+    {
+      "path": "src/rp/tokenizers/vendor/LICENSE",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "src/rp/tokenizers/vendor/tokenizers.d.mts",
+      "bytes": 223,
+      "sha256": "e86167f6742e557c55846d47639032cccb23f720974a5b0dfee54789e03b85a2"
+    },
+    {
+      "path": "src/rp/tokenizers/vendor/tokenizers.mjs",
+      "bytes": 98937,
+      "sha256": "1c4a848f86156201c033d6cd08c4cf81ae1088552acec3367f31ef086edf5af0"
     },
     {
       "path": "src/rp/types.ts",
@@ -359,13 +414,13 @@
     },
     {
       "path": "lib/index.js",
-      "bytes": 617922,
-      "sha256": "47bf7775cecc5ebfc14133665658b8fb938106dc9d54dd00f15071daf93876f2"
+      "bytes": 740354,
+      "sha256": "de35345a2603f79526ef2695d00d34607635462d2bd823a61b76cc715af38853"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 1047777,
-      "sha256": "f5a1eb5e7fd6c32ddc61a27aff2e20d7a7dc91e29a8e551a72b8c8461ba46a62"
+      "bytes": 1252113,
+      "sha256": "fd1f9df9109e38e648afe404432e0b811f99bef1656a68995cf7b1f041575b9d"
     },
     {
       "path": "lib/types/rp/admission.d.ts",
@@ -429,8 +484,8 @@
     },
     {
       "path": "lib/types/rp/diary/service.d.ts",
-      "bytes": 5036,
-      "sha256": "e13b9a7b749731c8c490b23aa2ab33a1637bd438886b6abd9a6b195407340ee8"
+      "bytes": 5144,
+      "sha256": "4a7f9c2d79237eed72497fadd11dcc4c7942b3e0beb4b13f8f527204e58d63bf"
     },
     {
       "path": "lib/types/rp/diary/transition.d.ts",
@@ -464,8 +519,8 @@
     },
     {
       "path": "lib/types/rp/host-journal.d.ts",
-      "bytes": 2201,
-      "sha256": "e4bd419f43453f1017be5b2970e7138197dc2c60e1df3c009fcdac774608e2ce"
+      "bytes": 2328,
+      "sha256": "35d0f3ad2bd243d2a00fc7a78e1b9f549a9e547845f079315ce6b26cd4c0eb8a"
     },
     {
       "path": "lib/types/rp/injection-binding.d.ts",
@@ -474,8 +529,8 @@
     },
     {
       "path": "lib/types/rp/injection.d.ts",
-      "bytes": 2764,
-      "sha256": "1c830a53b805c0dd73d1b44630c5d7da57c24f4ec9246cf4d098c5f3d742d087"
+      "bytes": 3000,
+      "sha256": "6f66fc1d1b7897e68cac9b319ce380d683c153dd36a3fb4e5d8e0465f8676b99"
     },
     {
       "path": "lib/types/rp/jobs.d.ts",
@@ -494,8 +549,8 @@
     },
     {
       "path": "lib/types/rp/memory.d.ts",
-      "bytes": 34461,
-      "sha256": "5b37894635a70633ee63fcdf1798cc9ac07f70b7520ab3aea6e9d45198e78630"
+      "bytes": 34973,
+      "sha256": "86fc662134ea72c21b753ffa0a28bc8ca122e4b0161760e677fc36b61c4204f9"
     },
     {
       "path": "lib/types/rp/modules/commands.d.ts",
@@ -529,8 +584,8 @@
     },
     {
       "path": "lib/types/rp/packet.d.ts",
-      "bytes": 2940,
-      "sha256": "2d2c84f77542bad26e3b8645abc4f8b4720bf992a074101ae28d79a3c762c137"
+      "bytes": 3359,
+      "sha256": "91293d2ee012f650e5a6da56a3ead64157b3cf30320579fe173d7af4564af762"
     },
     {
       "path": "lib/types/rp/person/binding.d.ts",
@@ -576,6 +631,11 @@
       "path": "lib/types/rp/person/documents/types.d.ts",
       "bytes": 1835,
       "sha256": "b5b1f0e74a5ee90142414074324c07de30c7149182775587ce3cecf55a8b4ac5"
+    },
+    {
+      "path": "lib/types/rp/person/editor-copy.d.ts",
+      "bytes": 431,
+      "sha256": "b3fa79396c003168178c0bae3e3a701760b9358cde2d91e5843054243251c5ab"
     },
     {
       "path": "lib/types/rp/person/editor-ids.d.ts",
@@ -669,13 +729,13 @@
     },
     {
       "path": "lib/types/rp/retrieval.d.ts",
-      "bytes": 2021,
-      "sha256": "6f9e26bece612683f450d9c2a2b520f1bf584f9e1721e3da6e635f72c5e03916"
+      "bytes": 2191,
+      "sha256": "f0f677e762dfb3ee8431297145c02ada9151f085b12ce2fe66461e8b752877ee"
     },
     {
       "path": "lib/types/rp/rp-plugin.d.ts",
-      "bytes": 37598,
-      "sha256": "173031cd8a65c0010b815e99f68371f66ff8df5e54739d9225569c142c015b3f"
+      "bytes": 38419,
+      "sha256": "26d324f25b43cc1fa5cba2b053cfd939a8e1078aba20ff92b55df340aa30d259"
     },
     {
       "path": "lib/types/rp/schema.d.ts",
@@ -708,6 +768,21 @@
       "sha256": "d2628f201cc2943ba12f430646029744f82ae979f2721f4a6efa19a5c87200bf"
     },
     {
+      "path": "lib/types/rp/token-budget-marker.d.ts",
+      "bytes": 328,
+      "sha256": "605904a888bc6db7584f035e49a00b6255ad78d99208322acc95199b82a031ad"
+    },
+    {
+      "path": "lib/types/rp/token-budget.d.ts",
+      "bytes": 1600,
+      "sha256": "893eca842e097a9250c43c66ceceefeaea05681bb878647d633570184ab6faaa"
+    },
+    {
+      "path": "lib/types/rp/tokenizers/deepseek.d.ts",
+      "bytes": 374,
+      "sha256": "6736effe07d67cf63a69664f2ecb0ddc38dcb8682e9d4702e99242a12ad7ee1b"
+    },
+    {
       "path": "lib/types/rp/types.d.ts",
       "bytes": 13695,
       "sha256": "8b1dcafb52a41ff555e418375175a0e0ac602799d1a0d47bf144a3bfd22ef075"
@@ -724,8 +799,8 @@
     },
     {
       "path": "ui/person-editor/editor.js",
-      "bytes": 14771,
-      "sha256": "aa73163b0beb2e591416aef967839765c984795884c53473a8204aa93d5fad82"
+      "bytes": 16286,
+      "sha256": "889b9917c2318cc4883a7a7b84afcaa7dfced53d678e5392ccef9026f6ad18dc"
     },
     {
       "path": "ui/person-editor/index.html",

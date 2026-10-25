@@ -1,0 +1,11 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import {existsSync} from 'node:fs'
+import {build,stop} from 'esbuild'
+let copy
+if(existsSync('src/rp/person/editor-copy.ts')){try{const result=await build({entryPoints:['src/rp/person/editor-copy.ts'],bundle:true,write:false,platform:'node',format:'esm'});copy=(await import('data:text/javascript;base64,'+Buffer.from(result.outputFiles[0].text).toString('base64'))).copyDraftCommand}finally{stop()}}
+function setup(){assert.equal(typeof copy,'function');const state={version:0,output:'OLD_COMMAND',valid:true,copied:[],selected:[],status:''};const ports={generate(){if(!state.valid)throw Error('invalid form');return state.output='CURRENT_COMMAND'},version:()=>state.version,writeText:async text=>{state.copied.push(text)},invalid:e=>{state.output='';state.status='invalid:'+e.message},changed:()=>{state.output='';state.status='changed'},fallback:command=>{state.output=command;state.selected.push(command);state.status='manual'},copied:()=>{state.status='copied'}};return {state,ports}}
+test('invalid current form clears old output without clipboard write or manual-copy fallback',async()=>{const {state,ports}=setup();state.valid=false;assert.equal(await copy(ports),'invalid');assert.equal(state.output,'');assert.equal(state.copied.length,0);assert.equal(state.selected.length,0);assert.match(state.status,/invalid form/)})
+test('clipboard rejection selects only the current validated command',async()=>{const {state,ports}=setup();ports.writeText=async()=>{throw Error('denied')};assert.equal(await copy(ports),'manual');assert.deepEqual(state.selected,['CURRENT_COMMAND']);assert.equal(state.status,'manual')})
+test('form changed while clipboard was pending cannot fall back to stale command',async()=>{const {state,ports}=setup();ports.writeText=async()=>{state.version++;state.valid=false;throw Error('clipboard denied')};assert.equal(await copy(ports),'changed');assert.equal(state.output,'');assert.equal(state.selected.length,0)})
+test('successful copy reports the validated command and does not select fallback text',async()=>{const {state,ports}=setup();assert.equal(await copy(ports),'copied');assert.deepEqual(state.copied,['CURRENT_COMMAND']);assert.equal(state.selected.length,0)})

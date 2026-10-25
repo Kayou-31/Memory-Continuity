@@ -1,9 +1,10 @@
+export {createMemoryBudget,validateMemoryBudget,openMemoryMeter,measureMemoryParts} from './token-budget.js'
 /** Trusted application bootstrap. Tools receive only bounded read methods. */
 import { openRpStore, canonical } from './store.js'
 import { openRpGlobalStore } from './global.js'
 import { createCanonicalService } from './canonical.js'
 import { createRetrieval, unwrap } from './retrieval.js'
-import { createPacketService } from './packet.js'
+import { createPacketService,type PacketServiceOptions } from './packet.js'
 import { MemoryCoordinator } from './session-policy.js'
 import type { HostAuthority, CanonBinding, CommitBatch } from './types.js'
 import { RpError } from './schema.js'
@@ -31,7 +32,7 @@ export * from './session-policy.js'
 export * from './packet.js'
 export * from './retrieval.js'
 export { canonical } from './store.js'
-export async function openRpMemory(input: { profileRoot: string; entityIds: readonly string[]; coordinator?: MemoryCoordinator; optimizer?: () => RecallOptimizer | undefined; verification?: (recordId: string) => Promise<'source-match' | 'unavailable' | 'hash-mismatch'> }) {
+export async function openRpMemory(input: { profileRoot: string; entityIds: readonly string[]; coordinator?: MemoryCoordinator; memoryParts?:PacketServiceOptions['memoryParts']; optimizer?: () => RecallOptimizer | undefined; verification?: (recordId: string) => Promise<'source-match' | 'unavailable' | 'hash-mismatch'> }) {
   const coordinator = input.coordinator ?? new MemoryCoordinator()
   let global: Awaited<ReturnType<typeof openRpGlobalStore>>
   type Adoption = { authority: object; approval: object; binding: CanonBinding }
@@ -48,7 +49,7 @@ export async function openRpMemory(input: { profileRoot: string; entityIds: read
   const summaries = createSummaryService({ store: opened.store, global, coordinator, entityIds: input.entityIds })
   const profilePath = await fs.realpath(input.profileRoot), jobs = createJobService({ store: opened.store, summaries, coordinator, profileKey: process.platform === 'win32' ? profilePath.toLowerCase() : profilePath })
   const inputs = new Map<string, Set<string>>()
-  return { store, control, global, canonical: service, person: createPersonService(store, service, input.entityIds), agentMemory: createAgentMemory(store, service, input.entityIds), summaries, jobs, retrieval: createRetrieval(store, { entityIds: input.entityIds, inputSourceIds: authority => inputs.get(authority.scope.branchId) ?? new Set(), verification: input.verification }), packets: createPacketService(store, global, { optimizer: input.optimizer }), coordinator,
+  return { store, control, global, canonical: service, person: createPersonService(store, service, input.entityIds), agentMemory: createAgentMemory(store, service, input.entityIds), summaries, jobs, retrieval: createRetrieval(store, { entityIds: input.entityIds, inputSourceIds: authority => inputs.get(authority.scope.branchId) ?? new Set(), verification: input.verification }), packets: createPacketService(store, global, { optimizer: input.optimizer,memoryParts:input.memoryParts }), coordinator,
     documents: createDocumentService(store,service,input.entityIds),
     audiences: createAudienceService(),
     diary:createDiaryService(store,service,input.entityIds),

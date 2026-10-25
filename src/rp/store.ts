@@ -856,6 +856,9 @@ export class RpStore {
       return await lock(this.#workspacePath(grant.request.workspaceId), async () => {
         await this.#authorize(authority, 'commit')
         const state = await this.#load(grant.request.workspaceId), current = this.#branch(state, grant.request)
+        const requireInvalidationControl = () => {
+          if (!grant.request.permissions.includes('control') || grant.request.viewpoint.kind !== 'narrator') denied('explicit invalidation requires narrator host control')
+        }
         const requiredCapabilities = requiredSemanticCapabilities(batch.authorityChanges)
         const key = 'branch:' + grant.request.branchId + ':' + sha(batch.idempotencyKey), effect = requiredCapabilities.length ? digest({ batch, requiredCapabilities }) : digest(batch), existing = state.transactions.find(tx => tx.idempotencyKey === key)
         if (existing) { if (existing.effectHash !== effect || existing.operation.kind !== 'commit') error('idempotency_conflict', 'RP commit idempotency key has different effects'); await this.#seal(grant.request.workspaceId, existing.sequence, digest(existing)); return ok(existing.operation.result) }
@@ -882,6 +885,7 @@ export class RpStore {
           if ((source.scope.kind === 'branch' || source.scope.kind === 'session') && source.scope.branchId !== grant.request.branchId && !current.bindings.has(source.id) && !inherited.has(source.id)) denied('unproven inherited source')
           if ((this.#deleted(current).has(source.id) || this.#workspaceDeleted(state).has(source.id)) && b.disposition === 'accepted') error('source_unavailable', 'RP deleted source cannot be adopted')
           if (b.supersedes && !current.bindings.has(b.supersedes)) invalid('supersession target')
+          if (b.supersedes || current.bindings.get(b.sourceRevisionId)?.disposition === 'accepted' && b.disposition !== 'accepted') requireInvalidationControl()
           next.bindings.set(b.sourceRevisionId, b)
         }
         const logicalMessages = new Set<string>()
@@ -961,6 +965,7 @@ export class RpStore {
             if (['user_canon', 'explicit_ooc'].includes(record.authority) && !sourceIds.some(id => state.sources.get(id)?.origin === 'user_control')) denied('event authority provenance')
             if (record.authority === 'accepted_narration' && !sourceIds.some(id => state.sources.get(id)?.role === 'assistant')) denied('narration provenance')
             if (record.supersedes.some(id => !next.records.has(id))) invalid('event supersession target')
+            if (record.supersedes.length || record.payload.kind === 'correction') requireInvalidationControl()
             for (const id of [...record.supersedes, ...(record.payload.kind === 'correction' ? record.payload.targetEventIds : [])]) {
               const target = next.records.get(id)
               if (!target || target.kind !== 'event') invalid('event correction target')
@@ -1046,13 +1051,32 @@ export class RpStore {
           // accepted head, not on the old head that this commit superseded.
           return { ...job, inputFence: result }
         })
+        // Explicit targets are a privileged correction route. Check the initial
+        // branch view before computing internal dependency closure; closure may
+        // legitimately invalidate records the initiating caller cannot enumerate.
+        const activeBefore = this.#activeRecords(current)
+        if (batch.invalidatedIds.length) requireInvalidationControl()
+        for(const id of batch.invalidatedIds){
+          const target=activeBefore.get(id)
+          if(!target?.active||!this.#scopeMatches(target.scope,grant.request)||!this.#visible(target.visibility,grant.request)||target.visibility.audienceSetId!==authority.visibility.audienceSetId)denied('explicit invalidation target scope/audience')
+          for(const sourceId of target.sourceRevisionIds)this.#source(state,current,grant.request,sourceId)
+          if(target.kind==='event'){
+            const original=parseRecord({kind:'event',record:JSON.parse(await this.#readBlob(grant.request.workspaceId,target.blobId,target.bodySha256))})
+            if(!original.ok||original.value.kind!=='event')error('source_unavailable','RP invalidation target unavailable')
+            if(original.value.record.payload.kind==='canon_assertion'&&original.value.record.payload.locked){
+              const correction=batch.events.some(e=>['explicit_ooc','user_canon'].includes(e.authority)&&(e.supersedes.includes(id)||e.payload.kind==='correction'&&e.payload.targetEventIds.includes(id)))
+              const explicitControl=changes.some(c=>{if(c.kind!=='candidate_adoption'||c.record.decision!=='accepted')return false;const source=this.#source(state,next,grant.request,c.record.controlSourceId);return source.origin==='user_control'&&source.visibility.audienceSetId===target.visibility.audienceSetId})
+              if(!correction&&!explicitControl)denied('locked canon invalidation requires explicit user correction')
+            }
+          }
+        }
         const invalidated = new Set(batch.invalidatedIds)
         for (const event of batch.events) { event.supersedes.forEach(id => invalidated.add(id)); if (event.payload.kind === 'correction') event.payload.targetEventIds.forEach(id => { if (!current.records.has(id)) invalid('correction target'); invalidated.add(id) }) }
         for (const old of current.bindings.values()) if (old.disposition === 'accepted' && next.bindings.get(old.sourceRevisionId)?.disposition !== 'accepted') invalidated.add(old.sourceRevisionId)
         for (const change of changes) if (change.kind === 'deletion') { change.record.sourceRevisionIds.forEach(id => invalidated.add(id)); change.record.blockedDerivedIds.forEach(id => invalidated.add(id)) }
         // Old summaries can predate their supporting events. Invalidate their
         // shared provenance without retracting the original historical source.
-        const affectedSources = new Set<string>(), activeBefore = this.#activeRecords(current)
+        const affectedSources = new Set<string>()
         // Freeze the invalidated historical closure. Explicit replay can reuse
         // the source after confirmation, but never revive its old derived view.
         let grew = true

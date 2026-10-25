@@ -1,5 +1,7 @@
 # Memory-Continuity 中文指令速查
 
+> 开发分支补充：下文保留 0.2.1 的安装与原有指令。尚未发布的人物文档、双方日记与 32K 预算分别见 [人物资料](framework-evolution-2026-10-25/RESULTS.md)、[共同日记](shared-diary.zh.md)、[记忆预算](memory-budget.zh.md)，不能据此认定下载页的 0.2.1 已包含这些能力。
+
 适用正式版：0.2.1，兼容 DSH 0.2.1-rc.2 / rc.3，指令与 0.2.0 保持一致。插件包为 `@dsh-external/dsh-memory-continuity`，宿主主命令为 `/memcont`（Memory + Continuity），旧 `/rp` 保留为兼容别名；旧数据目录不改名。人物工作台已接入真实后端；在会话内执行 /memcont person manage 打开，所有写入须先预览再明确确认。
 
 ## 从哪里开始
@@ -100,5 +102,9 @@
 4. 有效剧情、人设和可认证配置按规则续接；旧宿主消息与工具结果不复制。无法认证的配置不会被偷偷继承。
 5. ambiguous 输入不重发。`/memcont resume-input <sourceId>` 只接受明确尚未派发的输入。
 6. 损坏 journal 不是可信分支来源；如需显式 branchId，必须来自独立授权记录。损坏备份不会被覆盖或静默修复。
+
+开发分支的 `/memcont status` 还将两件事分开展示：`bindingHealth` 表示会话绑定健康程度，`requestAdmission` 表示最近一次请求在组装/发送阶段是否获准，以及错误码和原因。绑定为 healthy 但请求为 rejected 是可能的；请按 `recovery.action/detail` 处理，不要只看 blocked。下游服务报错不会被改写成记忆准入拒绝。
+
+同一宿主中销毁后重建会话，历史认证中的 `modeEpoch` 可能已失效，需要 `continue-clean`；这项限制保留。若 provider/model 已改变，新会话还要重新 `/memcont budget set {}`。普通预算不足先检查输出预留和已保留的工具历史，不要靠删除 journal 绕过检查。
 
 `/memcont compact`、`/memcont strict-pov`、`/memcont summarize-auto` 保持拒绝。当前模型只读工具不具备自动写入、自动采纳或外部行动权限。

@@ -2,6 +2,15 @@
 import {RpError} from './schema.js'
 
 const topics:Record<string,string>={
+ budget:`记忆 token 预算
+/memcont budget show：查看本会话绑定、计量方式与最近实际用量；故障状态也能诊断。
+/memcont budget set {}：空白根会话显式启用总计 32,768 token。首次启用先保留 .pre-budget-v2-backup。
+/memcont budget set {"limitTokens":16384,"layers":{"recollection":8192}}：设置总上限及各层上限，仍受宿主模型总容量与输出预留限制。
+/memcont budget set null：只在空白根会话显式回到旧字节语义，不会自动迁移已有历史。
+当前精确文本计数支持完整模型名 deepseek-ai/DeepSeek-V3.2；别名和其他模型明确显示 conservative-utf8。
+provider 或 model 改变后须 continue-clean，再 budget set 重新绑定；不会猜测新模型沿用旧 tokenizer。
+旧工具回执、重复记忆、全局内容与包装都占同一总额。必需内容超限时拒绝发送，不会偷偷截断。
+这是本地文本 token 计量，不是服务端聊天模板或计费凭据；完整请求继续使用保守容量门禁。`,
  diary:`共同日记
 /memcont diary enable：明确允许当前人物在对话中写自己的日记；默认未开启，不会后台写日记。
 /memcont diary disable：停止 AI 写入；已有日记仍可查看。重新开启不恢复旧工具权限。
@@ -29,10 +38,12 @@ reflection 可选记录理解、适用情境、不确定性、修订原因和认
 /memcont injection set <JSON>：设置 depth、budgets、pin、exclude、aliases、rules；完整替换配置。
 /memcont injection set null：在空白根会话关闭分层模式。
 /memcont injection preview <话题>：只读查看五类记忆、选择原因、来源和旧历史；不发送模型。
-深度 overview/association/evidence；预算为 UTF-8 字节，不是精确 token。
+深度 overview/association/evidence；原 budgets 仍是 UTF-8 字节。budget v2 启用后使用独立的 token layers 配置，见 /memcont help budget。
 已有历史先 /memcont continue-clean 并选择返回的新会话。未选入不代表旧历史已删除；权限、有效性和强制核心不能被规则绕过。`,
  recovery:`诊断与安全续接
-/memcont status：检查 blocked、lastError、pendingInputIds、ambiguousInputIds。
+/memcont status：分别检查 bindingHealth（绑定健康）、requestAdmission（最近请求准入）、recovery（恢复指引），以及 blocked、lastError、pendingInputIds、ambiguousInputIds。
+绑定 healthy 不表示最近请求已通过；requestAdmission.rejected 会显示阶段和原因。prepared 仅表示已组装，admitted 仅表示过了记忆门禁，不保证下游模型成功。
+同宿主销毁重建后 modeEpoch 可能改变；保留历史认证规则，按提示 continue-clean，不直接解封旧快照。
 /memcont continue-clean [branchId]：封锁旧会话，创建干净根；在宿主手动选择返回的会话。
 继承经验证的人物和配置；无法认证的配置不继承。原宿主消息与工具结果不复制。
 损坏 journal 不能作为授权依据，可能需要明确且独立授权的 branchId。
@@ -75,6 +86,7 @@ export function rpCommandHelp(topic:string=''):string{
 /memcont help person：人物、成长审阅、管理入口
 /memcont help diary：共同日记、明确授权、原稿与修订
 /memcont help injection：五类记忆、条件注入、原因预览
+/memcont help budget：32K 总记忆预算、模型绑定、计量方式
 /memcont help recovery：诊断、故障恢复、干净续接
 /memcont help memory：经历、关系、目标、摘要和全局记忆
 /memcont help modules：用途、能力模块和两层约束

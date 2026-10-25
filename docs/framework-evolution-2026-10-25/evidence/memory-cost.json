@@ -1,0 +1,145 @@
+{
+  "kind": "memory-cost-synthetic",
+  "created": "2026-10-25T17:37:42.017Z",
+  "node": "v22.23.3",
+  "os": "win32 10.0.26300",
+  "cpu": "13th Gen Intel(R) Core(TM) i9-13900H",
+  "tokenizerLoadMs": 206.0025,
+  "checkpoints": [
+    {
+      "events": 8,
+      "appendMs": 630.375,
+      "search": {
+        "samplesMs": [
+          43.183700000000044,
+          30.97109999999998,
+          28.687999999999874,
+          25.652199999999993,
+          28.026799999999866
+        ],
+        "p50Ms": 28.687999999999874,
+        "maxMs": 43.183700000000044
+      },
+      "prepare": {
+        "samplesMs": [
+          24.79860000000008,
+          17.995800000000145,
+          15.508399999999938,
+          16.37130000000002,
+          15.821399999999812
+        ],
+        "p50Ms": 16.37130000000002,
+        "maxMs": 24.79860000000008
+      },
+      "admit": {
+        "samplesMs": [
+          13.007200000000012,
+          11.414400000000114,
+          11.277000000000044,
+          11.82179999999994,
+          12.27819999999997
+        ],
+        "p50Ms": 11.82179999999994,
+        "maxMs": 13.007200000000012
+      },
+      "coldReopenAndReadMs": 26.65039999999999,
+      "profile": {
+        "bytes": 47564,
+        "files": 52
+      }
+    },
+    {
+      "events": 32,
+      "appendMs": 4150.7502,
+      "search": {
+        "samplesMs": [
+          82.23289999999997,
+          83.50780000000032,
+          79.53019999999924,
+          85.8809999999994,
+          90.32999999999993
+        ],
+        "p50Ms": 83.50780000000032,
+        "maxMs": 90.32999999999993
+      },
+      "prepare": {
+        "samplesMs": [
+          46.46060000000034,
+          45.36230000000069,
+          44.64260000000013,
+          45.10960000000068,
+          44.72179999999935
+        ],
+        "p50Ms": 45.10960000000068,
+        "maxMs": 46.46060000000034
+      },
+      "admit": {
+        "samplesMs": [
+          34.2509,
+          34.13040000000001,
+          33.840799999999945,
+          33.23700000000008,
+          34.067699999999604
+        ],
+        "p50Ms": 34.067699999999604,
+        "maxMs": 34.2509
+      },
+      "coldReopenAndReadMs": 66.40190000000075,
+      "profile": {
+        "bytes": 183897,
+        "files": 196
+      }
+    },
+    {
+      "events": 128,
+      "appendMs": 61823.1262,
+      "search": {
+        "samplesMs": [
+          367.4482999999891,
+          362.53609999999753,
+          360.3012000000017,
+          419.5850000000064,
+          360.9835999999923
+        ],
+        "p50Ms": 362.53609999999753,
+        "maxMs": 419.5850000000064
+      },
+      "prepare": {
+        "samplesMs": [
+          189.9432000000088,
+          193.7554999999993,
+          191.57390000000305,
+          182.85139999999956,
+          188.75800000000163
+        ],
+        "p50Ms": 189.9432000000088,
+        "maxMs": 193.7554999999993
+      },
+      "admit": {
+        "samplesMs": [
+          149.82339999999385,
+          153.3335999999981,
+          152.77700000000186,
+          155.83130000000529,
+          153.44550000000163
+        ],
+        "p50Ms": 153.3335999999981,
+        "maxMs": 155.83130000000529
+      },
+      "coldReopenAndReadMs": 270.9470000000001,
+      "profile": {
+        "bytes": 729878,
+        "files": 772
+      }
+    }
+  ],
+  "maxRssKiB": 298628,
+  "paidCalls": 0,
+  "modelQuality": "unverified",
+  "limits": [
+    "One local process and one synthetic branch; warm OS cache even after core reopen",
+    "Five observations per operation; p50/max are descriptive, not a statistical p95 or production SLO",
+    "128 short events do not represent months of full documents, media or multi-writer traffic",
+    "No model generation, external provider, platform lifecycle or actual process crash"
+  ]
+}

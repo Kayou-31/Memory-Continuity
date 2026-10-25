@@ -5,7 +5,9 @@ import {performance} from 'node:perf_hooks'
 import {setup,must,deny} from '../../test/fixtures/rp/growth.mjs'
 import {scoreLifeEvidence} from './life-score.mjs'
 const out=path.resolve(process.argv[2]??'work/person-m4-2026-10-23/life-report.json'),started=performance.now(),observations=[]
-const run=async(name,fn)=>{const start=performance.now();await fn();observations.push({name,passed:true,ms:performance.now()-start})}
+await fs.mkdir(path.dirname(out),{recursive:true})
+const progress=async data=>{const entry={at:new Date().toISOString(),...data};await fs.appendFile(out+'.progress.jsonl',JSON.stringify(entry)+'\n');console.error(JSON.stringify(entry))}
+const run=async(name,fn)=>{const start=performance.now();await progress({stage:name,state:'started'});try{await fn();observations.push({name,passed:true,ms:performance.now()-start});await progress({stage:name,state:'passed'})}catch(e){await progress({stage:name,state:'failed',error:String(e)});throw e}}
 const f=await setup(),read=()=>f.person.read(f.authority,'erin').then(must),field=async id=>(await read()).fields.find(f=>f.fieldId===id)
 let cold,comparison
 try{
@@ -18,7 +20,7 @@ try{
   deny(await f.person.propose(f.authority,{changes:[{...change,fieldId:'boundary',previousEventId:(await field('boundary')).eventId}]},'locked'),'scope_denied')
   growth=must(await f.person.propose(f.authority,{changes:[change]},'care'));assert.equal((await field('care')).value,'谨慎信任')
   must(await f.person.adopt(f.authority,await f.controlSource('adopt'),[growth.id],'adopt'));assert.equal((await field('care')).value,'愿意托付')
-  for(let i=0;i<120;i++)await f.experience('day_'+i,'旅途第'+i+'站：整理行李，记录天气。')
+  for(let i=0;i<120;i++){await f.experience('day_'+i,'旅途第'+i+'站：整理行李，记录天气。');if((i+1)%30===0)await progress({stage:'history-growth',accepted:i+1})}
   assert.equal((await field('name')).value,'林澈');assert.equal(await field('mood'),undefined)
  })
  await run('directional-relationship-and-promise',async()=>{

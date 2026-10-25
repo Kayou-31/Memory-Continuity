@@ -1,0 +1,41 @@
+name: 核心回归与打包检查
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: memory-continuity-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: 读取完整历史（旧版读取器验收需要）
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: 使用 Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: 核对旧版源码可读取
+        run: node scripts/ci/check-history.mjs
+      - name: 按锁文件安装（串行）
+        run: npm ci --no-audit --no-fund --cache work/npm-cache
+      - name: 类型检查
+        run: npm run typecheck
+      - name: 独立构建
+        run: npm run build
+      - name: 完整回归（测试并发固定为 1）
+        run: npm test
+      - name: 固定语料检查（不代表真实模型质量）
+        run: npm run evaluate:fixture
+      - name: 打包预检
+        run: npm pack --dry-run
