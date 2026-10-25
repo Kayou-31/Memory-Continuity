@@ -5,6 +5,7 @@ import type { RpStore } from './store.js'
 import type { AuthorityChange, BranchSourceBinding, EventPayload, ForkManifest, HostAuthority, InputFence, Result, SemanticEvent, SourceRevision } from './types.js'
 import { cloneInput, event as validateEvent, failure, fence as validateFence, id, invalid, object, denied, text } from './schema.js'
 import { personOriginCandidate, documentCandidate } from './semantic-registry.js'
+import {diaryCandidate,diaryPolicyCandidate} from './diary/format.js'
 export { assessClaim, reduceEvents } from './reducer.js'
 export { applyNativeCanonicalEvent } from './host-adapter.js'
 
@@ -13,6 +14,7 @@ export interface EventProposal {
   readonly fictionalTime?: string | null; readonly sourceRevisionIds?: readonly string[]; readonly supersedes?: readonly string[]
   readonly growthProtocol?: 'agent-memory/v1'
   readonly personProtocol?: 'person-core/v1' | 'person-origin/v1' | 'person-document/v1'
+  readonly diaryProtocol?: 'shared-diary/v1' | 'shared-diary-policy/v1'
 }
 type BaseControl = { readonly idempotencyKey: string; readonly expected: InputFence }
 export type CanonicalControl = BaseControl & (
@@ -112,7 +114,7 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
         if (!Array.isArray(proposals) || proposals.length > 256) invalid('event proposals')
         const growthMarkers: AuthorityChange[] = []
         const events: SemanticEvent[] = proposals.map((proposal, i) => {
-          object(proposal, ['id', 'payload', 'epistemic'], ['fictionalTime', 'beliefHolderId', 'sourceRevisionIds', 'supersedes', 'growthProtocol', 'personProtocol'])
+          object(proposal, ['id', 'payload', 'epistemic'], ['fictionalTime', 'beliefHolderId', 'sourceRevisionIds', 'supersedes', 'growthProtocol', 'personProtocol','diaryProtocol'])
           if (proposal.epistemic === 'belief' && (!proposal.beliefHolderId || !entities.has(proposal.beliefHolderId))) denied('unknown belief holder')
           if (proposal.payload.kind === 'knowledge_change' && !entities.has(proposal.payload.knowerId)) denied('unknown knowledge holder')
           const origins: SourceRevision[] = proposal.sourceRevisionIds ? (list(proposal.sourceRevisionIds), proposal.sourceRevisionIds.map(get)) : eventSources
@@ -125,6 +127,14 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
             sources: support.map(s => ({ sourceRevisionId: s.id, publicTextSha256: s.publicTextSha256, startUtf16: 0, endUtf16: s.publicTextLengthUtf16, quoteSha256: s.publicTextSha256 })),
             visibility: authority.visibility, supersedes: [...new Set([...(proposal.supersedes ?? []), ...(i === 0 ? targets : [])])], policyVersion: ledger.fence.policyVersion }
           validateEvent(event)
+          if(proposal.diaryProtocol!==undefined){
+            if(proposal.growthProtocol||proposal.personProtocol)invalid('conflicting diary protocols')
+            const p=event.payload
+            if(proposal.diaryProtocol==='shared-diary-policy/v1'&&p.kind==='diary_policy')growthMarkers.push({kind:'candidate_adoption',recordId:'diary_policy_'+event.id,record:{candidateId:diaryPolicyCandidate(p.value.personId,p.value.boardId),sourceRevisionIds:support.map(s=>s.id),eventIds:[event.id],summaryIds:[],decision:'accepted',controlSourceId:source.id}})
+            else if(proposal.diaryProtocol==='shared-diary/v1'&&p.kind==='diary_entry')growthMarkers.push({kind:'candidate_adoption',recordId:'diary_entry_'+event.id,record:{candidateId:diaryCandidate(p.value.personId,p.value.boardId,p.value.entryId),sourceRevisionIds:[p.value.content.sourceRevisionId],eventIds:[event.id],summaryIds:[],decision:'accepted',controlSourceId:source.id}})
+            else invalid('diary protocol payload')
+            if((p.kind==='diary_policy'||p.kind==='diary_entry')&&!entities.has(p.value.personId))denied('unknown diary person')
+          }
           if (proposal.growthProtocol !== undefined) {
             if (proposal.growthProtocol !== 'agent-memory/v1') invalid('growth protocol')
             growthMarkers.push({ kind: 'candidate_adoption', recordId: 'growth_' + event.id, record: { candidateId: 'agent_memory_v1', sourceRevisionIds: support.map(s => s.id), eventIds: [event.id], summaryIds: [], decision: 'accepted', controlSourceId: source.id } })

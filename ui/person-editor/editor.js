@@ -1,7 +1,7 @@
 const utf8Bytes = value => new TextEncoder().encode(value).length;
 "use strict";
 (() => {
-  // src/rp/schema.ts
+  // src/rp/validation.ts
   var RpError = class extends Error {
     constructor(code, message) {
       super(message);

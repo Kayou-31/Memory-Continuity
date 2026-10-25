@@ -41,3 +41,20 @@ test('actual 0.2.1 reader refuses the document capability; verified full backup 
   deny(await f.documents.read(f.authority,'erin','life_notes'),'source_unavailable')
  }finally{reader?.retrieval.dispose();await reader?.jobs.close();await f.close()}
 })
+
+test('actual 0.2.1 reader refuses a shared diary workspace and the pre-upgrade backup retains its readable person',async()=>{
+ const f=await setup();let reader
+ try{
+  const p=must(await f.person.preview(f.authority,{schemaVersion:1,kind:'person-draft',personId:'erin',fields:[{fieldId:'name',kind:'identity',value:'林澈',policy:'stable'}],relationships:[],goals:[]},'person'))
+  must(await f.person.confirm(f.authority,p.handle,await f.controlSource('person')))
+  reader=await old.openRpMemory({profileRoot:path.join(f.directory,'profile'),entityIds:['erin','bea','key']});must(await reader.control.openWorkspace(path.join(f.directory,'project')))
+  const grant=must(await reader.control.authorize(f.request));must(await reader.person.read(grant,'erin'))
+  must(await f.diary.configure(f.authority,await f.controlSource('diary'),{boardId:'shared',personId:'erin',humanId:'local_user',allowAgentWrite:true,audiences:[{kind:'local'}],expected:await f.fence(),idempotencyKey:'diary'}))
+  deny(await reader.store.readFence(grant),'capability_missing')
+  const base=path.join(f.directory,'profile/.dsh-rp/v1'),backupRoot=path.join(base,'backups',f.request.workspaceId);let selected
+  for(const name of await fs.readdir(backupRoot)){const backup=path.join(backupRoot,name),manifest=JSON.parse(await fs.readFile(path.join(backup,'manifest.json'),'utf8'));if(manifest.requiredCapabilities.includes('rp.person-core/v1')&&!manifest.requiredCapabilities.includes('rp.shared-diary/v1'))selected={backup,manifest}}
+  assert.ok(selected);for(const file of selected.manifest.files){const bytes=await fs.readFile(path.join(selected.backup,file.path));assert.equal(hash(bytes),file.sha256);assert.equal(bytes.length,file.bytes)}
+  const workspace=path.join(base,'workspaces',f.request.workspaceId);assert.ok(path.resolve(workspace).startsWith(path.resolve(f.directory)+path.sep));await fs.rename(workspace,path.join(f.directory,'upgraded-diary-quarantine'))
+  await fs.cp(path.join(selected.backup,'workspace'),workspace,{recursive:true,errorOnExist:true,force:false});assert.equal(must(await reader.person.read(grant,'erin')).fields[0].value,'林澈')
+ }finally{reader?.retrieval.dispose();await reader?.jobs.close();await f.close()}
+})

@@ -78,7 +78,7 @@ Snow Luma 首批通过公开协议连接用户另行安装的程序，不复制�
 工作目录：`D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5`。
 
 Node：`v22.23.3`，使用项目工具链。
-DSH 原生 SDK：`0.2.1-rc.2`；Cordis `4.0.5`，Schemastery `3.18.5`。这次没有重跑 rc.3；旧版 rc.3 发行验收见 [0.2.1 报告](../releases/0.2.1/RESULTS.md)。
+DSH 原生 SDK：`0.2.1-rc.2`；Cordis `4.0.5`，Schemastery `3.18.5`。前期调查没有重跑 rc.3；Task3a 已对最终代码补验 rc.3 的五项原生 SDK 场景，记录见本文末尾。旧版完整发行验收见 [0.2.1 报告](../releases/0.2.1/RESULTS.md)。
 
 | 命令 | 退出码 | 实际结果 |
 | --- | --- | --- |
@@ -117,4 +117,64 @@ Task3定向命令 `node --test --test-concurrency=1 test/rp-person-audience.test
 
 受众测试目前是核心可信能力测试，不能视为QQ平台身份验收；DSH无平台身份时只选择无账号限制的通用条件。尚未验证：原始超限迁移案例、实际 tokenizer 32K 边界、真实用户大文档迁移、独立 RPC 权限、真实 AstrBot 生命周期、NapCat/Snow Luma 真实 QQ 收发、跨平台账号映射、全新工作台交互与长期负载。
 
-除上述完整基线和定向测试/类型检查外，尚未执行本轮生产变更后的 `npm run build`、完整 `npm test`、`npm run evaluate:fixture`、`npm pack --dry-run`。基线和诊断不能代替下一版完整验收，也没有将定向结果拼成全量通过。
+上述 Task1–3 的记录是分阶段结果。Task3a 收尾时已执行变更后的完整构建、测试、fixture 和打包预检，以下单列，不将此前定向结果拼成全量通过。
+
+## Task3a：共同日记与 retcon-form 首批吸收
+
+已完成核心和 DSH 指令/工具链路，未发布新稳定版。使用说明见 [共同日记](../shared-diary.zh.md)，参考项目的采用边界见 [RETCON-FORM](RETCON-FORM.md)。
+
+| 修改文件 | 原因与实际行为 |
+| --- | --- |
+| `src/rp/diary/{types,schema,format,transition,admission,service,selection,evidence,commands}.ts` | 双方日记、默认关闭的 AI 写权限、作者与编辑者、追加修订、当前版本检索、隐私删除、可选理解和认证依据；实际发布前检查执行权限 |
+| `canonical.ts`、`store.ts`、`schema.ts`、`types.ts`、`semantic-registry.ts`、`growth-format.ts` | 新增认证日记事件和 `agent_diary` 来源，复用事务、依赖失效和预升级备份；不伪造每篇人类确认，不把日记投影为事实 |
+| `memory.ts`、`retrieval-index.ts`、`injection.ts`、`injection-binding.ts`、`packet.ts`、`packet-proof.ts` | 暴露日记应用服务，普通检索排除未认证原文；分层注入选择最新获准版本，历史证明拒绝旧解释 |
+| `rp-plugin.ts`、`host-journal.ts`、`command-help.ts` | `/memcont diary` 和三项日记工具；真实会话/调用身份、实际返回记录版本及内容哈希认证、持久化失败封锁和干净续接 |
+| `validation.ts`、`person/schema.ts`、`schema.ts` | 将原有纯数据校验提取为共享模块，避免离线浏览器编辑器导入 Node 存储、crypto 和 AsyncLocalStorage；规则没有另写一套 |
+| `ui/person-editor/editor.js`、`SOURCE-MANIFEST.json` | 构建生成物及逐文件清单更新；没有增加尚未实现的工作台按钮 |
+| 新日记测试及 `rp-person-document-compat.test.mjs`、`rp-person-editor.test.mjs` | 回归、真实旧版读取器与浏览器构建边界验证 |
+
+自由正文之外，`reflection` 可记录 `understanding`、`context`、`uncertainty`、`revisionNote`、`evidence`。证据绑定实际事件 ID、revision 和原文 span；引用可验证不等于推断真实，栏目完整也不计为模型理解分数。没有执行或复制 retcon-form 的程序、提示词、数据库或 SKILL。
+
+| 回归测试 | 已验证范围 |
+| --- | --- |
+| `test/rp-diary-schema.test.mjs`（4项） | 自由正文保真、可选反思、字段与容量边界、拒绝自报权限 |
+| `test/rp-diary.test.mjs`（10项） | 默认关闭；开启后不逐篇生成人类控制；关闭/重新开启撤销旧句柄；禁止伪造作者和改人类日记；人类修订保留 AI 作者；幂等冷恢复；过期修订拒绝 |
+| 同上 | 精确证据版本及原文哈希；跨人物/群隔离；裸来源/语义发布绕过拒绝；事务准备期间撤权不发布；全部版本隐私删除；独立分支隔离、全受影响分支授权；retcon 依据后相关解释失效、无关日记和原历史保留 |
+| `test/rp-diary-host.test.mjs`（4项） | 实际 DSH SDK 写日记工具循环；关闭权限后的认证拒绝；回执保存失败后零后续模型调用且不重发；检索/读取工具回执；修订后旧工具结果拒绝进入下次请求、干净续接可读新稿 |
+| `test/rp-person-document-compat.test.mjs` | 真实已发布 0.2.1 读取器拒绝日记能力；逐文件验证升级前备份，测试目录恢复后旧版重新读到人物 |
+| `test/rp-person-editor.test.mjs` 新增回归 | 浏览器构建成功且依赖图不包含服务端存储、日记写入准入和发布门禁 |
+
+### 执行记录与失败保留
+
+Task3a 按先失败后实现推进：日记 schema 初始4/4失败（缺少导出）、服务初始4/4失败（缺少服务）、原生宿主初始1/1失败（没有 diary 指令）。其后补充旧写入句柄不能在重新开启后复活、列表/删除及注入回归并逐项修复。所有执行日志保留在本机 `.superpowers/sdd/2026-10-25-person-capacity-multihost/`。
+
+过程中还记录了以下失败，不算通过证据：
+
+- 首次完整 `npm test` 为 **294/295，退出1**，166957.2481ms。`rp-person-document-host.test.mjs` 加载 SDK 的 zod 依赖时出现 `ERR_INVALID_ARG_VALUE`，路径含空字节，尚未进入业务断言。检查实际依赖路径正常，独立重跑1/1通过；未确定偶发根因，没有宣称修好了 Node。最终独立完整运行结果见下表。
+- 构建首次退出1：浏览器编辑器沿共用 schema 导入新文档/日记的 Node 依赖。新增浏览器测试明确失败后，提取纯校验模块；同一测试2/2通过，再运行完整构建通过。
+- 两处新增联合类型的推导错误和日记删除返回类型错误，由类型检查发现并修正；最终类型检查退出0。
+- 宿主测试初稿少一个闭合括号；修正后发现“所有历史都可携带”的断言包含本应等待采纳的原始助手消息，改为只检查经过认证的框架历史。撤权故障测试最初盯错了事务正文位置，改为在真实事务的日记语义标记写入时撤权。均保留原失败日志，没有弱化业务门禁。
+
+最终代码按下列顺序串行执行，命令退出记录为 `task-3a-final2-commands.json`，日志前缀 `task-3a-final2-`：
+
+| 命令 | 退出码 | 最终实际结果 |
+| --- | --- | --- |
+| `npm run typecheck` | 0 | TypeScript 5.9.3 类型检查通过 |
+| `npm run build` | 0 | 插件、声明文件、离线编辑器及源码清单构建完成；esbuild 0.25.12 |
+| `npm test` | 0 | **一次完整运行299/299**，失败0、跳过0、取消0；177897.73ms，未拼接定向重跑 |
+| `npm run evaluate:fixture` | 0 | 固定语料检查完成；不能解释为真实模型语义质量或长期人格质量 |
+| `npm pack --dry-run` | 0 | 打包预检完成，332文件，约3.0MB打包/6.2MB展开；未生成或发布新的稳定发行物 |
+| `RP_NATIVE_SDK=work/release-0.2.1/sdk-rc3/node_modules node --test --test-concurrency=1 test/rp-diary-host.test.mjs test/rp-person-document-host.test.mjs` | 0 | 最终源码上 DSH rc.3 的5/5原生SDK场景，6799.7565ms；日志 `task-3a-sdk-rc3-final.log`，不是整个rc.3全量测试 |
+
+Node 为项目工具链 `v22.23.3`。全量默认 DSH rc.2；rc.3 另用已隔离的真实 SDK 依赖。没有改共享 node_modules，没有同时启动多个重型进程，没有付费模型或 QQ 外发。原生 SDK 测试运行真正的会话、工具和持久化代码，终端输出由离线适配器提供；这不代表真实模型已经会正确理解或写日记。
+
+### 兼容与未完成部分
+
+- 保持 branch/global store v1。首次日记操作添加 `rp.shared-diary/v1` 能力并先备份，真实旧版读取器拒绝新版工作区。host journal 保持 v2，日记结果新增 `diary-result` 回执，绑定人物、日记本、权限版本与返回记录；不静默迁移未知工具历史。
+- 没有改变原有模块注册表哈希，避免现有 M3 会话绑定全部失效。日记有单独的明确授权，不把通用只读检索模块升级成广泛写权限。
+- 单篇正文16KiB、反思16KiB、证据最多16项；列表最多32项，历史一次最多256版，超出明确拒绝，历史分页尚未实现。当前检索仍需遍历可见条目，大规模长期负载没有实测。
+- 隐私删除不管理外部备份、宿主日志或已发送内容；回退旧版需核对并恢复完整备份，不能直接降级读取新历史。未操作真实人物 profile。
+- **尚未完成**：32,768 token 实际计量与整请求预算；大文档/共同日记的工作台页面；默认开启且可关闭的“修改前提示对后续对话的影响”；独立 core 分包与 RPC 单写入者；AstrBot 独立插件及 NapCat/Snow Luma 适配。
+- **尚未验证**：新界面浏览器交互、真实超限迁移材料、真实模型语义连续性、跨平台账户身份与 QQ 收发、长期并发/大容量运行。先前一次 SDK 模块路径偶发空字节异常的根因仍未确认。
+
+本阶段是可审核的开发提交，版本号仍保留0.2.1基线；没有以相同版本覆盖已发布包，也没有把后续任务标成已完成。

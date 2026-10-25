@@ -5,6 +5,7 @@ import type { HostAuthority, ProjectionResult, SemanticEvent, Summary } from './
 import { hash, id, object, RpError } from './schema.js'
 import { unwrap } from './retrieval.js'
 import {documentHead,documentValue} from './person/documents/format.js'
+import {currentDiaryEvents} from './diary/selection.js'
 
 export interface PacketProof {
   readonly records: readonly { readonly id: string; readonly kind: 'event' | 'summary'; readonly revision: string }[]
@@ -32,7 +33,8 @@ export async function verifyPacketProof(store: RpStore, authority: HostAuthority
   if (!proof) throw new RpError('stale_input', 'Historical packet has no original proof; use clean continuation')
   validatePacketProof(proof)
   unwrap(await store.withReadView(authority,view=>{
-    const events=view.events.filter(event=>{const d=documentValue(event);return !d||!!view.ledger&&!!d.manifest&&documentHead(view.ledger.authorityChanges,d.personId,d.documentId)===event.id})
+    const diaries=new Set(currentDiaryEvents(view,undefined,undefined).map(e=>e.id))
+    const events=view.events.filter(event=>{if(event.payload.kind==='diary_entry')return diaries.has(event.id);const d=documentValue(event);return !d||!!view.ledger&&!!d.manifest&&documentHead(view.ledger.authorityChanges,d.personId,d.documentId)===event.id})
     const records = new Map<string, { kind: 'event' | 'summary'; revision: string }>([...events.map(event => [event.id, { kind: 'event', revision: digest(event) }] as const), ...view.summaries.map(summary => [summary.id, { kind: 'summary', revision: digest(summary) }] as const)])
     if (proof.projectionSha256 !== projectionHash(view.projection) || proof.records.some(record => records.get(record.id)?.kind !== record.kind || records.get(record.id)?.revision !== record.revision)) throw new RpError('stale_input', 'Historical packet records changed; use clean continuation')
     return true

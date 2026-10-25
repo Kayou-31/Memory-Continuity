@@ -53,7 +53,7 @@ export function projectedEventValue(event: SemanticEvent): JsonValue {
   const person = personValue(event); if (person) return person.value
   const g = growthValue(event); if (g) return g.value
   const p = event.payload
-  return p.kind === 'state_change' ? p.after : p.kind !== 'person_document' && 'value' in p ? p.value : null
+  return p.kind === 'state_change' ? p.after : p.kind !== 'person_document' && p.kind !== 'diary_entry' && p.kind !== 'diary_policy' && 'value' in p ? p.value : null
 }
 export function checkGrowthTransition(event: SemanticEvent, history: readonly SemanticEvent[]) {
   const g = growthValue(event); if (!g) return

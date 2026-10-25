@@ -14,6 +14,7 @@ import { createAgentMemory } from './agent-memory.js'
 import { createPersonService } from './person/service.js'
 import {createDocumentService} from './person/documents/service.js'
 import {createAudienceService} from './person/documents/audience.js'
+import {createDiaryService} from './diary/service.js'
 import { createModuleService } from './modules/runtime.js'
 import { createManagementService } from './person/management.js'
 export { createRuntimeBinding, validateRuntimeBinding, MODULES, MODES, HARD_CONSTRAINTS } from './modules/contract.js'
@@ -23,6 +24,8 @@ export type { AgentMemoryControl } from './agent-memory.js'
 export { scoreAnnotatedClaims, validateCandidate } from './candidates.js'
 export { importPersonDocument } from './person/documents/import.js'
 export { validatePersonDocument } from './person/documents/schema.js'
+export {validateDiaryDraft} from './diary/schema.js'
+export type {DiaryDraft,DiaryReflection,DiaryEvidence} from './diary/types.js'
 export type { PersonDocumentDraft, PersonDocumentInput, DocumentSection, DocumentChunk } from './person/documents/types.js'
 export * from './session-policy.js'
 export * from './packet.js'
@@ -48,6 +51,7 @@ export async function openRpMemory(input: { profileRoot: string; entityIds: read
   return { store, control, global, canonical: service, person: createPersonService(store, service, input.entityIds), agentMemory: createAgentMemory(store, service, input.entityIds), summaries, jobs, retrieval: createRetrieval(store, { entityIds: input.entityIds, inputSourceIds: authority => inputs.get(authority.scope.branchId) ?? new Set(), verification: input.verification }), packets: createPacketService(store, global, { optimizer: input.optimizer }), coordinator,
     documents: createDocumentService(store,service,input.entityIds),
     audiences: createAudienceService(),
+    diary:createDiaryService(store,service,input.entityIds),
     registerInputBindings(branchId: string, bindings: readonly import('./packet.js').InputBinding[]) { const set = inputs.get(branchId) ?? new Set<string>(); bindings.filter(b => b.kind === 'input').forEach(b => set.add(b.sourceId)); inputs.set(branchId, set) },
     modules: createModuleService(opened.store, coordinator, input.entityIds, authority => inputs.get(authority.scope.branchId) ?? new Set()),
     management: createManagementService(opened.store, opened.control, input.entityIds, coordinator),

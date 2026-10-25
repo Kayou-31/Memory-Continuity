@@ -19,13 +19,13 @@ export async function readConsistentRecords(store: RpStore, authority: HostAutho
   const read = await store.withReadView(authority, async view => {
   const { sources, events, summaries, projection, fence } = view, result: RetrievalRecord[] = []
   for (const source of sources) {
-    if (source.origin === 'user_control' && !inputSourceIds.has(source.id)) continue
+    if (source.origin==='agent_diary'||source.origin === 'user_control' && !inputSourceIds.has(source.id)) continue
     const body = await view.readSource(fullSpan(source))
     result.push({ id: source.id, revision: source.publicTextSha256, body, kind: 'source', entities: [...new Set(events.filter(e => e.sources.some(s => s.sourceRevisionId === source.id)).flatMap(eventEntities))] })
   }
   // Document manifests contain conditions and titles for multiple audiences.
   // They are only exposed through the document selector, never raw recall.
-  for (const event of events) { if(event.payload.kind==='person_document')continue; const body = canonical(event); result.push({ id: event.id, revision: sha(body), body, kind: 'event', entities: eventEntities(event) }) }
+  for (const event of events) { if(['person_document','diary_policy','diary_entry'].includes(event.payload.kind))continue; const body = canonical(event); result.push({ id: event.id, revision: sha(body), body, kind: 'event', entities: eventEntities(event) }) }
   for (const summary of summaries) { const body = canonical(summary); result.push({ id: summary.id, revision: sha(body), body, kind: 'summary', entities: [...new Set(events.filter(e => summary.supportEventIds.includes(e.id)).flatMap(eventEntities))] }) }
   for (const state of projection.state) { const { contextRevision: _context, ...content } = state, body = canonical(content); result.push({ id: 'state_' + sha(canonical([state.subjectId, state.key, state.epistemic, state.beliefHolderId ?? null])), revision: sha(body), body, kind: 'state', entities: [state.subjectId] }) }
   return { fence, records: result }

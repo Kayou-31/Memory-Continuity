@@ -22,6 +22,9 @@ import { openRpMemory } from './memory.js'
 import { acquireSessionPolicy, engineeringAllowed, type SessionMemoryPolicy } from './session-policy.js'
 import { acquireRpAdmission } from './admission.js'
 import { retrievalEvidence, verifyRetrievalEvidence, type RetrievalEvidence } from './retrieval-evidence.js'
+import { diaryEvidence, verifyDiaryEvidence, type DiaryReceiptContext } from './diary/evidence.js'
+import { validateDiaryDraft } from './diary/schema.js'
+import { diaryCommand } from './diary/commands.js'
 import { verifyPacketProof } from './packet-proof.js'
 import { createUltraRpOptimizer } from './memory-optimizer.js'
 import { createPersonBinding, verifyPersonBinding } from './person/binding.js'
@@ -35,6 +38,9 @@ import type { HostAuthority, InputFence, SourceRevision } from './types.js'
 import type { GlobalFence } from './global.js'
 const sha = (s: string) => createHash('sha256').update(s).digest('hex')
 const uid = (p: string) => p + '_' + randomUUID().replaceAll('-', '')
+const memoryToolNames = ['rp_memory_search', 'rp_memory_get', 'rp_memory_status', 'memcont_diary_write', 'memcont_diary_read', 'memcont_diary_search']
+type ToolProof = RetrievalEvidence & { diary?: DiaryReceiptContext }
+type ToolProvenance = 'retrieval-result' | 'diary-result' | 'status' | 'error'
 const body = (m: any) => (m.content ?? []).filter((b: any) => b.type === 'text').map((b: any) => b.text).join('\n')
 const normalizedMessage = (m: any) => canonical(m)
 const commandObject = (input: string, required: readonly string[], optional: readonly string[] = []) => {
@@ -50,7 +56,7 @@ const validReadToolContent = (content: unknown): boolean => {
       if (block?.type === 'text') { object(block, ['type', 'text']); if (typeof block.text !== 'string') return false }
       else {
         object(block, ['type', 'id', 'name', 'arguments']); hostId(block.id)
-        if (block.type !== 'tool-call' || !['rp_memory_search', 'rp_memory_get', 'rp_memory_status'].includes(block.name) || typeof block.arguments !== 'string' || calls.has(block.id)) return false
+        if (block.type !== 'tool-call' || !memoryToolNames.includes(block.name) || typeof block.arguments !== 'string' || calls.has(block.id)) return false
         calls.add(block.id)
       }
     }
@@ -121,7 +127,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
   const globalPolicyHash = () => sha(canonical(globalSpecs))
   for (const grant of globalSpecs) globalAuthorities.push(unwrap(await memory.global.control.authorize(grant)))
   const visibility = { policyId: 'rp_user_policy', revision: 0, audienceSetId: 'rp_user' }, bound = new Map<string, Bound>(), handles: any[] = [], shutdown = new AbortController(), effects: (() => unknown)[] = []
-  const pendingTools = new Map<symbol, { agent: Agent; callId: string; generation: number; packetId: string; text: string; proof: RetrievalEvidence; provenance: 'retrieval-result' | 'status' | 'error' }>()
+  const pendingTools = new Map<symbol, { agent: Agent; callId: string; generation: number; packetId: string; text: string; proof: ToolProof; provenance: ToolProvenance }>()
   startupCleanups.push(async () => {
     shutdown.abort(new Error('RP installation failed')); pendingTools.clear()
     const errors: unknown[] = []
@@ -249,6 +255,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       await created?.dispose(); throw e
     }
   }
+  const verifyToolProof = (b: Bound, proof: ToolProof) => proof.diary ? verifyDiaryEvidence(memory.store, b.authority, {...proof, diary: proof.diary}, b.data.personBinding?.personId) : verifyRetrievalEvidence(memory.store, b.authority, proof, new Set(b.data.inputs.map(i=>i.sourceId)))
   const injectionPreview = async (b:Bound, query:string) => {
     if(Buffer.byteLength(query,'utf8')>8192)throw new RpError('invalid_record','Preview query exceeds 8 KiB')
     await settle(b)
@@ -264,7 +271,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           if(s.injection)verifyInjectionText(s.injection,body(message))
           if(canonical(s.injectionBinding??null)!==bindingHash||canonical(s.personBinding??null)!==canonical(b.data.personBinding??null)||canonical(s.runtimeBinding??null)!==canonical(b.data.runtimeBinding??null))throw new RpError('stale_input','历史配置绑定不匹配')
           if(s.provenance==='packet'||s.provenance==='tool-call')await verifyPacketProof(memory.store,b.authority,s.packetProof)
-          if(s.records)await verifyRetrievalEvidence(memory.store,b.authority,{inputFence:s.fence,records:s.records,resultSha256:s.resultSha256!},new Set(b.data.inputs.map(i=>i.sourceId)))
+          if(s.records)await verifyToolProof(b,{inputFence:s.fence,records:s.records,resultSha256:s.resultSha256!,diary:s.diary})
           if(s.bodyHash!==sha(body(message))||s.modeEpoch!==policy.status(b.agent.id).modeEpoch||s.fence.branchId!==fence.branchId||s.fence.visibilityRevision!==fence.visibilityRevision||s.fence.deletionGeneration!==fence.deletionGeneration||s.fence.canonBindingsHash!==fence.canonBindingsHash||s.fence.policyVersion!==fence.policyVersion||s.dependencyIds.some(id=>!sources.has(id)))throw new RpError('stale_input','历史来源或权限已失效')
           if(s.globalPolicyHash!==globalPolicyHash()||s.globals.length!==globalAuthorities.length)throw new RpError('scope_denied','历史全局授权已改变')
           for(const dep of s.globalDependencies){let found=false;for(const g of globalAuthorities){const r=await memory.global.store.readPublication(g,dep.publicationId);if(r.ok&&r.value.source.id===dep.sourceId&&r.value.bodySha256===dep.bodySha256&&canonical(r.value.scope)===canonical(dep.scope)&&(r.value.scope.kind!=='profile'||unwrap(await memory.global.store.listActive(g)).some(x=>x.id===r.value.id)))found=true}if(!found)throw new RpError('scope_denied','历史全局来源已失效')}
@@ -388,6 +395,14 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         }
       })
       await drain(b); signal.throwIfAborted()
+      if(action==='diary')return {kind:'success',text:canonical(await diaryCommand(arg,{
+        diary:memory.diary,authority:b.authority,personId:b.data.personBinding?.personId,commandId,
+        control:async value=>unwrap(await controlSource(b!,commandId,value)),fence:async()=>unwrap(await memory.store.readFence(b!.authority)),
+        changed:async()=>{
+          for(const session of bound.values())if(session.data.request.branchId===b!.data.request.branchId)session.packet=undefined
+          if(!await (root.get('sessions') as any).flush(agent.session))throw new RpError('persistence_uncertain','日记已提交，但宿主保存未确认；请先查看当前日记，不要盲目重试。')
+        },
+      }))}
       if (action === 'person') {
         const parsed = /^(\S+)(?:\s+([\s\S]+))?$/u.exec(arg); if (!parsed) throw new RpError('invalid_record', 'Use person preview|confirm|show|use')
         const sub = parsed[1], value = parsed[2] ?? ''
@@ -529,11 +544,14 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
   }) as never))
   effects.push(root.on('system-prompt/assemble', (async (_assembly: any, request: any, next: () => Promise<any>) => {
     const agent: Agent | undefined = request.agent ?? request.scope?.agent, b = agent && bound.get(agent.id)
-    if (!b || policy.status(agent!.id).mode !== 'rp') { const assembled = await next(); return { ...assembled, tools: assembled.tools.filter((t: any) => !/^rp_memory_/u.test(t.name)) } }
+    if (!b || policy.status(agent!.id).mode !== 'rp') { const assembled = await next(); return { ...assembled, tools: assembled.tools.filter((t: any) => !memoryToolNames.includes(t.name)) } }
     await drain(b); request.signal?.throwIfAborted(); const generation = ++b.generation, assembly = await next()
+    const diaryConfigured=b.data.personBinding?await memory.diary.settings(b.authority,{personId:b.data.personBinding.personId,boardId:'shared'}):undefined
+    if(diaryConfigured&&!diaryConfigured.ok&&diaryConfigured.code!=='scope_denied')throw new RpError(diaryConfigured.code,diaryConfigured.message)
+    const allowedTools=memoryToolNames.filter(name=>!name.startsWith('memcont_diary_')||diaryConfigured?.ok)
     let packet = unwrap(await memory.packets.prepare(b.authority, { budget: config.budget!, globalAuthorities, inputBindings: b.data.inputs, personId: b.data.personBinding?.personId, injection: b.data.injectionBinding?.config, runtime: b.runtime?.context() }))
     request.signal?.throwIfAborted(); if (closed || generation !== b.generation) throw new RpError('stale_input', 'Late RP assembly')
-    const compose = (p: MemoryPacket) => ({ ...assembly, tools: assembly.tools.filter((t: any) => ['rp_memory_search', 'rp_memory_get', 'rp_memory_status'].includes(t.name)), contexts: [...assembly.contexts, { name: 'rp-memory', text: canonical({ rpPacketId: p.id, data: JSON.parse(p.text), recentAcceptedOriginals: p.recent }) }] })
+    const compose = (p: MemoryPacket) => ({ ...assembly, tools: assembly.tools.filter((t: any) => allowedTools.includes(t.name)), contexts: [...assembly.contexts, { name: 'rp-memory', text: canonical({ rpPacketId: p.id, data: JSON.parse(p.text), recentAcceptedOriginals: p.recent }) }] })
     let completed = compose(packet)
     const envelope = () => ({ provider: agent!.options.provider, model: agent!.options.model, maxTokens: agent!.options.maxTokens, system: renderPrompt(completed), tools: completed.tools, toolHistory: { tools: completed.tools, updates: [] }, messages: [...agent!.session.deriveMessages(), { role: 'user', content: [{ type: 'text', text: joinContextSections(renderContextSections(completed)) }] }] })
     const reserve = Math.max(config.budget!.outputReserveTokens, agent!.options.maxTokens ?? 0) + config.budget!.toolReserveTokens
@@ -561,7 +579,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         if(canonical(snapshot.runtimeBinding ?? null)!==canonical(b.data.runtimeBinding ?? null))throw new RpError('stale_input','Historical runtime binding proof mismatch')
         if (canonical(snapshot.personBinding ?? null) !== canonical(b.data.personBinding ?? null)) throw new RpError('stale_input', 'Historical person binding proof mismatch')
         if (snapshot.provenance === 'packet' || snapshot.provenance === 'tool-call') await verifyPacketProof(memory.store, b.authority, snapshot.packetProof)
-        if (snapshot.records) await verifyRetrievalEvidence(memory.store, b.authority, { inputFence: snapshot.fence, records: snapshot.records, resultSha256: snapshot.resultSha256! }, new Set(b.data.inputs.map(i => i.sourceId)))
+        if (snapshot.records) await verifyToolProof(b, { inputFence: snapshot.fence, records: snapshot.records, resultSha256: snapshot.resultSha256!, diary: snapshot.diary })
         if (snapshot.bodyHash !== sha(body(message)) || snapshot.modeEpoch !== policy.status(b.agent.id).modeEpoch || snapshot.fence.branchId !== fence.branchId || snapshot.fence.canonBindingsHash !== fence.canonBindingsHash || snapshot.fence.visibilityRevision !== fence.visibilityRevision || snapshot.fence.deletionGeneration !== fence.deletionGeneration || snapshot.fence.policyVersion !== fence.policyVersion || snapshot.dependencyIds.some(id => !sourceMap.has(id)) || snapshot.eventIds.some(id => !events.has(id))) throw new RpError('stale_input', 'Historical RP snapshot is invalid; use clean continuation')
         if (snapshot.globalPolicyHash !== globalPolicyHash() || snapshot.globals.length !== globalAuthorities.length) throw new RpError('scope_denied', 'Historical global grants changed')
         for (const dep of snapshot.globalDependencies) {
@@ -612,11 +630,11 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') { await policy.block(agent.id) } }
   }) as never))
   effects.push(root.on('agent/disposed', (({ agent }: any) => { void closeManager(agent.id).catch(()=>{}); const b = bound.get(agent.id); if (b) { b.runtime?.revoke(); b.generation++; admission.retireBinding(owner, agent.id); void policy.block(agent.id).then(() => { admission.release(owner, agent.id); bound.delete(agent.id) }).catch(() => { b.data.blocked = true }) } }) as never))
-  // Only read/status tools. They cannot reach commands, approvals, stores or grants.
+  // General memory stays read-only. Diary writes require a separate human grant.
   const tools: any = root.get('tools'), output = { schema: { type: 'object' as const, additionalProperties: false as const, properties: { text: { type: 'string' as const, required: true as const } } }, render: (_args: unknown, result: { text: string }) => [{ type: 'text' as const, text: result.text }] }
   effects.push(root.on('tools/execute', (async (exec: any, next: () => Promise<any>) => {
     const b: Bound | undefined = exec.agent && bound.get(exec.agent.id)
-    if (!b || !['rp_memory_search', 'rp_memory_get', 'rp_memory_status'].includes(exec.name)) return next()
+    if (!b || !memoryToolNames.includes(exec.name)) return next()
     try {
       const result = await next(); await drain(b)
       const pending = pendingTools.get(exec.token), queueTail = b.queue
@@ -631,9 +649,9 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       }
       try { await policy.coordinator.mutate(async () => {
         checkPublication()
-        await verifyRetrievalEvidence(memory.store, b.authority, pending.proof, new Set(b.data.inputs.map(i => i.sourceId)))
+        await verifyToolProof(b, pending.proof)
         checkPublication()
-        const snapshot: Snapshot = { ...(b.data.injectionBinding ? {injectionBinding:structuredClone(b.data.injectionBinding)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), provenance: pending.provenance, records: pending.proof.records, resultSha256: pending.proof.resultSha256, bodyHash: sha(pending.text), packetId: pending.packetId, fence: pending.proof.inputFence, globals: [...b.packet!.globalFences], globalDependencies: [...b.packet!.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [], eventIds: [], modeEpoch: policy.status(b.agent.id).modeEpoch }
+        const snapshot: Snapshot = { ...(b.data.injectionBinding ? {injectionBinding:structuredClone(b.data.injectionBinding)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), ...(pending.proof.diary ? {diary: pending.proof.diary} : {}), provenance: pending.provenance, records: pending.proof.records, resultSha256: pending.proof.resultSha256, bodyHash: sha(pending.text), packetId: pending.packetId, fence: pending.proof.inputFence, globals: [...b.packet!.globalFences], globalDependencies: [...b.packet!.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [], eventIds: [], modeEpoch: policy.status(b.agent.id).modeEpoch }
         const data = { ...b.data, receipts: { ...b.data.receipts, [exec.callId]: { contentHash: sha(canonical(result.content)), snapshot } } }
         try { await writeJournal(b, false, data, checkPublication); checkPublication(); b.data = data } catch (e) { b.data.blocked = true; b.lastError = e instanceof RpError ? e.code : 'persistence_failed'; throw e }
       }) } finally { finish() }; return result
@@ -655,6 +673,45 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         }
         exec.signal.throwIfAborted(); if (closed || b.generation !== generation) throw new RpError('ownership_lost', 'Late tool result')
         const text = canonical(result); pendingTools.set(exec.token, { agent: b.agent, callId: exec.callId, generation, packetId, text, proof, provenance }); return { text }
+      },
+    } as any)))
+  }
+  for(const name of ['memcont_diary_write','memcont_diary_read','memcont_diary_search']){
+    effects.push(tools.register(defineTool({name,
+      description:name.endsWith('write')?'在人类已开启共同日记时，记录自己的主观日记。entry 是 JSON 字符串，含 entryId、title、body；修改自己的旧日记必须附 previousEventId。可选 reflection 含 understanding、context、uncertainty、revisionNote、evidence。不能修改人类日记、权限、人格或事实；禁止把猜测当作事实。':'读取当前人物获准共享的最新日记。日记包含主观感受与推测，不等于已确认事实。',
+      parameters:name.endsWith('write')?{entry:{type:'string'}}:name.endsWith('read')?{entryId:{type:'string'}}:{query:{type:'string'},limit:{type:'integer'}},
+      output,isConcurrencySafe:()=>!name.endsWith('write'),
+      async execute(args:any,exec:any){
+        const b:Bound|undefined=exec.agent&&bound.get(exec.agent.id)
+        if(!b||b.agent!==exec.agent||!live(exec.agent)||policy.status(exec.agent.id).mode!=='rp')throw new RpError('scope_denied','Diary requires exact bound live caller')
+        await drain(b);const generation=b.generation,packetId=b.packet?.id,personId=b.data.personBinding?.personId
+        if(!packetId||typeof exec.token!=='symbol')throw new RpError('scope_denied','No native execution identity or packet')
+        hostId(exec.callId)
+        const active=()=>!exec.signal.aborted&&!closed&&live(b.agent)&&bound.get(b.agent.id)===b&&!b.data.blocked&&b.generation===generation&&b.packet?.id===packetId&&policy.status(b.agent.id).mode==='rp'
+        let result:any,proof:ToolProof,provenance:ToolProvenance
+        try{
+          if(!personId)throw new RpError('scope_denied','Diary requires a bound person')
+          const access={personId,boardId:'shared'}
+          if(name.endsWith('write')){
+            object(args,['entry']);let raw:unknown;try{raw=JSON.parse(args.entry)}catch{throw new RpError('invalid_record','Diary entry must be a JSON string')}
+            const draft=validateDiaryDraft(raw),writer=unwrap(await memory.diary.writer(b.authority,access,active))
+            try{
+              const sourceRevisionIds=b.data.inputs.filter(i=>i.turnId===b.data.currentTurnId&&(i.phase==='dispatched'||i.phase==='dispatching')).map(i=>i.sourceId)
+              const made=unwrap(await writer.write(draft,{sessionId:b.agent.id,callId:exec.callId,sourceRevisionIds,key:'native_'+sha(b.agent.id+':'+exec.callId)}))
+              result=await memory.diary.read(b.authority,{...access,entryId:draft.entryId})
+              if(!result.ok||result.value.eventId!==made.eventId)throw new RpError('persistence_uncertain','Diary committed but changed before receipt; inspect current diary before retrying')
+            }finally{writer.revoke()}
+          }else result=name.endsWith('read')?await memory.diary.read(b.authority,{...args,...access}):await memory.diary.list(b.authority,{...args,...access})
+          if(!result.ok)throw new RpError(result.code,result.message)
+          proof=diaryEvidence(result,b.authority);provenance='diary-result'
+        }catch(e){
+          if(!(e instanceof RpError)||['persistence_failed','persistence_uncertain','ownership_lost'].includes(e.code)){
+            b.data.blocked=true;b.lastError=e instanceof RpError?e.code:'persistence_failed';throw e
+          }
+          result={ok:false,code:e.code};proof={inputFence:unwrap(await memory.store.readFence(b.authority)),records:[],resultSha256:sha(canonical(result))};provenance='error'
+        }
+        if(!active())throw new RpError('ownership_lost','Late diary tool result')
+        const text=canonical(result);pendingTools.set(exec.token,{agent:b.agent,callId:exec.callId,generation,packetId,text,proof,provenance});return {text}
       },
     } as any)))
   }

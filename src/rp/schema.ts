@@ -1,36 +1,10 @@
 import type { Result, RpRecord, CommitBatch, SourceObservation, SourceSpan, Scope, Visibility, EventPayload, SemanticEvent, Summary, Branch, BranchSourceBinding, InputFence, Job, AuthorityChange } from './types.js'
 import {validateDocumentValue} from './person/documents/format.js'
+import {validateDiaryPolicy,validateDiaryValue} from './diary/format.js'
 
-export class RpError extends Error {
-  constructor(readonly code: import('./types.js').ErrorCode, message: string) { super(message) }
-}
-export function invalid(field: string): never { throw new RpError('invalid_record', 'Invalid RP record: ' + field) }
-export function denied(field: string): never { throw new RpError('scope_denied', 'RP scope denied: ' + field) }
-export function wellFormed(v: string): boolean { return !/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u.test(v) }
-export function object(v: unknown, required: readonly string[], optional: readonly string[] = []): Record<string, any> {
-  if (!v || typeof v !== 'object' || Array.isArray(v) || (Object.getPrototypeOf(v) !== Object.prototype && Object.getPrototypeOf(v) !== null)) invalid('object')
-  const r = v as Record<string, any>
-  const keys = Object.keys(r)
-  for (const key of keys) {
-    if (!required.includes(key) && !optional.includes(key)) {
-      if (/^(?:approved|authority|owner|ownership|trusted|profile|profileId|scope|viewpoint|narrator|global|reasoning|accepted)$/u.test(key)) denied('untrusted authority field')
-      invalid('unknown field ' + key)
-    }
-    if (!('value' in Object.getOwnPropertyDescriptor(r, key)!)) invalid('accessor')
-  }
-  for (const key of required) if (!Object.hasOwn(r, key) || r[key] === undefined) invalid('missing ' + key)
-  return r
-}
-export function text(v: unknown, max = 4096, empty = false): asserts v is string {
-  if (typeof v !== 'string' || (!empty && !v.trim()) || v.length > max || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/u.test(v)) invalid('text')
-  // Buffer's replacement of lone surrogates would destroy exact source identity.
-  if (!wellFormed(v)) invalid('unpaired surrogate')
-}
-export function id(v: unknown): asserts v is string { if (typeof v !== 'string' || !/^[A-Za-z][A-Za-z0-9_-]{0,127}$/u.test(v)) invalid('id') }
-/** SDK UUID identities may start with a digit; they are never filesystem paths. */
-export function hostId(v: unknown): asserts v is string { if (typeof v !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/u.test(v)) invalid('host id') }
-export function hash(v: unknown): asserts v is string { if (typeof v !== 'string' || !/^[a-f0-9]{64}$/u.test(v)) invalid('sha256') }
-export function integer(v: unknown, min = 0): asserts v is number { if (typeof v !== 'number' || !Number.isSafeInteger(v) || v < min) invalid('safe integer') }
+import {RpError,invalid,denied,wellFormed,object,text,id,hostId,hash,integer,MAX_RP_JSON_BYTES,MAX_RP_PUBLISH_BYTES,cloneInput,checkedRpJson} from './validation.js'
+export {RpError,invalid,denied,wellFormed,object,text,id,hostId,hash,integer,MAX_RP_JSON_BYTES,MAX_RP_PUBLISH_BYTES,cloneInput,checkedRpJson} from './validation.js'
+
 function choice(v: unknown, choices: readonly unknown[]) { if (!choices.includes(v)) invalid('enum') }
 function list(v: unknown, parse: (entry: any) => void, max = 2048, min = 0) { if (!Array.isArray(v) || v.length > max || v.length < min) invalid('array'); v.forEach(parse) }
 function ids(v: unknown, min = 0) { list(v, id, 2048, min); if (new Set(v as string[]).size !== (v as string[]).length) invalid('duplicate IDs') }
@@ -58,12 +32,13 @@ export function binding(v: unknown): asserts v is BranchSourceBinding {
 function locator(v: unknown) { const r = object(v, ['sessionId', 'eventSeq', 'messageId', 'messageRevision']); hostId(r.sessionId); integer(r.eventSeq); hostId(r.messageId); hostId(r.messageRevision) }
 function source(v: unknown) {
   const r = object(v, ['schemaVersion', 'id', 'scope', 'origin', 'role', 'publicTextSha256', 'publicTextLengthUtf16', 'blobId', 'visibility', 'capturedAt'], ['host', 'turnId'])
-  version(r.schemaVersion); id(r.id); scope(r.scope); choice(r.origin, ['host_public', 'user_control', 'approved_publication']); choice(r.role, ['user', 'assistant', 'tool', 'user_control'])
+  version(r.schemaVersion); id(r.id); scope(r.scope); choice(r.origin, ['host_public', 'user_control', 'approved_publication','agent_diary']); choice(r.role, ['user', 'assistant', 'tool', 'user_control'])
   hash(r.publicTextSha256); integer(r.publicTextLengthUtf16); if (r.publicTextLengthUtf16 > 1048576) invalid('source text size'); id(r.blobId); if (r.blobId !== 'blob_' + r.publicTextSha256) invalid('source blob identity'); visibility(r.visibility); text(r.capturedAt, 64)
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u.test(r.capturedAt) || !Number.isFinite(Date.parse(r.capturedAt))) invalid('capture time')
   if (r.turnId !== undefined) id(r.turnId)
   if (r.host !== undefined) locator(r.host)
-  if ((r.origin === 'host_public') !== (r.host !== undefined)) invalid('host provenance')
+  if ((r.origin === 'host_public'||r.origin==='agent_diary') !== (r.host !== undefined)) invalid('host provenance')
+  if(r.origin==='agent_diary'&&r.role!=='assistant')invalid('diary source role')
   if (r.origin === 'user_control' && r.role !== 'user_control') invalid('control role')
 }
 function value(v: unknown, depth = 0): void {
@@ -80,6 +55,8 @@ export function payload(v: unknown): asserts v is EventPayload {
   const kind = (v as any)?.kind
   let r: Record<string, any>
   switch (kind) {
+    case 'diary_policy': r=object(v,['kind','value']);validateDiaryPolicy(r.value);break
+    case 'diary_entry': r=object(v,['kind','value']);validateDiaryValue(r.value);break
     case 'person_document': r = object(v, ['kind','value']); validateDocumentValue(r.value); break
     case 'canon_assertion': r = object(v, ['kind', 'subjectId', 'key', 'value', 'locked']); id(r.subjectId); choice(r.key, stateKeys); value(r.value); if (typeof r.locked !== 'boolean') invalid('locked'); break
     case 'occurrence': r = object(v, ['kind', 'actorIds', 'description']); ids(r.actorIds, 1); text(r.description, 65536); break
@@ -127,34 +104,11 @@ export function batch(v: unknown): asserts v is CommitBatch {
   if (r.expectedJobs !== undefined) list(r.expectedJobs, job, 256)
 }
 export function observation(v: unknown): asserts v is SourceObservation {
-  const r = object(v, ['idempotencyKey', 'origin', 'turnId', 'role', 'publicText'], ['host']); text(r.idempotencyKey, 256); choice(r.origin, ['host_public', 'user_control']); id(r.turnId); choice(r.role, ['user', 'assistant', 'tool', 'user_control']); text(r.publicText, 1048576, true)
-  if (r.origin === 'host_public') { locator(r.host); if (r.role === 'user_control') invalid('public role') }
+  const r = object(v, ['idempotencyKey', 'origin', 'turnId', 'role', 'publicText'], ['host']); text(r.idempotencyKey, 256); choice(r.origin, ['host_public', 'user_control','agent_diary']); id(r.turnId); choice(r.role, ['user', 'assistant', 'tool', 'user_control']); text(r.publicText, 1048576, true)
+  if (r.origin === 'host_public'||r.origin==='agent_diary') { locator(r.host); if (r.role === 'user_control'||r.origin==='agent_diary'&&r.role!=='assistant') invalid('public role') }
   else if (r.host !== undefined || r.role !== 'user_control') invalid('control provenance')
 }
 /** Before serialization: bounded recursive inspection rejects lossy values and accessors. */
-export const MAX_RP_JSON_BYTES = 4_194_304
-export const MAX_RP_PUBLISH_BYTES = 3_145_728
-export function cloneInput<T>(input: T, maxBytes = MAX_RP_JSON_BYTES, capacityError = false, maxArrayLength = 4096): T {
-  const visit = (v: unknown, depth: number): void => {
-    if (depth > 24) invalid('record depth')
-    if (v === null || typeof v === 'boolean') return
-    if (typeof v === 'string') { if (v.length > 1048576 || !wellFormed(v)) invalid('record string'); return }
-    if (typeof v === 'number') { if (!Number.isFinite(v) || (Number.isInteger(v) && !Number.isSafeInteger(v))) invalid('number'); return }
-    if (!v || typeof v !== 'object') invalid('JSON value')
-    if (Array.isArray(v)) { if (v.length > maxArrayLength) invalid('array size'); v.forEach(entry => visit(entry, depth + 1)); return }
-    if (Object.getPrototypeOf(v) !== Object.prototype && Object.getPrototypeOf(v) !== null) invalid('prototype')
-    for (const key of Object.keys(v)) { const d = Object.getOwnPropertyDescriptor(v, key)!; if (!('value' in d)) invalid('accessor'); visit(d.value, depth + 1) }
-  }
-  visit(input, 0)
-  const encoded = JSON.stringify(input); if (Buffer.byteLength(encoded, 'utf8') > maxBytes) { if (capacityError) throw new RpError('capacity_exceeded', 'RP complete envelope byte limit'); invalid('record size') }
-  return JSON.parse(encoded) as T
-}
-/** Inspect the entire envelope, then write exactly these preflighted bytes. */
-export function checkedRpJson(input: unknown, encode: (value: unknown) => string, maxBytes = MAX_RP_JSON_BYTES, maxArrayLength = 4096): string {
-  const encoded = encode(cloneInput(input, maxBytes, true, maxArrayLength))
-  if (Buffer.byteLength(encoded, 'utf8') > maxBytes) throw new RpError('capacity_exceeded', 'RP complete envelope byte limit')
-  return encoded
-}
 export function parseRecord(input: unknown): Result<RpRecord> {
   try {
     if (typeof input === 'string' && Buffer.byteLength(input, 'utf8') > 4194304) invalid('JSON size')

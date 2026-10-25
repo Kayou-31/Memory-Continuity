@@ -10,6 +10,9 @@ import { reduceEvents, eventsForView } from './reducer.js'
 import { checkGrowthTransition, growthValue, inheritGrowthMarks, markGrowthEvent } from './growth-format.js'
 import { hasPersonOwner, markerProtocol, markSemantic, requiredSemanticCapabilities, semanticProtocol } from './semantic-registry.js'
 import {documentFromManifest, documentHead, documentValue} from './person/documents/format.js'
+import {diaryContent,diaryPolicy,diaryValue} from './diary/format.js'
+import {checkDiaryTransition} from './diary/transition.js'
+import {requireDiaryAdmission} from './diary/admission.js'
 import { checkPersonTransition, personValue } from './person/format.js'
 export { parseRecord } from './schema.js'
 /** Trusted storage adapters reuse the same verified lock/read protocol. */
@@ -28,6 +31,9 @@ const newId = (prefix: string) => prefix + '_' + randomUUID().replaceAll('-', ''
 const ok = <T>(value: T): Result<T> => { const copy = structuredClone(value); inheritGrowthMarks(value, copy); return { ok: true, value: copy } }
 const same = (a: unknown, b: unknown) => canonical(a) === canonical(b)
 function eventDependencies(event: SemanticEvent): string[] {
+  const diary=diaryValue(event),policy=diaryPolicy(event)
+  if(diary)return [...new Set([diary.policyEventId,...(diary.previousEventId?[diary.previousEventId]:[]),...diary.evidence.map(e=>e.eventId)])]
+  if(policy)return [...new Set([policy.originEventId,...(policy.previousEventId?[policy.previousEventId]:[])])]
   const document = documentValue(event)
   if (document) return [...new Set([document.originEventId, ...(document.previousEventId ? [document.previousEventId] : [])])]
   const payload = event.payload
@@ -38,11 +44,13 @@ function eventDependencies(event: SemanticEvent): string[] {
 }
 function authenticateEvent(event: SemanticEvent, changes: readonly AuthorityChange[]) {
   const protocol = markerProtocol(changes, event)
-  if (!protocol) { if (event.payload.kind === 'person_document') denied('document requires authenticated semantic marker'); return }
+  if (!protocol) { if (['person_document','diary_entry','diary_policy'].includes(event.payload.kind)) denied('document or diary requires authenticated semantic marker'); return }
   markSemantic(event, protocol)
   if (protocol === 'agent-memory/v1') markGrowthEvent(event)
   else if (protocol === 'person-core/v1') personValue(event)
   else if (protocol === 'person-document/v1') documentValue(event)
+  else if (protocol === 'shared-diary/v1') diaryValue(event)
+  else if (protocol === 'shared-diary-policy/v1') diaryPolicy(event)
   else if (event.payload.kind !== 'occurrence' || event.epistemic !== 'world' || !['user_canon', 'explicit_ooc'].includes(event.authority) || event.supersedes.length) denied('person origin must be explicit initial definition')
 }
 function error(code: import('./types.js').ErrorCode, message: string): never { throw new RpError(code, message) }
@@ -330,7 +338,7 @@ export class RpStore {
         if (tx.schemaVersion !== 1 || tx.workspaceId !== workspaceId || tx.sequence !== state.transactions.length + 1 || tx.previousHash !== (state.hashes.at(-1) ?? ZERO) || envelope.sha256 !== digest(tx)) invalid('transaction chain')
         text(tx.idempotencyKey, 512); hash(tx.effectHash); this.#validateOperation(tx.operation)
         const caps = tx.requiredCapabilities ?? []
-        if (!Array.isArray(caps) || caps.some(c => !['rp.person-core/v1','rp.person-documents/v1'].includes(c))) error('capability_missing', 'Unsupported workspace reader capability')
+        if (!Array.isArray(caps) || caps.some(c => !['rp.person-core/v1','rp.person-documents/v1','rp.shared-diary/v1'].includes(c))) error('capability_missing', 'Unsupported workspace reader capability')
         if (!same(caps, [...new Set(caps)].sort()) || state.requiredCapabilities.some(c => !caps.includes(c)) || (tx.operation.kind === 'commit' && requiredSemanticCapabilities(tx.operation.authorityChanges).some(c=>!caps.includes(c)))) invalid('workspace capability regression or missing semantic barrier')
         state.requiredCapabilities = caps
         if (effects.has(tx.idempotencyKey)) invalid('duplicate transaction effect')
@@ -707,6 +715,8 @@ export class RpStore {
       const body = await this.#readBlob(request.workspaceId, r.blobId, r.bodySha256), parsed = parseRecord({ kind: 'event', record: JSON.parse(body) })
       if (!parsed.ok || parsed.value.kind !== 'event') error('source_unavailable', 'RP event payload unavailable')
       authenticateEvent(parsed.value.record, branch.changes)
+      const diary=diaryValue(parsed.value.record)
+      if(diary)diaryContent(diary,await this.#verifySpan(state,branch,request,diary.content,sourceText))
       const document = documentValue(parsed.value.record)
       if (document?.manifest) {
         const m = document.manifest
@@ -779,6 +789,10 @@ export class RpStore {
     try {
       const { grant } = await this.#authorize(authority, 'observe'), observation = cloneInput(input); validateObservation(observation)
       if (observation.origin === 'user_control' && !grant.request.permissions.includes('control')) denied('control observation')
+      if(observation.origin==='agent_diary'){
+        const permit=requireDiaryAdmission(authority)
+        if(sha(observation.publicText)!==permit.sourceHash||observation.host?.sessionId!==permit.execution.sessionId||observation.host?.messageId!==permit.execution.callId)denied('Diary observation execution mismatch')
+      }
       if (observation.host && observation.host.sessionId !== grant.request.sessionId) denied('source session')
       return await lock(this.#workspacePath(grant.request.workspaceId), async () => {
         await this.#authorize(authority, 'observe')
@@ -912,7 +926,8 @@ export class RpStore {
         const records: Derived[] = [], payloads = new Map<string, string>(), identifiers = new Set([...next.records.keys(), ...next.jobs.keys()])
         let growthHistory: SemanticEvent[] | undefined
         batch.events.forEach(e => authenticateEvent(e, changes))
-        const newPeople = new Set<string>(), documentChanges = new Set<string>()
+        const newPeople = new Set<string>(), documentChanges = new Set<string>(),diaryChanges=new Set<string>()
+        if(batch.events.some(e=>diaryPolicy(e))&&batch.events.some(e=>diaryValue(e)))invalid('diary policy and content require separate controls')
         for (const event of batch.events) if (semanticProtocol(event) === 'person-origin/v1' && event.payload.kind === 'occurrence') {
           const personId = event.payload.actorIds[0]
           if (newPeople.has(personId) || hasPersonOwner(inheritedBase.changes, personId)) invalid('person already initialized in life branch')
@@ -955,6 +970,13 @@ export class RpStore {
               if (original.value.record.payload.kind === 'canon_assertion' && original.value.record.payload.locked && !['explicit_ooc', 'user_canon'].includes(record.authority)) denied('locked canon requires explicit user correction')
             }
             dependencies = eventDependencies(record)
+            if(diaryValue(record)||diaryPolicy(record)){
+              const dv=diaryValue(record),dp=diaryPolicy(record),key=dv?canonical(['entry',dv.personId,dv.boardId,dv.entryId]):canonical(['policy',dp!.personId,dp!.boardId])
+              if(diaryChanges.has(key))invalid('duplicate diary changes in one commit');diaryChanges.add(key)
+              if(batch.invalidatedIds.length||batch.events.some(e=>e.supersedes.length||e.payload.kind==='correction'))invalid('diary and retcon require separate controls')
+              growthHistory??=await this.#readEventBodies(state,inheritedBase,grant.request)
+              await checkDiaryTransition(record,growthHistory,inheritedBase.changes,authority,id=>this.#source(state,next,grant.request,id),span=>this.#verifySpan(state,next,grant.request,span))
+            }
             const document = documentValue(record)
             if (document) {
               if (batch.invalidatedIds.length || batch.events.some(e=>e.supersedes.length || e.payload.kind==='correction')) invalid('document changes and retcon must be separate controls')

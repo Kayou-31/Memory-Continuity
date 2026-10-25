@@ -10,3 +10,11 @@ test('saved editor draft can reopen and append fields and goals without hidden I
   assert.equal(personDraft(reopened,new Set(['erin'])).fields.length,2)
   assert.equal(new Set(reopened.goals.map(g=>g.goalId)).size,2)
 })
+
+test('offline editor browser bundle has no server storage, crypto or writer admission dependencies',async()=>{
+  try{
+    const result=await build({entryPoints:['src/rp/person/editor.ts'],write:false,bundle:true,platform:'browser',format:'iife',metafile:true,logLevel:'silent',define:{'Buffer.byteLength':'utf8Bytes'},banner:{js:'const utf8Bytes=value=>new TextEncoder().encode(value).length;'}})
+    assert.ok(result.outputFiles[0].text.length>0)
+    assert.ok(Object.keys(result.metafile.inputs).every(p=>!/(?:\/store\.ts|\/diary\/admission\.ts|\/publication-guard\.ts)$/u.test(p)))
+  }finally{stop()}
+})

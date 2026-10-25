@@ -23,3 +23,13 @@
 - [作者的自我修订](https://github.com/QiDouZu/retcon-form/blob/564382e2a1864a12e52d4678ec565e26170d1f42/%E6%8E%A8%E7%BF%BB_%E5%8E%9F%E6%9C%89%E7%BB%93%E6%9E%9C_v2.md)
 - [存储实现](https://github.com/QiDouZu/retcon-form/blob/564382e2a1864a12e52d4678ec565e26170d1f42/retcon.py#L74-L109)
 - [格式检查器](https://github.com/QiDouZu/retcon-form/blob/564382e2a1864a12e52d4678ec565e26170d1f42/scripts/check_seal.py)
+
+## 首批实现：共同日记中的可修订理解
+
+本分支已经将这一思路放进 `shared-diary/v1`。自由正文之外，`reflection` 可记录 `understanding`、`context`、`uncertainty`、`revisionNote` 和 `evidence`。没有必须填满的研究表，也没有“理解程度”评分。
+
+`evidence` 使用本项目的事件 ID、版本哈希和来源 span，校验实际原文。AI 写入由明确开启的日记权限和当前宿主执行身份授权，来源单独标为 `agent_diary`；不会假装每一篇都由人类按过确认。人类与 AI 的作者身份、实际编辑者、原稿和后续修订分别保存。
+
+当前查询只返回最新有效版本。旧解释被改写，或者支撑它的事件被 retcon 后，旧记录不能继续通过检索和历史工具回执进入请求；独立日记及原始历史证据保留。删除操作则遵循原有隐私删除边界，不能宣称清除了外部备份或宿主日志。
+
+已做的实现和实际验证记录见 [RESULTS](RESULTS.md)，指令及例子见 [共同日记说明](../shared-diary.zh.md)。工作台展示、统一影响提示、32K 预算和多宿主分包仍按后续任务顺序实施；这里不将核心实现等同于整轮功能完成。

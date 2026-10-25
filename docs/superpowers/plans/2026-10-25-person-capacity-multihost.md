@@ -73,15 +73,17 @@
 
 ### Task 3a: 双方共同日记与受限 AI 写入
 
-**Files:** 新建 `src/rp/diary/{types,schema,service,tools}.ts`；修改 `semantic-registry.ts`、`store.ts`、`memory.ts`、`modules/contract.ts`、`rp-plugin.ts`；测试 `test/rp-diary.test.mjs`、`test/rp-diary-host.test.mjs`。
+**Files:** 新建 `src/rp/diary/{types,schema,format,transition,admission,service,selection,evidence,commands}.ts`；修改 `semantic-registry.ts`、`store.ts`、`memory.ts`、`rp-plugin.ts`；测试 `test/rp-diary.test.mjs`、`test/rp-diary-host.test.mjs`。
 
 **Interfaces:** `memory.diary` 的人工管理能力和 `DiaryWriter` 分离；`DiaryWriter` 由显式开启的实际宿主会话颁发，只能创建或修订对应AI作者的记录。`write({title,body,previousRevision?,key})` 不接受 author/scope 等自报权限；绑定工具调用、来源、版本和幂等键。正文16KiB UTF-8、标题256 Unicode码点；读接口通过同一授权read view，条目标注作者和主观日记类型。
 
-- [ ] 写失败测试：默认无AI写权限、开启后无需逐篇确认、关闭立即撤权；伪造作者/覆盖用户日记拒绝；重试不重复、过期修订拒绝、冷启动保留原稿和修改者；跨群/人物/分支不泄漏。
-- [ ] 执行日记测试记录RED；在真实DSH SDK工具调用中验证实际工具权限、返回回执、停用和结果不确定时不重放。
-- [ ] 实现专用日记协议和作者能力，不伪造每篇 user_control，不自动把日记提升为世界事实。用户编辑AI日记保留作者与人类修订归属，隐私删除清除各版本及派生结果。
-- [ ] 吸收用户认可的 retcon-form 思路：自由正文之外提供可选“当时的理解、依据、适用情境、后续修正”结构；证据引用必须绑定本项目可验证片段，修正追加版本并使旧推断退出当前检索。格式完整性和片段覆盖不作为理解或事实真假的分数，普通日记不强填研究表。
-- [ ] 复测日记、来源认证、隐私删除与准入；把检索结果纳入Task4预算、把管理界面和额外提醒开关纳入Task5，提交。
+- [x] 写失败测试：默认无AI写权限、开启后无需逐篇确认、关闭立即撤权；伪造作者/覆盖用户日记拒绝；重试不重复、过期修订拒绝、冷启动保留原稿和修改者；跨群/人物/分支不泄漏。
+- [x] 执行日记测试记录RED；在真实DSH SDK工具调用中验证实际工具权限、返回回执、停用和结果不确定时不重放。
+- [x] 实现专用日记协议和作者能力，不伪造每篇 user_control，不自动把日记提升为世界事实。用户编辑AI日记保留作者与人类修订归属，隐私删除清除各版本及派生结果。
+- [x] 吸收用户认可的 retcon-form 思路：自由正文之外提供可选“当时的理解、依据、适用情境、后续修正”结构；证据引用必须绑定本项目可验证片段，修正追加版本并使旧推断退出当前检索。格式完整性和片段覆盖不作为理解或事实真假的分数，普通日记不强填研究表。
+- [x] 复测日记、来源认证、隐私删除与准入；把检索结果纳入Task4预算、把管理界面和额外提醒开关纳入Task5，提交。
+
+完成证据：一次完整 `npm test` 299/299，typecheck/build/fixture/pack预检全部退出0；真实DSH rc.3额外5/5。首次全量294/295和浏览器构建失败均保留，详见 RESULTS。原有模块注册表哈希保持不变，日记使用独立明确授权。UI及提示开关留Task5；不将离线终端作为真实模型质量证据。
 
 ### Task 4: 明确的 32K token 预算与实际请求门禁
 

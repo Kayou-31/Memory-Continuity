@@ -1,4 +1,4 @@
-import { cloneInput, denied, id, integer, invalid, object, text } from '../schema.js'
+import { cloneInput, denied, id, integer, invalid, object, text } from '../validation.js'
 import type { PersonDraft, PersonField } from './types.js'
 export const personKeys: Record<PersonField['kind'], string> = { identity: 'identity', background: 'background', voice: 'voice', values: 'rule', boundaries: 'rule', trait:'rule', feeling:'rule', stage:'background' }
 export function personField(input: unknown): asserts input is PersonField {

@@ -2,6 +2,18 @@
 import {RpError} from './schema.js'
 
 const topics:Record<string,string>={
+ diary:`共同日记
+/memcont diary enable：明确允许当前人物在对话中写自己的日记；默认未开启，不会后台写日记。
+/memcont diary disable：停止 AI 写入；已有日记仍可查看。重新开启不恢复旧工具权限。
+/memcont diary settings：查看权限与参与者。
+/memcont diary list [关键词]、/memcont diary show <entryId>：搜索和读取最新日记。
+/memcont diary write {"entryId":"today","title":"今天","body":"今天和你聊得很开心。"}：写人类日记。
+修改时附 previousEventId（show 返回的 eventId）；保留原作者、编辑者和历史。
+/memcont diary history <entryId>：查看原稿与修订。
+/memcont diary delete <entryId>：显式隐私删除本条全部版本；涉及其他分支时需完整授权。外部备份和宿主日志不在此删除范围。
+AI 工具：memcont_diary_write、memcont_diary_read、memcont_diary_search。AI 不能改人类日记、权限或人格。
+reflection 可选记录理解、适用情境、不确定性、修订原因和认证依据；日记不自动成为事实。
+历史引用失效时先 continue-clean；保存不确定时先诊断和检查现有日记，不盲目重试。`,
  person:`人物与成长
 /memcont person preview <人物草稿JSON> → /memcont person confirm <previewId>：预览后确认创建。
 /memcont person use <personId>：空白根会话绑定人物；有历史时先干净续接。
@@ -38,7 +50,7 @@ ambiguous 输入严禁自动重发；先核对宿主与持久记录。
 /memcont adopt <ID>、/memcont reject-candidate <ID>：人工采纳或拒绝摘要候选。
 /memcont retcon <JSON>、/memcont delete <JSON>、/memcont fork：纠正、明确隐私删除、创建剧情分支。
 /memcont global preference <JSON>、/memcont global publish <JSON>、/memcont global list <JSON>、/memcont global adopt <JSON>：通用偏好和显式世界发布/采用。
-模型只读工具：rp_memory_search、rp_memory_get、rp_memory_status；不授予模型写入权。`,
+通用记忆工具保持只读：rp_memory_search、rp_memory_get、rp_memory_status。共同日记的独立写入开关见 /memcont help diary。`,
  modules:`用途、能力与约束
 /memcont mode show、/memcont mode set <rp|companion|creation|project>：查看或选择用途。
 /memcont modules list、/memcont modules enable <ID>、/memcont modules disable <ID>：查看与人工启停能力。
@@ -61,6 +73,7 @@ export function rpCommandHelp(topic:string=''):string{
  return `Memory-Continuity 中文指令帮助
 帮助只读，不写入记忆、不调用模型；主命令 /memcont；旧 /rp 作为兼容别名。
 /memcont help person：人物、成长审阅、管理入口
+/memcont help diary：共同日记、明确授权、原稿与修订
 /memcont help injection：五类记忆、条件注入、原因预览
 /memcont help recovery：诊断、故障恢复、干净续接
 /memcont help memory：经历、关系、目标、摘要和全局记忆
