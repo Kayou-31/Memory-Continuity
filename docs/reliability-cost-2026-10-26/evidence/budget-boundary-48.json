@@ -1,0 +1,1227 @@
+{
+  "kind": "offline-native-adapter",
+  "paidModelCalls": 0,
+  "billingVerified": false,
+  "requests": [
+    {
+      "round": 1,
+      "call": 1,
+      "messages": 2,
+      "packets": 1,
+      "retired": 0,
+      "requestObjectUtf8Bytes": 6899,
+      "messageTextUtf8Bytes": 2358,
+      "runtimeContextTextUtf8Bytes": 2240,
+      "toolResultCount": 0
+    },
+    {
+      "round": 2,
+      "call": 2,
+      "messages": 5,
+      "packets": 1,
+      "retired": 1,
+      "requestObjectUtf8Bytes": 7845,
+      "messageTextUtf8Bytes": 2691,
+      "runtimeContextTextUtf8Bytes": 2401,
+      "toolResultCount": 0
+    },
+    {
+      "round": 3,
+      "call": 3,
+      "messages": 8,
+      "packets": 1,
+      "retired": 2,
+      "requestObjectUtf8Bytes": 8791,
+      "messageTextUtf8Bytes": 3024,
+      "runtimeContextTextUtf8Bytes": 2562,
+      "toolResultCount": 0
+    },
+    {
+      "round": 4,
+      "call": 4,
+      "messages": 11,
+      "packets": 1,
+      "retired": 3,
+      "requestObjectUtf8Bytes": 9739,
+      "messageTextUtf8Bytes": 3358,
+      "runtimeContextTextUtf8Bytes": 2724,
+      "toolResultCount": 0
+    },
+    {
+      "round": 5,
+      "call": 5,
+      "messages": 14,
+      "packets": 1,
+      "retired": 4,
+      "requestObjectUtf8Bytes": 10685,
+      "messageTextUtf8Bytes": 3691,
+      "runtimeContextTextUtf8Bytes": 2885,
+      "toolResultCount": 0
+    },
+    {
+      "round": 6,
+      "call": 6,
+      "messages": 17,
+      "packets": 1,
+      "retired": 5,
+      "requestObjectUtf8Bytes": 11631,
+      "messageTextUtf8Bytes": 4024,
+      "runtimeContextTextUtf8Bytes": 3046,
+      "toolResultCount": 0
+    },
+    {
+      "round": 7,
+      "call": 7,
+      "messages": 20,
+      "packets": 1,
+      "retired": 6,
+      "requestObjectUtf8Bytes": 12577,
+      "messageTextUtf8Bytes": 4357,
+      "runtimeContextTextUtf8Bytes": 3207,
+      "toolResultCount": 0
+    },
+    {
+      "round": 8,
+      "call": 8,
+      "messages": 23,
+      "packets": 1,
+      "retired": 7,
+      "requestObjectUtf8Bytes": 13523,
+      "messageTextUtf8Bytes": 4690,
+      "runtimeContextTextUtf8Bytes": 3368,
+      "toolResultCount": 0
+    },
+    {
+      "round": 8,
+      "call": 9,
+      "messages": 25,
+      "packets": 1,
+      "retired": 7,
+      "requestObjectUtf8Bytes": 14049,
+      "messageTextUtf8Bytes": 4782,
+      "runtimeContextTextUtf8Bytes": 3368,
+      "toolResultCount": 1
+    },
+    {
+      "round": 9,
+      "call": 10,
+      "messages": 28,
+      "packets": 1,
+      "retired": 8,
+      "requestObjectUtf8Bytes": 14995,
+      "messageTextUtf8Bytes": 5115,
+      "runtimeContextTextUtf8Bytes": 3529,
+      "toolResultCount": 1
+    },
+    {
+      "round": 10,
+      "call": 11,
+      "messages": 31,
+      "packets": 1,
+      "retired": 9,
+      "requestObjectUtf8Bytes": 15942,
+      "messageTextUtf8Bytes": 5449,
+      "runtimeContextTextUtf8Bytes": 3690,
+      "toolResultCount": 1
+    },
+    {
+      "round": 11,
+      "call": 12,
+      "messages": 34,
+      "packets": 1,
+      "retired": 10,
+      "requestObjectUtf8Bytes": 16890,
+      "messageTextUtf8Bytes": 5784,
+      "runtimeContextTextUtf8Bytes": 3851,
+      "toolResultCount": 1
+    },
+    {
+      "round": 12,
+      "call": 13,
+      "messages": 37,
+      "packets": 1,
+      "retired": 11,
+      "requestObjectUtf8Bytes": 17838,
+      "messageTextUtf8Bytes": 6119,
+      "runtimeContextTextUtf8Bytes": 4012,
+      "toolResultCount": 1
+    },
+    {
+      "round": 13,
+      "call": 14,
+      "messages": 40,
+      "packets": 1,
+      "retired": 12,
+      "requestObjectUtf8Bytes": 18786,
+      "messageTextUtf8Bytes": 6454,
+      "runtimeContextTextUtf8Bytes": 4173,
+      "toolResultCount": 1
+    },
+    {
+      "round": 14,
+      "call": 15,
+      "messages": 43,
+      "packets": 1,
+      "retired": 13,
+      "requestObjectUtf8Bytes": 19734,
+      "messageTextUtf8Bytes": 6789,
+      "runtimeContextTextUtf8Bytes": 4334,
+      "toolResultCount": 1
+    },
+    {
+      "round": 15,
+      "call": 16,
+      "messages": 46,
+      "packets": 1,
+      "retired": 14,
+      "requestObjectUtf8Bytes": 20682,
+      "messageTextUtf8Bytes": 7124,
+      "runtimeContextTextUtf8Bytes": 4495,
+      "toolResultCount": 1
+    },
+    {
+      "round": 16,
+      "call": 17,
+      "messages": 49,
+      "packets": 1,
+      "retired": 15,
+      "requestObjectUtf8Bytes": 21630,
+      "messageTextUtf8Bytes": 7459,
+      "runtimeContextTextUtf8Bytes": 4656,
+      "toolResultCount": 1
+    },
+    {
+      "round": 16,
+      "call": 18,
+      "messages": 51,
+      "packets": 1,
+      "retired": 15,
+      "requestObjectUtf8Bytes": 22159,
+      "messageTextUtf8Bytes": 7551,
+      "runtimeContextTextUtf8Bytes": 4656,
+      "toolResultCount": 2
+    },
+    {
+      "round": 17,
+      "call": 19,
+      "messages": 54,
+      "packets": 1,
+      "retired": 16,
+      "requestObjectUtf8Bytes": 23107,
+      "messageTextUtf8Bytes": 7886,
+      "runtimeContextTextUtf8Bytes": 4817,
+      "toolResultCount": 2
+    },
+    {
+      "round": 18,
+      "call": 20,
+      "messages": 57,
+      "packets": 1,
+      "retired": 17,
+      "requestObjectUtf8Bytes": 24055,
+      "messageTextUtf8Bytes": 8221,
+      "runtimeContextTextUtf8Bytes": 4978,
+      "toolResultCount": 2
+    },
+    {
+      "round": 19,
+      "call": 21,
+      "messages": 60,
+      "packets": 1,
+      "retired": 18,
+      "requestObjectUtf8Bytes": 25003,
+      "messageTextUtf8Bytes": 8556,
+      "runtimeContextTextUtf8Bytes": 5139,
+      "toolResultCount": 2
+    },
+    {
+      "round": 20,
+      "call": 22,
+      "messages": 63,
+      "packets": 1,
+      "retired": 19,
+      "requestObjectUtf8Bytes": 25951,
+      "messageTextUtf8Bytes": 8891,
+      "runtimeContextTextUtf8Bytes": 5300,
+      "toolResultCount": 2
+    },
+    {
+      "round": 21,
+      "call": 23,
+      "messages": 66,
+      "packets": 1,
+      "retired": 20,
+      "requestObjectUtf8Bytes": 26899,
+      "messageTextUtf8Bytes": 9226,
+      "runtimeContextTextUtf8Bytes": 5461,
+      "toolResultCount": 2
+    },
+    {
+      "round": 22,
+      "call": 24,
+      "messages": 69,
+      "packets": 1,
+      "retired": 21,
+      "requestObjectUtf8Bytes": 27847,
+      "messageTextUtf8Bytes": 9561,
+      "runtimeContextTextUtf8Bytes": 5622,
+      "toolResultCount": 2
+    },
+    {
+      "round": 23,
+      "call": 25,
+      "messages": 72,
+      "packets": 1,
+      "retired": 22,
+      "requestObjectUtf8Bytes": 28795,
+      "messageTextUtf8Bytes": 9896,
+      "runtimeContextTextUtf8Bytes": 5783,
+      "toolResultCount": 2
+    },
+    {
+      "round": 24,
+      "call": 26,
+      "messages": 75,
+      "packets": 1,
+      "retired": 23,
+      "requestObjectUtf8Bytes": 29743,
+      "messageTextUtf8Bytes": 10231,
+      "runtimeContextTextUtf8Bytes": 5944,
+      "toolResultCount": 2
+    },
+    {
+      "round": 24,
+      "call": 27,
+      "messages": 77,
+      "packets": 1,
+      "retired": 23,
+      "requestObjectUtf8Bytes": 30272,
+      "messageTextUtf8Bytes": 10323,
+      "runtimeContextTextUtf8Bytes": 5944,
+      "toolResultCount": 3
+    },
+    {
+      "round": 25,
+      "call": 28,
+      "messages": 80,
+      "packets": 1,
+      "retired": 24,
+      "requestObjectUtf8Bytes": 31220,
+      "messageTextUtf8Bytes": 10658,
+      "runtimeContextTextUtf8Bytes": 6105,
+      "toolResultCount": 3
+    },
+    {
+      "round": 26,
+      "call": 29,
+      "messages": 83,
+      "packets": 1,
+      "retired": 25,
+      "requestObjectUtf8Bytes": 32168,
+      "messageTextUtf8Bytes": 10993,
+      "runtimeContextTextUtf8Bytes": 6266,
+      "toolResultCount": 3
+    },
+    {
+      "round": 27,
+      "call": 30,
+      "messages": 86,
+      "packets": 1,
+      "retired": 26,
+      "requestObjectUtf8Bytes": 33116,
+      "messageTextUtf8Bytes": 11328,
+      "runtimeContextTextUtf8Bytes": 6427,
+      "toolResultCount": 3
+    },
+    {
+      "round": 28,
+      "call": 31,
+      "messages": 89,
+      "packets": 1,
+      "retired": 27,
+      "requestObjectUtf8Bytes": 34064,
+      "messageTextUtf8Bytes": 11663,
+      "runtimeContextTextUtf8Bytes": 6588,
+      "toolResultCount": 3
+    },
+    {
+      "round": 29,
+      "call": 32,
+      "messages": 92,
+      "packets": 1,
+      "retired": 28,
+      "requestObjectUtf8Bytes": 35012,
+      "messageTextUtf8Bytes": 11998,
+      "runtimeContextTextUtf8Bytes": 6749,
+      "toolResultCount": 3
+    },
+    {
+      "round": 30,
+      "call": 33,
+      "messages": 95,
+      "packets": 1,
+      "retired": 29,
+      "requestObjectUtf8Bytes": 35960,
+      "messageTextUtf8Bytes": 12333,
+      "runtimeContextTextUtf8Bytes": 6910,
+      "toolResultCount": 3
+    },
+    {
+      "round": 31,
+      "call": 34,
+      "messages": 98,
+      "packets": 1,
+      "retired": 30,
+      "requestObjectUtf8Bytes": 36908,
+      "messageTextUtf8Bytes": 12668,
+      "runtimeContextTextUtf8Bytes": 7071,
+      "toolResultCount": 3
+    },
+    {
+      "round": 32,
+      "call": 35,
+      "messages": 101,
+      "packets": 1,
+      "retired": 31,
+      "requestObjectUtf8Bytes": 37856,
+      "messageTextUtf8Bytes": 13003,
+      "runtimeContextTextUtf8Bytes": 7232,
+      "toolResultCount": 3
+    },
+    {
+      "round": 32,
+      "call": 36,
+      "messages": 103,
+      "packets": 1,
+      "retired": 31,
+      "requestObjectUtf8Bytes": 38385,
+      "messageTextUtf8Bytes": 13095,
+      "runtimeContextTextUtf8Bytes": 7232,
+      "toolResultCount": 4
+    },
+    {
+      "round": 33,
+      "call": 37,
+      "messages": 106,
+      "packets": 1,
+      "retired": 32,
+      "requestObjectUtf8Bytes": 39333,
+      "messageTextUtf8Bytes": 13430,
+      "runtimeContextTextUtf8Bytes": 7393,
+      "toolResultCount": 4
+    },
+    {
+      "round": 34,
+      "call": 38,
+      "messages": 109,
+      "packets": 1,
+      "retired": 33,
+      "requestObjectUtf8Bytes": 40283,
+      "messageTextUtf8Bytes": 13766,
+      "runtimeContextTextUtf8Bytes": 7555,
+      "toolResultCount": 4
+    },
+    {
+      "round": 35,
+      "call": 39,
+      "messages": 112,
+      "packets": 1,
+      "retired": 34,
+      "requestObjectUtf8Bytes": 41231,
+      "messageTextUtf8Bytes": 14101,
+      "runtimeContextTextUtf8Bytes": 7716,
+      "toolResultCount": 4
+    },
+    {
+      "round": 36,
+      "call": 40,
+      "messages": 115,
+      "packets": 1,
+      "retired": 35,
+      "requestObjectUtf8Bytes": 42179,
+      "messageTextUtf8Bytes": 14436,
+      "runtimeContextTextUtf8Bytes": 7877,
+      "toolResultCount": 4
+    },
+    {
+      "round": 37,
+      "call": 41,
+      "messages": 118,
+      "packets": 1,
+      "retired": 36,
+      "requestObjectUtf8Bytes": 43127,
+      "messageTextUtf8Bytes": 14771,
+      "runtimeContextTextUtf8Bytes": 8038,
+      "toolResultCount": 4
+    },
+    {
+      "round": 38,
+      "call": 42,
+      "messages": 121,
+      "packets": 1,
+      "retired": 37,
+      "requestObjectUtf8Bytes": 44075,
+      "messageTextUtf8Bytes": 15106,
+      "runtimeContextTextUtf8Bytes": 8199,
+      "toolResultCount": 4
+    },
+    {
+      "round": 39,
+      "call": 43,
+      "messages": 124,
+      "packets": 1,
+      "retired": 38,
+      "requestObjectUtf8Bytes": 45023,
+      "messageTextUtf8Bytes": 15441,
+      "runtimeContextTextUtf8Bytes": 8360,
+      "toolResultCount": 4
+    },
+    {
+      "round": 40,
+      "call": 44,
+      "messages": 127,
+      "packets": 1,
+      "retired": 39,
+      "requestObjectUtf8Bytes": 45971,
+      "messageTextUtf8Bytes": 15776,
+      "runtimeContextTextUtf8Bytes": 8521,
+      "toolResultCount": 4
+    },
+    {
+      "round": 40,
+      "call": 45,
+      "messages": 129,
+      "packets": 1,
+      "retired": 39,
+      "requestObjectUtf8Bytes": 46500,
+      "messageTextUtf8Bytes": 15868,
+      "runtimeContextTextUtf8Bytes": 8521,
+      "toolResultCount": 5
+    },
+    {
+      "round": 41,
+      "call": 46,
+      "messages": 132,
+      "packets": 1,
+      "retired": 40,
+      "requestObjectUtf8Bytes": 47448,
+      "messageTextUtf8Bytes": 16203,
+      "runtimeContextTextUtf8Bytes": 8682,
+      "toolResultCount": 5
+    },
+    {
+      "round": 42,
+      "call": 47,
+      "messages": 135,
+      "packets": 1,
+      "retired": 41,
+      "requestObjectUtf8Bytes": 48396,
+      "messageTextUtf8Bytes": 16538,
+      "runtimeContextTextUtf8Bytes": 8843,
+      "toolResultCount": 5
+    },
+    {
+      "round": 43,
+      "call": 48,
+      "messages": 138,
+      "packets": 1,
+      "retired": 42,
+      "requestObjectUtf8Bytes": 49344,
+      "messageTextUtf8Bytes": 16873,
+      "runtimeContextTextUtf8Bytes": 9004,
+      "toolResultCount": 5
+    },
+    {
+      "round": 44,
+      "call": 49,
+      "messages": 141,
+      "packets": 1,
+      "retired": 43,
+      "requestObjectUtf8Bytes": 50292,
+      "messageTextUtf8Bytes": 17208,
+      "runtimeContextTextUtf8Bytes": 9165,
+      "toolResultCount": 5
+    },
+    {
+      "round": 45,
+      "call": 50,
+      "messages": 144,
+      "packets": 1,
+      "retired": 44,
+      "requestObjectUtf8Bytes": 51240,
+      "messageTextUtf8Bytes": 17543,
+      "runtimeContextTextUtf8Bytes": 9326,
+      "toolResultCount": 5
+    },
+    {
+      "round": 46,
+      "call": 51,
+      "messages": 147,
+      "packets": 1,
+      "retired": 45,
+      "requestObjectUtf8Bytes": 52188,
+      "messageTextUtf8Bytes": 17878,
+      "runtimeContextTextUtf8Bytes": 9487,
+      "toolResultCount": 5
+    },
+    {
+      "round": 47,
+      "call": 52,
+      "messages": 150,
+      "packets": 1,
+      "retired": 46,
+      "requestObjectUtf8Bytes": 53136,
+      "messageTextUtf8Bytes": 18213,
+      "runtimeContextTextUtf8Bytes": 9648,
+      "toolResultCount": 5
+    },
+    {
+      "round": 48,
+      "call": 53,
+      "messages": 153,
+      "packets": 1,
+      "retired": 47,
+      "requestObjectUtf8Bytes": 54084,
+      "messageTextUtf8Bytes": 18548,
+      "runtimeContextTextUtf8Bytes": 9809,
+      "toolResultCount": 5
+    }
+  ],
+  "recoveries": [
+    {
+      "round": 49,
+      "kind": "cold-resume",
+      "callsBefore": 53,
+      "callsAfter": 53
+    }
+  ],
+  "completedInputs": 48,
+  "checkpoints": [
+    {
+      "round": 16,
+      "durationMs": 1640.3394000000008,
+      "memoryUsageTotal": 14651,
+      "bindingHealth": "healthy",
+      "requestAdmission": {
+        "state": "admitted",
+        "stage": "send",
+        "at": "2026-10-26T14:01:36.329Z"
+      }
+    },
+    {
+      "round": 32,
+      "durationMs": 3736.1624999999985,
+      "memoryUsageTotal": 23289,
+      "bindingHealth": "healthy",
+      "requestAdmission": {
+        "state": "admitted",
+        "stage": "send",
+        "at": "2026-10-26T14:02:06.809Z"
+      }
+    },
+    {
+      "round": 48,
+      "durationMs": 3318.3369999999995,
+      "memoryUsageTotal": 31402,
+      "bindingHealth": "blocked",
+      "requestAdmission": {
+        "state": "rejected",
+        "stage": "assembly",
+        "at": "2026-10-26T14:03:01.310Z",
+        "code": "ownership_lost",
+        "message": "RP session is unavailable"
+      }
+    }
+  ],
+  "stopped": {
+    "round": 49,
+    "status": {
+      "requestCost": {
+        "limits": {
+          "maxRequestsPerInput": 16,
+          "maxRetriesPerStep": 2
+        },
+        "inputId": "rp_input_b485d25db0f746cbba31b5de91ebda6c",
+        "requests": 1,
+        "stepKey": "48:1",
+        "stepRequests": 1,
+        "unit": "durably-reserved-adapter-admissions"
+      },
+      "bindingHealth": "healthy",
+      "requestAdmission": {
+        "state": "rejected",
+        "stage": "send",
+        "at": "2026-10-26T14:03:04.669Z",
+        "code": "scope_denied",
+        "message": "Unknown or changed native history/metadata; use clean continuation"
+      },
+      "recovery": {
+        "action": "continue-clean",
+        "detail": "本次请求未通过来源或快照校验。检查采纳、修订、权限和历史有效性；需要时 continue-clean，不复制旧宿主回执。"
+      },
+      "enabled": true,
+      "lifecycle": "open",
+      "contextCompression": false,
+      "strictPov": false,
+      "nativeVersions": {
+        "cordis": "4.0.5",
+        "dsh-agent": "0.2.1-rc.2",
+        "dsh-llm": "0.2.1-rc.2",
+        "dsh-session": "0.2.1-rc.2",
+        "dsh-system-prompt": "0.2.1-rc.2",
+        "dsh-tools": "0.2.1-rc.2",
+        "schemastery": "3.18.5"
+      },
+      "memoryOptimization": {
+        "available": "standalone",
+        "packet": "standalone"
+      },
+      "policy": {
+        "mode": "rp",
+        "epoch": 1,
+        "modeEpoch": 1
+      },
+      "branchId": "branch_efcb7ebcf0c24e0c897c665a3a4b75f7",
+      "personId": "erin",
+      "injection": {
+        "config": {
+          "aliases": {},
+          "budgets": {
+            "recollection": 4800,
+            "relationships": 2400,
+            "self": 2400,
+            "situation": 2400,
+            "unfinished": 2400
+          },
+          "depth": "association",
+          "exclude": [],
+          "pin": [],
+          "rules": []
+        },
+        "protocol": "rp.injection-binding/v1",
+        "sha256": "40e78b03213f4c5e3ce70f87b9501546f930b75d7f683e33521d31b1dd061d41"
+      },
+      "memoryBudget": {
+        "layers": {
+          "recollection": 12288,
+          "relationships": 4096,
+          "self": 6144,
+          "situation": 4096,
+          "unfinished": 4096
+        },
+        "limitTokens": 32768,
+        "meter": {
+          "id": "utf8",
+          "mode": "conservative-utf8",
+          "revision": "utf8-bytes/v1"
+        },
+        "protocol": "memcont.memory-budget/v2",
+        "sha256": "c0f6d585eacd9dc7a9e6c187ecdebb890bb51d54cae9589e8e0e775b92a16cde",
+        "target": {
+          "model": "offline",
+          "provider": "long-offline"
+        },
+        "unit": "tokens"
+      },
+      "memoryUsage": {
+        "protocol": "memcont.memory-usage/v2",
+        "budgetSha256": "c0f6d585eacd9dc7a9e6c187ecdebb890bb51d54cae9589e8e0e775b92a16cde",
+        "mode": "conservative-utf8",
+        "total": 30034,
+        "limit": 32768,
+        "bytes": 30034,
+        "parts": [
+          {
+            "kind": "retired-context",
+            "id": "retired_6b697124bceb3a5244bd41976e2720b9deaf7c40c5e20cab6f114c8c5450a9c1",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_ff3d680d794739113532c2cdcc1eb8ae22a4468ee3abae86a4986916c49a85dc",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_ea430dbba6ac85a7a7bf0d824c08b0383738c3dae17a6096c464ecc78ea3fcf5",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_ec3418db82a08b61a27f6d739d6d1885a2c483653bbb8a6a2eecd7582c09a5ba",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_8ba1c6ae8f1f7a0252f106a48515cddd2b08ed69e1d97fa595fcdeeea6b565a5",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_d4b347fee1da6f220b3c58acccf7220aff8e5537f7ef5589058c7fe8c78791ea",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_db1a0bd38579011d563fec8cd3c324ffe27e611f22689b81ec1433e2b20b719a",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_8374ff46b232e2834f074c546b01ce42ca5d6b2d1c1c6739b995d1a200f88d39",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retained-memory",
+            "id": "b45aebe5-f836-4004-9cb2-45234c9938e7",
+            "count": 231,
+            "bytes": 231
+          },
+          {
+            "kind": "retained-memory",
+            "id": "93d18af5-5498-4191-ba8f-adc4073b2236",
+            "count": 293,
+            "bytes": 293
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_2d2eaa63f97be3af0c4238036f94fead2fa98927c4002606ca13202d84ac685b",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_9f31ea16e3bd2a288233ba07766dc1e8dd8505d775328256c86c2cbc19134723",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_a9259ade95d1a7ea23bf64bbec2ea56ba37ded6746fc9a083dca5d0d5090a996",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_75328d995809840383c603ca3286c1563f6de2214da0cdf761ab416e400320ac",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_49ddca06668b9ebdc7d741d4524d442ebdcbb5bfb354e7a94cb54aa25bc5e362",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_942d7742d0400b1f4e6529fafb629fd8298dc74f6cc06db60ecb8727e4bde71f",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_449b1d54125335eabc6dbc613d56cdde23943cbed93c7a695e6dd49a8782c8fb",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_21c2c295813bc9c0a14b33f969457ef945c678cf658c44b9feb8f116995b403a",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retained-memory",
+            "id": "968df1d8-82b5-4bcf-94bb-e29ac757c78d",
+            "count": 232,
+            "bytes": 232
+          },
+          {
+            "kind": "retained-memory",
+            "id": "7ecec643-5a1b-41c5-8fa0-7333afdee682",
+            "count": 295,
+            "bytes": 295
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_8cab2fd2c07bd0a03f234012122487884092b00ab71a0e57a185482f2e1a6bf3",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_0199f61a73a3240d2163e62d3df2e14df7d0ad664c7a2697c2d7143034da6498",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_d6703750e14374fafb773f868948e0015ccf1244647f795e969186961547f524",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_6210560ca9cde3de0c30c38f376927ef6196131376b0330895bc6cae2402ba6d",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_caced2f8c9444e0dd435146d8e3e2f59697c98915b937770d713d9424902c603",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_b81e92f36aa3bdc5e056f1d4eb73be1a1478883bb8972fd54e905174b0eb2038",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_800ca73689e3d94c3329a6d4220ba1416d3de3845c344b1f3198aaf878dd6484",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_4664f84061808662cc44120c1ad97fd718e11d39b3798693ec67c4278779fc8e",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retained-memory",
+            "id": "559838b4-f3c6-4e48-93ea-1fa0e59ed379",
+            "count": 232,
+            "bytes": 232
+          },
+          {
+            "kind": "retained-memory",
+            "id": "312a05a9-db52-4b40-81f2-63f3fe448add",
+            "count": 295,
+            "bytes": 295
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_22a8a49ae709da2d22a23ccd08caae07d5c2d252fe7f3d5875696136ef52b277",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_6d9db8f1ef4b449367a7d8ab8317c76092c82f533e4298224a8a76960ecf1e45",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_3ef8316494759f0dcab7267871f88bed21a136dfeb9c11382a0e3e940d18682b",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_05866422d8e3ea430f528849e71ac996256ebd6913383062d159939b657345bf",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_d90c8945cd8f87e950fed27ee7dd93e7078b93b6ed19583d1b6422d5b5d7b27a",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_fe57977eee388c24f4e62b191fcb20e96139f0d517d4e76ae6a186031ee7be1a",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_df9e82f792d159226b219ed97400e194947057185c87c6b15b1835c12b2a8629",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_924a981bc9e6096b20f69c97131612b699839a869d4760c699a98252d11631a2",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retained-memory",
+            "id": "58a4e3d0-5fbf-4304-abdd-b8c1787a7dd8",
+            "count": 232,
+            "bytes": 232
+          },
+          {
+            "kind": "retained-memory",
+            "id": "f8161bd6-6db8-4751-84ac-9cabaddbb516",
+            "count": 295,
+            "bytes": 295
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_b54c3f480f1a8148b30b7707e4e3e618afa1d8ad2b4f61c73bc242eed3a2d6f8",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_1547aace11cb35cc92b4fdba5df2c9106060ed8d7a31f00d47c1778b5c13da78",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_86814053922f799f94226548039f321627417be37da35d1c3a3b9f69eb96cc66",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_0dac73b5d18967f7b8924ab2fa2e801f1588435603d2cc2f80189a347764c2c0",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_19a4e59a25675635bc8ed45a1ab6802d0aed108be29fee3590da98340ffc54c0",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_e9ff2141877ad686a349a3665b00774d20b13f8464ecf489f894e3dae7241324",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_d6d6ba41b8cb981954763930e5c6de2e9a34bd9736335243a17f67f56d5683ef",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_7f9a198f53a23830322f7e49da6ca296eed944755967531c5806a87e74a5f8d9",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retained-memory",
+            "id": "96050198-a3e7-4572-9784-ede728b3dbde",
+            "count": 232,
+            "bytes": 232
+          },
+          {
+            "kind": "retained-memory",
+            "id": "8a2110c7-1b7e-4c59-8148-8992b2127e9f",
+            "count": 295,
+            "bytes": 295
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_4c16696716d217ed83ab404331e782b7639ec0f019342022937dcabe71395336",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_30e6efadc26ac582384113fc10595b4b2bddf1384d1a2fcd979bdcd84bf02e85",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_21840ce72d6d13ee2ffacfe33511f50fdd94d9386823cc4f1aaf87d06d1c5dd4",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_de2d6f564703bf9edf0884b81937219e829f4582173e66a2f2eac99fc21d30a7",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_06f2f1abbae9afa21215e4dac6e1902fadb07c1adccf537acbc11d8b699a91ad",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_da1c2011b5739c8d41c612ab71fc012c829585b7474e68d7d9b620b14fc9a169",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_15095bb3d33691e102cd85d16e6b2d8fdebe4fce664545a5e89e96a0d2e6d755",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retired-context",
+            "id": "retired_e73c3a3ef63178f9409a423951cf6b6239fedc380962e5cb517abd24637d8dff",
+            "count": 474,
+            "bytes": 474
+          },
+          {
+            "kind": "retained-memory",
+            "id": "7fc9d630-9663-4998-b74e-3b67bc4b510d",
+            "count": 232,
+            "bytes": 232
+          },
+          {
+            "kind": "tool-declarations",
+            "count": 795,
+            "bytes": 795
+          },
+          {
+            "kind": "tool-history",
+            "count": 818,
+            "bytes": 818
+          },
+          {
+            "kind": "new-packet",
+            "count": 2677,
+            "bytes": 2677
+          },
+          {
+            "kind": "native-id-reserve",
+            "count": 128,
+            "bytes": 128
+          }
+        ],
+        "sha256": "1db0a1080e140d9aa3de542f4da225872199f57759f282af2c1455c53d39c325"
+      },
+      "purpose": {
+        "constraints": {
+          "deniedCapabilities": [],
+          "guidance": [],
+          "maxOutputBytes": 16384,
+          "maxReadRecords": 16,
+          "protectedFieldIds": []
+        },
+        "enabledModules": [],
+        "mode": "rp"
+      },
+      "blocked": false,
+      "candidateIds": [
+        "source_5432094824604fd6ba4855126a4f4ee8",
+        "source_6e28d9dcda2d4ac6ab87b4ee1ff49933",
+        "source_38604c981a52400581c3ae793af275d1",
+        "source_5a36248ae97348d0bcc1057ba526df63",
+        "source_8ce298c466f349f4ae123e7eb1f77c73",
+        "source_8c892e760f16428a849fe3093331ea0b",
+        "source_b9b70cd3f74c4d3e8997c0ce7e1cce4a",
+        "source_bfc3a0b360204e44acc38abc5160f76b",
+        "source_aec81c64295a439f981b9df4bd9bcd82",
+        "source_8612bfdaf8e4432a8ba4fde402735ea7",
+        "source_6a02fdc77de643d1abb390a91a3311f2",
+        "source_c59ed32f16284a21b9ec809c538a9293",
+        "source_e5a5bf517eaa4c5cbd17dabef2ae7ec7",
+        "source_c2a2d5fe5efa4cf49f9b662f1da4e9cc",
+        "source_984fa13b8f6d4879aaaec93022096c84",
+        "source_7ec7fcf69ea0452aabbbecce9e32be79",
+        "source_914455492d6947ee869f885996515f6f",
+        "source_13d864e11354435394d5314f0aaa2d61",
+        "source_b98d49dbefbe4ec9986ec8e002fb64a4",
+        "source_71e8d908428f45a8ad3ef2bc6090626e",
+        "source_42434a67c2574b0ba976271038a45c36",
+        "source_3cbc1c4cc88446f294c55d63e315a755",
+        "source_49ea113eabe84a5ea28927379fa4365d",
+        "source_e8895e63ab7e48319e002d62be2ac17b",
+        "source_63556fe32c30421f961e90c552022b55",
+        "source_4680f3a004a2493190c9c885cedee32f",
+        "source_b20235242a6f4f7a8d7c5da9355a19cf",
+        "source_0d9f9be77b4f431288bce305dda1a7e5",
+        "source_da9940767506444197e7df819aefc39c",
+        "source_ad1c4a48a00f4f2088bc7c136f2e3638",
+        "source_77c9d18fae36463aaea9489771774a45",
+        "source_a192a6e3aa804b7fb86caa013b117b00",
+        "source_780cb309f79a4af78b174b9a9b6f043b",
+        "source_a7e9905c8952454e9a433b90f8a81db4",
+        "source_cc9f20f1cb44408dba0660116ebce2a0",
+        "source_5c3746d103a842da871e3abf69e6399b",
+        "source_eed6d9edd82040cb9daed9ed967d4359",
+        "source_fca3017d1a79415a8b60facd6803b3e8",
+        "source_a72791dc8f274a7690e099b4c71f60f0",
+        "source_b6e7b77647804abaa42c3c2988a2790e",
+        "source_96c565280c8c4489b5e63f168cadf980",
+        "source_6a080d99073a48ddad6e675f4ad17141",
+        "source_b8ae8174dc7346308bff2bb75e5a7d92",
+        "source_32027b9a5c9e46c68f0528585912fd33",
+        "source_73fb910a97d84fba96a72bb248297f1d",
+        "source_cef007915d644c879a73de9c83bd1c28",
+        "source_4ee1e9314c2c4ef38020142f8f2aeea8"
+      ],
+      "pendingInputIds": [],
+      "ambiguousInputIds": [
+        "source_bfc5114ad7884f9287473ea8383b82c1",
+        "source_cb05ee3f01244d10ad6f465ce71b6373",
+        "source_f1966035da1545e28ab9017e52e6ab3c",
+        "source_9779f6afffd24e4984206a7db96d26a6",
+        "source_dbe57f6ecaf04aa1b8bab32e320cd2cc",
+        "source_9ef3e396f3a24cb3b0c593d9a3390dd2",
+        "source_c44bbe01489a4a57806c17f83bdad509",
+        "source_76ecd6ab0f14497b8dd7b74ee6e22dc3",
+        "source_5eb090fa8663452482b13e6a9a36be38",
+        "source_9d1d3c6b90464720a788a2da0ecf5b1b",
+        "source_e4e6aa2f0acc480e976012cd0d34cd3d",
+        "source_987130c3f0b14dde98db4858e6c3848a",
+        "source_d330827db3974eb8945cd4143bc11f42",
+        "source_8be381b16b58496d8a4c4b0face98ae1",
+        "source_95f7371b6c424e9382b0f0cd7f2ef10a",
+        "source_d68bfab437384f79abe32f5e31db819d",
+        "source_aa0449ddb3224d24ad8c5b7311030c8d",
+        "source_d6c6d51aa7854eb0a205246e22c57c25",
+        "source_2b3770c9d9e04bf983bbee78bae3fc11",
+        "source_f0da007e90bb474d83afdfc98a1722f9",
+        "source_3cf0e914b38b47578f96cb908eee1f4b",
+        "source_4bf923a5def6474a8381e419dc70f3b6",
+        "source_ac80e483c3f449bebd962e8911d161bf",
+        "source_1bb2ee15af3e4bde95f2fd836b029a23",
+        "source_331f1c13151249e6848ec2e0d016dba9",
+        "source_234bfd37cbad40268974234d0e05f2fa",
+        "source_de2e39a9359647c98f90b7b228016265",
+        "source_1a9b65fb8dc1466289508f9e8dd8b24a",
+        "source_77d86bd079794e319236d27c4e9539b0",
+        "source_6a0e3b6d017e4ed5ab4aece60172d33d",
+        "source_8725288f475e4f9c86283c8104c0c18c",
+        "source_1dbffcd3952648b89a788307449c5c9a",
+        "source_220a4d7924834cc1b237834fa74aba8e",
+        "source_a368f0d322b148e5bcb8201b9ff54cc1",
+        "source_9835f7fc12cc4e7fa6f22cd8ae4d0cf7",
+        "source_c789d17453574f9fbf24574cab3c5045",
+        "source_7ace123d36794461935158bbfaa82160",
+        "source_6b508b5022884ad086adee7a968739b2",
+        "source_545b178ec42d46eb88097eff246a1c7c",
+        "source_c5db48c81ea240448b9e8bbd0269e037",
+        "source_33a3ef6e59f04b1abedb94b0e7873714",
+        "source_09428eff1ae943dfbe9f6018bab678d8",
+        "source_a5f8393ad905478db785b0474ceb5e81",
+        "source_ece53956c2ef4c9190806ceb420d041d",
+        "source_c2414de4d9174033b501021f7148e751",
+        "source_3a620747406b4bce8f8796059624767d",
+        "source_96e9aa2bc7cc4f89acb22514562cd09b",
+        "source_d75e63bf7b4740fda36c39cefe2f929e",
+        "source_b2eae8f5d6ba4c7a8231acffc8e96e0c"
+      ],
+      "snapshots": 49
+    }
+  }
+}

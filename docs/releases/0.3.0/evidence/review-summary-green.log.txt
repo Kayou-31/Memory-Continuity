@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: summary candidates interoperate between native commands and workbench with the same policy epoch
+ok 1 - summary candidates interoperate between native commands and workbench with the same policy epoch
+  ---
+  duration_ms: 703.2888
+  type: 'test'
+  ...
+# Subtest: native workbench previews and commits actual budget/binding settings without nested locks or provider calls
+ok 2 - native workbench previews and commits actual budget/binding settings without nested locks or provider calls
+  ---
+  duration_ms: 1232.868
+  type: 'test'
+  ...
+# Subtest: native workbench refuses a stale budget review after person edits and preserves the old binding
+ok 3 - native workbench refuses a stale budget review after person edits and preserves the old binding
+  ---
+  duration_ms: 360.552
+  type: 'test'
+  ...
+# Subtest: workbench organizer is explicit, snapshot-bound, idempotent and separate from summary adoption
+ok 4 - workbench organizer is explicit, snapshot-bound, idempotent and separate from summary adoption
+  ---
+  duration_ms: 651.2237
+  type: 'test'
+  ...
+# Subtest: workbench organizer refuses missing management authority and unknown operations
+ok 5 - workbench organizer refuses missing management authority and unknown operations
+  ---
+  duration_ms: 88.2288
+  type: 'test'
+  ...
+# Subtest: document reparsing offers previous conditions by unique section match without adopting them
+ok 6 - document reparsing offers previous conditions by unique section match without adopting them
+  ---
+  duration_ms: 356.0273
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4342.6869

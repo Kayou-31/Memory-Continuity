@@ -1,0 +1,79 @@
+Browser tab: 7, Title: "Memory-Continuity 工作台", URL: "http://127.0.0.1:51982/".
+1 AXWebArea Memory-Continuity 工作台, URL: 127.0.0.1:51982/
+	2 container
+		3 link Description: 跳到主要内容, Value: 127.0.0.1:51982/#main
+		4 link Description: Memory-Continuity 人物与记忆工作台, Value: 127.0.0.1:51982/#, ID: brand
+		5 container Description: 当前位置, ID: breadcrumb
+			6 text 林澈 / 共同日记
+		7 text 当前聊天
+		8 text 林澈
+		9 button Description: 手动刷新全部数据, ID: refresh
+		10 container Description: 外观, ID: theme
+			11 checkbox Description: 浅色, Value: 1
+			12 checkbox Description: 深色, Value: 0
+			13 checkbox Description: 跟随系统, Value: 0
+		14 button Description: 关闭管理入口, ID: close
+		15 container workbench
+			16 container Description: 人物与导航, ID: sidebar
+				17 text 正在查看
+				18 button (collapsed) Description: 切换正在查看的人物, ID: person-picker, Secondary Actions: Expand
+					19 text 林
+					20 text 林澈
+				21 text 也是当前聊天使用的人物
+				22 button 新建人物, ID: new
+				23 container Description: 工作台导航, ID: nav
+					24 text 人物
+					25 button 全部人物
+					26 button 人物档案
+					27 button 完整人物资料
+					28 text 记忆
+					29 button 经历与时间线
+					30 button 关系
+					31 button 目标与承诺
+					32 button 成长审阅
+					33 button 记忆整理
+					34 button 共同日记
+					35 text 对话
+					36 button 注入预览
+					37 button 会话延续
+					38 button 用途与规则
+					39 button 记忆预算
+					40 text 管理
+					41 button 工作台设置
+				42 text 人生线 branch_c99d359e42e04a9ebe3dc262b4d4d83f
+				43 text 手动刷新 · 明确确认后写入 本地运行，预览不调用模型
+				44 button 关闭管理入口, ID: close-side
+			45 container main
+				46 text 已确认写入并重新读取。旧聊天如提示上下文失效，请干净续接。
+				47 container content
+					48 heading 共同日记, Value: 1, ID: page-title
+						49 text 共同日记
+					50 text 你写今天的感受，它记录自己的理解。每篇保留作者，修订保留原稿；日记不自动成为事实。
+					51 button 写日记
+					52 button (collapsed) 写下今天 ＋, Secondary Actions: Expand
+						53 text 写下今天
+						54 text ＋
+					55 container
+						56 heading 已经写下的日子, Value: 2
+							57 text 已经写下的日子
+						58 text 1 篇
+						59 heading 一个一起修钟的傍晚, Value: 3
+							60 text 一个一起修钟的傍晚
+						61 text 人类原作
+						62 text 今天聊起旧钟的声音，很想把这个安静的傍晚记下来。<img src=x onerror=alert(1)> 这一段应当作为文字保存。
+						63 button 阅读全文
+						64 button 载入修订
+						65 button (collapsed) 历史、导出与隐私 ＋, Secondary Actions: Expand
+							66 text 历史、导出与隐私
+							67 text ＋
+					68 container
+						69 heading 这本日记, Value: 3
+							70 text 这本日记
+						71 text 当前仅开放人类写入；AI 写入未开启。
+						72 button (collapsed) 管理共同写作权限 ＋, Secondary Actions: Expand
+							73 text 管理共同写作权限
+							74 text ＋
+						75 text 开启后仍没有后台写作。AI 只能在获授权的当前会话调用工具，不能替你写、改人类日记或改权限。
+				76 text Memory-Continuity · 让会话可以结束，让你塑造的人物继续。
+
+The focused UI element is 1 AXWebArea Memory-Continuity 工作台, URL: 127.0.0.1:51982/

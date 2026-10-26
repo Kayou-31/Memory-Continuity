@@ -1,0 +1,50 @@
+Browser tab: 6, Title: "Memory-Continuity 工作台", URL: "http://127.0.0.1:50075/".
+0 AXWebArea Memory-Continuity 工作台, URL: 127.0.0.1:50075/
+	1 container
+		2 link Description: 跳到主要内容, Value: 127.0.0.1:50075/#main
+		3 link Description: Memory-Continuity 人物与记忆工作台, Value: 127.0.0.1:50075/#, ID: brand
+		4 container Description: 当前位置, ID: breadcrumb
+			5 text 贝雅 / 经历与时间线
+		6 text 当前聊天
+		7 text 未绑定
+		8 button (disabled) Description: 手动刷新全部数据, ID: refresh
+		9 container Description: 外观, ID: theme
+			10 checkbox Description: 浅色, Value: 1
+			11 checkbox Description: 深色, Value: 0
+			12 checkbox Description: 跟随系统, Value: 0
+		13 button (disabled) Description: 关闭管理入口, ID: close
+		14 container workbench
+			15 container Description: 人物与导航, ID: sidebar
+				16 text 正在查看
+				17 button (disabled, collapsed) Description: 切换正在查看的人物, ID: person-picker, Secondary Actions: Expand
+					18 text 贝
+					19 text 贝雅
+				20 text 查看人物不会切换当前聊天。
+				21 button (disabled) 新建人物, ID: new
+				22 container Description: 工作台导航, ID: nav
+					23 text 人物
+					24 button (disabled) 全部人物
+					25 button (disabled) 人物档案
+					26 button (disabled) 完整人物资料
+					27 text 记忆
+					28 button (disabled) 经历与时间线
+					29 button (disabled) 关系
+					30 button (disabled) 目标与承诺
+					31 button (disabled) 成长审阅
+					32 button (disabled) 记忆整理
+					33 button (disabled) 共同日记
+					34 text 对话
+					35 button (disabled) 注入预览
+					36 button (disabled) 会话延续
+					37 button (disabled) 用途与规则
+					38 button (disabled) 记忆预算
+					39 text 管理
+					40 button (disabled) 工作台设置
+				41 text 手动刷新 · 明确确认后写入 本地运行，预览不调用模型
+				42 button (disabled) 关闭管理入口, ID: close-side
+			43 container main
+				44 text 管理入口已关闭。
+				45 text 管理入口已关闭或失效。请在宿主执行 /memcont person manage，打开新地址。
+				46 text Memory-Continuity · 让会话可以结束，让你塑造的人物继续。
+
+The focused UI element is 0 AXWebArea Memory-Continuity 工作台, URL: 127.0.0.1:50075/

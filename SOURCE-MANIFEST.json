@@ -3,6 +3,586 @@
   "entry": "src/rp-plugin.ts",
   "files": [
     {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-000.woff2",
+      "bytes": 4644,
+      "sha256": "92b93561d8af27754352918934377dc09ecbf91d2d65a0951fb1d60895367330"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-001.woff2",
+      "bytes": 27568,
+      "sha256": "7610e185ab6d54a3d50860f45dac1db9614e70acf4fde1cc419b85b48ad1bd4f"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-002.woff2",
+      "bytes": 15672,
+      "sha256": "aba77127699e71bc7d13fd80c4eaaebcb5065862590f6dfbb05ba14bb0c0d2d8"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-003.woff2",
+      "bytes": 26040,
+      "sha256": "c56fed07baa5368c483c00d7963847caf0f9aff18bc78561fe8b14db7171b572"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-004.woff2",
+      "bytes": 85288,
+      "sha256": "4e943fdd06982ac9a81d192846dab76a2797321c990774600dc65ff8fe1d4e68"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-005.woff2",
+      "bytes": 73872,
+      "sha256": "e50204d9c99dee1b284a8f5c9508295fe6209c54e089ba7146813360d9c17713"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-006.woff2",
+      "bytes": 82664,
+      "sha256": "03de62bc4c94fcf00ad2a87ed76731c95b0852b0b41c9028844e1a05c06082c0"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-007.woff2",
+      "bytes": 77944,
+      "sha256": "9fa23b6cf30829d06600bda44f2b5d31880d088ef9bd5626aaf4557941457c10"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-008.woff2",
+      "bytes": 71356,
+      "sha256": "158a0be2cbba07d17824a5ba52319a3f914c59857f4bd70a332596bbe1b1128f"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-009.woff2",
+      "bytes": 64664,
+      "sha256": "dc5909d502de13c096a9d4b6f674433f2da1ef62f71cce1e3f43be499f1a4a52"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-010.woff2",
+      "bytes": 67936,
+      "sha256": "93daeb451edfe65dad18a468cc90933d6a5fc79e9411ce28027bacbfd7bfa0b8"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-011.woff2",
+      "bytes": 72784,
+      "sha256": "d4ba29a42d58e9c71f523225d6c2257e231e4d3fe92b720bbcbf99dd08add33c"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-012.woff2",
+      "bytes": 76908,
+      "sha256": "106e18d90034e75630790ad203bc69850747bf96c0a398b96bd88bcaa81e9480"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-013.woff2",
+      "bytes": 64260,
+      "sha256": "b9df2ce5d328a524975728c051385e14c1c823798e084c1227101ed4acc6174a"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-014.woff2",
+      "bytes": 68000,
+      "sha256": "87fdad598fb7ab598784e43f87f1da2c5476f88e4a5a9aba56abc73973449a42"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-015.woff2",
+      "bytes": 66088,
+      "sha256": "a1e18c863c00ab7e6f17fddcc42b193fb94ccb5e3e01ee394a189c149aef447e"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-016.woff2",
+      "bytes": 64724,
+      "sha256": "ba9fbd7fdbf7cce92c1a95946a7ad7b10ff9d3098403174b2b2b11ba6b282eb0"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-017.woff2",
+      "bytes": 63760,
+      "sha256": "0eb731d70aa1f4966dfffab308b3fb11975886fd5375f45ce6b16f1eaebafb83"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-018.woff2",
+      "bytes": 57848,
+      "sha256": "b36a86aa9d07ae91a379ef0661f723c323677fb9106457318b1194d5c5f7cbc9"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-019.woff2",
+      "bytes": 67828,
+      "sha256": "5b42c53aa93cc2a7fd855c85a5ca733d4da8d06984df8b4c9b2b76ce1090bc80"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-020.woff2",
+      "bytes": 75304,
+      "sha256": "60bae2b9a8bf65e1b4c1a06d529079cea1824bbab0a37840469f24b698880aab"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-021.woff2",
+      "bytes": 72288,
+      "sha256": "ef454fca50875c2536bfbcf4e0b540f456c012a61d08ff778ea4e3e640bd938b"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-022.woff2",
+      "bytes": 66144,
+      "sha256": "5392252c91bd0707d647df33a9a279501a029388c7882a0ad420a40b760e5a62"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-023.woff2",
+      "bytes": 51516,
+      "sha256": "0f39f0bbe9a7a450b994c3c3bd9aa0627ae2dea8d36b67fc5a3554830f28005e"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-024.woff2",
+      "bytes": 62740,
+      "sha256": "2db79fd3aa1d48c07e30664553e9d1ddb9fc4c23fdf02d48c63e094ebf275a5d"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-025.woff2",
+      "bytes": 58348,
+      "sha256": "7e94834579a87ac5bbeae3c8d0cfc33206d7e0fc85e7c59568f75358fb000c44"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-026.woff2",
+      "bytes": 72500,
+      "sha256": "3f116c05fbb0abc3fba86bb85b4426eca3a41650d2763ed4c5b31fe8b28f752e"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-027.woff2",
+      "bytes": 91672,
+      "sha256": "6b583a41d620c6b504ce9d451fdbb8e08d073b2573e46d444820959647d7f3e0"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-028.woff2",
+      "bytes": 77584,
+      "sha256": "1581af3bbb4e78f52db3b1078a85595e0ffa30ee334b7dbb49baf42ba9fbb28a"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-029.woff2",
+      "bytes": 74000,
+      "sha256": "a491a10a853d1fb3480d4471a275fd8824726b0e1a795fe8a98eb946001ac80e"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-030.woff2",
+      "bytes": 64612,
+      "sha256": "cad6d79ef7a000ed533559c080e92351797bb90d800243fa3a25c7064a3ce93e"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-031.woff2",
+      "bytes": 70316,
+      "sha256": "ca078411ddf19a164747d6e2220b0b2022f08e1682a1dc660a8902da13f2b0e0"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-032.woff2",
+      "bytes": 64520,
+      "sha256": "80938d29c0efdbd634308ac52ecbbda6707a0b3e3b7d1c84e197c28a6c8c837b"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-033.woff2",
+      "bytes": 57320,
+      "sha256": "6e0e93e30ac6e513ffdb1e5ddc50337e81c5f33d54bc3bb0e044113f228f5727"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-034.woff2",
+      "bytes": 67828,
+      "sha256": "6f05dd92f2f040024ed6f401c03a78ec8f8058313ecab04b6ff195a0041a4a5a"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-035.woff2",
+      "bytes": 53856,
+      "sha256": "039698b9bc16db3439b86528c88c369086ed237f7baa13873ca33a0922edce18"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-036.woff2",
+      "bytes": 69316,
+      "sha256": "2263f0841a3499dd34793a4b21c831760bcae5582b047cbcab0b55cf9b105ab5"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-037.woff2",
+      "bytes": 61532,
+      "sha256": "c940bed82b2192c9a436af93a8ae990c9e66d1384376f56878c3906c6de35353"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-038.woff2",
+      "bytes": 69656,
+      "sha256": "373d1b4d724f4ee5fa02eb5ee5474033a914a990d966f2abbb36c96682e5e993"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-039.woff2",
+      "bytes": 74032,
+      "sha256": "a8e46481396f2a9e4ac4875b64645f26e4e9ff185a8503c2402c2bc9bf46219c"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-040.woff2",
+      "bytes": 82552,
+      "sha256": "4fb8ac1d7a95c72aa66de7673a352e3e8b9046ffa90c444d0f961221f7052e40"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-041.woff2",
+      "bytes": 69524,
+      "sha256": "f69a03144d47d4987530030eceff2c2c4e37388ce5e45976a7a15f4dcd849d30"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-042.woff2",
+      "bytes": 61376,
+      "sha256": "952351694a0ada3a721a73decd3afeac99fac4637e0dbd2af987c7e147205ff1"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-043.woff2",
+      "bytes": 61312,
+      "sha256": "90a9d9858975f1c073521af5df9a7286356ff78397d274cfe7b64cb97f719920"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-044.woff2",
+      "bytes": 79496,
+      "sha256": "854a14f63241e795bc8a17e64d472f09c834a02f9b59258637063aabca530070"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-045.woff2",
+      "bytes": 63936,
+      "sha256": "9d345b17ad128918a7d4eea67714a376f8840ffdc82b77da8dbc416071491f65"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-046.woff2",
+      "bytes": 51012,
+      "sha256": "ab7aef1b30a10f6643f3271cb55e64c49e6d8c4b91a2e68287196cde66ad7614"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-047.woff2",
+      "bytes": 58572,
+      "sha256": "24f7302e65f8adaec36d642aa8caf68cdf4c50c91e54f75e9e535382366766b4"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-048.woff2",
+      "bytes": 69204,
+      "sha256": "5c818243ce70b138c5e7edd2798f92d311d8d9158eb60bad6c4f5cebe4d46fc6"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-049.woff2",
+      "bytes": 71680,
+      "sha256": "a4557ab88bbc6bb5272d315402d2448f92a7e53bdf3e89f1d839e95e5b67999a"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-050.woff2",
+      "bytes": 54196,
+      "sha256": "bca8897bbf2ee33d854e2d2cb19a31c66d549c2eb585af439e905378486df29e"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-051.woff2",
+      "bytes": 73588,
+      "sha256": "52740303931d8b85ab9529076bf835aeaf877c56e47aead612281bc128318282"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-052.woff2",
+      "bytes": 53064,
+      "sha256": "b677122aea77998b4b6c991cc0268585a48690a9347bd17057ac589728176c5d"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-053.woff2",
+      "bytes": 62884,
+      "sha256": "6b91a10abb4a03d31c63d528f6ef6b0fcdf4dbe7c030d67e1943f6139c115d73"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-054.woff2",
+      "bytes": 65720,
+      "sha256": "713d2bb29db38602e97e272bdafa666c5b426b7b779dbf3beb32313fd95b8551"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-055.woff2",
+      "bytes": 56040,
+      "sha256": "c5cbbb60e77f863af35524ec5a6674f5ce15735f05746923caa8d07e99b55886"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-056.woff2",
+      "bytes": 74576,
+      "sha256": "365512ffc9e2717c81cf5d9af42646426d657d5494b4fd04501a5beb0af6f2e7"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-057.woff2",
+      "bytes": 57824,
+      "sha256": "f0e12f7e577876bf2d554e924f0a2bbce375b647d885a568b37dd5b042133ad1"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-058.woff2",
+      "bytes": 65740,
+      "sha256": "f0dbe158fa641cc4297af81a4d44d2a9a2b775a32a96d4f665d62820ee2e6562"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-059.woff2",
+      "bytes": 51780,
+      "sha256": "cfabb52e72825965ec66b18bc1bab646d150206f2a3aa6d4fa6f29040058515e"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-060.woff2",
+      "bytes": 71048,
+      "sha256": "2101d62af080d6803513f4fe5d91aba6831b61bc95ed172dace75caa2a5b8c2d"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-061.woff2",
+      "bytes": 58804,
+      "sha256": "a5fdbb67e3dadebda5b447c1707fe47a2d9e40f095fb22dedc63aadf969d6609"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-062.woff2",
+      "bytes": 45184,
+      "sha256": "0a97bd54c22add0ce1fd54256f20bcafa92b8db870b3f80cefd3672da29eb3ae"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-063.woff2",
+      "bytes": 60576,
+      "sha256": "5945538dcbfc11c1db2d573e1a0889c33b90b45d8445cb9ce1f18b38db36336c"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-064.woff2",
+      "bytes": 62128,
+      "sha256": "45f3ed82e9bd8231532b58a0de47d0b26fbe8e4ceba610615903e346e5213263"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-065.woff2",
+      "bytes": 58812,
+      "sha256": "bf628db08549cbf5090c3486717d5121d48af1d82c79b6ab181ed9b49ba5e31b"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-066.woff2",
+      "bytes": 42656,
+      "sha256": "60e71123f0b838bf4fd52cb5de5e3d6af8e48c8f7f32481a39da625d1e63fd2e"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-067.woff2",
+      "bytes": 40440,
+      "sha256": "d8f48bbf844eadbaa2e3db648ed6889ccb8083572437eb6f0f717f9097b9e45b"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-068.woff2",
+      "bytes": 47820,
+      "sha256": "a07d70eab2f78b6978c9e3e93056c5c3afdf649940959fa78cf345dd35b1f7a9"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-069.woff2",
+      "bytes": 7400,
+      "sha256": "50751cd23b3787eff2af23d3b9676b13cb5263e750a72fd258328f5812520b08"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-070.woff2",
+      "bytes": 6892,
+      "sha256": "45cb9a16cbc13eff333b49bfa5c63f0478078ac6bdc327de9d69bdb6cdd8ce2b"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-071.woff2",
+      "bytes": 12280,
+      "sha256": "ba142270184772c2bbc1985bf88e42d05e9462b14163001b8c253765c3f1d55e"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-072.woff2",
+      "bytes": 9736,
+      "sha256": "5968dd127304a59f1e2ea36b875f3702dadb0a229bc87a9053727c26807a15dc"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-073.woff2",
+      "bytes": 10640,
+      "sha256": "b86248889e23aba82ffa3e7327bf94eb44a73ca14e74dd3587848ff5adc1cacf"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-074.woff2",
+      "bytes": 2416,
+      "sha256": "91923c87f9f32c46056285e69b1009fbb71c0bd27a1a1f9d386bc9248217606f"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-075.woff2",
+      "bytes": 4376,
+      "sha256": "26b9dec17f125371d5f5089f89de39094a11f98ffebb061011158d7e4aa602d0"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-076.woff2",
+      "bytes": 12324,
+      "sha256": "7bf7c8fd9809004cba36338a94c338cffbce66069c2b091a7472e0b4dfa6b041"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-077.woff2",
+      "bytes": 84696,
+      "sha256": "fed9f7a5c10a94cbe0a7e6789512607a1abdf797ac9c6d1f2462e6bca2573734"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-078.woff2",
+      "bytes": 77788,
+      "sha256": "5054480a15959f80c101094a5d9eb749a0c8c5654e17b3219e16f7a5abe006e0"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-079.woff2",
+      "bytes": 79680,
+      "sha256": "6d6aedcf1f83747c7b38f7045470ba70b3352b162616313c7923a6bbde81915c"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-080.woff2",
+      "bytes": 84088,
+      "sha256": "c94541da7c8ec39d9f581019203b36f53c719151623281cc14ec9984731a1f47"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-081.woff2",
+      "bytes": 81044,
+      "sha256": "3f24940446111010a3117ae4054c7265f9d90bfd8acc16c41a7c9092150fde3d"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-082.woff2",
+      "bytes": 81516,
+      "sha256": "f43c00b1e7e213add01d19eecf6ef2e8a96f7087b46b908df407490b72fe09d9"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-083.woff2",
+      "bytes": 81652,
+      "sha256": "1066b4dc2f377882adc40e8501b1fdf1ab020a6aed5522503e5b1fadfe36281a"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-084.woff2",
+      "bytes": 79804,
+      "sha256": "c5026c625c58b58b56e629faf50cb622aa9f03ab223eaaab89033b6ba5960aab"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-085.woff2",
+      "bytes": 83484,
+      "sha256": "4665f9383f65a4fb003c53808f5b91d1e93fcccd3d2d8c799cfda6e3d14656d7"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-086.woff2",
+      "bytes": 79044,
+      "sha256": "45838ba623192deef4a4a71d1c1ddca77ea5b3281b96e3017972ce14e2f10f6d"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-087.woff2",
+      "bytes": 79548,
+      "sha256": "1a109586fcc58c9daa102480dc0de03623a59be55a8726b3c7a83f19475f2f13"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-088.woff2",
+      "bytes": 81144,
+      "sha256": "8164af476b514e30654ecf3aa34edeecbad209782f4b026964032e4f594a2881"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-089.woff2",
+      "bytes": 75996,
+      "sha256": "675553f67dda471ccc684b734a07db465fb6bb9ec1ce5a70b6d6b0f9a36a7a26"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-090.woff2",
+      "bytes": 75872,
+      "sha256": "1594e53f4ab5fe067f7ba108b65a71ed07b2fb9da68af01349b4966c871e4d36"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-091.woff2",
+      "bytes": 74744,
+      "sha256": "f402c381cb2eb5c6d1e65a8bae7629b5cb97faaa42759af6874f6d33fcc98273"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-092.woff2",
+      "bytes": 72508,
+      "sha256": "a56a7e1d3efa7e7a4b30b086153398d3ed87a2b984551c046b614c03b4c3f9cd"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-093.woff2",
+      "bytes": 67304,
+      "sha256": "06ad3ccc929aa35ffb271c64ba4b1a8a14c8a2076b583eb2b32c7169f74c33c3"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-094.woff2",
+      "bytes": 66656,
+      "sha256": "fd992a95c6a01de7bfb520c01ca4ad20c60cb5a91f0fb21cf46fe1e13e78fd2b"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-095.woff2",
+      "bytes": 58224,
+      "sha256": "b75a2da2189e8db96e83563b650fb04466ca9284d28a1e27ff4d4aaaee5d13b6"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-096.woff2",
+      "bytes": 104964,
+      "sha256": "25412edffa19ad8baf75508052ec4b5c8ecfcf75384f98b67cea291886f8d0c4"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-097.woff2",
+      "bytes": 14476,
+      "sha256": "d6e6ed7b0a14b508f94072aea3bb29abe236fd012ba6174b49292a6c900718e6"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-098.woff2",
+      "bytes": 10920,
+      "sha256": "9826143bb6278155de4f76910fd6ec34fe450385dd0d85df10e4497bb174eac7"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-099.woff2",
+      "bytes": 10332,
+      "sha256": "b07e7e5e090ed9220e5fd4afc6a22339a77f63f79f1f7ac010e3b05a8849c5ce"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/noto-serif-sc-100.woff2",
+      "bytes": 32964,
+      "sha256": "be8c3c315592fbeda0f6acbe9914a0b4c1da1b7e30889ddab5e145d346ae4928"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/OFL.txt",
+      "bytes": 4350,
+      "sha256": "5e0da210fb04058a8c0087985d2d456b931c2579811a49655721d3cf0c36b6d6"
+    },
+    {
+      "path": "assets/fonts/noto-serif-sc/UPSTREAM.json",
+      "bytes": 30240,
+      "sha256": "b10972d789b9e6f6e48633aabbd886a9c0bf6f301abb65cdb1c5524ed166e338"
+    },
+    {
+      "path": "assets/tokenizers/deepseek-v3.2/LICENSE",
+      "bytes": 1084,
+      "sha256": "f2c6c602815669d292889e5be8c802f2ed950653b77999b1584e8e6aed25d040"
+    },
+    {
+      "path": "assets/tokenizers/deepseek-v3.2/tokenizer_config.json",
+      "bytes": 795,
+      "sha256": "b5de6cc1c6758d02c0d3cec0efa062f1161654475458003f6f293f6ef28acdaa"
+    },
+    {
+      "path": "assets/tokenizers/deepseek-v3.2/tokenizer.json",
+      "bytes": 7847502,
+      "sha256": "cd050be35cae877f8f0aa847f45aa87e23835a56ca32b29b28545597852784e5"
+    },
+    {
+      "path": "assets/tokenizers/README.md",
+      "bytes": 1988,
+      "sha256": "5ae835c23fc603962861a40111b0771c327a2f49bba4b0531cdb7dc78b528fc2"
+    },
+    {
+      "path": "src/core/cli-init.ts",
+      "bytes": 2650,
+      "sha256": "e91089fd48e7baa1fe56959cf84da7c0739bc2954aa7837b1b12775943062e6a"
+    },
+    {
+      "path": "src/core/cli-service.ts",
+      "bytes": 3539,
+      "sha256": "acca831fffdc5d4236397cc0bb3a2bda97dda10e9896e51b452aca3e2d39c486"
+    },
+    {
+      "path": "src/core/cli.ts",
+      "bytes": 2159,
+      "sha256": "593a52c6770d77ffc3bbd0845c96ec00de60238cd27fa9f1ec70e60f3e6fe516"
+    },
+    {
+      "path": "src/core/confirmations.ts",
+      "bytes": 8408,
+      "sha256": "2ff57f7b6e8ab3400c80355c0f4e750647b92f653420afccfbb72fa810cda2c5"
+    },
+    {
+      "path": "src/core/index.ts",
+      "bytes": 1380,
+      "sha256": "56afd9a077a01db3c63b50fd1d450f3801f11b0050dd50aa47868b4c23c8ee7f"
+    },
+    {
+      "path": "src/core/owned-memory.ts",
+      "bytes": 1310,
+      "sha256": "21a0234c50332974d0f26b45e03ec6664cbb26daf36f2c555b6309fae312f912"
+    },
+    {
+      "path": "src/core/owner.ts",
+      "bytes": 7868,
+      "sha256": "0a09221e8cfff7d5d4e86dd637c4c3ad2adeafbb49ec0c5b193d4306ae135805"
+    },
+    {
+      "path": "src/core/rpc.ts",
+      "bytes": 8573,
+      "sha256": "c2e0c7e4b0621bb919c93cec944a24ed59f955907c13c05dc525ab8ece2ec28f"
+    },
+    {
+      "path": "src/core/server.ts",
+      "bytes": 5702,
+      "sha256": "ffa1adb030c016b6f5955c7dce790a4abbbe5f7477975829707f0d8b49db9761"
+    },
+    {
       "path": "src/rp/admission.ts",
       "bytes": 3119,
       "sha256": "581e7c4c3f9bb37ed1f8de64ad8ca277d805ae0359a95a6cf87dab711b1d04b0"
@@ -19,8 +599,8 @@
     },
     {
       "path": "src/rp/canonical.ts",
-      "bytes": 17342,
-      "sha256": "f01fd940582d616d679d0b7fa1aa6c07b61e8f28de2e7e0040abc2c6743974a2"
+      "bytes": 19269,
+      "sha256": "62e7dd54c82d6290b89cbc731203f17019bc77d468ec39850d2cdd1a276d0159"
     },
     {
       "path": "src/rp/capabilities.ts",
@@ -29,8 +609,58 @@
     },
     {
       "path": "src/rp/command-help.ts",
-      "bytes": 5985,
-      "sha256": "920f0a13fdf94e2bc6905fb5be689e44e7b8750b29aed851a807fa469b4a67dd"
+      "bytes": 10953,
+      "sha256": "9ce4d7cb02eb00f4618a602bbd1dec9013af382aedb5c6d7c9a0e01f178dd061"
+    },
+    {
+      "path": "src/rp/context-retention.ts",
+      "bytes": 5190,
+      "sha256": "a7ad135bf1625e8c4875e1fd0c2d18f339755c7e2010e54c5f98615b728c3952"
+    },
+    {
+      "path": "src/rp/diary/admission.ts",
+      "bytes": 799,
+      "sha256": "c506e2d22e6a8451e0d7dfe1bd218bad1d90c095f4547b45fb01dfda02e38427"
+    },
+    {
+      "path": "src/rp/diary/commands.ts",
+      "bytes": 2551,
+      "sha256": "74af187bdd2f8d8f8deae15e5e0b46ca4192905c90514644e339b7ba476978f5"
+    },
+    {
+      "path": "src/rp/diary/evidence.ts",
+      "bytes": 2381,
+      "sha256": "2b4f1da20c3526c8f43f1defedd6382995934f67b4d3f7a8a873df00f23c5e05"
+    },
+    {
+      "path": "src/rp/diary/format.ts",
+      "bytes": 5550,
+      "sha256": "19c2dee5a63fe2890a09c4568e8c6a129bc7a2f3e505c5d7a77102ca2319ead4"
+    },
+    {
+      "path": "src/rp/diary/schema.ts",
+      "bytes": 1682,
+      "sha256": "46e6dea732589bd16422e1d332935c9b2ec9c1ea10425dc6ff68aadfe23bf332"
+    },
+    {
+      "path": "src/rp/diary/selection.ts",
+      "bytes": 1638,
+      "sha256": "8f35a3dfa8b31879d7ce919e9863aebba7a9628a846f335fcb0bb252d3425341"
+    },
+    {
+      "path": "src/rp/diary/service.ts",
+      "bytes": 16469,
+      "sha256": "780074a3f2b3823535c27129aeb82248150c31ea595258096acdabe4e34b5eb8"
+    },
+    {
+      "path": "src/rp/diary/transition.ts",
+      "bytes": 4041,
+      "sha256": "0cdd968a08a4a2041e80d23dd07a391596a1836a12c95f50e927be84915c70c7"
+    },
+    {
+      "path": "src/rp/diary/types.ts",
+      "bytes": 1503,
+      "sha256": "f3edad9237ae13ef0d004fa4a7d4556895258b08266320d2cc6e2acad89e65aa"
     },
     {
       "path": "src/rp/global-segments.ts",
@@ -39,13 +669,13 @@
     },
     {
       "path": "src/rp/global.ts",
-      "bytes": 24044,
-      "sha256": "eb4bdc31dc20ad3fc9bcf37b3a04db18624adc42fe6b2cd3c5477ceca7c13380"
+      "bytes": 24337,
+      "sha256": "27021f1e3044c3f07b830c1a3437739d7f1ad9d69a52e0e4cebf181a28179f5e"
     },
     {
       "path": "src/rp/growth-format.ts",
-      "bytes": 6367,
-      "sha256": "c1080bb64602c29134cb386f9b7ceb96b4e6d5d0e23bd47b09ddf242f795ee14"
+      "bytes": 6456,
+      "sha256": "46aba8da16778d48a6643a29dd7d258d08242e10c94879af9ed57c6cb08cf30d"
     },
     {
       "path": "src/rp/host-adapter.ts",
@@ -54,18 +684,18 @@
     },
     {
       "path": "src/rp/host-journal.ts",
-      "bytes": 7936,
-      "sha256": "5173f2b7cf85f923ac0f26a92af3fe7693690be8a3048ed73ad3da4090d6ee30"
+      "bytes": 9706,
+      "sha256": "7d05f93770aee16cac53f9986bff649fc29444c7b3667ba9c812b8af93b99f6b"
     },
     {
       "path": "src/rp/injection-binding.ts",
-      "bytes": 4680,
-      "sha256": "d3ec7259fbb755e27366d5c46cdd1246d8c71fd28da51d76baed933aff8eff3f"
+      "bytes": 5357,
+      "sha256": "935ecca6711088de5d2f307e7d1fad769d856d3d0a59c5b0a6d9fb1f5be2bc06"
     },
     {
       "path": "src/rp/injection.ts",
-      "bytes": 12850,
-      "sha256": "7092d7760120acf6b90277b3376467fd7d58bec6c815f96ebb17ebc0d364eae8"
+      "bytes": 14759,
+      "sha256": "1076067555962fda90a3388d03445351e5aaae913ae3876d4565a3c25f861a01"
     },
     {
       "path": "src/rp/jobs.ts",
@@ -84,8 +714,8 @@
     },
     {
       "path": "src/rp/memory.ts",
-      "bytes": 6302,
-      "sha256": "96ad8ad07366f50083901fbfd36060c469cb5da9e5b2238c7e2dc7dba2b5d81c"
+      "bytes": 7584,
+      "sha256": "6c375ff84962b0f69de5f04886198234d1eb95a2a54f0ae22e12d72f23eecb21"
     },
     {
       "path": "src/rp/modules/commands.ts",
@@ -113,14 +743,19 @@
       "sha256": "76a5304842754a0b64b4d46c0dac3954c59195b45a445b5edd22009f65f75963"
     },
     {
+      "path": "src/rp/organizer.ts",
+      "bytes": 5683,
+      "sha256": "c401b2566d496fe86a79658588fd1634ca4a5490fe4f9fdea9f78ecffd56eb1d"
+    },
+    {
       "path": "src/rp/packet-proof.ts",
-      "bytes": 3230,
-      "sha256": "8dc45c7419318798df36563eee279fbfc700689b7027331a286f351b71222ce3"
+      "bytes": 3892,
+      "sha256": "af0a303ab66dd09c7a0eca792962a550bd6efcf10a84f1ed50ece9287692c37a"
     },
     {
       "path": "src/rp/packet.ts",
-      "bytes": 14639,
-      "sha256": "3359e17546591bbc961e6d6fd8e05b63e27866a56e665fb4ca5d3644f54d3bd1"
+      "bytes": 17141,
+      "sha256": "ef6acb59bdf22337f1634367322a152275be60c9c36d5e87368b077ccdf078a4"
     },
     {
       "path": "src/rp/person/binding.ts",
@@ -133,14 +768,59 @@
       "sha256": "d7ccba062f5899c3584417b309ba5daefa41da15f467e912867fcbc27fac56a6"
     },
     {
+      "path": "src/rp/person/documents/audience.ts",
+      "bytes": 1793,
+      "sha256": "7d12d04ddf0af227375b26c1a16ed4a2b6ed2d944d6ada3acb6448d106e7988a"
+    },
+    {
+      "path": "src/rp/person/documents/format.ts",
+      "bytes": 6401,
+      "sha256": "43d833c33c88dc7c91cd7cf1690abd59d5c1ad0d25ea73cc111fcae73612d356"
+    },
+    {
+      "path": "src/rp/person/documents/import.ts",
+      "bytes": 3713,
+      "sha256": "57cc4b7308922009d873534af3507275744f3c474c4596555c9626b54f7e53a4"
+    },
+    {
+      "path": "src/rp/person/documents/reconcile.ts",
+      "bytes": 2293,
+      "sha256": "bab996e86e75aaf9aaed45c111c58ecad47ee7476d67753b69540a58a3b645f5"
+    },
+    {
+      "path": "src/rp/person/documents/schema.ts",
+      "bytes": 3851,
+      "sha256": "0420767be8852036477e1a15ec5c1b1decc30e304551e40907e8487412faf8e0"
+    },
+    {
+      "path": "src/rp/person/documents/selection.ts",
+      "bytes": 1979,
+      "sha256": "cc248a1d1556aad53bd7ba095534000c0c8bcf5b29e92efafe86460055cbb058"
+    },
+    {
+      "path": "src/rp/person/documents/service.ts",
+      "bytes": 9097,
+      "sha256": "e81c30c4469d313845230255df55afac009ecac28ec76eae6f7fe9705641e3cf"
+    },
+    {
+      "path": "src/rp/person/documents/types.ts",
+      "bytes": 1644,
+      "sha256": "0cb6c62aae1601eb821ab04e715d446ccb6bc6e24ac551d1aa8a36a1a943a9fe"
+    },
+    {
+      "path": "src/rp/person/editor-copy.ts",
+      "bytes": 785,
+      "sha256": "2fd40bd0358445082cb82d105bb24378911db150af1e1ecfea992510622f9baa"
+    },
+    {
       "path": "src/rp/person/editor-ids.ts",
       "bytes": 428,
       "sha256": "749faf0cf0213d955ad24e8aaf782bedcf9d29ee758f3cb45b1ea1f791390afb"
     },
     {
       "path": "src/rp/person/editor.ts",
-      "bytes": 7581,
-      "sha256": "fc00d5113e165a284f372f93399987c0ef049f7b8afa425aa609254d30dc52bb"
+      "bytes": 8408,
+      "sha256": "79f033ddea3621518487886e7bc88ab953e4faa21ba7039bb460349ce0345b82"
     },
     {
       "path": "src/rp/person/format.ts",
@@ -149,18 +829,28 @@
     },
     {
       "path": "src/rp/person/management-client.ts",
-      "bytes": 2058,
-      "sha256": "75a3f057f31bac9ac5f7919c97fdac5e89405ba1f534790d63b31135c517b15e"
+      "bytes": 2422,
+      "sha256": "9f45cfc797ef662b26e551fc97add4f43acee726d56d609604fca10e63915b3c"
+    },
+    {
+      "path": "src/rp/person/management-extensions.ts",
+      "bytes": 11477,
+      "sha256": "00378d98e116b0b9172a5523afbcc4bc51d8cc5dd2a8394e7f58dc44f8aa6485"
     },
     {
       "path": "src/rp/person/management-server.ts",
-      "bytes": 4370,
-      "sha256": "12660a086df43ae6ad4582970d4f980738a0160c3d1ad61356fd28e024f7cd11"
+      "bytes": 5336,
+      "sha256": "220b6c077cdfa51c3d35ac1fc4b9bc8731c44e34f46d0a88302c282216754412"
+    },
+    {
+      "path": "src/rp/person/management-settings.ts",
+      "bytes": 2321,
+      "sha256": "16886472b60d5fd65338a758ca8b9fb32bc018391ad1cc9e50fe81938c52d857"
     },
     {
       "path": "src/rp/person/management.ts",
-      "bytes": 7641,
-      "sha256": "59912486c1ec329e1d6bd1c9aa7a6a076433798299e7535389b96f079708e5bd"
+      "bytes": 13788,
+      "sha256": "eb33aedd8c0ae9458e0455f5ea5611b9dbc17ae51295dff57e31894cd86d0261"
     },
     {
       "path": "src/rp/person/manager-ui.ts",
@@ -174,8 +864,8 @@
     },
     {
       "path": "src/rp/person/schema.ts",
-      "bytes": 3242,
-      "sha256": "70451940bdf08cd1344fd8d1306a4144b0b8d0671e37b7f11ca17afe0ac3e1e7"
+      "bytes": 3246,
+      "sha256": "4e8836073e2048955bc04b78393d0f322c80e237c87c14c375cd4f197cbb24fe"
     },
     {
       "path": "src/rp/person/service.ts",
@@ -189,18 +879,43 @@
     },
     {
       "path": "src/rp/person/workbench-client.ts",
-      "bytes": 35115,
-      "sha256": "66cc3eb8e35511d79a9248112e1c9010cdf81189b4db18125f39326be4fb0796"
+      "bytes": 60077,
+      "sha256": "19d7bde81c86784cad899a596b664ac107cf5dda3a74d1f5907e86c34378ce33"
+    },
+    {
+      "path": "src/rp/person/workbench-extensions.ts",
+      "bytes": 17900,
+      "sha256": "f47b75531e84ce43225619c98ec03fe72712cac831aa08d6af8a30f354905e46"
+    },
+    {
+      "path": "src/rp/person/workbench-font-manifest.ts",
+      "bytes": 9922,
+      "sha256": "5d6872f119690e9c763c89700a864d871dc345e655e4fc12bd21cc36fb0be2f6"
+    },
+    {
+      "path": "src/rp/person/workbench-fonts.ts",
+      "bytes": 1361,
+      "sha256": "fc60747ee41de53e2bdc9639c003a7afca76866f0374f83eb44954b43fba4ddd"
     },
     {
       "path": "src/rp/person/workbench-page.ts",
-      "bytes": 3887,
-      "sha256": "0dd7a76e3477ba9ec301339ca4581aafc065cbb6cade4be97f8ef7285aa57d1b"
+      "bytes": 5141,
+      "sha256": "06d14504c5cb20bb9043ef974c8c419db0d4b75e83f9af060e3ba466d45bd695"
+    },
+    {
+      "path": "src/rp/person/workbench-reading.ts",
+      "bytes": 13922,
+      "sha256": "66f72da9b6216f86652850ab84eb155126057c0845c4c37e32122195a50f4054"
     },
     {
       "path": "src/rp/person/workbench-style.ts",
-      "bytes": 65238,
-      "sha256": "51a49fc0c79e514dbdd415ff9fcf37c41e8ab95c459250b46755f6e8de8bcb8c"
+      "bytes": 192739,
+      "sha256": "be5a4840a2aed0023608c6df2e1298faa82162bab815d7eb5192d5aa9a4b52c9"
+    },
+    {
+      "path": "src/rp/person/workbench-visuals.ts",
+      "bytes": 3008,
+      "sha256": "28f54d1a1d11d02d02c21a5cd85b85df009593617183f477a96f60c20d1cd0aa"
     },
     {
       "path": "src/rp/publication-guard.ts",
@@ -213,34 +928,39 @@
       "sha256": "c6baf254e4379872ffe0b04a26e0169f0beed148bc44484b50286f6bf5ffb942"
     },
     {
+      "path": "src/rp/request-cost.ts",
+      "bytes": 2886,
+      "sha256": "caeb4bec5ddec4f37d5962a5a7b5c9e68bef019cde10180aa0704b1281649d83"
+    },
+    {
       "path": "src/rp/retrieval-evidence.ts",
       "bytes": 2369,
       "sha256": "d419bf4eba7fbe91b2314fc4b033e3875b129c630aac70167cbd6215213d03b8"
     },
     {
       "path": "src/rp/retrieval-index.ts",
-      "bytes": 2832,
-      "sha256": "b7687b136cd24a86bbca6101c8dff3185bbce61f4474deb4f3b29e6b2be8611f"
+      "bytes": 3108,
+      "sha256": "41002b675e79378aada1e7713ab39955af3e8152106ebb75c79e2fd4a362d670"
     },
     {
       "path": "src/rp/retrieval.ts",
-      "bytes": 7176,
-      "sha256": "52e4bb3279b215b4906363ffd761d3e57a39e75f3dabb846405eecb1ae506616"
+      "bytes": 8859,
+      "sha256": "f15412034670e6be857bf31d5346efcd9595a80e301ddb297762e22b8af1ade8"
     },
     {
       "path": "src/rp/rp-plugin.ts",
-      "bytes": 84613,
-      "sha256": "f213363ff7e49ab5abdeba9a0f5b2c2116f9eede68b74ac468ca02af1be37d25"
+      "bytes": 112651,
+      "sha256": "c0569aeec753de8a21e4a1ddad5f389dcb3ec68618e4d6495f51b6d8cf552d3a"
     },
     {
       "path": "src/rp/schema.ts",
-      "bytes": 17490,
-      "sha256": "7a9881c8b45570bad56ed684def30e79b674d55fa877f07111b0cef823f723cc"
+      "bytes": 14233,
+      "sha256": "72ff2691bc6b2145be929fa854c626869fa90b5e6dba9f3412cea86cb333c18c"
     },
     {
       "path": "src/rp/semantic-registry.ts",
-      "bytes": 2699,
-      "sha256": "3f09dbcfc83b84ddff6f43d1fc2540929f26abfa600513c6e5da423c3fe7e4a8"
+      "bytes": 4277,
+      "sha256": "dfb2a168ca302dc894d77443ebcf609d34d1679c2271eb342a2e94ef03ad2d6e"
     },
     {
       "path": "src/rp/session-policy.ts",
@@ -254,33 +974,113 @@
     },
     {
       "path": "src/rp/store.ts",
-      "bytes": 122765,
-      "sha256": "63474870b0cfa31666f9c348c1b281680d71115ad7b7c9234c15e69d37afe06c"
+      "bytes": 131868,
+      "sha256": "4ebdbdd4c642a4494e1174963ee24075502abd52bfa9844efa486b6bef061b2b"
     },
     {
       "path": "src/rp/summarizer.ts",
-      "bytes": 16174,
-      "sha256": "befbf6ac4edead97c81a0fa2f6863ca929c8cca70a268e674e61d1665368ca25"
+      "bytes": 16803,
+      "sha256": "4e21fe9d87f2ad0f11ff7927c4fcffbd6d14c10b34bffba0b4f468627eec7361"
+    },
+    {
+      "path": "src/rp/token-budget-marker.ts",
+      "bytes": 1426,
+      "sha256": "1de64a9c4db0bb14d7d7106bc86e33915243101b506f7c405bb6544bc1e0f206"
+    },
+    {
+      "path": "src/rp/token-budget.ts",
+      "bytes": 5083,
+      "sha256": "0893ae290617af43b7f34b4d1330dd6f6d028c8a621b3885dbf8a93ba556269b"
+    },
+    {
+      "path": "src/rp/tokenizers/deepseek.ts",
+      "bytes": 1675,
+      "sha256": "95b273dca287a7fbfca3f923a97ebffb47cc12faf485141a943e7c47af38a173"
+    },
+    {
+      "path": "src/rp/tokenizers/vendor/LICENSE",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "src/rp/tokenizers/vendor/tokenizers.d.mts",
+      "bytes": 223,
+      "sha256": "e86167f6742e557c55846d47639032cccb23f720974a5b0dfee54789e03b85a2"
+    },
+    {
+      "path": "src/rp/tokenizers/vendor/tokenizers.mjs",
+      "bytes": 98937,
+      "sha256": "1c4a848f86156201c033d6cd08c4cf81ae1088552acec3367f31ef086edf5af0"
     },
     {
       "path": "src/rp/types.ts",
-      "bytes": 12129,
-      "sha256": "7f73033a98f432da036eb7f74bfb71a395e59bbfc8bd0b05c47afb90f4bbb6d6"
+      "bytes": 12484,
+      "sha256": "3549daae3eca4cad9e057da81fbe8776c06d6c2b1d2743cf79d6a79e5e23476b"
+    },
+    {
+      "path": "src/rp/validation.ts",
+      "bytes": 4314,
+      "sha256": "7af395c305639c915eae94e0f59ef31a07b5bcedabb4b234b6c20a70830fd3e8"
     },
     {
       "path": "src/rp-plugin.ts",
-      "bytes": 1609,
-      "sha256": "3cd119c8bc5ae1b34e508878f8ad24f10f8f1b7b0cf231a42ff0ed6965286702"
+      "bytes": 1651,
+      "sha256": "0ba2a5b297489a8d4e40bf3b569e777a3e3c1625629498adee190f7ca3a841a1"
     },
     {
       "path": "lib/index.js",
-      "bytes": 546179,
-      "sha256": "7807f8e73fdecb776ac6f13afa19e531c1e0c00a17423fa883b2f2dc3d5e9d0a"
+      "bytes": 1012174,
+      "sha256": "96b13735420ecfabda1b5e0ec74090ffd0ab6284a99b58e6f7224e79ad6cf88c"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 917872,
-      "sha256": "80990f4c1e57b28d9927fb8cd7302e1b8f8b0d77ab1826bd0818ac344eb1defa"
+      "bytes": 1618335,
+      "sha256": "c5866e91dcb05607a2c90dbefb82632c644f84901667381d2392a92ae66fae13"
+    },
+    {
+      "path": "lib/types/core/cli-init.d.ts",
+      "bytes": 328,
+      "sha256": "2152847f330b378a441dc9401061bfe0de85ca137c8677cbf1a259a327745d35"
+    },
+    {
+      "path": "lib/types/core/cli-service.d.ts",
+      "bytes": 181,
+      "sha256": "348c845dd331d0a2a362f0e22b5265ecbcee47e26c03e23c1e38c01a3db440ac"
+    },
+    {
+      "path": "lib/types/core/cli.d.ts",
+      "bytes": 31,
+      "sha256": "43e818adf60173644896298637f47b01d5819b17eda46eaa32d0c7d64724d012"
+    },
+    {
+      "path": "lib/types/core/confirmations.d.ts",
+      "bytes": 9839,
+      "sha256": "5cb292823cb0b0ef3fe2710161096f097808b0320467b079df6921f01057226a"
+    },
+    {
+      "path": "lib/types/core/index.d.ts",
+      "bytes": 1450,
+      "sha256": "11c4ab85b6409eb9a19567ce22aebf500463164d1af6a3249f6129bf2b7147ca"
+    },
+    {
+      "path": "lib/types/core/owned-memory.d.ts",
+      "bytes": 46921,
+      "sha256": "5e84a206171d5ece4687cec9192f61d9b340f84a3d13485488fbc87569b2dfe5"
+    },
+    {
+      "path": "lib/types/core/owner.d.ts",
+      "bytes": 877,
+      "sha256": "4e603019a17027a3228fabe12eca21e9f170063c2f82ae2e54444b83f5f99233"
+    },
+    {
+      "path": "lib/types/core/rpc.d.ts",
+      "bytes": 1686,
+      "sha256": "552a9c32712befe2ae4bf1147864a517bf176388463981383661360dff820a6b"
+    },
+    {
+      "path": "lib/types/core/server.d.ts",
+      "bytes": 292,
+      "sha256": "959ac3557e874e133b12109b22a5b3d6b534b9aac50617d40d1cef1e15fd4035"
     },
     {
       "path": "lib/types/rp/admission.d.ts",
@@ -299,8 +1099,8 @@
     },
     {
       "path": "lib/types/rp/canonical.d.ts",
-      "bytes": 3338,
-      "sha256": "a541d1b24be66e0bc918793cb14121d6fcbed1ce0ab62305e0a22a3beb082e07"
+      "bytes": 3436,
+      "sha256": "e12d7b12928dd45b6b962495d2f6ed967191f63102f3362fcd562217d0c1e299"
     },
     {
       "path": "lib/types/rp/capabilities.d.ts",
@@ -313,14 +1113,64 @@
       "sha256": "86e2f008a95a8bf023fd1e37456000786fda3901d058f0f41b1b345416aa9eb0"
     },
     {
+      "path": "lib/types/rp/context-retention.d.ts",
+      "bytes": 886,
+      "sha256": "5e72ab77f612ecfbdb9a7ab7d8476ace72d08bc3b388e6385ff08429f4f27613"
+    },
+    {
+      "path": "lib/types/rp/diary/admission.d.ts",
+      "bytes": 603,
+      "sha256": "5c9054147f1c75facd9a0fee45e2c864411b82e690bea7bc9a08643dbbfa8cfd"
+    },
+    {
+      "path": "lib/types/rp/diary/commands.d.ts",
+      "bytes": 552,
+      "sha256": "c2cd3da4697bc85ae0771b3bd61fed64d1c5f51baffff1190f9dc76f94ad6182"
+    },
+    {
+      "path": "lib/types/rp/diary/evidence.d.ts",
+      "bytes": 902,
+      "sha256": "23204c42887f5af7707504ef609fdf469215648b1b52bebd107fcc419a60ff3d"
+    },
+    {
+      "path": "lib/types/rp/diary/format.d.ts",
+      "bytes": 1335,
+      "sha256": "88a103ab0bb2cdcad7698d648a675eea21b7362f630b10b9fa565c625b1dfe3d"
+    },
+    {
+      "path": "lib/types/rp/diary/schema.d.ts",
+      "bytes": 209,
+      "sha256": "0543b61122c84600754a43bc5a8ce2b3376c8b1aa84b07cfb26f0ac0c87dbdd3"
+    },
+    {
+      "path": "lib/types/rp/diary/selection.d.ts",
+      "bytes": 537,
+      "sha256": "4380926c3e045be8c79e97edaca279e54dca3e534f07aa6b11f5b37b28ac4dbd"
+    },
+    {
+      "path": "lib/types/rp/diary/service.d.ts",
+      "bytes": 5144,
+      "sha256": "4a7f9c2d79237eed72497fadd11dcc4c7942b3e0beb4b13f8f527204e58d63bf"
+    },
+    {
+      "path": "lib/types/rp/diary/transition.d.ts",
+      "bytes": 376,
+      "sha256": "922bda7f399eb4fbb72e02a8cf713bedfd7f731131476aa5693a70f5fe8d8599"
+    },
+    {
+      "path": "lib/types/rp/diary/types.d.ts",
+      "bytes": 1776,
+      "sha256": "5d5cdf4417847c94c18bc94285f6e0327ae6329511dbb7f15777e830c02ae052"
+    },
+    {
       "path": "lib/types/rp/global-segments.d.ts",
       "bytes": 992,
       "sha256": "bb6bb149594c0151cdd9e5ae4bac7c31b5faaff79ec00ef5c2014f6194c9c2b4"
     },
     {
       "path": "lib/types/rp/global.d.ts",
-      "bytes": 3196,
-      "sha256": "e7a4ec12a9d8e025315d123708661a5f2147ecdb21ce56bd9d3a056077373210"
+      "bytes": 3217,
+      "sha256": "0eeff54f61b66d6619d185f368d117df4c37723ba907b0ae3d1267900261c38e"
     },
     {
       "path": "lib/types/rp/growth-format.d.ts",
@@ -334,8 +1184,8 @@
     },
     {
       "path": "lib/types/rp/host-journal.d.ts",
-      "bytes": 2087,
-      "sha256": "defdbfeb69a2a6e8c484f67f0a4af8d44dd7f9ad791a9a50c61c7015b066e12b"
+      "bytes": 2413,
+      "sha256": "4845b22ba27ea0c5358e7012813e45f9618c64d6365fa8d3c5fab0300f66e58c"
     },
     {
       "path": "lib/types/rp/injection-binding.d.ts",
@@ -344,8 +1194,8 @@
     },
     {
       "path": "lib/types/rp/injection.d.ts",
-      "bytes": 2572,
-      "sha256": "62ad9829c0f9a24ecd9b8289e2faa8e5c9e11c7af663297f36a9146842892672"
+      "bytes": 3000,
+      "sha256": "6f66fc1d1b7897e68cac9b319ce380d683c153dd36a3fb4e5d8e0465f8676b99"
     },
     {
       "path": "lib/types/rp/jobs.d.ts",
@@ -364,8 +1214,8 @@
     },
     {
       "path": "lib/types/rp/memory.d.ts",
-      "bytes": 25642,
-      "sha256": "712b7da6d71763074170b5b74611f76b2f9d29a732f03d1e0dee6528e8f656c7"
+      "bytes": 46248,
+      "sha256": "de584df73ffd9836aed3300691223f42effa2734c2deef0cf48f7c998bc20c6a"
     },
     {
       "path": "lib/types/rp/modules/commands.d.ts",
@@ -393,14 +1243,19 @@
       "sha256": "a3c12f6d00ffeb5bcdb35d2a26fdfc61418317cc8eb6e82128711ca55b76960e"
     },
     {
+      "path": "lib/types/rp/organizer.d.ts",
+      "bytes": 2791,
+      "sha256": "0e852eb5f1531faa7387a7f5e5cd641893a88f8784bfbc883089a3c84e61453e"
+    },
+    {
       "path": "lib/types/rp/packet-proof.d.ts",
-      "bytes": 731,
-      "sha256": "e00bbc39a72a9cf9f76f75277d1e6d4988fcc7e4f547f2b9d090df50e1827b4a"
+      "bytes": 964,
+      "sha256": "b21b67d955fda80a13196631831366ecb39e83d2ae557e2d4046321863d38b44"
     },
     {
       "path": "lib/types/rp/packet.d.ts",
-      "bytes": 2833,
-      "sha256": "e3c9ebc786afc14eed4baabdfa41c8a9727c30e57da583c71e69fd65f30d7c39"
+      "bytes": 3359,
+      "sha256": "91293d2ee012f650e5a6da56a3ead64157b3cf30320579fe173d7af4564af762"
     },
     {
       "path": "lib/types/rp/person/binding.d.ts",
@@ -411,6 +1266,51 @@
       "path": "lib/types/rp/person/changes.d.ts",
       "bytes": 3403,
       "sha256": "03e5b4ed5583d7bec24612f891adee80665f86deced2bac622191603320bb1a9"
+    },
+    {
+      "path": "lib/types/rp/person/documents/audience.d.ts",
+      "bytes": 754,
+      "sha256": "2c85c0c726031b32e823f811396426906fcf8cc6920da307ce1a0d7c46ec6c57"
+    },
+    {
+      "path": "lib/types/rp/person/documents/format.d.ts",
+      "bytes": 916,
+      "sha256": "068d2c968f9313d6cd35553ec293259b7e03e0d6b8036f10b35369641ef361b2"
+    },
+    {
+      "path": "lib/types/rp/person/documents/import.d.ts",
+      "bytes": 171,
+      "sha256": "59cff4c438c9722f0e5f0780bb7c32c416e3723af208c713f046a164c64a1b07"
+    },
+    {
+      "path": "lib/types/rp/person/documents/reconcile.d.ts",
+      "bytes": 710,
+      "sha256": "2d08762107c5bdb96c7a7d349f0973417471650848f2826b58a80aaac7d990f8"
+    },
+    {
+      "path": "lib/types/rp/person/documents/schema.d.ts",
+      "bytes": 672,
+      "sha256": "0b1bc999ffc745ec942e42bcfd38d88890c0140acd66559976cbb652f27a9921"
+    },
+    {
+      "path": "lib/types/rp/person/documents/selection.d.ts",
+      "bytes": 648,
+      "sha256": "27e4365acc470d20a031b3d54e701c378414294fdfe0099210e8fe29b372a9e3"
+    },
+    {
+      "path": "lib/types/rp/person/documents/service.d.ts",
+      "bytes": 2756,
+      "sha256": "0dff1312281c704c361e0c9870a0ffdd80d703a64223db1c1fe6f15603c4fef9"
+    },
+    {
+      "path": "lib/types/rp/person/documents/types.d.ts",
+      "bytes": 1835,
+      "sha256": "b5b1f0e74a5ee90142414074324c07de30c7149182775587ce3cecf55a8b4ac5"
+    },
+    {
+      "path": "lib/types/rp/person/editor-copy.d.ts",
+      "bytes": 431,
+      "sha256": "b3fa79396c003168178c0bae3e3a701760b9358cde2d91e5843054243251c5ab"
     },
     {
       "path": "lib/types/rp/person/editor-ids.d.ts",
@@ -429,18 +1329,28 @@
     },
     {
       "path": "lib/types/rp/person/management-client.d.ts",
-      "bytes": 309,
-      "sha256": "d900fe79bf777ee188bd4fd662a3c3e7a8e017409941d813a6aec1e35cfa8b49"
+      "bytes": 467,
+      "sha256": "fb0ab13dca59e3676485e14bbf7b1424c03915ef10c896553a077bef3fac9eb7"
+    },
+    {
+      "path": "lib/types/rp/person/management-extensions.d.ts",
+      "bytes": 4341,
+      "sha256": "1b76c48d88ef63dfc73dd3d3df2661df0f60497fbb6ae0de964f2523d22d56a3"
     },
     {
       "path": "lib/types/rp/person/management-server.d.ts",
-      "bytes": 332,
-      "sha256": "745760d9c978e557407418f92409efb14c6c7ce669db7872e4a98905b9180022"
+      "bytes": 9817,
+      "sha256": "741b5678a6311dd7c0c6a8cf23ce2ebc5ef6c9ec00a217e1f56b46ce91d33318"
+    },
+    {
+      "path": "lib/types/rp/person/management-settings.d.ts",
+      "bytes": 436,
+      "sha256": "ad07ce17bae607bb664339e661395369c40945d2838fbe4f09bc8c661b906799"
     },
     {
       "path": "lib/types/rp/person/management.d.ts",
-      "bytes": 3727,
-      "sha256": "e1df30892c7c63fac0f9d39711365c47e97150d1b4fad1a00f09154c6f5be240"
+      "bytes": 10305,
+      "sha256": "1503afa3abe3440edc72441a9d21c9f448572dfe4323fe137eb09f6f4485f93d"
     },
     {
       "path": "lib/types/rp/person/manager-ui.d.ts",
@@ -469,8 +1379,23 @@
     },
     {
       "path": "lib/types/rp/person/workbench-client.d.ts",
-      "bytes": 237,
-      "sha256": "c1094ca85ef13a4df4d039c44e42c51a0c7dd27a20b9ad8b94fb4fead94d3c25"
+      "bytes": 551,
+      "sha256": "1b000fc2dbfdc937d5f77f1e8195ff6cd111ce3caae2cde1b98e9d040a6be4cb"
+    },
+    {
+      "path": "lib/types/rp/person/workbench-extensions.d.ts",
+      "bytes": 179,
+      "sha256": "d5768a696dfc011a2060eb5f19a3c90002d622a89116c1dc647000ed26f365c5"
+    },
+    {
+      "path": "lib/types/rp/person/workbench-font-manifest.d.ts",
+      "bytes": 66,
+      "sha256": "4df3b567bdb4da3dcf8b5a19d9a5ef32fd6d98b0cf15ab118cc747795e086056"
+    },
+    {
+      "path": "lib/types/rp/person/workbench-fonts.d.ts",
+      "bytes": 158,
+      "sha256": "f5822c57e9b4939e5c0bb27a89c2143a1bf972bd70ceb75439125b13cebd780d"
     },
     {
       "path": "lib/types/rp/person/workbench-page.d.ts",
@@ -478,9 +1403,19 @@
       "sha256": "229c720e081ee3d899ba691ef905c00ec815b8e161d8fd8bbfc0d3835b7ef8ee"
     },
     {
+      "path": "lib/types/rp/person/workbench-reading.d.ts",
+      "bytes": 184,
+      "sha256": "a4d57dc893ee79c1d5329bcd45a9c7bd0ff9e7f48033e314dbef5620cafc9f86"
+    },
+    {
       "path": "lib/types/rp/person/workbench-style.d.ts",
-      "bytes": 65716,
-      "sha256": "a6576dc08c22d4fc8b413d09812baa13f1458b19842abbd5e5a41f0d8e8a8986"
+      "bytes": 193223,
+      "sha256": "ebc2925c8f4bf5f4bbd4ac969d99ed027bc40e2643af06b32b867bc5155e3de8"
+    },
+    {
+      "path": "lib/types/rp/person/workbench-visuals.d.ts",
+      "bytes": 174,
+      "sha256": "28fb80ac2a7d132fcffaf00f9bcc99be8a4bd7fe33a711eb86d8bf6983bc4927"
     },
     {
       "path": "lib/types/rp/publication-guard.d.ts",
@@ -491,6 +1426,11 @@
       "path": "lib/types/rp/reducer.d.ts",
       "bytes": 878,
       "sha256": "2aabae7b6d6efa8e73e0b086aaf50a5a8841f393b20ed53e54983bddd3074c12"
+    },
+    {
+      "path": "lib/types/rp/request-cost.d.ts",
+      "bytes": 787,
+      "sha256": "778b24a77c237cc993769263f0d5a40f60a15381c28a4973d785b24568861f0d"
     },
     {
       "path": "lib/types/rp/retrieval-evidence.d.ts",
@@ -504,23 +1444,23 @@
     },
     {
       "path": "lib/types/rp/retrieval.d.ts",
-      "bytes": 2021,
-      "sha256": "b9dd8239e25e53b37b24ff4518a5f2ef720966bc77aa9b2154fc7fea1469201e"
+      "bytes": 2229,
+      "sha256": "203cc916739ab60fe98c2175242d70b06405600f9ec5c91da88489c604a941f5"
     },
     {
       "path": "lib/types/rp/rp-plugin.d.ts",
-      "bytes": 28809,
-      "sha256": "86c647bd8342103751573082260ef6631ff9ebcf0a4067264dddfd3ede70b3e2"
+      "bytes": 50951,
+      "sha256": "dbcfbe1db1a82675f414ff222007bc66f0f966d1a34ed3160ab24dce5a35009d"
     },
     {
       "path": "lib/types/rp/schema.d.ts",
-      "bytes": 2835,
-      "sha256": "118f7e27ec2f05cdac84d8c0d9cc802d5e6de9505547c996f038524d16c8392f"
+      "bytes": 1663,
+      "sha256": "832d39d445601df9bc10e8d27e4a91b536faef455162341e84992a3d58fe9004"
     },
     {
       "path": "lib/types/rp/semantic-registry.d.ts",
-      "bytes": 831,
-      "sha256": "d7e76d0efff01a30cf3071f66e20d73e27fcb832d2f9c6c276b8cca91b817c2b"
+      "bytes": 1093,
+      "sha256": "643691dc8305fea3dcc5994ed31fcb31c6682a6c8dd6c4f119f7064a2b209b8f"
     },
     {
       "path": "lib/types/rp/session-policy.d.ts",
@@ -534,28 +1474,48 @@
     },
     {
       "path": "lib/types/rp/store.d.ts",
-      "bytes": 8254,
-      "sha256": "19c803ffc58570ff61b77e124dd5ec6201180d653e9c1c7b2e89b899196a6126"
+      "bytes": 8449,
+      "sha256": "2304c758185af19bf801a09e833d95f2087a8a7940584ad01725a272d51529b3"
     },
     {
       "path": "lib/types/rp/summarizer.d.ts",
-      "bytes": 3595,
-      "sha256": "d2628f201cc2943ba12f430646029744f82ae979f2721f4a6efa19a5c87200bf"
+      "bytes": 4047,
+      "sha256": "79dc60451d4bcbaa515bb828a6437fc8ef62c42b409e57f2de756f6657d76d0b"
+    },
+    {
+      "path": "lib/types/rp/token-budget-marker.d.ts",
+      "bytes": 328,
+      "sha256": "605904a888bc6db7584f035e49a00b6255ad78d99208322acc95199b82a031ad"
+    },
+    {
+      "path": "lib/types/rp/token-budget.d.ts",
+      "bytes": 1600,
+      "sha256": "893eca842e097a9250c43c66ceceefeaea05681bb878647d633570184ab6faaa"
+    },
+    {
+      "path": "lib/types/rp/tokenizers/deepseek.d.ts",
+      "bytes": 374,
+      "sha256": "6736effe07d67cf63a69664f2ecb0ddc38dcb8682e9d4702e99242a12ad7ee1b"
     },
     {
       "path": "lib/types/rp/types.d.ts",
-      "bytes": 13346,
-      "sha256": "213a50cec430c1229e339758520629394f791877bdb29452d0985104e167f3ca"
+      "bytes": 13722,
+      "sha256": "b4fe07d296950b687866e63e64759dba42c9ba65c860a8f5215b9c71b70dfdac"
+    },
+    {
+      "path": "lib/types/rp/validation.d.ts",
+      "bytes": 1455,
+      "sha256": "2a2146296ba92a5188637a8d119813e2f2e0d87c9401e5e4929c121b64bf9e03"
     },
     {
       "path": "lib/types/rp-plugin.d.ts",
-      "bytes": 2053,
-      "sha256": "28e8500111843ec7e2d9261c3f4db3120a4ccfe1c2c077f9adcea600da37189c"
+      "bytes": 2135,
+      "sha256": "d6e9ed52d7ea82691f0c92cd55af9a1d05466078d3ed6c51a94a9eda1a74d83e"
     },
     {
       "path": "ui/person-editor/editor.js",
-      "bytes": 14767,
-      "sha256": "3e48ddb31c905ccbacf4ea45905f264f4b553fc22b448fc6643d32b6c3392b8f"
+      "bytes": 16286,
+      "sha256": "889b9917c2318cc4883a7a7b84afcaa7dfced53d678e5392ccef9026f6ad18dc"
     },
     {
       "path": "ui/person-editor/index.html",
@@ -563,9 +1523,19 @@
       "sha256": "98d3d44baf8de6e417c741db8524bed732464f39a3b654463137fc2ad433b5ef"
     },
     {
+      "path": "ui/workbench/continuity.css",
+      "bytes": 17943,
+      "sha256": "96d1f082124115e4ad041145b21309b5f3625ff2a42382723f5309f386d7a40b"
+    },
+    {
+      "path": "ui/workbench/fonts.css",
+      "bytes": 104533,
+      "sha256": "c51f5afe4121d8ee7e0d92879ba54827b84647e895b60f3a1f929da892f37a47"
+    },
+    {
       "path": "ui/workbench/styles.css",
-      "bytes": 64179,
-      "sha256": "6b19f8bd66e0c418417945b4940429bc938fbc7fabcfafa2d24aebdf37f0dc3c"
+      "bytes": 68251,
+      "sha256": "6c2855fbf6c791af9d7e468c69fa636409b832be0db586da41c33873b38cbd75"
     }
   ]
 }

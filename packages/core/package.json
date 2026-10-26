@@ -1,0 +1,18 @@
+{
+  "name": "@memory-continuity/core",
+  "version": "0.1.0-preview.2",
+  "description": "Memory-Continuity 独立核心：人物、原文资料、共同日记、记忆预算与本机工作台",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/types/core/index.d.ts",
+  "bin": {"memcont-core": "./lib/cli.js"},
+  "exports": {
+    ".": {"types": "./lib/types/core/index.d.ts", "default": "./lib/index.js"},
+    "./package.json": "./package.json"
+  },
+  "files": ["lib", "assets", "SOURCE-MANIFEST.json", "README.md", "LICENSE"],
+  "engines": {"node": ">=22"},
+  "license": "BSD-3-Clause",
+  "author": "Kayou",
+  "repository": {"type": "git", "url": "git+https://github.com/Kayou-31/Memory-Continuity.git", "directory": "packages/core"}
+}

@@ -6,7 +6,7 @@ import {createHash,randomUUID} from 'node:crypto'
 import {fork} from 'node:child_process'
 import {once} from 'node:events'
 import {pathToFileURL} from 'node:url'
-import {host as nativeHost} from './fixtures/rp/native-host.mjs'
+import {host as nativeHost,inspectProfileOwner,recoverProfileOwner} from './fixtures/rp/native-host.mjs'
 const bundle=process.env.RP_PERSON_BUNDLE?await import(pathToFileURL(path.resolve(process.env.RP_PERSON_BUNDLE)).href):undefined
 const host=(config,hooks={})=>nativeHost(config,{...hooks,...(bundle?{install:bundle.installRpPlugin}:{})})
 const sha=v=>createHash('sha256').update(v).digest('hex')
@@ -16,7 +16,12 @@ async function interrupt(operation,checkpoint){
  const child=fork(path.resolve('test/fixtures/rp/injection-crash-child.mjs'),[directory,operation,String(checkpoint)],{silent:true,execArgv:[]});let stderr='',timer
  child.stderr.on('data',b=>{stderr=(stderr+b).slice(-8192)});child.stdout.resume()
  const exited=once(child,'exit')
- try{const evidence=await Promise.race([once(child,'message').then(([m])=>m),exited.then(([code,signal])=>{throw new Error('Child exited before checkpoint: '+code+'/'+signal+' '+stderr)}),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Child checkpoint timeout: '+stderr)),15000)})]);child.kill('SIGKILL');await exited;return {directory,evidence}}
+ try{const evidence=await Promise.race([once(child,'message').then(([m])=>m),exited.then(([code,signal])=>{throw new Error('Child exited before checkpoint: '+code+'/'+signal+' '+stderr)}),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Child checkpoint timeout: '+stderr)),15000)})]);child.kill('SIGKILL');await exited;
+  // An administrator verifies the dead profile owner before restarting. This
+  // does not restore a host journal or grant admission to the interrupted input.
+  const profile=path.join(directory,'profile'),owner=await inspectProfileOwner(profile)
+  if(owner){assert.equal(owner.owner.pid,child.pid);assert.equal(owner.process,'dead');assert.equal(await recoverProfileOwner(profile,owner.sha256),'recovered')}
+  return {directory,evidence}}
  finally{clearTimeout(timer);if(child.exitCode===null&&child.signalCode===null){child.kill('SIGKILL');await exited}}
 }
 

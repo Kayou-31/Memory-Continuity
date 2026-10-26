@@ -3,3 +3,5 @@ lib/
 work/
 *.tgz
 fixture-report.json
+__pycache__/
+*.py[cod]

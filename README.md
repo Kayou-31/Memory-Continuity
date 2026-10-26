@@ -4,19 +4,23 @@
 
 **让会话可以结束，让你塑造的人物继续。**
 
-面向 DSH 的独立人物连续性与长期记忆插件<br>
-由你定义身份，让经历、关系与承诺延续；每一次成长，都由你亲自审阅。
+人物连续性与长期记忆 · DSH 插件 / 独立核心 / AstrBot 管理桥<br>
+放得下完整的人物资料，也留得住一起度过的一天。
 
-[![正式版 0.2.1](https://img.shields.io/badge/正式版-0.2.1-167d8d)](https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.2.1)
+[![稳定版 0.3.0](https://img.shields.io/badge/正式版-0.3.0-167d8d)](https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.3.0)
 [![DSH rc.2 / rc.3](https://img.shields.io/badge/DSH_0.2.1-rc.2_%7C_rc.3-526d82)](package.json)
 [![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-43853d)](package.json)
 [![BSD-3-Clause](https://img.shields.io/badge/License-BSD--3--Clause-737373)](LICENSE)
 
-[下载插件](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.1/dsh-external-dsh-memory-continuity-0.2.1.tgz) · [完整源码](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.2.1/Memory-Continuity-0.2.1-source.zip) · [中文发布说明](docs/releases/0.2.1/RELEASE.zh.md) · [验证报告](docs/releases/0.2.1/RESULTS.md)
+[下载正式版](https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.3.0) · [完整源码](https://github.com/Kayou-31/Memory-Continuity/releases/download/v0.3.0/Memory-Continuity-0.3.0-source.zip) · [这次更新了什么](docs/releases/0.3.0/RELEASE.zh.md) · [验证与限制](docs/releases/0.3.0/RESULTS.md)
 
 </div>
 
-**当前版本：0.2.1，双 SDK 兼容补丁。** 同一个插件包支持 DSH `0.2.1-rc.2` 与 `0.2.1-rc.3`，沿用已交付的双主题人物工作台。无需安装 Ultra Mode；主命令为 `/memcont`。安装后默认禁用，首次启用请先完成下方配置。
+**当前正式版：0.3.0。** 这次把人物档案、成长审阅、记忆整理和会话交接放回一个更好读、也更好操作的工作台。你可以看清一段记忆从哪里来、为什么会被带入对话，也可以在变化真正生效前停下来核对。
+
+同时补上长期对话的调用与重试上限，避免重复叠加完整记忆包。这里说的是可观察的请求控制，不是未经验证的“账单节省百分比”。DSH 仍支持 `0.2.1-rc.2 / rc.3`，无需 Ultra Mode，主命令仍是 `/memcont`。
+
+> **按宿主选包：** DSH 插件为正式版 `0.3.0`；独立核心为 `0.1.0-preview.2`；AstrBot 管理桥仍为 `0.1.0-preview.1`。后两者保留预览标记，AstrBot 还不能向模型注入人物记忆。升级前请备份完整 profile 和工作区。
 
 [认识项目](#这是什么) · [功能一览](#功能一览) · [快速开始](#快速开始) · [常用命令](#常用命令) · [升级与兼容](#升级与兼容) · [常见问题](#常见问题) · [开发文档](#开发文档)
 
@@ -31,23 +35,23 @@ Memory-Continuity 想解决的，是长期互动里“还是同一个人”的�
 - **你来塑造**：定义人物，审阅变化，决定哪些经历被接受。
 - **记忆有依据**：记录保留来源、版本与分支；纠正历史时同步处理依赖内容。
 - **本地可管理**：工作台、存储与注入预览在本机运行，工作台资源随插件分发。
-- **独立可使用**：只依赖声明的 DSH 原生组件，不需要其他 Ultra 插件。
+- **独立可使用**：DSH 包不需要 Ultra；独立核心不需要 DSH；按自己的宿主选择分包。
 
 ## 工作台
 
 人物、经历、关系、目标、成长审阅与注入预览，在同一个中文工作台中管理。支持浅色、深色和跟随系统主题。
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-dark.jpg">
-  <img src="docs/assets/workbench-light.jpg" alt="Memory-Continuity 工作台：预览本轮记忆选择、注入原因和供模型阅读的人物连续性文本" width="1100">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/workbench-03-dark.png">
+  <img src="docs/assets/workbench-03-light.png" alt="Memory-Continuity 工作台：预览本轮记忆选择、注入原因和供模型阅读的人物连续性文本" width="1100">
 </picture>
 
-<sub>0.2.0 验收期间的真实宿主截图。预览使用后端实际结果，展示本轮选择与原因。</sub>
+<sub>0.3 工作台的真实浏览器截图，连接隔离的原生 SDK 测试宿主。人物与经历是演示数据，正式安装不会自动创建这些人物；头像暂用姓名缩写。</sub>
 
 <details>
 <summary>查看深色模式</summary>
 
-![深色工作台](docs/assets/workbench-dark.jpg)
+![深色工作台](docs/assets/workbench-03-dark.png)
 
 </details>
 
@@ -55,6 +59,9 @@ Memory-Continuity 想解决的，是长期互动里“还是同一个人”的�
 
 | 能力 | 当前可以做什么 |
 | --- | --- |
+| 完整人物资料 | 保存 UTF-8 Markdown / 文本原文，单份最多 1 MiB；按章节分类、条件选入，未知部分保留，不静默截断 |
+| 共同日记 | 你可以写下今天的感受；明确启用后，DSH 中的 AI 可以在当前对话里调用专用工具写日记，保留作者、版本和来源 |
+| 32K 记忆预算 | 首轮按需加载，后续可选记忆最多 2,048 当前计量单位；最新记忆包替换旧包的发送视图，总额最高 32,768 token，仍受实际模型预算约束 |
 | 人物档案 | 创建人物，管理身份、背景、性格、价值观、边界与表达；设置稳定、允许成长或情境性变化策略 |
 | 经历与时间线 | 记录有来源的经历，回看已经确认的变化、理由与证据 |
 | 关系与承诺 | 管理有方向的关系，以及目标、承诺及其进展状态 |
@@ -62,12 +69,14 @@ Memory-Continuity 想解决的，是长期互动里“还是同一个人”的�
 | 分层记忆 | 将自我核心、当前处境、关系背景、相关往事、未完成事项分开组织 |
 | 条件注入 | 按话题、人物、场景、用途等条件选择内容；支持概览、关联、证据三级展开 |
 | 原因预览 | 查看选中与未选原因、来源与版本、字节用量，以及本轮实际注入文本 |
-| 会话延续 | 显式创建干净的新会话，继承有效人生线、人物与可认证配置 |
+| 按需整理 | 本地生成带原文出处的摘录候选；复核重复、冲突、久未确认的记录和未完成约定，确认前不改变正式记忆 |
+| 资料修订 | 重新解析长资料后匹配旧章节，提示可能沿用的分类和条件，由你核对后采用 |
+| 会话延续 | 先预览关键原话、有效经历、状态与待办，再显式创建干净的新会话，继承有效人生线、人物与可认证配置 |
 | 全局记忆 | 保存通用偏好，按授权发布、采用或撤销世界记忆；支持显式启用分段存储 |
 | 历史修订 | 分支、来源检索、人工分层摘要、纠正与撤回；相关摘要随依赖失效 |
-| 用途与约束 | RP、陪伴、创作、项目助手用途框架；三个内置模块默认关闭，按需手动启用 |
+| 用途与约束 | RP、陪伴、创作、项目助手用途框架；三个内置模块默认关闭，可在工作台手动切换并确认；已有历史时先干净续接 |
 
-工作台写入采用 **读取当前状态 → 预览变更 → 明确确认**。模型的记忆工具只读，不能自行采纳成长、纠正事实或发布全局记忆。
+工作台写入采用 **读取当前状态 → 预览变更 → 明确确认**。普通记忆检索工具只读；DSH 的共同日记写入是单独、默认关闭的能力。AI 不能借它修改人物、采纳成长或发布全局记忆。修改前的额外影响弹窗可在设置中关闭，明确保存、权限和版本检查仍然保留。
 
 ## 快速开始
 
@@ -84,7 +93,7 @@ Memory-Continuity 想解决的，是长期互动里“还是同一个人”的�
 
 ### 2. 下载插件并配置
 
-从 [0.2.1 发布页](https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.2.1) 下载 `dsh-external-dsh-memory-continuity-0.2.1.tgz`，按同页 `SHA256SUMS.txt` 校验后，通过宿主的本地插件包安装流程加载。
+从 [0.3 正式版页](https://github.com/Kayou-31/Memory-Continuity/releases/tag/v0.3.0) 下载 `dsh-external-dsh-memory-continuity-0.3.0.tgz`，按同页 `SHA256SUMS.txt` 校验后，通过宿主的本地插件包安装流程加载。
 
 插件入口为 `@dsh-external/dsh-memory-continuity`，配置节点仍叫 `rp-memory`。先使用独立 profile，填写真实路径、可信人物/实体 ID 和已核实的请求预算，再显式启用。
 
@@ -114,7 +123,7 @@ Memory-Continuity 想解决的，是长期互动里“还是同一个人”的�
 | `packetSoftTokens` | 可选记忆内容的软预算 |
 | `contextWindow`、`inputLimit` | 已核实的上下文与输入容量 |
 
-容量字段沿用历史名称，实际请求采用 UTF-8 字节的保守估算，不等同于精确 tokenizer 或费用估算。强制内容超过容量时拒绝发送，提示诊断或干净续接。
+旧配置字段沿用历史名称，仍按 UTF-8 字节保守估算。新版本可在空白根会话运行 `/memcont budget set {}`，明确启用最高 32,768 token 的总记忆预算；固定离线 DeepSeek V3.2 文本 tokenizer 有独立验证，其他模型明确显示保守计量。首轮按需加载，后续可选记忆最多 2,048 当前计量单位，旧的本插件记忆包退出发送视图，原始证据保留。必需身份、工具历史和包装仍计入总额，不能把 2K 理解为整请求上限。总记忆也不是模型的总上下文：输出、工具与其他上下文仍须留有空间。详见 [记忆预算](docs/memory-budget.zh.md)。强制内容放不下时拒绝发送，不静默裁掉人物核心。
 
 旧配置中的 `ultraMemoryOptimization` 是保留的历史兼容选项；分层注入使用独立 planner，不需要 Ultra。不要同时启用旧包和新包。
 
@@ -156,6 +165,18 @@ Memory-Continuity 想解决的，是长期互动里“还是同一个人”的�
 
 `input` 会调用宿主已配置的模型，是否收费取决于你的模型服务。回复不会自动成为已采纳事实；核对来源后，用 `/memcont accept <sourceId>` 明确接受。经历与成长也可以在工作台中手动记录、预览和确认。
 
+## 选择自己的分包
+
+| 分包 | 适合谁 | 本预览范围 |
+| --- | --- | --- |
+| DSH 插件 `0.3.0` | 在 DSH 中使用人物和记忆 | 本轮主要功能；支持 rc.2 / rc.3 |
+| 独立核心 `0.1.0-preview.2` | 本机管理、开发其他宿主适配 | Node.js 核心、初始化、工作台、认证管理/检索服务；不包含模型网关 |
+| AstrBot 管理桥 `0.1.0-preview.1` | AstrBot 4.29.3 的管理员 | 私聊显式连接、查看状态、打开工作台、撤销管理会话；模型注入未开放 |
+
+核心首次使用可运行 `memcont-core init --directory <新目录绝对路径> --entity <人物ID>`，然后按返回配置显式 `serve`。它不会创建虚构人物、覆盖旧数据或自动启动服务。完整步骤见 [核心说明](packages/core/README.md) 与 [AstrBot 安装说明](adapters/astrbot/README.md)。
+
+NapCat 与 Snow Luma 的接入范围分别见 [NapCat](docs/platforms/napcat.md)、[Snow Luma](docs/platforms/snow-luma.md)；协议资料相符不等于整链验证通过。
+
 ## 常用命令
 
 | 想做什么 | 命令 |
@@ -177,7 +198,7 @@ Memory-Continuity 想解决的，是长期互动里“还是同一个人”的�
 
 原名 **Ultra-RP-Memory**，现统一使用 **Memory-Continuity**。更名不自动搬动记忆数据。
 
-| 项目 | 正式版约定 |
+| 项目 | 兼容约定 |
 | --- | --- |
 | npm 包名 | `@dsh-external/dsh-memory-continuity`；当前通过 GitHub TGZ 分发，未发布 npm registry |
 | 主命令 | `/memcont`；旧 `/rp` 保留为兼容别名，没有 `/mc` |
@@ -188,24 +209,22 @@ Memory-Continuity 想解决的，是长期互动里“还是同一个人”的�
 
 升级前备份完整 profile 和工作区，用独立 profile 验证；不要同时加载新旧入口。首次启用人物或 M5 扩展时，仍执行对应备份与读取器拒绝规则。无法认证的旧工具历史进入恢复流程，不会自动补造证明。
 
-从 0.2.0 升到 0.2.1 无需转换数据格式。升级 DSH 时请使用同一版本的原生组件；只改插件的版本声明无法解决宿主组件混装。0.2.0 的历史标签与发布附件保留原样。
+从 0.2.1 或 0.3 预览版升级，先备份完整 profile 与工作区。branch/global v1、host journal v2 格式代次保持不变；journal 新增严格校验的可选请求计数，旧读取器可能拒绝，不能删字段绕过；人物原文、共同日记与预算能力会建立新版读取要求，旧版 0.2.1 不能直接读取启用这些能力后的数据。回退必须恢复已核验的升级前备份，不要删除能力标记。升级 DSH 时仍须保持同一版本原生组件；历史标签与发行附件保留原样。
 
 详细规则：[数据迁移与恢复](docs/rp-memory-dev3/MIGRATION.md) · [分层注入的备份与回退](docs/rp-memory-m5/README.md#数据与更名兼容) · [存储升级](docs/person-studio-storage.zh.md) · [仓库地址迁移](docs/REPOSITORY-MIGRATION.zh.md)。
 
 ## 验证与边界
 
-以下是 **0.2.1** 的实际验证，完整命令、失败记录与环境见 [正式版 RESULTS](docs/releases/0.2.1/RESULTS.md)。两套 SDK 分别完整执行，所有重型进程串行运行。
+本版的命令、退出码、真实宿主组件证据及故障记录见 [0.3 验证报告](docs/releases/0.3.0/RESULTS.md)，详细开发过程见 [本轮记录](docs/framework-evolution-2026-10-25/RESULTS.md)。构建、测试和打包串行进行；固定语料与真实模型效果严格分开。
 
-| 验证项 | 结果 |
-| --- | --- |
-| 类型检查、独立构建、打包 | 通过；源码独立重建结果与发布 manifest 一致 |
-| 单次完整测试 | rc.2 **259/259**；rc.3 **259/259**；各自失败、跳过、取消均为 0 |
-| 同一实际 TGZ + 两套原生 SDK | 各 **21/21**；覆盖人物、注入、管理、命令、异常关闭与保存失败后的干净续接 |
-| 桌面浏览器交互 | 沿用 [0.2.0 的主要流程实测](docs/releases/0.2.0/RESULTS.md)；本轮没有完成 rc.3 完整桌面应用验收 |
-| 固定语料 | 12 个样例、49 个标注输出；属于固定记录与协议验证 |
-| 发布物 | 插件、完整源码、证据归档及 SHA-256 校验一并提供 |
+稳定版的历史验收独立保存在 [0.2.1 报告](docs/releases/0.2.1/RESULTS.md)，不会拿旧版本的通过数量替代本版结果。
 
 **仍有这些边界：**
+
+- AstrBot 模型注入、平台人物绑定、模型日记工具以及 NapCat / Snow Luma 整链尚未完成；本次只交付明确标注的管理桥。
+- 全局记忆发布/撤销、分支与 retcon 的完整操作仍使用既有命令。人物归档、最近使用时间、完整会话链和创作大纲/项目看板尚未接入，页面不会用演示按钮冒充。
+- 本地摘录不是模型语义总结；复核只识别精确重复和已有冲突。更自由的“做梦整理”仍是后续方向。
+- 普通聊天、工具结果和退役占位仍会累积，长会话需要显式续接；内部请求字节与适配器调用次数都不等于供应商账单。
 
 - 未验证真实模型的长期人格与语义质量；固定语料分数不能代替真实模型评测，测试没有调用付费 API。
 - 检索使用有界本地词法规则，没有语义向量检索；长历史仍有认证开销，存储与请求容量均有上限。
@@ -289,19 +308,19 @@ npm pack --dry-run
 
 | 我想了解 | 文档 |
 | --- | --- |
-| 正式版包含什么、接下来可能做什么 | [0.2.1 中文发布说明](docs/releases/0.2.1/RELEASE.zh.md) |
+| 正式版包含什么、接下来可能做什么 | [0.3 中文发布说明](docs/releases/0.3.0/RELEASE.zh.md) |
 | 命令与常见操作 | [中文指令速查](docs/COMMANDS.zh.md) |
 | 五层记忆、条件、深度与原因预览 | [人物连续性与分层注入](docs/rp-memory-m5/README.md) |
 | 人物字段与成长提案 | [人物核心](docs/person-core-usage.zh.md) |
 | 经历、关系和目标 | [Agent 长期记忆](docs/agent-memory.zh.md) |
 | 全局存储升级与备份 | [管理与存储说明](docs/person-studio-storage.zh.md) |
-| 实际测了什么、还有哪些限制 | [正式版验证报告](docs/releases/0.2.1/RESULTS.md) |
+| 实际测了什么、还有哪些限制 | [正式版验证报告](docs/releases/0.3.0/RESULTS.md) |
 | 数据格式、拒绝与恢复规则 | [迁移说明](docs/rp-memory-dev3/MIGRATION.md) |
 
 <details>
 <summary>历史设计与阶段验证</summary>
 
-历史文档保留当时的版本、产品名称和验收边界；当前安装与功能范围以上文和 0.2.1 发布说明为准。
+历史文档保留当时的版本、产品名称和验收边界；当前安装与功能范围以上文和 0.3.0 发布说明为准。
 
 - [原始设计与 SDK 适配](docs/rp-memory-design.zh.md) · [SDK 0.2.1 说明](docs/rp-memory-sdk021.zh.md)
 - [输入、采纳、检索与纠错](docs/rp-memory-narrator.zh.md) · [人工候选与分层摘要](docs/rp-memory-summary.zh.md)

@@ -1,0 +1,32 @@
+TAP version 13
+# Subtest: a native history change during durable request reservation is checked before adapter admission
+not ok 1 - a native history change during durable request reservation is checked before adapter admission
+  ---
+  duration_ms: 333.2163
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-cost-reliability-host.test.mjs:81:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    no request may use pre-reservation queue certification after its queue changed
+
+    1 !== 0
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-cost-reliability-host.test.mjs:85:69)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 941.147

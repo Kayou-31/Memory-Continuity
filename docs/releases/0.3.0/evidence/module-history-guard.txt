@@ -1,0 +1,60 @@
+Browser tab: 7, Title: "Memory-Continuity 工作台", URL: "http://127.0.0.1:51982/".
+The following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 122-124, 128-143, 145-152, 154-161, 164-167
+~			100 text 林澈 / 会话延续
+~			11 checkbox Description: 浅色, Value: 1
+~			12 checkbox Description: 深色, Value: 0
++				122 text 当前会话已有历史。请先干净续接，再在新会话打开工作台修改配置。
++					123 heading 换一段会话，继续这段故事, Value: 1, ID: page-title
++						124 text 换一段会话，继续这段故事
+~					125 text 会话延续 · 已确认的记忆，沿着同一条人生线继续。
+~						127 heading 当前请求不能继续发送, Value: 3
++							128 text 当前请求不能继续发送
++						129 text request_limit
++						130 button (collapsed) 原因与恢复指引, Secondary Actions: Expand
++							131 text 原因与恢复指引
++						132 text /memcont status
+/memcont continue-clean
++						133 button 复制指令
++					134 container
++						135 heading 当前会话, Value: 2
++							136 text 当前会话
++						137 button 准备开启新会话
++						138 text 林澈 沿当前人生线继续；开始时间和轮数尚未由宿主提供。
++						139 button (collapsed) 会话与人生线编号, Secondary Actions: Expand
++							140 text 会话与人生线编号
++					141 container
++						142 heading 继续带着, Value: 2
++							143 text 继续带着
++						144 content list
++							145 text 有效的人物定义与已确认经历
++							146 text 当前人生线、关系和未完成事项
++							147 text 经过认证的人物绑定与注入配置
++					148 container
++						149 heading 留在旧会话, Value: 2
++							150 text 留在旧会话
++						151 content list
++							152 text 旧宿主聊天消息和未经认证的工具结果
++							153 text 尚未采纳的成长候选不会变成事实
++							154 text 结果不明的输入不会自动重发
++					155 container
++						156 heading 出发前，把重要的事放在手边, Value: 3
++							157 text 出发前，把重要的事放在手边
++						158 text 按需预览关键用户原话、当前状态、已确认经历和待办。只读取当前授权分支，不发送给模型，也不自动创建会话。
++						159 button 生成交接预览
++					160 button (collapsed) 开启干净的新会话 ＋, Secondary Actions: Expand
++						161 text 开启干净的新会话
++						162 text ＋
+~					163 container
++						164 heading 记忆的两种范围, Value: 2
++							165 text 记忆的两种范围
++						166 heading 人物人生线, Value: 3
++							167 text 人物人生线
++						168 text 定义、经历、关系和承诺按人物与分支读取，保持各自的来源。
++						169 heading 全局记忆, Value: 3
++							170 text 全局记忆
++						171 text 通用偏好与世界设定通过明确授权发布、采用或撤销，不自动共享私人记忆。
++					172 button (collapsed) 绑定与全局记忆操作 ＋, Secondary Actions: Expand
++						173 text 绑定与全局记忆操作
++						174 text ＋
+The focused UI element is 123 heading 换一段会话，继续这段故事, Value: 1, ID: page-title

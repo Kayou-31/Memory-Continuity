@@ -1,0 +1,111 @@
+TAP version 13
+# Subtest: unchanged tool steps reuse their current certified memory context
+ok 1 - unchanged tool steps reuse their current certified memory context
+  ---
+  duration_ms: 381.6806
+  type: 'test'
+  ...
+# Subtest: empty first-step decisions do not retire a context or manufacture a later request
+ok 2 - empty first-step decisions do not retire a context or manufacture a later request
+  ---
+  duration_ms: 228.2738
+  type: 'test'
+  ...
+# Subtest: request policy bounds a tool loop without deleting the completed tool history
+ok 3 - request policy bounds a tool loop without deleting the completed tool history
+  ---
+  duration_ms: 280.9961
+  type: 'test'
+  ...
+# Subtest: a host retry handler cannot retry a failing step past the configured limit
+ok 4 - a host retry handler cannot retry a failing step past the configured limit
+  ---
+  duration_ms: 162.5836
+  type: 'test'
+  ...
+# Subtest: a new explicit input receives its own allowance after a failed input
+ok 5 - a new explicit input receives its own allowance after a failed input
+  ---
+  duration_ms: 245.8031
+  type: 'test'
+  ...
+# Subtest: cost allowance survives a genuine cold restore and resume alone sends nothing
+ok 6 - cost allowance survives a genuine cold restore and resume alone sends nothing
+  ---
+  duration_ms: 271.7428
+  type: 'test'
+  ...
+# Subtest: failed reservation persistence does not reach the adapter and leaves diagnosis available
+ok 7 - failed reservation persistence does not reach the adapter and leaves diagnosis available
+  ---
+  duration_ms: 234.4609
+  type: 'test'
+  ...
+# Subtest: organizer commands are explicit, reuse candidates, and consume no additional model requests
+ok 8 - organizer commands are explicit, reuse candidates, and consume no additional model requests
+  ---
+  duration_ms: 273.3902
+  type: 'test'
+  ...
+# Subtest: on-demand extractive candidates reuse the same authenticated selection and never adopt themselves
+ok 9 - on-demand extractive candidates reuse the same authenticated selection and never adopt themselves
+  ---
+  duration_ms: 387.0582
+  type: 'test'
+  ...
+# Subtest: review only suggests duplicates and age checks; handoff quotes remain verbatim and bounded
+ok 10 - review only suggests duplicates and age checks; handoff quotes remain verbatim and bounded
+  ---
+  duration_ms: 213.7654
+  type: 'test'
+  ...
+# Subtest: retrieval alternatives find an alias/paraphrase across history with fixed pagination and exact evidence
+not ok 11 - retrieval alternatives find an alias/paraphrase across history with fixed pagination and exact evidence
+  ---
+  duration_ms: 183.1443
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-organizer.test.mjs:30:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    an omitted base query must not turn an alternatives search into match-all
+    + actual - expected
+
+      [
+        'source_e3a3a3322722446cb80593aae6098bce',
+    +   'source_8de301e11da648bda0386e36f7a72d73'
+      ]
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'source_e3a3a3322722446cb80593aae6098bce'
+  actual:
+    0: 'source_e3a3a3322722446cb80593aae6098bce'
+    1: 'source_8de301e11da648bda0386e36f7a72d73'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-organizer.test.mjs:34:116)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: document revision suggests old classification and conditions only for unique matches
+ok 12 - document revision suggests old classification and conditions only for unique matches
+  ---
+  duration_ms: 2.0789
+  type: 'test'
+  ...
+# Subtest: handoff preserves commitment ownership and relationship direction, and drops corrected experiences
+ok 13 - handoff preserves commitment ownership and relationship direction, and drops corrected experiences
+  ---
+  duration_ms: 328.223
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 12
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4063.9891

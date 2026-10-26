@@ -9,7 +9,7 @@ import {pathToFileURL} from 'node:url'
 import {host} from './fixtures/rp/native-host.mjs'
 const dir=path.resolve('work/person-m5-2026-10-24/old-reader',randomUUID());await fs.mkdir(dir,{recursive:true})
 execFileSync('git',['archive','--format=tar','--output='+path.join(dir,'baseline.tar'),'ee6b5a1898f128a0baf953ea192ba80795ac674d','src'])
-execFileSync('tar',['-xf',path.join(dir,'baseline.tar'),'-C',dir])
+execFileSync('tar',['-xf','baseline.tar'],{cwd:dir})
 await build({entryPoints:[path.join(dir,'src/rp/host-journal.ts')],outfile:path.join(dir,'old.mjs'),bundle:true,platform:'node',format:'esm',logLevel:'silent'});stop()
 const old=await import(pathToFileURL(path.join(dir,'old.mjs')))
 const sha=s=>createHash('sha256').update(s).digest('hex'),ok=r=>{assert.equal(r.kind,'success',r.text);return r.text}

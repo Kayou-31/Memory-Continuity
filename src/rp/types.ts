@@ -5,7 +5,7 @@ export type Revision = number
 export type JsonValue = null | boolean | number | string | readonly JsonValue[] | { readonly [key: string]: JsonValue }
 export type ErrorCode = 'scope_denied' | 'invalid_record' | 'invalid_candidate' | 'source_unavailable' | 'stale_input'
   | 'idempotency_conflict' | 'persistence_failed' | 'persistence_uncertain' | 'store_locked' | 'capability_missing' | 'store_corrupt'
-  | 'snapshot_changed' | 'context_budget_exceeded' | 'ownership_lost' | 'capacity_exceeded'
+  | 'request_limit_exceeded' | 'snapshot_changed' | 'context_budget_exceeded' | 'ownership_lost' | 'capacity_exceeded'
 export type Result<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly code: ErrorCode; readonly message: string }
 export type Scope = { readonly kind: 'profile'; readonly profileId: Id }
   | { readonly kind: 'world'; readonly profileId: Id; readonly worldId: Id; readonly entityId?: Id }
@@ -18,7 +18,7 @@ export interface WorkspaceBinding { readonly workspaceId: Id; readonly profileId
 export interface HostSourceLocator { readonly sessionId: Id; readonly eventSeq: number; readonly messageId: Id; readonly messageRevision: Id }
 export interface SourceRevision {
   readonly schemaVersion: 1; readonly id: Id; readonly scope: Scope
-  readonly origin: 'host_public' | 'user_control' | 'approved_publication'; readonly host?: HostSourceLocator; readonly turnId?: Id
+  readonly origin: 'host_public' | 'user_control' | 'approved_publication' | 'agent_diary'; readonly host?: HostSourceLocator; readonly turnId?: Id
   readonly role: 'user' | 'assistant' | 'tool' | 'user_control'; readonly publicTextSha256: Sha256
   readonly publicTextLengthUtf16: number; readonly blobId: Id; readonly visibility: Visibility; readonly capturedAt: string
 }
@@ -38,6 +38,9 @@ export interface InputFence {
   readonly visibilityRevision: Revision; readonly deletionGeneration: Revision; readonly policyVersion: string
 }
 export type EventPayload =
+  | { readonly kind: 'diary_policy'; readonly value: import('./diary/types.js').DiaryPolicy }
+  | { readonly kind: 'diary_entry'; readonly value: import('./diary/types.js').DiaryValue }
+  | { readonly kind: 'person_document'; readonly value: import('./person/documents/types.js').DocumentValue }
   | { readonly kind: 'canon_assertion'; readonly subjectId: Id; readonly key: string; readonly value: JsonValue; readonly locked: boolean }
   | { readonly kind: 'occurrence'; readonly actorIds: readonly Id[]; readonly description: string }
   | { readonly kind: 'state_change'; readonly subjectId: Id; readonly key: string; readonly before?: JsonValue; readonly after: JsonValue }
@@ -84,7 +87,7 @@ export interface CommitBatch {
 declare const hostAuthorityBrand: unique symbol
 export interface HostAuthority { readonly [hostAuthorityBrand]: true; readonly scope: BranchScope; readonly viewpoint: Viewpoint; readonly visibility: Visibility }
 export interface SourceObservation {
-  readonly idempotencyKey: string; readonly origin: 'host_public' | 'user_control'; readonly host?: HostSourceLocator; readonly turnId: Id
+  readonly idempotencyKey: string; readonly origin: 'host_public' | 'user_control' | 'agent_diary'; readonly host?: HostSourceLocator; readonly turnId: Id
   readonly role: SourceRevision['role']; readonly publicText: string
 }
 export type RpRecord = { readonly kind: 'source'; readonly record: SourceRevision } | { readonly kind: 'event'; readonly record: SemanticEvent }

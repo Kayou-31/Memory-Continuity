@@ -1,0 +1,14 @@
+{
+  "enabled": {
+    "description": "启用 Memory-Continuity 管理桥",
+    "type": "bool",
+    "default": false,
+    "hint": "启用后仍须管理员私聊发送 /memcont connect。没有后台自动连接或模型注入。"
+  },
+  "connection_file": {
+    "description": "本机核心连接文件的绝对路径",
+    "type": "string",
+    "default": "",
+    "hint": "由 memcont-core serve 显式生成，包含管理凭据，请使用当前账户专用目录。此开发桥只连接同一电脑上的核心。"
+  }
+}

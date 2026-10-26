@@ -8,7 +8,11 @@ import type { Branch, BranchScope, BranchSourceBinding, CommitBatch, HostAuthori
 import { RpError, batch as validateBatch, binding as validateBinding, branch as validateBranch, checkedRpJson, cloneInput, denied, failure, fence as validateFence, hash, id, hostId, integer, invalid, job as validateJob, object, observation as validateObservation, parseRecord, scope as validateScope, sourceSpan as validateSpan, text, visibility as validateVisibility, authorityChange as validateChange, wellFormed } from './schema.js'
 import { reduceEvents, eventsForView } from './reducer.js'
 import { checkGrowthTransition, growthValue, inheritGrowthMarks, markGrowthEvent } from './growth-format.js'
-import { hasPersonOwner, markerProtocol, markSemantic, requiresPerson, semanticProtocol } from './semantic-registry.js'
+import { hasPersonOwner, markerProtocol, markSemantic, requiredSemanticCapabilities, semanticProtocol } from './semantic-registry.js'
+import {documentFromManifest, documentHead, documentValue} from './person/documents/format.js'
+import {diaryContent,diaryPolicy,diaryValue} from './diary/format.js'
+import {checkDiaryTransition} from './diary/transition.js'
+import {requireDiaryAdmission} from './diary/admission.js'
 import { checkPersonTransition, personValue } from './person/format.js'
 export { parseRecord } from './schema.js'
 /** Trusted storage adapters reuse the same verified lock/read protocol. */
@@ -27,6 +31,11 @@ const newId = (prefix: string) => prefix + '_' + randomUUID().replaceAll('-', ''
 const ok = <T>(value: T): Result<T> => { const copy = structuredClone(value); inheritGrowthMarks(value, copy); return { ok: true, value: copy } }
 const same = (a: unknown, b: unknown) => canonical(a) === canonical(b)
 function eventDependencies(event: SemanticEvent): string[] {
+  const diary=diaryValue(event),policy=diaryPolicy(event)
+  if(diary)return [...new Set([diary.policyEventId,...(diary.previousEventId?[diary.previousEventId]:[]),...diary.evidence.map(e=>e.eventId)])]
+  if(policy)return [...new Set([policy.originEventId,...(policy.previousEventId?[policy.previousEventId]:[])])]
+  const document = documentValue(event)
+  if (document) return [...new Set([document.originEventId, ...(document.previousEventId ? [document.previousEventId] : [])])]
   const payload = event.payload
   const base = payload.kind === 'knowledge_change' ? [payload.claimId] : payload.kind === 'relationship_change' ? [...payload.triggerEventIds] : payload.kind === 'correction' ? [...payload.replacementEventIds] : []
   const growth = growthValue(event)
@@ -35,10 +44,13 @@ function eventDependencies(event: SemanticEvent): string[] {
 }
 function authenticateEvent(event: SemanticEvent, changes: readonly AuthorityChange[]) {
   const protocol = markerProtocol(changes, event)
-  if (!protocol) return
+  if (!protocol) { if (['person_document','diary_entry','diary_policy'].includes(event.payload.kind)) denied('document or diary requires authenticated semantic marker'); return }
   markSemantic(event, protocol)
   if (protocol === 'agent-memory/v1') markGrowthEvent(event)
   else if (protocol === 'person-core/v1') personValue(event)
+  else if (protocol === 'person-document/v1') documentValue(event)
+  else if (protocol === 'shared-diary/v1') diaryValue(event)
+  else if (protocol === 'shared-diary-policy/v1') diaryPolicy(event)
   else if (event.payload.kind !== 'occurrence' || event.epistemic !== 'world' || !['user_canon', 'explicit_ooc'].includes(event.authority) || event.supersedes.length) denied('person origin must be explicit initial definition')
 }
 function error(code: import('./types.js').ErrorCode, message: string): never { throw new RpError(code, message) }
@@ -47,6 +59,8 @@ type Permission = 'read' | 'observe' | 'commit' | 'control'
 export type FaultStage = 'profile_locked' | 'metadata_listed' | 'blob_written' | 'blob_synced' | 'blob_published' | 'transaction_written' | 'transaction_synced' | 'transaction_published' | 'seal_written' | 'seal_synced' | 'seal_published' | 'directory_synced'
 export interface StoreOptions {
   readonly profileRoot: string
+  /** Official owner lifecycle, checked again immediately before publication. */
+  readonly active?:()=>void
   /** Trusted filesystem fault seam; never supplied by model/tool input. */
   readonly fault?: (stage: FaultStage) => void | Promise<void>
   readonly onBlobRead?: () => void
@@ -180,6 +194,7 @@ export class RpStore {
   }
   #workspacePath(workspaceId: string): string { id(workspaceId); return path.join(this.#root, 'workspaces', workspaceId) }
   async #profileCheck(): Promise<void> {
+    this.#options.active?.()
     if (!same(await directoryIdentity(this.#profileRoot), this.#profileIdentity)) denied('profile directory changed')
     const p = object(await readJson(path.join(this.#root, 'identity.json')), ['schemaVersion', 'profileId', 'rootHash', 'directoryIdentity'])
     if (p.schemaVersion !== 1 || p.profileId !== this.#profileId || p.rootHash !== sha(this.#profileRoot) || !same(p.directoryIdentity, this.#profileIdentity)) denied('profile identity changed')
@@ -197,7 +212,7 @@ export class RpStore {
     const temporary = file + '.tmp-' + randomUUID()
     let published = false, handle: Awaited<ReturnType<typeof fs.open>> | undefined
     try {
-      if(kind!=='seal')assertPublicationAllowed()
+      if(kind!=='seal'){this.#options.active?.();assertPublicationAllowed()}
       handle = await fs.open(temporary, 'wx')
       await handle.writeFile(body)
       if (useFault) await this.#options.fault?.(kind === 'blob' ? 'blob_written' : kind === 'seal' ? 'seal_written' : 'transaction_written')
@@ -207,7 +222,7 @@ export class RpStore {
       // The workspace lock serializes destination assignment. Never overwrite an
       // existing immutable commit even on POSIX where rename permits it.
       try { await fs.lstat(file); error('store_corrupt', 'RP immutable destination already exists') } catch (cause) { if ((cause as NodeJS.ErrnoException).code !== 'ENOENT') throw cause }
-      if(kind!=='seal')assertPublicationAllowed()
+      if(kind!=='seal'){this.#options.active?.();assertPublicationAllowed()}
       await fs.rename(temporary, file); published = true
       // An independent immutable receipt detects single-file tail loss. A crash
       // before the receipt still leaves a valid, unacknowledged transaction;
@@ -326,8 +341,8 @@ export class RpStore {
         if (tx.schemaVersion !== 1 || tx.workspaceId !== workspaceId || tx.sequence !== state.transactions.length + 1 || tx.previousHash !== (state.hashes.at(-1) ?? ZERO) || envelope.sha256 !== digest(tx)) invalid('transaction chain')
         text(tx.idempotencyKey, 512); hash(tx.effectHash); this.#validateOperation(tx.operation)
         const caps = tx.requiredCapabilities ?? []
-        if (!Array.isArray(caps) || caps.some(c => c !== 'rp.person-core/v1')) error('capability_missing', 'Unsupported workspace reader capability')
-        if (!same(caps, [...new Set(caps)].sort()) || state.requiredCapabilities.some(c => !caps.includes(c)) || (tx.operation.kind === 'commit' && requiresPerson(tx.operation.authorityChanges) && !caps.includes('rp.person-core/v1'))) invalid('workspace capability regression or missing person barrier')
+        if (!Array.isArray(caps) || caps.some(c => !['rp.person-core/v1','rp.person-documents/v1','rp.shared-diary/v1'].includes(c))) error('capability_missing', 'Unsupported workspace reader capability')
+        if (!same(caps, [...new Set(caps)].sort()) || state.requiredCapabilities.some(c => !caps.includes(c)) || (tx.operation.kind === 'commit' && requiredSemanticCapabilities(tx.operation.authorityChanges).some(c=>!caps.includes(c)))) invalid('workspace capability regression or missing semantic barrier')
         state.requiredCapabilities = caps
         if (effects.has(tx.idempotencyKey)) invalid('duplicate transaction effect')
         this.#apply(state, tx.operation)
@@ -419,7 +434,7 @@ export class RpStore {
     return new Map([...branch.records].map(([id, r]) => [id, { ...r, active: !blocked.has(id) }]))
   }
   async #append(workspaceId: string, state: WorkspaceState, key: string, effectHash: string, operation: Operation, useFault = true, publishPayloads?: () => Promise<void>): Promise<void> {
-    const caps = [...new Set([...state.requiredCapabilities, ...(operation.kind === 'commit' && requiresPerson(operation.authorityChanges) ? ['rp.person-core/v1'] : [])])].sort()
+    const caps = [...new Set([...state.requiredCapabilities, ...(operation.kind === 'commit' ? requiredSemanticCapabilities(operation.authorityChanges) : [])])].sort()
     const transaction: Transaction = { schemaVersion: 1, workspaceId, sequence: state.transactions.length + 1, previousHash: state.hashes.at(-1) ?? ZERO, idempotencyKey: key, effectHash, operation, ...(caps.length ? { requiredCapabilities: caps } : {}) }
     this.#validateOperation(operation)
     // Run the same metadata replay validator before publishing.
@@ -703,6 +718,15 @@ export class RpStore {
       const body = await this.#readBlob(request.workspaceId, r.blobId, r.bodySha256), parsed = parseRecord({ kind: 'event', record: JSON.parse(body) })
       if (!parsed.ok || parsed.value.kind !== 'event') error('source_unavailable', 'RP event payload unavailable')
       authenticateEvent(parsed.value.record, branch.changes)
+      const diary=diaryValue(parsed.value.record)
+      if(diary)diaryContent(diary,await this.#verifySpan(state,branch,request,diary.content,sourceText))
+      const document = documentValue(parsed.value.record)
+      if (document?.manifest) {
+        const m = document.manifest
+        const span = parsed.value.record.sources.find(s=>s.sourceRevisionId===m.sourceRevisionId && s.startUtf16===0 && s.endUtf16===m.textLengthUtf16 && s.publicTextSha256===m.sha256 && s.quoteSha256===m.sha256)
+        if (!span) error('source_unavailable','RP document original coverage unavailable')
+        documentFromManifest(m, await this.#verifySpan(state,branch,request,span,sourceText))
+      }
       const { payload: _payload, fictionalTime: _time, ...metadata } = parsed.value.record
       if (!same(metadata, r.metadata) || !same(eventDependencies(parsed.value.record), r.dependencyIds)) error('source_unavailable', 'RP event authority metadata mismatch')
       records.push(parsed.value.record)
@@ -768,6 +792,10 @@ export class RpStore {
     try {
       const { grant } = await this.#authorize(authority, 'observe'), observation = cloneInput(input); validateObservation(observation)
       if (observation.origin === 'user_control' && !grant.request.permissions.includes('control')) denied('control observation')
+      if(observation.origin==='agent_diary'){
+        const permit=requireDiaryAdmission(authority)
+        if(sha(observation.publicText)!==permit.sourceHash||observation.host?.sessionId!==permit.execution.sessionId||observation.host?.messageId!==permit.execution.callId)denied('Diary observation execution mismatch')
+      }
       if (observation.host && observation.host.sessionId !== grant.request.sessionId) denied('source session')
       return await lock(this.#workspacePath(grant.request.workspaceId), async () => {
         await this.#authorize(authority, 'observe')
@@ -831,7 +859,11 @@ export class RpStore {
       return await lock(this.#workspacePath(grant.request.workspaceId), async () => {
         await this.#authorize(authority, 'commit')
         const state = await this.#load(grant.request.workspaceId), current = this.#branch(state, grant.request)
-        const key = 'branch:' + grant.request.branchId + ':' + sha(batch.idempotencyKey), effect = requiresPerson(batch.authorityChanges) ? digest({ batch, requiredCapabilities: ['rp.person-core/v1'] }) : digest(batch), existing = state.transactions.find(tx => tx.idempotencyKey === key)
+        const requireInvalidationControl = () => {
+          if (!grant.request.permissions.includes('control') || grant.request.viewpoint.kind !== 'narrator') denied('explicit invalidation requires narrator host control')
+        }
+        const requiredCapabilities = requiredSemanticCapabilities(batch.authorityChanges)
+        const key = 'branch:' + grant.request.branchId + ':' + sha(batch.idempotencyKey), effect = requiredCapabilities.length ? digest({ batch, requiredCapabilities }) : digest(batch), existing = state.transactions.find(tx => tx.idempotencyKey === key)
         if (existing) { if (existing.effectHash !== effect || existing.operation.kind !== 'commit') error('idempotency_conflict', 'RP commit idempotency key has different effects'); await this.#seal(grant.request.workspaceId, existing.sequence, digest(existing)); return ok(existing.operation.result) }
         if (!same(current.fence, batch.expected) || batch.nextContextRevision !== current.fence.contextRevision + 1) error('stale_input', 'RP input fence changed')
         const next: BranchState = structuredClone(current), touched = new Set<string>()
@@ -853,9 +885,11 @@ export class RpStore {
           if (touched.has(b.sourceRevisionId)) invalid('duplicate binding mutation'); touched.add(b.sourceRevisionId)
           const source = state.sources.get(b.sourceRevisionId)
           if (b.branchId !== grant.request.branchId || !source || !this.#scopeMatches(source.scope, grant.request) || source.turnId !== b.turnId || !this.#visible(source.visibility, grant.request)) denied('source binding scope')
+          if (source.visibility.audienceSetId !== authority.visibility.audienceSetId) denied('source binding write audience')
           if ((source.scope.kind === 'branch' || source.scope.kind === 'session') && source.scope.branchId !== grant.request.branchId && !current.bindings.has(source.id) && !inherited.has(source.id)) denied('unproven inherited source')
           if ((this.#deleted(current).has(source.id) || this.#workspaceDeleted(state).has(source.id)) && b.disposition === 'accepted') error('source_unavailable', 'RP deleted source cannot be adopted')
           if (b.supersedes && !current.bindings.has(b.supersedes)) invalid('supersession target')
+          if (b.supersedes || current.bindings.get(b.sourceRevisionId)?.disposition === 'accepted' && b.disposition !== 'accepted') requireInvalidationControl()
           next.bindings.set(b.sourceRevisionId, b)
         }
         const logicalMessages = new Set<string>()
@@ -876,10 +910,17 @@ export class RpStore {
             if (change.recordId !== change.record.policyId || change.record.policyId !== authority.visibility.policyId || change.record.revision !== visibilityRevision + 1 || !grant.request.audienceSetIds.includes(change.record.audienceSetId)) denied('visibility policy mutation')
             visibilityRevision = change.record.revision
           } else if (change.kind === 'deletion') {
+            requireInvalidationControl()
             const d = change.record
             if (d.id !== change.recordId || !this.#scopeMatches(d.scope, grant.request) || (d.scope.kind !== 'branch' && d.scope.kind !== 'session') || d.scope.branchId !== grant.request.branchId || d.generation !== deletionGeneration + 1 || d.purgeState !== 'blocked') denied('deletion authority/state')
-            for (const sourceId of d.sourceRevisionIds) { const s = state.sources.get(sourceId); if (!s || !this.#scopeMatches(s.scope, grant.request) || !this.#visible(s.visibility, grant.request) || ((s.scope.kind === 'branch' || s.scope.kind === 'session') && s.scope.branchId !== grant.request.branchId && !current.bindings.has(s.id))) denied('deletion scope/audience') }
-            if (d.blockedDerivedIds.some(id => !next.records.has(id) || !this.#visible(next.records.get(id)!.visibility, grant.request))) denied('deletion dependency audience')
+            if (!d.sourceRevisionIds.length) denied('deletion requires explicit source roots')
+            for (const sourceId of d.sourceRevisionIds) { const s = state.sources.get(sourceId); if (!s || !this.#scopeMatches(s.scope, grant.request) || !this.#visible(s.visibility, grant.request) || s.visibility.audienceSetId !== authority.visibility.audienceSetId || ((s.scope.kind === 'branch' || s.scope.kind === 'session') && s.scope.branchId !== grant.request.branchId && !current.bindings.has(s.id))) denied('deletion scope/audience') }
+            if (d.blockedDerivedIds.length) {
+              const derived = new Set(d.sourceRevisionIds)
+              let expanded = true
+              while (expanded) { expanded = false; for (const record of next.records.values()) if (!derived.has(record.id) && [...record.sourceRevisionIds,...record.dependencyIds].some(id => derived.has(id))) { derived.add(record.id); expanded = true } }
+              if (d.blockedDerivedIds.some(id => { const record = next.records.get(id); return !record || !derived.has(id) || !this.#scopeMatches(record.scope,grant.request) || !this.#visible(record.visibility,grant.request) || record.visibility.audienceSetId !== authority.visibility.audienceSetId })) denied('deletion dependency scope/audience')
+            }
             deletionGeneration = d.generation
           } else if (change.kind === 'canon_binding') {
             if (!this.#options.verifyCanonBinding || !await this.#options.verifyCanonBinding(change.record)) error('capability_missing', 'RP approved global publication verifier is required')
@@ -900,7 +941,8 @@ export class RpStore {
         const records: Derived[] = [], payloads = new Map<string, string>(), identifiers = new Set([...next.records.keys(), ...next.jobs.keys()])
         let growthHistory: SemanticEvent[] | undefined
         batch.events.forEach(e => authenticateEvent(e, changes))
-        const newPeople = new Set<string>()
+        const newPeople = new Set<string>(), documentChanges = new Set<string>(),diaryChanges=new Set<string>()
+        if(batch.events.some(e=>diaryPolicy(e))&&batch.events.some(e=>diaryValue(e)))invalid('diary policy and content require separate controls')
         for (const event of batch.events) if (semanticProtocol(event) === 'person-origin/v1' && event.payload.kind === 'occurrence') {
           const personId = event.payload.actorIds[0]
           if (newPeople.has(personId) || hasPersonOwner(inheritedBase.changes, personId)) invalid('person already initialized in life branch')
@@ -934,6 +976,7 @@ export class RpStore {
             if (['user_canon', 'explicit_ooc'].includes(record.authority) && !sourceIds.some(id => state.sources.get(id)?.origin === 'user_control')) denied('event authority provenance')
             if (record.authority === 'accepted_narration' && !sourceIds.some(id => state.sources.get(id)?.role === 'assistant')) denied('narration provenance')
             if (record.supersedes.some(id => !next.records.has(id))) invalid('event supersession target')
+            if (record.supersedes.length || record.payload.kind === 'correction') requireInvalidationControl()
             for (const id of [...record.supersedes, ...(record.payload.kind === 'correction' ? record.payload.targetEventIds : [])]) {
               const target = next.records.get(id)
               if (!target || target.kind !== 'event') invalid('event correction target')
@@ -943,6 +986,35 @@ export class RpStore {
               if (original.value.record.payload.kind === 'canon_assertion' && original.value.record.payload.locked && !['explicit_ooc', 'user_canon'].includes(record.authority)) denied('locked canon requires explicit user correction')
             }
             dependencies = eventDependencies(record)
+            if(diaryValue(record)||diaryPolicy(record)){
+              const dv=diaryValue(record),dp=diaryPolicy(record),key=dv?canonical(['entry',dv.personId,dv.boardId,dv.entryId]):canonical(['policy',dp!.personId,dp!.boardId])
+              if(diaryChanges.has(key))invalid('duplicate diary changes in one commit');diaryChanges.add(key)
+              if(batch.invalidatedIds.length||batch.events.some(e=>e.supersedes.length||e.payload.kind==='correction'))invalid('diary and retcon require separate controls')
+              growthHistory??=await this.#readEventBodies(state,inheritedBase,grant.request)
+              await checkDiaryTransition(record,growthHistory,inheritedBase.changes,authority,id=>this.#source(state,next,grant.request,id),span=>this.#verifySpan(state,next,grant.request,span))
+            }
+            const document = documentValue(record)
+            if (document) {
+              if (batch.invalidatedIds.length || batch.events.some(e=>e.supersedes.length || e.payload.kind==='correction')) invalid('document changes and retcon must be separate controls')
+              const identity = canonical([document.personId, document.documentId])
+              if (documentChanges.has(identity)) invalid('multiple document changes in one commit')
+              documentChanges.add(identity)
+              growthHistory ??= await this.#readEventBodies(state, inheritedBase, grant.request)
+              const origin = growthHistory.find(e=>e.id===document.originEventId)
+              if (!origin || semanticProtocol(origin)!=='person-origin/v1' || origin.payload.kind!=='occurrence' || origin.payload.actorIds[0]!==document.personId) denied('document person origin unavailable')
+              const head = documentHead(inheritedBase.changes,document.personId,document.documentId)
+              if (head !== document.previousEventId || (document.operation==='import') !== (head===null)) invalid('document predecessor changed')
+              if (head) {
+                const prior = growthHistory.find(e=>e.id===head), value = prior && documentValue(prior)
+                if (!value || value.originEventId!==document.originEventId || value.operation==='retract') invalid('document predecessor unavailable or withdrawn')
+              }
+              if (document.manifest) {
+                const m = document.manifest, original = state.sources.get(m.sourceRevisionId)
+                const span = record.sources.find(s=>s.sourceRevisionId===m.sourceRevisionId && s.startUtf16===0 && s.endUtf16===m.textLengthUtf16 && s.publicTextSha256===m.sha256 && s.quoteSha256===m.sha256)
+                if (!original || original.origin!=='user_control' || !span) denied('document requires original user source')
+                documentFromManifest(m,await this.#verifySpan(state,next,grant.request,span))
+              }
+            }
             const growth = growthValue(record), person = personValue(record)
             if (person?.operation === 'init' && !batch.events.some(e => e.id === person.causeEventIds[0] && semanticProtocol(e) === 'person-origin/v1')) invalid('initial person fields require the same origin transaction')
             if (growth || person) {
@@ -990,13 +1062,32 @@ export class RpStore {
           // accepted head, not on the old head that this commit superseded.
           return { ...job, inputFence: result }
         })
+        // Explicit targets are a privileged correction route. Check the initial
+        // branch view before computing internal dependency closure; closure may
+        // legitimately invalidate records the initiating caller cannot enumerate.
+        const activeBefore = this.#activeRecords(current)
+        if (batch.invalidatedIds.length) requireInvalidationControl()
+        for(const id of batch.invalidatedIds){
+          const target=activeBefore.get(id)
+          if(!target?.active||!this.#scopeMatches(target.scope,grant.request)||!this.#visible(target.visibility,grant.request)||target.visibility.audienceSetId!==authority.visibility.audienceSetId)denied('explicit invalidation target scope/audience')
+          for(const sourceId of target.sourceRevisionIds)this.#source(state,current,grant.request,sourceId)
+          if(target.kind==='event'){
+            const original=parseRecord({kind:'event',record:JSON.parse(await this.#readBlob(grant.request.workspaceId,target.blobId,target.bodySha256))})
+            if(!original.ok||original.value.kind!=='event')error('source_unavailable','RP invalidation target unavailable')
+            if(original.value.record.payload.kind==='canon_assertion'&&original.value.record.payload.locked){
+              const correction=batch.events.some(e=>['explicit_ooc','user_canon'].includes(e.authority)&&(e.supersedes.includes(id)||e.payload.kind==='correction'&&e.payload.targetEventIds.includes(id)))
+              const explicitControl=changes.some(c=>{if(c.kind!=='candidate_adoption'||c.record.decision!=='accepted')return false;const source=this.#source(state,next,grant.request,c.record.controlSourceId);return source.origin==='user_control'&&source.visibility.audienceSetId===target.visibility.audienceSetId})
+              if(!correction&&!explicitControl)denied('locked canon invalidation requires explicit user correction')
+            }
+          }
+        }
         const invalidated = new Set(batch.invalidatedIds)
         for (const event of batch.events) { event.supersedes.forEach(id => invalidated.add(id)); if (event.payload.kind === 'correction') event.payload.targetEventIds.forEach(id => { if (!current.records.has(id)) invalid('correction target'); invalidated.add(id) }) }
         for (const old of current.bindings.values()) if (old.disposition === 'accepted' && next.bindings.get(old.sourceRevisionId)?.disposition !== 'accepted') invalidated.add(old.sourceRevisionId)
         for (const change of changes) if (change.kind === 'deletion') { change.record.sourceRevisionIds.forEach(id => invalidated.add(id)); change.record.blockedDerivedIds.forEach(id => invalidated.add(id)) }
         // Old summaries can predate their supporting events. Invalidate their
         // shared provenance without retracting the original historical source.
-        const affectedSources = new Set<string>(), activeBefore = this.#activeRecords(current)
+        const affectedSources = new Set<string>()
         // Freeze the invalidated historical closure. Explicit replay can reuse
         // the source after confirmation, but never revive its old derived view.
         let grew = true
@@ -1181,6 +1272,9 @@ export class RpStore {
   /** Internal trusted-host API: never register these methods as model tools. */
   hostControl() {
     return Object.freeze({
+      checkManagement: async (authority: HostAuthority): Promise<Result<null>> => {
+        try { const {grant}=await this.#authorize(authority,'control'); if(grant.request.viewpoint.kind!=='narrator')denied('management requires narrator control'); return ok(null) } catch(cause){return failure(cause)}
+      },
       forkBranch: (authority: HostAuthority, input: ForkManifest & { readonly idempotencyKey: string }) => this.#fork(authority, input),
       privacyDelete: (authority: HostAuthority, controlSourceId: string, input: { readonly idempotencyKey: string; readonly expected: InputFence; readonly sourceRevisionIds: readonly string[]; readonly affectedBranchIds: readonly string[] }, authorities: readonly HostAuthority[]) => this.#privacyDelete(authority, controlSourceId, input, authorities),
       purgePrivacy: (authority: HostAuthority, key: string, authorities: readonly HostAuthority[] = [authority]) => this.#purgePrivacy(authority, key, authorities),

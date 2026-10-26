@@ -12,7 +12,8 @@ test('Chinese command help works before start and on blocked sessions without st
  const f=await host();try{const a=await f.create(),dir=path.join(f.profile,'.dsh-rp/v1/host'),before=await fs.readdir(dir)
   const help=ok(await f.command(a,'help'));assert.match(help,/Memory-Continuity/);assert.match(help,/人物/);assert.match(help,/injection/);assert.match(help,/storage/)
   assert.deepEqual(await fs.readdir(dir),before);assert.equal(a.session.deriveMessages().length,0)
-  for(const topic of ['person','injection','recovery','memory','modules','storage'])assert.match(ok(await f.command(a,'help '+topic)),/\/memcont /)
+  for(const topic of ['person','document','diary','budget','injection','recovery','memory','modules','storage'])assert.match(ok(await f.command(a,'help '+topic)),/\/memcont /)
+  const document=ok(await f.command(a,'help document'));assert.match(help,/help document/);assert.match(document,/document preview/);assert.match(document,/document confirm/);assert.match(document,/document discard/);assert.match(document,/1 MiB/);assert.match(document,/10 分钟/)
   assert.match((await f.command(a,'help unknown')).text,/invalid_record/)
   ok(await f.command(a,'start'));const rename=fs.rename
   try{fs.rename=async(from,to)=>{if(to.includes(path.join('v1','host')))throw Object.assign(new Error('HELP_TEST_EIO'),{code:'EIO'});return rename(from,to)};assert.equal((await f.command(a,'input 保存失败')).kind,'error')}finally{fs.rename=rename}

@@ -37,7 +37,7 @@ if (process.argv[2] === 'worker') {
   const run = path.join(root, new Date().toISOString().replace(/[:.]/g, '-')); await fs.mkdir(run)
   const archive = path.join(run, 'baseline.tar'), oldRoot = path.join(run, 'baseline'); await fs.mkdir(oldRoot)
   execFileSync('git', ['archive', '--format=tar', '--output='+archive, baseline, 'src'])
-  execFileSync('tar', ['-xf', archive, '-C', oldRoot])
+  execFileSync('tar', ['-xf', 'baseline.tar', '-C', 'baseline'], {cwd:run})
   const runtimes = {}
   for (const [name, entry] of [['before', path.join(oldRoot, 'src/rp/memory.ts')], ['after', path.resolve('src/rp/memory.ts')]]) {
     runtimes[name] = path.join(run, name+'.mjs')

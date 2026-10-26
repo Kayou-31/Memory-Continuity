@@ -1,7 +1,7 @@
 const utf8Bytes = value => new TextEncoder().encode(value).length;
 "use strict";
 (() => {
-  // src/rp/schema.ts
+  // src/rp/validation.ts
   var RpError = class extends Error {
     constructor(code, message) {
       super(message);
@@ -131,6 +131,34 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
     return d;
   }
 
+  // src/rp/person/editor-copy.ts
+  async function copyDraftCommand(ports) {
+    let command;
+    try {
+      command = ports.generate();
+    } catch (error) {
+      ports.invalid(error);
+      return "invalid";
+    }
+    const version = ports.version();
+    try {
+      await ports.writeText(command);
+    } catch {
+      if (ports.version() !== version) {
+        ports.changed();
+        return "changed";
+      }
+      ports.fallback(command);
+      return "manual";
+    }
+    if (ports.version() !== version) {
+      ports.changed();
+      return "changed";
+    }
+    ports.copied();
+    return "copied";
+  }
+
   // src/rp/person/editor-ids.ts
   function createDraftIds(draft) {
     const used = /* @__PURE__ */ new Set([...draft.fields.map((f) => f.fieldId), ...draft.goals.map((g) => g.goalId)]);
@@ -150,6 +178,12 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
   var kinds = { identity: "身份", background: "背景", voice: "表达", values: "价值观", boundaries: "边界", trait: "性格倾向", feeling: "当前感受", stage: "人生阶段" };
   var policies = { stable: "保持稳定", growable: "可经确认成长", situational: "仅在情境内有效" };
   var relations = { trust: "信任", affection: "亲近", loyalty: "忠诚", rivalry: "竞争", debt: "亏欠", promise: "承诺关系", kinship: "亲属", alliance: "同盟", tension: "矛盾" };
+  var revision = 0;
+  var changed = () => {
+    revision++;
+    $("output").value = "";
+    $("status").textContent = "草稿已修改，请重新检查或复制。";
+  };
   var key;
   function input(parent, title, value, multiline = false) {
     const label = document.createElement("label"), el = document.createElement(multiline ? "textarea" : "input");
@@ -179,7 +213,10 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
     el.className = "entry";
     const remove = document.createElement("button");
     remove.textContent = "移除这一项";
-    remove.onclick = () => el.remove();
+    remove.onclick = () => {
+      el.remove();
+      changed();
+    };
     el.append(remove);
     $(container).append(el);
     return el;
@@ -229,6 +266,7 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
     }
   }
   function load(draft) {
+    changed();
     key = createDraftIds(draft);
     $("fields").replaceChildren();
     $("relationships").replaceChildren();
@@ -238,9 +276,18 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
     draft.relationships.forEach(relationship);
     draft.goals.forEach(goal);
   }
-  $("addField").onclick = () => field({ fieldId: key("field"), kind: "background", value: "", policy: "stable" });
-  $("addRelationship").onclick = () => relationship({ targetId: "", relation: "trust", value: "" });
-  $("addGoal").onclick = () => goal({ goalId: key("goal"), category: "task", objective: "", nextAction: "" });
+  $("addField").onclick = () => {
+    changed();
+    field({ fieldId: key("field"), kind: "background", value: "", policy: "stable" });
+  };
+  $("addRelationship").onclick = () => {
+    changed();
+    relationship({ targetId: "", relation: "trust", value: "" });
+  };
+  $("addGoal").onclick = () => {
+    changed();
+    goal({ goalId: key("goal"), category: "task", objective: "", nextAction: "" });
+  };
   $("generate").onclick = () => run(generate);
   $("download").onclick = () => run(() => {
     const draft = generate(), url = URL.createObjectURL(new Blob([JSON.stringify(draft, null, 2)], { type: "application/json" })), a = document.createElement("a");
@@ -249,20 +296,37 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1e3);
   });
-  $("copy").onclick = async () => {
-    try {
-      generate();
-      await navigator.clipboard.writeText($("output").value);
-      $("status").textContent = "导入命令已复制。请在 DSH 中预览后确认。";
-    } catch {
-      $("output").select();
-      $("status").textContent = "请选择上方命令并手动复制。";
-    }
+  var draftChanged = (event) => {
+    if (!["output", "importFile"].includes(event.target?.id)) changed();
   };
+  document.addEventListener("input", draftChanged);
+  document.addEventListener("change", draftChanged);
+  $("copy").onclick = () => copyDraftCommand({
+    generate: () => {
+      generate();
+      return $("output").value;
+    },
+    version: () => revision,
+    writeText: (command) => navigator.clipboard.writeText(command),
+    invalid: (e) => {
+      $("output").value = "";
+      $("status").textContent = "未生成：" + (e instanceof Error ? e.message : String(e));
+    },
+    changed,
+    fallback: (command) => {
+      $("output").value = command;
+      $("output").select();
+      $("status").textContent = "剪贴板不可用，请手动复制上方刚检查过的命令。";
+    },
+    copied: () => {
+      $("status").textContent = "导入命令已复制。请在 DSH 中预览后确认。";
+    }
+  });
   $("importFile").onchange = async (e) => {
     try {
       const file = e.target.files?.[0];
       if (!file) return;
+      changed();
       if (file.size > 65536) throw Error("草稿超过 64 KiB");
       const raw = JSON.parse(await file.text()), known = /* @__PURE__ */ new Set([raw.personId, ...(raw.relationships ?? []).map((r) => r.targetId), ...(raw.goals ?? []).flatMap((g) => g.targetEntityId ? [g.targetEntityId] : [])]);
       load(personDraft(raw, known));

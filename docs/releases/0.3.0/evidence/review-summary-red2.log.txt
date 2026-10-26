@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: summary candidates interoperate between native commands and workbench with the same policy epoch
+not ok 1 - summary candidates interoperate between native commands and workbench with the same policy epoch
+  ---
+  duration_ms: 381.3433
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-management-host-extension.test.mjs:6:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"ok":false,"code":"stale_input","message":"Summary branch/policy fence changed"}
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-management-host-extension.test.mjs:12:263)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-management-host-extension.test.mjs:14:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: native workbench previews and commits actual budget/binding settings without nested locks or provider calls
+ok 2 - native workbench previews and commits actual budget/binding settings without nested locks or provider calls
+  ---
+  duration_ms: 1259.3451
+  type: 'test'
+  ...
+# Subtest: native workbench refuses a stale budget review after person edits and preserves the old binding
+ok 3 - native workbench refuses a stale budget review after person edits and preserves the old binding
+  ---
+  duration_ms: 361.3173
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 2
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2635.0676

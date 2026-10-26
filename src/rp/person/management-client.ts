@@ -3,9 +3,12 @@ export function createManagementClient(send:typeof fetch,token:string,onRevoke:(
  let revoked=false
  const revoke=()=>{if(!revoked){revoked=true;token='';onRevoke()}}
  const closed=()=>Object.assign(new Error('管理入口已失效。请在宿主执行 /memcont person manage 重新打开。'),{code:'ownership_lost'})
- return Object.freeze({revoke,async request<T=any>(route:string,input:unknown={}):Promise<T>{
+ return Object.freeze({revoke,reviewPresentation(review:{showImpactDialog:boolean;impact:{mandatory:boolean}}){
+  if(typeof review?.showImpactDialog!=='boolean'||typeof review?.impact?.mandatory!=='boolean')throw Error('服务端影响预览不完整')
+  return review.showImpactDialog||review.impact.mandatory?'dialog' as const:'inline' as const
+ },async request<T=any>(route:string,input:unknown={}):Promise<T>{
   if(revoked||!/^[a-f0-9]{64}$/.test(token)){revoke();throw closed()}
-  if(!['snapshot','prepare','confirm','close','injection-preview'].includes(route))throw Error('不支持的管理接口')
+  if(!['snapshot','prepare','confirm','close','injection-preview','upload','discard-upload','read','organize'].includes(route))throw Error('不支持的管理接口')
   let response:Response,body:any
   try{
    response=await send('/api/'+route,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(input),cache:'no-store',redirect:'error'})

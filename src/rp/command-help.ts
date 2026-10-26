@@ -2,6 +2,37 @@
 import {RpError} from './schema.js'
 
 const topics:Record<string,string>={
+ document:`完整人物资料
+/memcont person manage：打开工作台，在“完整人物资料”页上传 UTF-8 文本或 Markdown，单份最多 1 MiB。
+原文、BOM 与换行完整保留；先检查章节分类和条件，再预览并明确确认。未知章节保留，默认仅保存、不注入。
+/memcont document preview <uploadId>：用工作台返回的临时上传句柄生成确认预览，不写入人物。
+/memcont document confirm <reviewId>：确认实际返回的预览句柄；不能用 uploadId 代替 reviewId。
+/memcont document discard <uploadId>：取消尚未导入的临时草稿，不撤回已经保存的资料。
+上传句柄最多保留 10 分钟，与当前管理入口、人物和人生线版本绑定；过期或数据变化后重新上传。
+短指令使用上传时的默认分类，不包含网页中尚未保存的分类与条件调整；这些调整应在网页预览并确认。
+修订原文后须重新解析、核对分类与注入资格；不会自动沿用旧章节的权限。
+导入、查看和导出不会调用模型。故障或保存不确定时先诊断，不盲目重试。`,
+ budget:`记忆 token 预算
+/memcont budget show：查看本会话绑定、计量方式与最近实际用量；故障状态也能诊断。
+/memcont budget set {}：空白根会话显式启用总计 32,768 token。首次启用先保留 .pre-budget-v2-backup。
+/memcont budget set {"limitTokens":16384,"layers":{"recollection":8192}}：设置总上限及各层上限，仍受宿主模型总容量与输出预留限制。
+/memcont budget set null：只在空白根会话显式回到旧字节语义，不会自动迁移已有历史。
+当前精确文本计数支持完整模型名 deepseek-ai/DeepSeek-V3.2；别名和其他模型明确显示 conservative-utf8。
+provider 或 model 改变后须 continue-clean，再 budget set 重新绑定；不会猜测新模型沿用旧 tokenizer。
+旧工具回执、重复记忆、全局内容与包装都占同一总额。必需内容超限时拒绝发送，不会偷偷截断。
+这是本地文本 token 计量，不是服务端聊天模板或计费凭据；完整请求继续使用保守容量门禁。`,
+ diary:`共同日记
+/memcont diary enable：明确允许当前人物在对话中写自己的日记；默认未开启，不会后台写日记。
+/memcont diary disable：停止 AI 写入；已有日记仍可查看。重新开启不恢复旧工具权限。
+/memcont diary settings：查看权限与参与者。
+/memcont diary list [关键词]、/memcont diary show <entryId>：搜索和读取最新日记。
+/memcont diary write {"entryId":"today","title":"今天","body":"今天和你聊得很开心。"}：写人类日记。
+修改时附 previousEventId（show 返回的 eventId）；保留原作者、编辑者和历史。
+/memcont diary history <entryId>：查看原稿与修订。
+/memcont diary delete <entryId>：显式隐私删除本条全部版本；涉及其他分支时需完整授权。外部备份和宿主日志不在此删除范围。
+AI 工具：memcont_diary_write、memcont_diary_read、memcont_diary_search。AI 不能改人类日记、权限或人格。
+reflection 可选记录理解、适用情境、不确定性、修订原因和认证依据；日记不自动成为事实。
+历史引用失效时先 continue-clean；保存不确定时先诊断和检查现有日记，不盲目重试。`,
  person:`人物与成长
 /memcont person preview <人物草稿JSON> → /memcont person confirm <previewId>：预览后确认创建。
 /memcont person use <personId>：空白根会话绑定人物；有历史时先干净续接。
@@ -17,10 +48,12 @@ const topics:Record<string,string>={
 /memcont injection set <JSON>：设置 depth、budgets、pin、exclude、aliases、rules；完整替换配置。
 /memcont injection set null：在空白根会话关闭分层模式。
 /memcont injection preview <话题>：只读查看五类记忆、选择原因、来源和旧历史；不发送模型。
-深度 overview/association/evidence；预算为 UTF-8 字节，不是精确 token。
+深度 overview/association/evidence；原 budgets 仍是 UTF-8 字节。budget v2 启用后使用独立的 token layers 配置，见 /memcont help budget。
 已有历史先 /memcont continue-clean 并选择返回的新会话。未选入不代表旧历史已删除；权限、有效性和强制核心不能被规则绕过。`,
  recovery:`诊断与安全续接
-/memcont status：检查 blocked、lastError、pendingInputIds、ambiguousInputIds。
+/memcont status：分别检查 bindingHealth（绑定健康）、requestAdmission（最近请求准入）、recovery（恢复指引），以及 blocked、lastError、pendingInputIds、ambiguousInputIds。
+绑定 healthy 不表示最近请求已通过；requestAdmission.rejected 会显示阶段和原因。prepared 仅表示已组装，admitted 仅表示过了记忆门禁，不保证下游模型成功。
+同宿主销毁重建后 modeEpoch 可能改变；保留历史认证规则，按提示 continue-clean，不直接解封旧快照。
 /memcont continue-clean [branchId]：封锁旧会话，创建干净根；在宿主手动选择返回的会话。
 继承经验证的人物和配置；无法认证的配置不继承。原宿主消息与工具结果不复制。
 损坏 journal 不能作为授权依据，可能需要明确且独立授权的 branchId。
@@ -35,10 +68,15 @@ ambiguous 输入严禁自动重发；先核对宿主与持久记录。
 /memcont agent <JSON>：人工记录 experience、relationship、goal 等受支持操作。
 /memcont goals、/memcont relationships、/memcont self：查看目标、方向关系与基础状态。
 /memcont summary <JSON>、/memcont candidates、/memcont candidate <ID>：提出并检查结构化摘要候选。
+/memcont organize summary [JSON]：按需生成带原文范围的本地摘录候选；同一来源快照复用，不调用模型、不自动采纳。可指定 sourceRevisionIds。
+/memcont organize review [JSON]：查看重复、冲突、待办与久未复核的来源；只建议，不修改正史。
+/memcont organize handoff [JSON]：查看关键用户原话、当前状态、方向关系、已确认经历和未完成约定，附来源。
 /memcont adopt <ID>、/memcont reject-candidate <ID>：人工采纳或拒绝摘要候选。
 /memcont retcon <JSON>、/memcont delete <JSON>、/memcont fork：纠正、明确隐私删除、创建剧情分支。
 /memcont global preference <JSON>、/memcont global publish <JSON>、/memcont global list <JSON>、/memcont global adopt <JSON>：通用偏好和显式世界发布/采用。
-模型只读工具：rp_memory_search、rp_memory_get、rp_memory_status；不授予模型写入权。`,
+rp_memory_search 可带 queryAlternatives（最多 8 种别称或改写），合并后固定分页；提示词不证明身份或事实等价。
+通用记忆工具保持只读：rp_memory_search、rp_memory_get、rp_memory_status。共同日记的独立写入开关见 /memcont help diary。
+status 中 requestCost 显示本次输入的持久化请求预留次数；默认最多 16 次、同一步最多重试 2 次。达到上限后检查已有结果，再明确发新输入；不会自动重发。`,
  modules:`用途、能力与约束
 /memcont mode show、/memcont mode set <rp|companion|creation|project>：查看或选择用途。
 /memcont modules list、/memcont modules enable <ID>、/memcont modules disable <ID>：查看与人工启停能力。
@@ -61,7 +99,10 @@ export function rpCommandHelp(topic:string=''):string{
  return `Memory-Continuity 中文指令帮助
 帮助只读，不写入记忆、不调用模型；主命令 /memcont；旧 /rp 作为兼容别名。
 /memcont help person：人物、成长审阅、管理入口
+/memcont help document：完整原文、分类条件、临时上传与确认
+/memcont help diary：共同日记、明确授权、原稿与修订
 /memcont help injection：五类记忆、条件注入、原因预览
+/memcont help budget：32K 总记忆预算、模型绑定、计量方式
 /memcont help recovery：诊断、故障恢复、干净续接
 /memcont help memory：经历、关系、目标、摘要和全局记忆
 /memcont help modules：用途、能力模块和两层约束

@@ -1,0 +1,12 @@
+{"at":"2026-10-25T17:40:36.489Z","stage":"identity-growth-and-expiring-context","state":"started"}
+{"at":"2026-10-25T17:40:41.732Z","stage":"history-growth","accepted":30}
+{"at":"2026-10-25T17:40:53.431Z","stage":"history-growth","accepted":60}
+{"at":"2026-10-25T17:41:12.233Z","stage":"history-growth","accepted":90}
+{"at":"2026-10-25T17:41:38.677Z","stage":"history-growth","accepted":120}
+{"at":"2026-10-25T17:41:39.027Z","stage":"identity-growth-and-expiring-context","state":"passed"}
+{"at":"2026-10-25T17:41:39.027Z","stage":"directional-relationship-and-promise","state":"started"}
+{"at":"2026-10-25T17:41:42.663Z","stage":"directional-relationship-and-promise","state":"passed"}
+{"at":"2026-10-25T17:41:43.333Z","stage":"retcon-privacy-and-life-branch-isolation","state":"started"}
+{"at":"2026-10-25T17:41:45.857Z","stage":"retcon-privacy-and-life-branch-isolation","state":"passed"}
+{"at":"2026-10-25T17:41:45.857Z","stage":"module-revocation-and-cold-reconstruction","state":"started"}
+{"at":"2026-10-25T17:41:47.112Z","stage":"module-revocation-and-cold-reconstruction","state":"passed"}
