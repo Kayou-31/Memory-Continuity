@@ -24,7 +24,10 @@ for name in ['main.py', 'core_client.py', 'metadata.yaml', '_conf_schema.json', 
     if file.is_symlink() or not file.is_file():
         parser.error('expected regular source file: ' + name)
     contents[name] = file.read_bytes()
-version = re.search(r'^version: ([a-zA-Z0-9.\-]+)$', contents['metadata.yaml'].decode('utf-8'), re.M).group(1)
+version_match = re.search(r'^version: ([a-zA-Z0-9.\-]+)\r?$', contents['metadata.yaml'].decode('utf-8'), re.M)
+if version_match is None:
+    parser.error('metadata.yaml must contain a valid version')
+version = version_match.group(1)
 manifest = {'schemaVersion': 1, 'package': 'astrbot_plugin_memory_continuity', 'version': version,
             'files': [{'path': name, 'bytes': len(value), 'sha256': hashlib.sha256(value).hexdigest()}
                       for name, value in sorted(contents.items())]}

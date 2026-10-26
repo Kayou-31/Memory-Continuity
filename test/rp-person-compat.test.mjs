@@ -9,7 +9,7 @@ import { build, stop } from 'esbuild'
 import { setup, must, deny, api } from './fixtures/rp/growth.mjs'
 const dir = path.resolve('work/person-core-2026-10-23/compat', randomUUID()); await fs.mkdir(dir, { recursive: true })
 execFileSync('git', ['archive', '--format=tar', '--output='+path.join(dir, 'baseline.tar'), 'fdd9209f26185e346a862d422005cecd4770117a', 'src'])
-execFileSync('tar', ['-xf', path.join(dir, 'baseline.tar'), '-C', dir])
+execFileSync('tar', ['-xf', 'baseline.tar'], {cwd:dir})
 await build({ entryPoints: [path.join(dir, 'src/rp/memory.ts')], outfile: path.join(dir, 'old.mjs'), bundle: true, platform: 'node', format: 'esm', logLevel: 'silent' }); stop()
 const old = await import(pathToFileURL(path.join(dir, 'old.mjs')).href)
 const draft = { schemaVersion: 1, kind: 'person-draft', personId: 'erin', fields: [{ fieldId: 'name', kind: 'identity', value: '林澈', policy: 'stable' }], relationships: [], goals: [] }

@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: memory-continuity-ci-${{ github.workflow }}-${{ github.ref }}
+  group: memory-continuity-ci-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   verify:

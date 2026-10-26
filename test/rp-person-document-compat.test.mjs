@@ -10,7 +10,7 @@ import {setup,must,deny,api} from './fixtures/rp/growth.mjs'
 const dir=path.resolve('work/person-document-compat',randomUUID());await fs.mkdir(dir,{recursive:true})
 // Published 0.2.1 source, not a mock that merely rejects the new marker.
 execFileSync('git',['archive','--format=tar','--output='+path.join(dir,'baseline.tar'),'1d997516a3cb0621163a94a2bb16b1a7bd28243c','src'])
-execFileSync('tar',['-xf',path.join(dir,'baseline.tar'),'-C',dir])
+execFileSync('tar',['-xf','baseline.tar'],{cwd:dir})
 await build({entryPoints:[path.join(dir,'src/rp/memory.ts')],outfile:path.join(dir,'old.mjs'),bundle:true,platform:'node',format:'esm',logLevel:'silent'});stop()
 const old=await import(pathToFileURL(path.join(dir,'old.mjs')).href),hash=v=>createHash('sha256').update(v).digest('hex')
 test('actual 0.2.1 reader refuses the document capability; verified full backup restores readability',async()=>{

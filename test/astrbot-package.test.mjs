@@ -29,4 +29,15 @@ with zipfile.ZipFile(sys.argv[1]) as z:
  assert json.loads(z.read('_conf_schema.json'))['enabled']['default'] is False
  print(json.dumps({'files':len(names),'manifestFiles':len(m['files'])}))`,one]))
  assert.equal(verified.files,7);await fs.writeFile(path.join(dir,'receipt.json'),JSON.stringify({...receipt,...verified},null,2))
+ // Windows checkouts may use CRLF; preserve metadata bytes while parsing version.
+ const clone=path.join(dir,'crlf-source');await fs.mkdir(path.join(clone,'scripts'),{recursive:true});await fs.mkdir(path.join(clone,'adapters/astrbot'),{recursive:true})
+ await fs.copyFile(script,path.join(clone,'scripts/build-astrbot.py'));await fs.copyFile('LICENSE',path.join(clone,'LICENSE'))
+ for(const name of ['main.py','core_client.py','metadata.yaml','_conf_schema.json','README.md'])await fs.copyFile(path.join('adapters/astrbot',name),path.join(clone,'adapters/astrbot',name))
+ const metadata=path.join(clone,'adapters/astrbot/metadata.yaml');await fs.writeFile(metadata,(await fs.readFile(metadata,'utf8')).replace(/\r?\n/g,'\r\n'))
+ const crlfZip=path.join(dir,'crlf.zip');run([path.join(clone,'scripts/build-astrbot.py'),'--out',crlfZip])
+ run(['-c',`from pathlib import Path
+import json,sys,zipfile
+with zipfile.ZipFile(sys.argv[1]) as z:
+ assert z.read('metadata.yaml')==Path(sys.argv[2]).read_bytes()
+ assert json.loads(z.read('SOURCE-MANIFEST.json'))['version']=='0.1.0-preview.1'`,crlfZip,metadata])
 })
