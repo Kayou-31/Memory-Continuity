@@ -66,9 +66,9 @@ Node 22.23.3，最终五项完整回执见 `final/verification-receipts.json`：
 - rc.3 owner、生命周期与管理扩展另一次命令：**12/12，4369.7579ms，退出 0**。
 - `python -m unittest discover -s adapters/astrbot/tests -v`：隔离 AstrBot 4.29.3 中 **12/12，22.844s，退出 0**，包含 8 条客户端、真实 ZIP/PluginManager/PipelineScheduler 管理流程及 3 条 provider loopback 边界检查。只有终端使用本地记录器，没有 QQ 登录或付费请求；实验 guard 不是已经发布的模型适配器。
 - 独立核心实际 TGZ 在仓库依赖祖先之外离线安装，实际进程验证写入、冷读、异常结束、占用拒绝、显式恢复、幂等确认与新目录初始化，所有命令退出 0。核心无 DSH/Cordis 运行时依赖。
-- 干净源码 ZIP 共 **523 个文件**，解包后以独立 `npm ci` 安装锁文件依赖，随后类型检查、DSH 构建、核心构建、打包预检均退出 0。DSH 清单逐字节一致；核心运行代码、类型、资源与源码一致，两个 source map 仅构建目录相对路径不同，规范化后完整 mappings/sourcesContent 一致。旧读取器测试需要完整 Git 历史，CI 使用 `fetch-depth: 0`。
+- 干净源码 ZIP 共 **519 个文件**，解包后以独立 `npm ci` 安装锁文件依赖，随后类型检查、DSH 构建、核心构建、打包预检均退出 0。DSH 清单逐字节一致；核心运行代码、类型、资源与源码一致，两个 source map 仅构建目录相对路径不同，规范化后完整 mappings/sourcesContent 一致。旧读取器测试需要完整 Git 历史，CI 使用 `fetch-depth: 0`。
 
-命令、退出码、耗时分别在 `final/package-results.json`、`post-receipts.json`、`independent-commands.json`；归档大小、SHA-256 和清单核验见 `candidate-integrity.json`。最终文档补充后重新包装，逐项比较实际运行代码与已测试候选；最终提交与附件哈希由 `RELEASE-RECEIPT.json` / `SHA256SUMS.txt` 标识。
+命令、退出码、耗时分别在 `final/package-results.json`、`post-receipts.json`、`final/clean-source/independent-commands.json`；归档大小、SHA-256 和清单核验见 `candidate-integrity.json`。最终文档补充后重新包装，逐项比较实际运行代码与已测试候选；最终提交与附件哈希由 `RELEASE-RECEIPT.json` / `SHA256SUMS.txt` 标识。
 
 ## 失败记录与诊断
 
@@ -76,6 +76,7 @@ Node 22.23.3，最终五项完整回执见 `final/verification-receipts.json`：
 - 审阅指出当前 packet 证明、预估退休节点漏计、原文覆盖缺口，均先获得失败回归再修复。`input-coverage-red.log` 中确实出现不该到达终端的请求；修复后该请求被准入拒绝。
 - 第一轮追加成本后的完整命令 **363/365、退出 1**：一条旧日记断言未适配新行为；生命周期测试子进程在依赖加载时抛出 `ERR_INVALID_URL`，9 条内部测试未启动。修正日记断言后，针对三文件的 21/21 通过；再独立执行上述完整 373/373。没有拼接结果。URL 异常未复现，根因未确定，不声明修复了 Node 或系统问题。
 - 独立构建的外层记录器与内层 build 输出曾使用同名日志，导致该日志混写；退出码回执与产物比对仍完整。保留混写原件，并以独立路径补跑该干净目录的 build，退出 0，见 `independent-build-recheck.*`。不是重跑全量测试。
+- 最终源码比较拦截了独立验收目录中的四个 Python 字节码缓存；补充 `.gitignore`，以不带缓存的 519 文件源码重新独立安装、构建与比对，全部命令退出 0。前一份带缓存检查点保留，发行 ZIP 只读取最终 Git 提交中的文件。
 - 发布前第一次 Git push 遇到 HTTP 500；第一次 `git archive --format=zip` 生成的 ZIP 有 tokenizer 成员 CRC 错误。坏 ZIP 保留且不发布；Git 对象与工作区原文件哈希一致，`git fsck --full --no-dangling` 退出 0，但根因未确定。发行源码改从指定提交逐个读取 blob、核对 Git 对象 hash，再创建 ZIP 并逐文件/CRC 核验。
 - 更早的一次 Node 0xC0000005、Git 对象故障和源映射比较器失败仍保留在阶段记录，不以本次通过倒填历史结果。公开日志会脱敏能力链接/凭据并规范化文本编码；原始诊断文件保留本机。
 
