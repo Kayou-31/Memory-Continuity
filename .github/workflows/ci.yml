@@ -25,6 +25,10 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
+      - name: 使用 Python 3.13（独立 AstrBot ZIP 检查，不安装宿主）
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.13'
       - name: 核对旧版源码可读取
         run: node scripts/ci/check-history.mjs
       - name: 按锁文件安装（串行）
