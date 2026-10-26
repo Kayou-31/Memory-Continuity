@@ -538,14 +538,19 @@
       "sha256": "5ae835c23fc603962861a40111b0771c327a2f49bba4b0531cdb7dc78b528fc2"
     },
     {
+      "path": "src/core/cli-init.ts",
+      "bytes": 2650,
+      "sha256": "e91089fd48e7baa1fe56959cf84da7c0739bc2954aa7837b1b12775943062e6a"
+    },
+    {
       "path": "src/core/cli-service.ts",
       "bytes": 3539,
       "sha256": "acca831fffdc5d4236397cc0bb3a2bda97dda10e9896e51b452aca3e2d39c486"
     },
     {
       "path": "src/core/cli.ts",
-      "bytes": 1782,
-      "sha256": "13c13c5c5d24d3160a6fa36ecb7a1f8c55e86cf467b498cc4ed06917b42f8440"
+      "bytes": 2159,
+      "sha256": "593a52c6770d77ffc3bbd0845c96ec00de60238cd27fa9f1ec70e60f3e6fe516"
     },
     {
       "path": "src/core/confirmations.ts",
@@ -859,13 +864,13 @@
     },
     {
       "path": "src/rp/person/workbench-client.ts",
-      "bytes": 47186,
-      "sha256": "93653d5582123ac461db2fa5fc97ec213d1a4b6328fcfc03e3349ef2563cba15"
+      "bytes": 55386,
+      "sha256": "bb86571593e03bd01ad72582481f77a8f818a960e67698f5af9f57c66a82f146"
     },
     {
       "path": "src/rp/person/workbench-extensions.ts",
-      "bytes": 14880,
-      "sha256": "3f6b0028028b91da797c80ef2e9f03acb5cab41f4b9915c93dde9d2e5dacdadb"
+      "bytes": 16392,
+      "sha256": "ce5b3cabc743c014fc8482b7c50506e66eed0707755ea697e04ef2d6f182cd1b"
     },
     {
       "path": "src/rp/person/workbench-font-manifest.ts",
@@ -884,8 +889,8 @@
     },
     {
       "path": "src/rp/person/workbench-style.ts",
-      "bytes": 173168,
-      "sha256": "73cc03bcb376886df68deee0991593aa874cdc9042b9fc4093224f3f0ece87e6"
+      "bytes": 174713,
+      "sha256": "c59dcb7f4955faf536bb86a835dfbddfbc7d471e5f395c53243d37b6633d23c0"
     },
     {
       "path": "src/rp/person/workbench-visuals.ts",
@@ -944,8 +949,8 @@
     },
     {
       "path": "src/rp/store.ts",
-      "bytes": 130958,
-      "sha256": "db0bdd5a708506c3e6be52838a8996c8dad0f11c37d9928c412a42e8f6e48c8c"
+      "bytes": 131868,
+      "sha256": "4ebdbdd4c642a4494e1174963ee24075502abd52bfa9844efa486b6bef061b2b"
     },
     {
       "path": "src/rp/summarizer.ts",
@@ -999,13 +1004,18 @@
     },
     {
       "path": "lib/index.js",
-      "bytes": 924394,
-      "sha256": "2a9a771457c1487f1e67cc34cf8db336395428faa4c00b9eb963c02a458362c6"
+      "bytes": 938645,
+      "sha256": "29915fa949dbb80ddbb04db91d173a2e156dd8a8aef2fb45aa826f993bf62b30"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 1492381,
-      "sha256": "d8f5cc0c6feeeb82e21041f2393c685c59fc24fee6ba9de354e7962b1d3c1ea3"
+      "bytes": 1512487,
+      "sha256": "3f63a1fcefdfbb02f66d63a68f726f7b528d346d6c7e32403b1f38e1968acd62"
+    },
+    {
+      "path": "lib/types/core/cli-init.d.ts",
+      "bytes": 328,
+      "sha256": "2152847f330b378a441dc9401061bfe0de85ca137c8677cbf1a259a327745d35"
     },
     {
       "path": "lib/types/core/cli-service.d.ts",
@@ -1354,8 +1364,8 @@
     },
     {
       "path": "lib/types/rp/person/workbench-style.d.ts",
-      "bytes": 173652,
-      "sha256": "54df375025e06d11492f8fab3dafc83141bcc0964db11b643675a065fb01641b"
+      "bytes": 175197,
+      "sha256": "132c742083550b3d597a59e3e1f2051b4d420ff284d36b712f2a6fdeb23889ec"
     },
     {
       "path": "lib/types/rp/person/workbench-visuals.d.ts",
@@ -1469,8 +1479,8 @@
     },
     {
       "path": "ui/workbench/styles.css",
-      "bytes": 66736,
-      "sha256": "948e114dbce3d997a4384c137a4b097be664868b4e75302e1c6fe71953b9adcd"
+      "bytes": 68251,
+      "sha256": "6c2855fbf6c791af9d7e468c69fa636409b832be0db586da41c33873b38cbd75"
     }
   ]
 }

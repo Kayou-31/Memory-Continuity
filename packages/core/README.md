@@ -1,6 +1,6 @@
 # Memory-Continuity 独立核心
 
-这是供宿主适配器使用的 TypeScript / Node.js 核心开发包。它和 DSH 插件共用同一份存储、人物、日记与检索实现，不需要安装或启动 DSH。运行要求为 Node.js 22 或更高版本；没有安装脚本、在线词表下载或模型 API 调用。
+这是供宿主适配器使用的 TypeScript / Node.js 核心预览包。它和 DSH 插件共用同一份存储、人物、日记与检索实现，不需要安装或启动 DSH。运行要求为 Node.js 22 或更高版本；没有安装脚本、在线词表下载或模型 API 调用。
 
 ```js
 import {openMemoryCore} from '@memory-continuity/core'
@@ -21,6 +21,19 @@ await memory.close()
 如果进程异常退出，先运行 `memcont-core owner inspect --profile <绝对路径>`。确认这是要恢复的 profile 后，把诊断中的 `sha256` 原样传给 `memcont-core owner recover --profile <绝对路径> --expected <sha256>`。只有已确认死亡的进程可以恢复；活动进程、无法确认的 PID、损坏记录及过期摘要都会拒绝。恢复本身中断可在旧恢复进程退出后再次诊断处理，不按时间强行抢占。
 
 所有权恢复只允许重新打开存储，**不会把旧会话变成可发送状态**。工作区或全局事务另有未完成写锁时，仍需沿用已有的事务诊断与恢复；不要删除锁文件或改写历史。已发送但结果不明的输入仍需检查，必要时 `continue-clean`，不能自动重发。
+
+## 从一个新空间开始
+
+在空文件夹中通过本地 TGZ 安装核心，无需 npm registry 发布：`npm install --ignore-scripts <核心TGZ绝对路径>`。安装后用 `npx --no-install memcont-core` 调用，或直接运行包里的 `lib/cli.js`。
+
+```text
+memcont-core init --directory D:/Memory-Continuity/my-person --entity erin
+memcont-core serve --config D:/Memory-Continuity/my-person/core-config.json --connection D:/Memory-Continuity/my-person/connection.json
+```
+
+父目录需要已存在，`my-person` 必须是全新目录。初始化只建立空白 profile、工作区、life 分支和 main 管理绑定，授权人物 ID 为 `erin`；运行时换成你想用的 ID。没有自动创建人物、导入历史、调用模型或开启服务。随后在工作台里明确创建这个人物。
+
+已有目录、文件和符号链接全部拒绝。初始化中断后保留现场，不能重新运行来覆盖；检查后选择一个新目录，或使用现有诊断工具处理旧数据。不要把此命令用于升级已有 profile。
 
 ## 显式启动本机服务（开发接口）
 
@@ -53,7 +66,7 @@ memcont-core serve --config <配置绝对路径> --connection <新连接文件�
 }
 ```
 
-示例中的 ID 必须换成可信应用已建立并授权的真实记录；服务启动时逐项校验，不会根据示例自动创建工作区、分支或权限。当前还没有面向普通使用者的一键初始化向导。模型不能提供或改写这份配置。
+示例中的 ID 必须换成可信应用已建立并授权的真实记录；服务启动时逐项校验，不会根据示例自动创建工作区、分支或权限。新空间可用上面的 `init` 生成真实 ID；已有数据仍须由可信应用显式绑定，没有自动历史迁移。模型不能提供或改写这份配置。
 
 所有 RPC 均为 `POST`，使用 `Content-Type: application/json` 和 `Authorization: Bearer <凭据>`，Host 必须与连接文件的地址一致；如发送 Origin，它也必须一致。
 

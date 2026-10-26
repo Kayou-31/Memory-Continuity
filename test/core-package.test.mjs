@@ -30,6 +30,8 @@ test('real core TGZ installs without DSH, writes and cold-reads memory, and veri
  assert.deepEqual(read,write);assert.equal(read.name,'林澈');assert.equal(read.diary,'今天修好了钟楼。');assert.equal(read.tokenMode,'tokenizer-text')
  run([smoke,'owner-crash'],isolate,'separate process exits without releasing owner')
  const cli=path.join(installed,'lib/cli.js'),profile=path.join(isolate,'profile')
+ const initialized=JSON.parse(run([cli,'init','--directory',path.join(isolate,'new-core'),'--entity','erin'],isolate,'packaged explicit initialization without DSH'))
+ assert.equal(initialized.ok,true);assert.equal(JSON.parse(await fs.readFile(initialized.configFile,'utf8')).bindings[0].id,'main')
  const diagnostic=JSON.parse(run([cli,'owner','inspect','--profile',profile],isolate,'packaged owner diagnostic'));assert.equal(diagnostic.value.process,'dead')
  const stale=spawnSync(process.execPath,[cli,'owner','recover','--profile',profile,'--expected','0'.repeat(64)],{cwd:isolate,encoding:'utf8',timeout:15000,windowsHide:true});assert.equal(stale.status,1);assert.equal(JSON.parse(stale.stderr).code,'stale_input')
  assert.equal(JSON.parse(run([cli,'owner','recover','--profile',profile,'--expected',diagnostic.value.sha256],isolate,'explicit packaged owner recovery')).value,'recovered')

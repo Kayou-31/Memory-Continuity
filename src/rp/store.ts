@@ -885,6 +885,7 @@ export class RpStore {
           if (touched.has(b.sourceRevisionId)) invalid('duplicate binding mutation'); touched.add(b.sourceRevisionId)
           const source = state.sources.get(b.sourceRevisionId)
           if (b.branchId !== grant.request.branchId || !source || !this.#scopeMatches(source.scope, grant.request) || source.turnId !== b.turnId || !this.#visible(source.visibility, grant.request)) denied('source binding scope')
+          if (source.visibility.audienceSetId !== authority.visibility.audienceSetId) denied('source binding write audience')
           if ((source.scope.kind === 'branch' || source.scope.kind === 'session') && source.scope.branchId !== grant.request.branchId && !current.bindings.has(source.id) && !inherited.has(source.id)) denied('unproven inherited source')
           if ((this.#deleted(current).has(source.id) || this.#workspaceDeleted(state).has(source.id)) && b.disposition === 'accepted') error('source_unavailable', 'RP deleted source cannot be adopted')
           if (b.supersedes && !current.bindings.has(b.supersedes)) invalid('supersession target')
@@ -909,10 +910,17 @@ export class RpStore {
             if (change.recordId !== change.record.policyId || change.record.policyId !== authority.visibility.policyId || change.record.revision !== visibilityRevision + 1 || !grant.request.audienceSetIds.includes(change.record.audienceSetId)) denied('visibility policy mutation')
             visibilityRevision = change.record.revision
           } else if (change.kind === 'deletion') {
+            requireInvalidationControl()
             const d = change.record
             if (d.id !== change.recordId || !this.#scopeMatches(d.scope, grant.request) || (d.scope.kind !== 'branch' && d.scope.kind !== 'session') || d.scope.branchId !== grant.request.branchId || d.generation !== deletionGeneration + 1 || d.purgeState !== 'blocked') denied('deletion authority/state')
-            for (const sourceId of d.sourceRevisionIds) { const s = state.sources.get(sourceId); if (!s || !this.#scopeMatches(s.scope, grant.request) || !this.#visible(s.visibility, grant.request) || ((s.scope.kind === 'branch' || s.scope.kind === 'session') && s.scope.branchId !== grant.request.branchId && !current.bindings.has(s.id))) denied('deletion scope/audience') }
-            if (d.blockedDerivedIds.some(id => !next.records.has(id) || !this.#visible(next.records.get(id)!.visibility, grant.request))) denied('deletion dependency audience')
+            if (!d.sourceRevisionIds.length) denied('deletion requires explicit source roots')
+            for (const sourceId of d.sourceRevisionIds) { const s = state.sources.get(sourceId); if (!s || !this.#scopeMatches(s.scope, grant.request) || !this.#visible(s.visibility, grant.request) || s.visibility.audienceSetId !== authority.visibility.audienceSetId || ((s.scope.kind === 'branch' || s.scope.kind === 'session') && s.scope.branchId !== grant.request.branchId && !current.bindings.has(s.id))) denied('deletion scope/audience') }
+            if (d.blockedDerivedIds.length) {
+              const derived = new Set(d.sourceRevisionIds)
+              let expanded = true
+              while (expanded) { expanded = false; for (const record of next.records.values()) if (!derived.has(record.id) && [...record.sourceRevisionIds,...record.dependencyIds].some(id => derived.has(id))) { derived.add(record.id); expanded = true } }
+              if (d.blockedDerivedIds.some(id => { const record = next.records.get(id); return !record || !derived.has(id) || !this.#scopeMatches(record.scope,grant.request) || !this.#visible(record.visibility,grant.request) || record.visibility.audienceSetId !== authority.visibility.audienceSetId })) denied('deletion dependency scope/audience')
+            }
             deletionGeneration = d.generation
           } else if (change.kind === 'canon_binding') {
             if (!this.#options.verifyCanonBinding || !await this.#options.verifyCanonBinding(change.record)) error('capability_missing', 'RP approved global publication verifier is required')

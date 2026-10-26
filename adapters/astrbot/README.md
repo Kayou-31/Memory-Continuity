@@ -1,6 +1,6 @@
 # Memory-Continuity · AstrBot 管理桥
 
-这是一个可独立安装的**开发版管理桥**。它连接同一电脑上的 Memory-Continuity 核心，让管理员从 AstrBot 显式打开人物工作台、查看连接状态、关闭临时管理会话。不需要安装或启动 DSH。
+这是一个可独立安装的**预览版管理桥**。它连接同一电脑上的 Memory-Continuity 核心，让管理员从 AstrBot 显式打开人物工作台、查看连接状态、关闭临时管理会话。不需要安装或启动 DSH。
 
 当前尚未开放模型记忆注入、模型检索工具、AI 日记写入、平台人物绑定或干净续接。安装这个桥不会让 AstrBot 自动记住人物，也没有开启后台摘要、压缩、主动聊天或模型调用。请不要把“管理桥可用”理解成完整 AstrBot / NapCat / Snow Luma 兼容。
 
@@ -8,7 +8,7 @@
 
 运行要求：AstrBot **4.29.3**、Python 3.12+；独立核心需要 Node.js 22+。核心 TGZ 与此插件 ZIP 分开安装，ZIP 内不捆绑 DSH、AstrBot、Node、账户资料或模型密钥。
 
-1. 在隔离测试 profile 中准备核心配置，使用 `memcont-core serve --config <绝对路径> --connection <新的连接文件绝对路径>` 显式启动核心。核心目前要求已存在并经授权的工作区和分支，初始化向导仍待补齐。
+1. 在隔离测试 profile 中准备核心配置，使用 `memcont-core serve --config <绝对路径> --connection <新的连接文件绝对路径>` 显式启动核心。首次使用先运行 `memcont-core init --directory <新目录绝对路径> --entity <人物ID>`，用生成的 `core-config.json` 启动服务；它不导入旧历史。
 2. 通过 AstrBot 的本地插件安装入口安装 ZIP。插件默认关闭；设置中启用管理桥，并填写核心连接文件的绝对路径。连接文件包含管理凭据，应放在账户专用目录，不要发给别人或加入 Git。
 3. 以 **AstrBot 管理员身份私聊**发送 `/memcont connect`。这一步才连接核心，不会自动创建人物或导入聊天记录。
 4. `/memcont status` 查看核心中已配置的绑定，再用 `/memcont open <绑定ID>` 打开对应工作台。

@@ -26,7 +26,7 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
  const personName=(p:any)=>p?.fields.find((f:any)=>f.kind==='identity')?.value??p?.personId??'未绑定人物'
  const setBusy=(value:boolean)=>{busy=value;document.body.setAttribute('aria-busy',String(value));$('content').setAttribute('aria-busy',String(value));for(const control of document.querySelectorAll<HTMLButtonElement|HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>('button,input,select,textarea'))if(!control.closest('#theme'))control.disabled=value||closed}
  const button=(parent:HTMLElement,label:string,action:()=>unknown,cls='btn')=>{const b=elem('button',label,parent,cls);b.type='button';b.disabled=busy||closed;b.onclick=()=>{if(!busy&&!closed)Promise.resolve().then(action).catch(fail)};return b}
- const card=(parent:HTMLElement,title?:string)=>{const c=elem('section','',parent,'mc-card');if(title)elem('h3',title,c);return c}
+ const card=(parent:HTMLElement,title?:string)=>{const c=elem('section','',parent,'panel stack mc-card');if(title)elem('h3',title,c,'h3');return c}
  const note=(parent:HTMLElement,text:string)=>elem('p',text,parent,'mc-form-note')
  const code=(parent:HTMLElement,text:unknown)=>elem('pre',typeof text==='string'?text:JSON.stringify(text,null,2),parent,'mc-code')
  const details=(parent:HTMLElement,label:string,text:unknown)=>{const d=elem('details','',parent,'mc-details');elem('summary',label,d);code(d,text);return d}
@@ -49,8 +49,9 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
  const growthDiff=(parent:HTMLElement,change:any,processed=false)=>{
   const person=snapshot.persons.find((p:any)=>p.personId===change.personId),field=person?.fields.find((f:any)=>f.fieldId===change.fieldId)
   const previous=processed?timeline(change.personId).find((t:any)=>t.eventId===change.previousEventId):field
-  note(parent,personName(person)+' / '+(names[field?.kind]??change.fieldId));const d=elem('div','',parent,'mc-diff')
-  elem('div',(processed?'提案时内容':'当前')+'\n'+(previous?.value??'历史值不在当前快照中'),d);elem('div','提案内容\n'+change.value,d);elem('p','理由：'+change.note,parent)
+    note(parent,personName(person)+' / '+(names[field?.kind]??change.fieldId));const d=elem('div','',parent,'compare'),before=elem('div','',d,'col now')
+    elem('span',processed?'提案时内容':'当前',before,'cap');elem('p',previous?.value??'历史值不在当前快照中',before,'tx');elem('div','',d,'mid').append(icon('arrowRight'))
+    const after=elem('div','',d,'col next');elem('span','提案内容',after,'cap');elem('p',change.value,after,'tx');elem('p','理由：'+change.note,parent)
   for(const id of change.causeEventIds??[]){const event=snapshot.experiences.find((e:any)=>e.id===id);note(parent,'支持经历：'+(event?.payload.description??id))}
  }
  const preview=async(action:string,payload:any)=>{
@@ -161,51 +162,82 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
  }
  const renderGrowth=(root:HTMLElement,p:any)=>{
   title(root,'成长审阅','看清变化前后、理由与经历，再决定是否采纳。候选内容不会自动进入人物。')
-  const chosen:string[]=[],all=snapshot.candidates.filter((c:any)=>c.changes.some((x:any)=>x.personId===selected));if(!all.length)empty(root,'暂无成长候选。可在下方提出一次有经历依据的成长。')
-  for(const c of all){const item=card(root,'成长候选');chip(item,({pending:'待审阅',accepted:'已采纳',rejected:'已拒绝',stale:'已失效'} as Record<string,string>)[c.state]??c.state)
+  const chosen:string[]=[],all=snapshot.candidates.filter((c:any)=>c.changes.some((x:any)=>x.personId===selected)),pending=all.filter((c:any)=>c.state==='pending'),processed=all.filter((c:any)=>c.state!=='pending')
+  const toolbar=elem('div','',root,'review-toolbar'),count=elem('span','待审阅 '+pending.length+' 条 · 已选择 0 条',toolbar,'muted')
+  if(pending.length)button(toolbar,'预览批量采纳',()=>{if(!chosen.length)throw Error('请先选择候选。');return preview('adopt',{candidateIds:chosen})},'btn btn-primary')
+  const waiting=elem('div','',root,'stack');if(!pending.length)empty(waiting,'没有等待审阅的成长。人物不会在后台自行改变。')
+  const history=processed.length?fold(root,'已处理的候选 · '+processed.length+' 条'):undefined
+  for(const c of [...pending,...processed]){const item=elem('article','',c.state==='pending'?waiting:history!,'sugg'+(c.state==='stale'?' stale':'')),head=elem('div','',item,'sugg-head');
+   if(c.state==='pending'){const label=elem('label','',head,'check row'),box=elem('input','',label);box.type='checkbox';elem('span','选择这次成长',label);box.onchange=()=>{const i=chosen.indexOf(c.id);if(box.checked&&i<0)chosen.push(c.id);else if(!box.checked&&i>=0)chosen.splice(i,1);item.classList.toggle('selected',box.checked);count.textContent='待审阅 '+pending.length+' 条 · 已选择 '+chosen.length+' 条'}}
+   else elem('h2','成长记录',head,'h3')
+   elem('span',({pending:'待审阅',accepted:'已采纳',rejected:'已拒绝',stale:'已失效'} as Record<string,string>)[c.state]??c.state,head,'status-pill st-'+c.state)
    for(const change of c.changes)growthDiff(item,change,c.state!=='pending')
-   if(c.state==='pending'){const l=elem('label','',item,'mc-cause'),box=elem('input','',l);box.type='checkbox';box.onchange=()=>{const i=chosen.indexOf(c.id);if(box.checked&&i<0)chosen.push(c.id);else if(!box.checked&&i>=0)chosen.splice(i,1)};elem('span','加入本次批量采纳',l);const actions=elem('div','',item,'mc-actions');button(actions,'预览采纳',()=>preview('adopt',{candidateIds:[c.id]}),'btn btn-primary');button(actions,'预览拒绝',()=>preview('reject',{candidateId:c.id}),'btn btn-danger-ghost')}
+   if(c.state==='pending'){const actions=elem('div','',item,'sugg-foot');button(actions,'预览拒绝',()=>preview('reject',{candidateId:c.id}),'btn btn-danger-ghost');button(actions,'预览采纳',()=>preview('adopt',{candidateIds:[c.id]}),'btn btn-primary')}
   }
-  if(all.some((c:any)=>c.state==='pending'))button(root,'预览批量采纳',()=>{if(!chosen.length)throw Error('请先选择候选。');return preview('adopt',{candidateIds:chosen})},'btn btn-primary')
   const c=fold(root,'＋ 提出一次成长'),fields=p.fields.filter((f:any)=>f.policy==='growable');if(!fields.length){note(c,'当前没有允许成长的字段。可先在人物档案中明确调整策略。');return}
   const field=select(c,'可成长字段',Object.fromEntries(fields.map((f:any)=>[f.fieldId,(names[f.kind]??f.kind)+' · '+f.fieldId]))),value=input(c,'建议的新状态','',true),reason=input(c,'成长理由'),support=causes(c)
   button(c,'预览成长提案',()=>{const old=p.fields.find((f:any)=>f.fieldId===field.value);return preview('propose',{changes:[{changeId:'change_'+crypto.randomUUID().replaceAll('-',''),personId:selected,fieldId:old.fieldId,previousEventId:old.eventId,value:value.value,causeEventIds:support,note:reason.value}]})},'btn btn-primary')
  }
  const renderInjection=(root:HTMLElement)=>{
-  title(root,'记忆如何进入这次对话','五类记忆、三级展开。这里展示服务器的实际选择原因，不调用模型，也不修改记忆。')
-  const bound=snapshot.context?.personId,c=card(root,'本轮主题');note(c,'预览对象是当前聊天绑定人物：'+(bound??'未绑定')+'。正在查看的人物不会改变这个对象。')
-  const settings=fold(root,'调整分层与条件配置'),configuration=input(settings,'注入配置 JSON',JSON.stringify(snapshot.context?.injection?.config??{},null,2),true,32768);note(settings,'完整替换配置；支持 depth、budgets、pin、exclude、aliases 和 rules。旧 budgets 是字节，token 分层预算在“记忆预算”页调整。')
-  button(settings,'预览注入配置',()=>preview('host-injection',{config:JSON.parse(configuration.value)}),'btn btn-primary');button(settings,'预览关闭分层注入',()=>preview('host-injection',{config:null}))
-  if(!snapshot.context?.injection){note(c,'当前还未启用分层注入。在空白根会话绑定人物后显式开启；已有历史先干净续接。');button(c,'预览绑定当前查看人物',()=>preview('host-person',{personId:selected}),'btn btn-primary');return}
-  const query=input(c,'想聊的话题或想回忆的内容','',true,8192);query.classList.add('mc-query');const output=elem('div','',root,'workbench-body')
-  button(c,'预览本轮注入',async()=>{const ticket=epoch;setBusy(true);output.replaceChildren();message('正在校验快照并组装预览…');try{const result=await api.request('injection-preview',{query:query.value});if(closed||ticket!==epoch)return;output.replaceChildren();if(!result.current){empty(output,'当前没有可用的人物连续性预览。');return}
-    const trace=result.current.trace;if(trace.lexicalTermsTruncated)note(output,'查询词项超过本地检索上限，请缩短主题；当前只使用前 128 个不同词项。')
-    const metrics=elem('div','',output,'mc-actions');chip(metrics,'选入 '+trace.entries.filter((e:any)=>e.selected).length+' / '+trace.entries.length+' 条');chip(metrics,'深度按服务器配置');chip(metrics,result.memoryUsage?.mode==='tokenizer-text'?'模型文本 token':result.memoryUsage?'UTF-8 保守计量':'旧配置：UTF-8 字节');if(result.memoryUsage)details(output,'此次预览的完整记忆用量',result.memoryUsage)
-    const layout=elem('div','',output,'mc-injection'),list=elem('div','',layout,'workbench-body'),text=card(layout,'本轮供模型阅读的人物连续性');text.classList.add('mc-preview-text');elem('div',result.current.text,text,'mc-narrative');details(text,'快照与配置校验',trace.context)
-    const filter=select(list,'显示记忆层',{'all':'全部五类',...layers}),entries=elem('div','',list,'workbench-body')
-    const showEntries=()=>{entries.replaceChildren();for(const [layer,label]of Object.entries(layers)){if(filter.value!=='all'&&filter.value!==layer)continue;const selectedEntries=trace.entries.filter((e:any)=>e.layer===layer),group=card(entries,label);if(!selectedEntries.length)note(group,'本层没有当前有效候选。');for(const e of selectedEntries){const row=card(group,e.selected?'已选入':'未选入');row.classList.add(e.selected?'mc-selected':'mc-excluded');note(row,depths[e.depth]+' · '+e.bytes+' 字节');const line=result.current.text.split('\n').find((line:string)=>line.startsWith('['+e.id+'] '));if(e.selected&&line)elem('p',line.slice(e.id.length+3),row);elem('p',e.reasons.map((r:string)=>reasons[r]??r).join('；'),row);sourceInfo(row,e)}}};filter.onchange=showEntries;showEntries()
-    const history=card(output,'旧会话仍携带的历史');note(history,result.notice);if(!result.history.length)empty(history,'干净上下文，没有旧宿主消息。');for(const h of result.history){const row=card(history,h.status==='blocked'?'已失效，继续发送会被封锁':'仍携带在上下文中');elem('p',h.reason,row);details(row,'历史消息与快照',{消息:h.messageId,快照:h.snapshotId,类型:h.kind,选入记录:h.selectedIds})}message('预览完成。实际发送前会重新校验；本轮未选入不代表旧历史已被删除。')
-   }catch(e){output.replaceChildren();throw e}finally{setBusy(false)}},'btn btn-primary')
+  title(root,'记忆注入预览','输入这一轮的话题，查看人物会带着哪些记忆进入对话、为什么选它们，以及最终交给模型阅读的文字。')
+  const banner=elem('div','',root,'preview-banner');banner.append(icon('layers'));elem('span','仅预览。不发送给模型，不修改记忆。实际发送前仍会重新验证权限与版本。',banner)
+  const bound=snapshot.persons.find((p:any)=>p.personId===snapshot.context?.personId),c=elem('section','',root,'panel query-panel')
+  c.setAttribute('aria-label','预览设置');note(c,'预览对象：'+personName(bound)+'。查看其他档案不会改变当前对话绑定。')
+  const query=input(c,'这一轮的话题或问题','',true,8192) as HTMLTextAreaElement;query.rows=2;query.placeholder='例如：我们还有什么尚未兑现的约定？'
+  const options=elem('div','',c,'opt-row'),configuration=fold(root,'分层与条件设置'),config=input(configuration,'注入配置 JSON',JSON.stringify(snapshot.context?.injection?.config??{},null,2),true,32768)
+  note(configuration,'配置经预览确认后保存；可设置 depth、budgets、pin、exclude、aliases 和 rules。token 总额及分层上限在“记忆预算”页管理。')
+  const configActions=elem('div','',configuration,'row');button(configActions,'预览注入配置',()=>preview('host-injection',{config:JSON.parse(config.value)}),'btn btn-primary');button(configActions,'预览关闭分层注入',()=>preview('host-injection',{config:null}))
+  const summary=elem('div','',options,'result-meta');elem('span','展开：'+(depths[snapshot.context?.injection?.config?.depth]??'尚未设置'),summary);elem('span',snapshot.context?.memoryBudget?'总记忆上限 '+snapshot.context.memoryBudget.limitTokens.toLocaleString():'旧版字节预算',summary)
+  const output=elem('div','',root,'stack-lg')
+  if(!snapshot.context?.injection){note(output,'当前尚未启用分层注入。请在空白根会话绑定人物并明确开启；已有历史先干净续接。');button(output,'预览绑定当前查看人物',()=>preview('host-person',{personId:selected}),'btn btn-primary');return}
+  const run=async()=>{const ticket=epoch;setBusy(true);output.replaceChildren();message('正在校验快照并组装预览…');try{
+   const result=await api.request('injection-preview',{query:query.value});if(closed||ticket!==epoch)return;output.replaceChildren();if(!result.current){empty(output,'当前没有可用的人物连续性预览。');return}
+   const trace=result.current.trace,usage=result.memoryBudget?.usage,selectedCount=trace.entries.filter((e:any)=>e.selected).length,metrics=elem('section','',output,'panel stack'),meta=elem('div','',metrics,'result-meta')
+   elem('span','选入 '+selectedCount+' / '+trace.entries.length+' 条',meta);elem('span','数据版本 r'+trace.fence.contextRevision,meta);elem('span','本次话题：'+(trace.query||'未指定'),meta)
+   if(usage){const meter=elem('div','',metrics,'meter'),heading=elem('div','',meter,'row-between');elem('h2','记忆容量',heading,'h3');elem('span',usage.total.toLocaleString()+' / '+usage.limit.toLocaleString()+(usage.mode==='tokenizer-text'?' 文本 token':' UTF-8 保守计量'),heading,'num');const bar=elem('progress','',meter,'mc-budget-meter');bar.max=usage.limit;bar.value=usage.total;bar.setAttribute('aria-label','总记忆容量使用');note(meter,'包括当前记忆和已保留的工具内容；实际请求会重新计量宿主包装。');details(metrics,'完整计量依据',usage)}
+   else note(metrics,'当前使用旧版 UTF-8 字节预算。下列字节数不是精确 token 数。')
+   if(trace.lexicalTermsTruncated)note(metrics,'查询词超过上限，本次只使用前 128 个不同词项；请缩短话题后重新预览。')
+   const layout=elem('div','',output,'inject-layout'),list=elem('div','',layout,'stack'),aside=elem('aside','',layout,'inject-side'),text=elem('section','',aside,'panel stack');aside.setAttribute('aria-label','本轮人物记忆文本');elem('h2','本轮供模型阅读的文字',text,'h2');note(text,'这是本次服务器生成的完整人物连续性文本。');elem('pre',result.current.text,text,'inject-text');details(text,'快照与配置校验',trace.context)
+   const filter=elem('div','',list,'filter-chips');filter.setAttribute('role','group');filter.setAttribute('aria-label','筛选记忆');const groups=elem('div','',list,'stack'),filterButtons:HTMLButtonElement[]=[];let selectedFilter='all'
+   const layerDescriptions:Record<string,string>={self:'身份、性格与稳定边界',situation:'当前感受、阶段与处境',relationships:'有方向的关系与互动背景',recollection:'与话题相关的经历和资料',unfinished:'目标、承诺与尚未完成的事'}
+   const renderEntries=()=>{groups.replaceChildren();for(const b of filterButtons)b.setAttribute('aria-pressed',String(b.dataset.filter===selectedFilter));for(const [layer,label]of Object.entries(layers)){
+    const all=trace.entries.filter((e:any)=>e.layer===layer),entries=all.filter((e:any)=>selectedFilter==='all'||(selectedFilter==='in'?e.selected:!e.selected)),group=elem('section','',groups,'cat');group.dataset.layer=layer
+    const head=elem('div','',group,'cat-head');elem('span','',head,'cat-sw');const info=elem('div','',head);elem('h3',label,info,'nm');elem('div',layerDescriptions[layer],info,'ds');elem('span','选入 '+all.filter((e:any)=>e.selected).length+' / '+all.length,head,'ct')
+    if(!entries.length){elem('p',all.length?'此筛选下没有记录。':'本层没有当前有效候选。',group,'mc-layer-empty');continue}
+    for(const e of entries){const item=elem('div','',group,'mem '+(e.selected?'in':'out')),detail=elem('div','',item,'mem-detail');detail.hidden=true;const row=button(item,'',()=>{detail.hidden=!detail.hidden;row.setAttribute('aria-expanded',String(!detail.hidden))},'mem-row');item.prepend(row);row.setAttribute('aria-expanded','false');elem('span',e.selected?'✓':'−',row,'mem-state '+(e.selected?'in':'out'));const main=elem('span','',row,'mem-main');elem('span',({event:'事件',summary:'摘要',document:'人物资料',diary:'共同日记'} as Record<string,string>)[e.kind]??'记忆记录',main,'mem-title');const line=result.current.text.split('\n').find((line:string)=>line.startsWith('['+e.id+'] '));elem('span',line?line.slice(e.id.length+3):(e.selected?'选入正文见右侧完整文本':'本次未选入；不从其他快照补出正文'),main,'mem-text');const tags=elem('span','',main,'mem-tags');for(const reason of e.reasons)elem('span',reasons[reason]??reason,tags,'chip '+(e.selected?'chip-accent':'chip-outline'));const side=elem('span','',row,'mem-side');elem('span',depths[e.depth]??e.depth,side,'chip chip-outline');elem('span',e.bytes+' 字节'+(e.tokens!==undefined?' · '+e.tokens+' 计量单位':''),side,'mem-tok');note(detail,'原因：'+e.reasons.map((r:string)=>reasons[r]??r).join('；'));if(line)elem('pre',line.slice(e.id.length+3),detail,'inject-text');sourceInfo(detail,e)}
+   }}
+   for(const [key,label,count]of [['all','全部',trace.entries.length],['in','选入',selectedCount],['out','未选入',trace.entries.length-selectedCount]] as [string,string,number][]){const b=button(filter,label+' '+count,()=>{selectedFilter=key;renderEntries()},'filter-chip');b.dataset.filter=key;filterButtons.push(b)}renderEntries()
+   const history=elem('section','',output,'stack');const hh=elem('div','',history,'section-head');elem('h2','旧会话仍携带的历史',hh,'h2');note(history,result.notice);if(!result.history.length)elem('p','干净上下文，没有旧宿主消息。',history,'empty-line');for(const h of result.history){const row=elem('div','',history,h.status==='blocked'?'block-item':'panel stack');elem('h3',h.status==='blocked'?'已失效，继续发送会被封锁':'仍携带在上下文中',row,'h3');elem('p',h.reason,row);details(row,'历史消息与快照',{消息:h.messageId,快照:h.snapshotId,类型:h.kind,选入记录:h.selectedIds})}
+   message('预览完成。当前未选入不代表旧历史已被删除；实际发送前会重新校验。')
+  }catch(e){output.replaceChildren();throw e}finally{setBusy(false)}}
+  button(options,'预览本轮注入',run,'btn btn-primary').prepend(icon('layers'));query.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)&&!busy){e.preventDefault();run().catch(fail)}})
+  note(output,'输入话题后生成一次预览。这里不会自动请求模型。')
  }
  const renderContinuity=(root:HTMLElement)=>{
-  title(root,'会话会结束，人物继续','干净续接继承有效人生线、人物及注入配置，不复制旧宿主消息，不自动重发不确定输入。')
-  const c=card(root,'当前绑定');code(c,{会话:snapshot.context?.sessionId,人物:snapshot.context?.personId??null,人生线:snapshot.fence.branchId});note(c,'在宿主执行下面的指令，再选择返回的新根会话。工作台不会偷偷切换正在进行的聊天。');command(c,'/memcont continue-clean')
-  const g=card(root,'通用偏好与共同设定');note(g,'现有后端支持明确授权的全局偏好、世界发布和固定版本采用。当前页面不展示未经请求的全局正文；完整控制指令请查看宿主帮助。');command(g,'/memcont help memory\n/memcont help storage')
-  const bind=card(root,'选择聊天人物');note(bind,'查看档案不会切换聊天。空白根会话可明确绑定；已有上下文先干净续接。');button(bind,'预览绑定当前查看人物',()=>preview('host-person',{personId:selected}),'btn btn-primary')
+  title(root,'会话会结束，人物继续','沿着同一条人生线，把已经确认的记忆带进新的对话。')
+  const binding=elem('section','',root,'panel stack');elem('h2','当前人生线',binding,'h2');const chain=elem('div','',binding,'chain'),item=elem('div','',chain,'chain-item'),rail=elem('div','',item,'chain-rail');elem('span','',rail,'chain-dot active');const body=elem('div','',item,'chain-body');elem('strong',personName(snapshot.persons.find((p:any)=>p.personId===snapshot.context?.personId)),body);elem('span',snapshot.fence.branchId,body,'id');elem('p',snapshot.context?.sessionId?'当前会话：'+snapshot.context.sessionId:'当前是独立管理空间，没有宿主聊天会话。',body,'m')
+  const plan=elem('div','',root,'carry-plan');for(const [heading,cls,items]of [['继续带着','yes',['有效的人物定义与已确认经历','当前人生线、关系和未完成事项','经过认证的人物绑定与注入配置']],['留在旧会话','no',['旧宿主聊天消息和未经认证的工具结果','尚未采纳的成长候选不会变成事实','结果不明的输入不会自动重发']]] as [string,string,string[]][]){const panel=elem('section','',plan,'panel stack');elem('h2',heading,panel,'h2');const list=elem('ul','',panel,'plan-list '+cls);for(const text of items){const li=elem('li','',list);li.append(icon(cls==='yes'?'check':'x'));elem('span',text,li)}}
+  const next=fold(root,'开启干净的新会话');note(next,'在 DSH 中执行以下指令，再选择返回的新根会话；独立核心不代替宿主创建聊天。');command(next,'/memcont continue-clean')
+  const scopes=elem('section','',root,'stack'),h=elem('div','',scopes,'section-head');elem('h2','记忆的两种范围',h,'h2');const grid=elem('div','',scopes,'grid-2');for(const [name,text]of [['人物人生线','定义、经历、关系和承诺按人物与分支读取，保持各自的来源。'],['全局记忆','通用偏好与世界设定通过明确授权发布、采用或撤销，不自动共享私人记忆。']]){const c=elem('section','',grid,'panel stack');elem('h3',name,c,'h3');elem('p',text,c,'muted')}
+  const controls=fold(root,'绑定与全局记忆操作');button(controls,'预览绑定当前查看人物',()=>preview('host-person',{personId:selected}),'btn btn-primary');command(controls,'/memcont help memory\n/memcont help storage')
  }
  const renderRules=(root:HTMLElement)=>{
-  title(root,'用途与规则','系统硬约束始终优先；人物规则只能在授权、证据和预算边界内生效。')
-  const c=card(root,'当前用途');chip(c,modes[snapshot.context?.mode]??snapshot.context?.mode??'角色扮演');note(c,'模式与模块通过可信宿主指令配置；已有历史时先干净续接。')
-  details(c,'当前真实运行配置',snapshot.context?.config??{说明:'未显式设置用途或能力模块，保持默认关闭'})
-  const modules=card(root,'现有能力模块');for(const [id,label]of [['person-view','人物视图'],['recall','授权回忆检索'],['growth-review','人工成长审阅']])code(card(modules,label),id)
-  const hard=card(root,'系统固定约束');for(const s of ['所有来源、权限、快照和持久化检查继续 fail-closed。','人物变化、关系与目标需要明确确认和有效证据。','后台自动摘要、自动采纳、自动压缩保持关闭。'])elem('p',s,hard)
-  command(root,'/memcont help modules');note(root,'技能学习、多人物社会、更深长期检索、日期提醒等为未来可能方向，本版不承诺已经实现。')
+  title(root,'用途与规则','系统固定约束始终生效；人物规则定义表达与边界，不会授予额外权限。')
+  const config=snapshot.context?.config,mode=snapshot.context?.mode??'rp',purposes=elem('section','',root,'stack');elem('h2','用途',purposes,'h2');const grid=elem('div','',purposes,'purpose-grid'),descriptions:Record<string,string>={rp:'在故事与角色之间保持连续。',companion:'保留共同经历、关系和约定。',creation:'延续人物与世界的创作。',project:'让目标、决策与进展有据可循。'}
+  for(const [key,label]of Object.entries(modes)){const p=elem('div','',grid,'purpose'+(mode===key?' current':'')),h=elem('div','',p,'row-between');elem('span',label,h,'t');if(mode===key)elem('span','当前',h,'chip chip-accent');elem('span',descriptions[key],p,'d')}
+  note(purposes,'用途和模块在可信宿主中明确配置；当前只展示真实运行状态。已有历史时先干净续接。')
+  const modules=elem('section','',root,'panel stack');elem('h2','能力模块',modules,'h2');const list=elem('div','',modules)
+  for(const [id,label,description]of [['person-view','人物视图','读取当前授权的人物定义与状态。'],['recall','授权回忆检索','在来源和受众范围内检索记忆。'],['growth-review','人工成长审阅','依据已经确认的经历提出成长候选，不自动采纳。']]){const row=elem('div','',list,'module');elem('span',label,row,'t');elem('span',config?.enabledModules?.includes(id)?'已启用':'未启用',row,'chip '+(config?.enabledModules?.includes(id)?'chip-ok':'chip-outline'));elem('span',description,row,'d')}
+  const ruleHead=elem('div','',root,'section-head');elem('h2','规则',ruleHead,'h2');const cols=elem('div','',root,'rule-cols'),hard=elem('section','',cols,'sys-panel stack'),user=elem('section','',cols,'panel stack');elem('h3','系统固定约束',hard,'h3');note(hard,'对所有人物和用途生效，人物规则不能覆盖。')
+  for(const text of ['来源、权限、快照或持久化校验失败时拒绝操作。','人物变化、关系与目标保留明确确认和有效依据。','不进行后台执行、自动摘要、自动采纳或自动压缩。']){const row=elem('div','',hard,'rule');row.append(icon('lock'));elem('p',text,row,'tx')}
+  elem('h3','人物与用途规则',user,'h3');const guidance=config?.constraints?.guidance??[];if(!guidance.length)elem('p','当前没有额外的用途规则。',user,'empty-line');for(const g of guidance){const row=elem('div','',user,'rule');row.append(icon('user'));elem('p',g.text,row,'tx')}
+  const controls=fold(root,'管理用途、模块与规则');command(controls,'/memcont help modules');details(controls,'当前真实运行配置',config??{说明:'未显式配置能力模块，保持默认关闭'})
  }
  const render=()=>{
   epoch++;hideReview();const root=$('content');root.replaceChildren();$('nav').replaceChildren();for(const group of ['人物','记忆','对话','管理']){const section=elem('div','',$('nav'),'nav-group');elem('div',group,section,'nav-title');for(const [key,label,g,_glyph]of pages.filter(p=>p[2]===group)){const b=button(section,label,()=>go(key),'nav-item');const glyph=({people:'users',profile:'user',documents:'source',experiences:'book',relations:'arrows',goals:'target',growth:'sprout',diary:'edit',inject:'layers',continuity:'thread',rules:'sliders',budget:'target',settings:'sliders'} as Record<string,string>)[key];b.prepend(icon(glyph));if(key==='inject')elem('span','重点',b,'nav-tag');b.setAttribute('aria-current',page===key?'page':'false')}}
   if(!snapshot)return;const p=current();$('person-name').textContent=personName(p);$('person-avatar').textContent=personName(p).slice(0,1);$('viewing-note').textContent=p?.personId===snapshot.context?.personId?'也是当前聊天使用的人物':'查看人物不会切换当前聊天。';$('person-menu').hidden=true;$('person-picker').setAttribute('aria-expanded','false');if(p&&p.personId!==snapshot.context?.personId){elem('div','正在查看「'+personName(p)+'」。当前聊天使用「'+personName(snapshot.persons.find((x:any)=>x.personId===snapshot.context?.personId))+'」。',root,'callout callout-cand').setAttribute('role','note')}
   if(page==='new'){createPerson(root);return}if(page==='people'){renderPeople(root);return}if(page==='inject'){renderInjection(root);return}if(page==='continuity'){renderContinuity(root);return}if(page==='rules'){renderRules(root);return}
-  if((p||['budget','settings'].includes(page))&&extensions(page,root,{snapshot,selected,elem,title,card,note,input,select,button,details,chip,preview,api,message,setBusy,command,fold}))return
+  if((p||['budget','settings'].includes(page))&&extensions(page,root,{snapshot,selected,elem,title,card,note,input,select,button,details,chip,preview,api,message,setBusy,command,fold,icon}))return
   if(!p){title(root,'先定义一个人物','人物的经历、关系与成长将在这里延续。');empty(root,'当前没有可查看人物。');button(root,'新建人物',()=>go('new'),'btn btn-primary');return}
   if(page==='profile')renderProfile(root,p);else if(page==='experiences')renderExperiences(root,p);else if(page==='relations')renderRelations(root,p);else if(page==='goals')renderGoals(root,p);else if(page==='growth')renderGrowth(root,p)
  }

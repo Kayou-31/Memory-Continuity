@@ -1,12 +1,12 @@
 # Memory-Continuity 中文指令速查
 
-> 开发分支补充：下文保留 0.2.1 的安装与原有指令。尚未发布的人物文档、双方日记与 32K 预算分别见 [人物资料](framework-evolution-2026-10-25/RESULTS.md)、[共同日记](shared-diary.zh.md)、[记忆预算](memory-budget.zh.md)，不能据此认定下载页的 0.2.1 已包含这些能力。
+> 适用本轮 **0.3.0-preview.1**。稳定版 0.2.1 不包含新的人物原文、共同日记与 32K 预算；请核对安装包版本。相关专题见 [人物资料](framework-evolution-2026-10-25/RESULTS.md)、[共同日记](shared-diary.zh.md)、[记忆预算](memory-budget.zh.md)。
 
-适用正式版：0.2.1，兼容 DSH 0.2.1-rc.2 / rc.3，指令与 0.2.0 保持一致。插件包为 `@dsh-external/dsh-memory-continuity`，宿主主命令为 `/memcont`（Memory + Continuity），旧 `/rp` 保留为兼容别名；旧数据目录不改名。人物工作台已接入真实后端；在会话内执行 /memcont person manage 打开，所有写入须先预览再明确确认。
+兼容 DSH 0.2.1-rc.2 / rc.3。插件包为 `@dsh-external/dsh-memory-continuity`，宿主主命令为 `/memcont`（Memory + Continuity），旧 `/rp` 保留为兼容别名；旧数据目录不改名。人物工作台已接入真实后端；在会话内执行 /memcont person manage 打开，所有写入须先预览再明确确认。
 
-## 开发分支：工作台资料导入与提醒设置
+## 工作台资料导入与提醒设置
 
-以下为尚未发布的迭代内容，不属于下载页现有的 0.2.1 插件包。
+以下功能包含在本轮预览包中，不属于稳定版 0.2.1。
 
 执行 `/memcont person manage` 后，可在“完整人物资料”页选择 UTF-8 Markdown 或文本文件，单份最多 1 MiB。先解析，再核对章节分类、注入资格和适用范围，最后明确确认保存。原文保留 BOM 与换行；未分类章节不会被丢弃，默认只保存、不注入。修订原文后必须重新解析；章节编号随原文校验值变化，请重新核对分类与条件。
 
@@ -148,7 +148,7 @@ memcont-core owner recover --profile <profile绝对路径> --expected <诊断中
 memcont-core serve --config <配置绝对路径> --connection <新连接文件绝对路径>
 ```
 
-这是独立核心包中的前台命令，不是 DSH 聊天指令。需要管理员提供已经建立的工作区、分支和权限配置；详细字段见独立核心包随附的 README。目前仅用于开发验收，没有一键初始化向导。
+这是独立核心包中的前台命令，不是 DSH 聊天指令。需要管理员提供已经建立的工作区、分支和权限配置；详细字段见独立核心包随附的 README。首次使用先运行 `memcont-core init --directory <新的绝对目录> --entity <人物ID>`，用生成的配置启动；已有目录不会被覆盖。
 
 服务只监听本机。管理凭据写入指定的新连接文件，普通输出不显示；请使用账户专用目录，勿上传该文件。输入 `quit` 正常退出后删除本次连接文件并释放 profile。崩溃后先检查所有权，显式恢复后使用新连接文件；旧管理凭据、只读工具令牌和临时预览都不会继续生效。
 
