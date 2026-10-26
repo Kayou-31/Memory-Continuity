@@ -114,7 +114,7 @@ export function createPacketService(store: RpStore, global: Awaited<ReturnType<t
         if (!(reserve < b.targetTotalTokens && b.targetTotalTokens <= b.triggerTotalTokens && b.triggerTotalTokens <= effective) || inputTokens > b.inputLimit || inputTokens + reserve > b.contextWindow) throw new RpError('context_budget_exceeded', 'Mandatory full request exceeds configured capacity or dynamic reserve')
         if(handle.meter){
           const meter=await openMemoryMeter(handle.meter.budget,{provider:request.provider as string,model:request.model as string})
-          measureMemoryParts([{kind:'prepared-packet',text:canonical({text:packet.text,recent:packet.recent})}],meter)
+          if(!options.memoryParts)measureMemoryParts([{kind:'prepared-packet',text:canonical({text:packet.text,recent:packet.recent})}],meter)
           measureMemoryParts(options.memoryParts?.(authority,packet,originalRequest)??[{kind:'unclassified-request',text:canonical(request)}],meter)
         }
         if(handle.runtime) resolveModuleContext(handle.runtime, authority)

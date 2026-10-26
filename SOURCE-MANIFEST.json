@@ -613,6 +613,11 @@
       "sha256": "9ae0ea5feae30330bcd87b13082f165b0d7b13a495027558f90b2c1a8458f515"
     },
     {
+      "path": "src/rp/context-retention.ts",
+      "bytes": 5080,
+      "sha256": "fbb38a5d52f4a1699bb08431f7db8529e389026d3d0e00dd905a2d8dda3f8a9d"
+    },
+    {
       "path": "src/rp/diary/admission.ts",
       "bytes": 799,
       "sha256": "c506e2d22e6a8451e0d7dfe1bd218bad1d90c095f4547b45fb01dfda02e38427"
@@ -744,8 +749,8 @@
     },
     {
       "path": "src/rp/packet.ts",
-      "bytes": 17117,
-      "sha256": "d38f399606d030d4f90b2fa8419ffd2e84c710cfe76fced1982a96a38ffe5c0e"
+      "bytes": 17141,
+      "sha256": "ef6acb59bdf22337f1634367322a152275be60c9c36d5e87368b077ccdf078a4"
     },
     {
       "path": "src/rp/person/binding.ts",
@@ -864,8 +869,8 @@
     },
     {
       "path": "src/rp/person/workbench-client.ts",
-      "bytes": 55386,
-      "sha256": "bb86571593e03bd01ad72582481f77a8f818a960e67698f5af9f57c66a82f146"
+      "bytes": 55662,
+      "sha256": "2349c8f80df13b87cb429d08754e181cbb4f85a3963dff183e9a5788e6486f5f"
     },
     {
       "path": "src/rp/person/workbench-extensions.ts",
@@ -924,8 +929,8 @@
     },
     {
       "path": "src/rp/rp-plugin.ts",
-      "bytes": 104418,
-      "sha256": "c795c6811246c44b6c2ed472fa62a299e4e5a8dad6fcc56d3029b4ceebe53c77"
+      "bytes": 107521,
+      "sha256": "39a6cd9e5590d867cd83ebfa78317cbccf71260f56f39de3ef425e751f4e2b0d"
     },
     {
       "path": "src/rp/schema.ts",
@@ -1004,13 +1009,13 @@
     },
     {
       "path": "lib/index.js",
-      "bytes": 938645,
-      "sha256": "29915fa949dbb80ddbb04db91d173a2e156dd8a8aef2fb45aa826f993bf62b30"
+      "bytes": 946949,
+      "sha256": "444e24d793e1f2f5ad74653ac890e5944e4818b7d6034d08357d13b3e0ebb509"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 1512487,
-      "sha256": "3f63a1fcefdfbb02f66d63a68f726f7b528d346d6c7e32403b1f38e1968acd62"
+      "bytes": 1526495,
+      "sha256": "0b2308dd5716636d8c24a6aebecdfa27a734062833767706b4888fdf691142c1"
     },
     {
       "path": "lib/types/core/cli-init.d.ts",
@@ -1086,6 +1091,11 @@
       "path": "lib/types/rp/command-help.d.ts",
       "bytes": 63,
       "sha256": "86e2f008a95a8bf023fd1e37456000786fda3901d058f0f41b1b345416aa9eb0"
+    },
+    {
+      "path": "lib/types/rp/context-retention.d.ts",
+      "bytes": 863,
+      "sha256": "ec0c8b34ecaaa576fb63a666bba10f2830a8280877f86ee8ebbfd2ee5ff72a66"
     },
     {
       "path": "lib/types/rp/diary/admission.d.ts",

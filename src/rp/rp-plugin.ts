@@ -1,3 +1,4 @@
+import {memoryDelivery,missingRecentOriginals,planContextRetirement,retiredContextOriginal} from './context-retention.js'
 import {createMemoryBudget,openMemoryMeter,measureMemoryParts,type MemoryBudgetV2,type MemoryMeter,type MemoryPart,type MemoryUsage} from './token-budget.js'
 import {budgetMarkerValid,writeBudgetMarker} from './token-budget-marker.js'
 import {createInjectionBinding,verifyInjectionText,injectionMarkerValid,writeInjectionMarker,type InjectionBinding} from './injection-binding.js'
@@ -67,7 +68,7 @@ const validReadToolContent = (content: unknown): boolean => {
 }
 import { validateJournal, type Snapshot, type Input, type DurableSession } from './host-journal.js'
 interface RequestAdmission {state:'prepared'|'admitted'|'rejected';stage:'assembly'|'send';at:string;code?:string;message?:string}
-interface Bound { requestAdmission?:RequestAdmission; lastMemoryUsage?:MemoryUsage; runtime?: ModuleRuntime; agent: Agent; authority: HostAuthority; data: DurableSession; queue: Promise<unknown>; saveQueue: Promise<void>; packet?: MemoryPacket; staticSystem?: string; staticTools?: string; staticToolDefinitions?:unknown[]; lastContextBody?:string; generation: number; lastError?: string; recoveryOnly?: boolean; personPreview?: { id: string; handle: object; draftHash: string } }
+interface Bound { requestAdmission?:RequestAdmission; lastMemoryUsage?:MemoryUsage; runtime?: ModuleRuntime; agent: Agent; authority: HostAuthority; data: DurableSession; queue: Promise<unknown>; saveQueue: Promise<void>; packet?: MemoryPacket; packetRecentSourceIds?:readonly string[]; staticSystem?: string; staticTools?: string; staticToolDefinitions?:unknown[]; lastContextBody?:string; generation: number; lastError?: string; recoveryOnly?: boolean; personPreview?: { id: string; handle: object; draftHash: string } }
 export interface RpPluginConfig {
   enabled?: boolean; profileRoot?: string; workspaceRoot?: string; campaignId?: string; entityIds?: readonly string[]; budget?: RuntimeBudget
   /** P5 remains gated. Both default false; true is rejected before bootstrap. */
@@ -274,10 +275,10 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     }
   }
   const verifyToolProof = (b: Bound, proof: ToolProof) => proof.diary ? verifyDiaryEvidence(memory.store, b.authority, {...proof, diary: proof.diary}, b.data.personBinding?.personId) : verifyRetrievalEvidence(memory.store, b.authority, proof, new Set(b.data.inputs.map(i=>i.sourceId)))
-  // Only journal-certified memory frames are counted here. Unknown messages are
-  // rejected separately by certify; no model-provided label grants provenance.
+  // Planned retirement markers are also counted before their commit. This is
+  // conservative sizing only; certify separately reconstructs their provenance.
   const collectMemoryParts = (b:Bound, options:any):MemoryPart[] => [
-    ...(options.messages??[]).filter((m:any)=>b.data.snapshots[m.id]||b.data.frames[m.id]).map((m:any)=>({kind:'retained-memory',id:m.id,text:canonical(m)})),
+    ...(options.messages??[]).filter((m:any)=>b.data.snapshots[m.id]||b.data.frames[m.id]||m.id?.startsWith('retired_')).map((m:any)=>({kind:m.id?.startsWith('retired_')?'retired-context':'retained-memory',id:m.id,text:canonical(m)})),
     ...(options.tools?.length?[{kind:'tool-declarations',text:canonical(options.tools)}]:[]),
     ...(options.toolHistory?[{kind:'tool-history',text:canonical(options.toolHistory)}]:[]),
   ]
@@ -291,7 +292,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     return {fits:(result:unknown)=>{
       if(!meter)return true
       const tools=b.staticToolDefinitions??[]
-      const usage=measureMemoryParts([...collectMemoryParts(b,{messages:b.agent.session.deriveMessages(),tools,toolHistory:{tools,updates:[]}}),...(b.lastContextBody?[{kind:'next-runtime-context-reserve',text:b.lastContextBody}]:[]),{kind:'proposed-tool-result',text:canonical({role:'tool',toolCallId:callId,content:[{type:'text',text:canonical(result)}]})}],meter,false)
+      const usage=measureMemoryParts([...collectMemoryParts(b,{messages:planContextRetirement(b.agent.session,b.data,b.packet?.id).messages,tools,toolHistory:{tools,updates:[]}}),...(b.lastContextBody?[{kind:'next-runtime-context-reserve',text:b.lastContextBody}]:[]),{kind:'proposed-tool-result',text:canonical({role:'tool',toolCallId:callId,content:[{type:'text',text:canonical(result)}]})}],meter,false)
       return usage.total+256<=usage.limit
     }}
   }
@@ -299,12 +300,14 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     if(Buffer.byteLength(query,'utf8')>8192)throw new RpError('invalid_record','Preview query exceeds 8 KiB')
     await settle(b)
     const generation=b.generation,bindingHash=canonical(b.data.injectionBinding??null),memoryMeter=await sessionMeter(b)
-    const packet=b.data.injectionBinding?unwrap(await memory.packets.prepare(b.authority,{budget:config.budget!,globalAuthorities,inputBindings:b.data.inputs,personId:b.data.personBinding?.personId,injection:b.data.injectionBinding.config,runtime:b.runtime?.context(),query,memoryMeter})):undefined
+    const delivery=memoryDelivery(b.data,memoryMeter?.budget.limitTokens??config.budget!.packetSoftTokens)
+    const packet=b.data.injectionBinding?unwrap(await memory.packets.prepare(b.authority,{budget:config.budget!,globalAuthorities,inputBindings:b.data.inputs,personId:b.data.personBinding?.personId,injection:b.data.injectionBinding.config,runtime:b.runtime?.context(),query,memoryMeter,optionalTokens:delivery.optionalLimit})):undefined
     const fence=packet?.inputFence??unwrap(await memory.store.readFence(b.authority)),sources=new Set(unwrap(await memory.store.readAcceptedSources(b.authority)).map(s=>s.id)),history=[]
-    for(const message of b.agent.session.deriveMessages() as any[]){
-      const s=b.data.snapshots[message.id]??b.data.frames[message.id]
+    for(const actualMessage of b.agent.session.deriveMessages() as any[]){
+      let message=actualMessage,s=b.data.snapshots[message.id]??b.data.frames[message.id]
       let status='carried',reason='旧宿主消息仍在上下文中；本轮未选中不会删除它。'
       try{
+        const original=retiredContextOriginal(b.agent.session,b.data,actualMessage);if(original){message=original;s=b.data.snapshots[message.id];status='retired';reason='旧记忆正文已移出发送视图；原始快照仍保存并校验来源。'}
         if(b.data.messageHashes[message.id]!==sha(normalizedMessage(message)))throw new RpError('stale_input','未知或改动过的宿主消息')
         if(s){
           if(s.injection)verifyInjectionText(s.injection,body(message))
@@ -317,13 +320,13 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           for(const dep of s.globalDependencies){let found=false;for(const g of globalAuthorities){const r=await memory.global.store.readPublication(g,dep.publicationId);if(r.ok&&r.value.source.id===dep.sourceId&&r.value.bodySha256===dep.bodySha256&&canonical(r.value.scope)===canonical(dep.scope)&&(r.value.scope.kind!=='profile'||unwrap(await memory.global.store.listActive(g)).some(x=>x.id===r.value.id)))found=true}if(!found)throw new RpError('scope_denied','历史全局来源已失效')}
         }else if(!sources.has(b.data.hostSources[message.id]))throw new RpError('scope_denied','宿主原文尚未采纳或已失效')
       }catch(e){status='blocked';reason=e instanceof Error?e.message:'历史验证失败'}
-      history.push({messageId:message.id,status,reason,kind:s?.provenance??'original',snapshotId:s?.injection?.sha256??s?.packetId??null,selectedIds:s?.injection?.entries.filter(e=>e.selected).map(e=>e.id)??[]})
+      history.push({messageId:actualMessage.id,status,reason,kind:s?.provenance??'original',snapshotId:s?.injection?.sha256??s?.packetId??null,selectedIds:s?.injection?.entries.filter(e=>e.selected).map(e=>e.id)??[]})
     }
     if(generation!==b.generation||bindingHash!==canonical(b.data.injectionBinding??null)||!live(b.agent)||canonical(fence)!==canonical(unwrap(await memory.store.readFence(b.authority))))throw new RpError('stale_input','预览期间状态改变，请重新预览')
     if(packet)for(let i=0;i<globalAuthorities.length;i++)if(canonical(packet.globalFences[i])!==canonical(unwrap(await memory.global.store.readFence(globalAuthorities[i]))))throw new RpError('stale_input','预览期间全局记忆改变')
     const tools=(root.get('tools') as any).schemas(b.agent).filter((t:any)=>memoryToolNames.includes(t.name))
-    const memoryUsage=memoryMeter?measureMemoryParts([...collectMemoryParts(b,{messages:b.agent.session.deriveMessages(),tools,toolHistory:{tools,updates:[]}}),...(packet?[{kind:'preview-packet',text:canonical({rpPacketId:packet.id,data:JSON.parse(packet.text),recentAcceptedOriginals:packet.recent})}]:[])],memoryMeter,false):undefined
-    return {...(memoryMeter?{memoryBudget:{binding:memoryMeter.budget,usage:memoryUsage,notice:'预览计入当前记忆和工具；宿主包装在实际请求中重新计量。超限不会发送。'}}:{}),binding:b.data.injectionBinding??null,current:packet?{text:JSON.parse(packet.text).personContinuity.text,trace:packet.injection,packetId:packet.id}:null,history,blocked:b.data.blocked===true||b.recoveryOnly===true,notice:'只读预览，实际发送会重新组装与验证。当前未选入不等于从旧对话中移除；需要干净上下文请 continue-clean。未启用 budget v2 时仍按旧版 UTF-8 字节估计；v2 的计量方式见 memoryBudget。'}
+    const memoryUsage=memoryMeter?measureMemoryParts([...collectMemoryParts(b,{messages:planContextRetirement(b.agent.session,b.data).messages,tools,toolHistory:{tools,updates:[]}}),...(packet?[{kind:'preview-packet',text:canonical({rpPacketId:packet.id,data:JSON.parse(packet.text),recentAcceptedOriginals:missingRecentOriginals(b.data,packet,b.agent.session.deriveMessages())})}]:[])],memoryMeter,false):undefined
+    return {delivery,...(memoryMeter?{memoryBudget:{binding:memoryMeter.budget,usage:memoryUsage,notice:'预览计入当前记忆和工具；宿主包装在实际请求中重新计量。超限不会发送。'}}:{}),binding:b.data.injectionBinding??null,current:packet?{text:JSON.parse(packet.text).personContinuity.text,trace:packet.injection,packetId:packet.id}:null,history,blocked:b.data.blocked===true||b.recoveryOnly===true,notice:'只读预览，实际发送会重新组装与验证。旧记忆包会替换为轻量保留标记；普通对话与工具结果仍保留，历史失效请 continue-clean。未启用 budget v2 时仍按旧版 UTF-8 字节估计；v2 的计量方式见 memoryBudget。'}
   }
   const controlSource = (b: Bound, commandId: string, value: string) => memory.store.observeSource(b.authority, { idempotencyKey: 'command_' + sha(commandId), origin: 'user_control', role: 'user_control', publicText: value, turnId: uid('control') })
   const canonicalControl = async (b: Bound, commandId: string, operation: any) => {
@@ -627,6 +630,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       b.data.messageHashes[message.id] = sha(normalizedMessage(message)); void queue(b, () => save(b)); return
     }
     if (message?.source?.kind === 'runtime-context') {
+      if(message.id?.startsWith('retired_')){try{retiredContextOriginal(session,b.data,message,event);b.data.messageHashes[message.id]=sha(normalizedMessage(message));void queue(b,()=>save(b))}catch{b.data.blocked=true};return}
       const hash = sha(body(message)), pending = b.data.pending[hash]
       if (pending) { b.data.snapshots[message.id] = { ...pending, messageId: message.id }; b.data.messageHashes[message.id] = sha(normalizedMessage(message)); void queue(b, () => save(b)) }
       else b.data.blocked = true
@@ -648,17 +652,23 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     if(diaryConfigured&&!diaryConfigured.ok&&diaryConfigured.code!=='scope_denied')throw new RpError(diaryConfigured.code,diaryConfigured.message)
     const allowedTools=memoryToolNames.filter(name=>!name.startsWith('memcont_diary_')||diaryConfigured?.ok)
     const memoryMeter=await sessionMeter(b)
-    const prepare=(optionalTokens?:number)=>memory.packets.prepare(b.authority,{budget:config.budget!,globalAuthorities,inputBindings:b.data.inputs,personId:b.data.personBinding?.personId,injection:b.data.injectionBinding?.config,runtime:b.runtime?.context(),memoryMeter,optionalTokens})
+    const delivery=memoryDelivery(b.data,memoryMeter?.budget.limitTokens??config.budget!.packetSoftTokens)
+    const prepare=(optionalTokens=delivery.optionalLimit)=>memory.packets.prepare(b.authority,{budget:config.budget!,globalAuthorities,inputBindings:b.data.inputs,personId:b.data.personBinding?.personId,injection:b.data.injectionBinding?.config,runtime:b.runtime?.context(),memoryMeter,optionalTokens})
     let packet=unwrap(await prepare())
     request.signal?.throwIfAborted(); if (closed || generation !== b.generation) throw new RpError('stale_input', 'Late RP assembly')
-    const compose = (p: MemoryPacket) => ({ ...assembly, tools: assembly.tools.filter((t: any) => allowedTools.includes(t.name)), contexts: [...assembly.contexts, { name: 'rp-memory', text: canonical({ rpPacketId: p.id, data: JSON.parse(p.text), recentAcceptedOriginals: p.recent }) }] })
+    let includedRecentSourceIds:string[]=[]
+    const compose = (p: MemoryPacket) => {
+      const recentAcceptedOriginals=missingRecentOriginals(b.data,p,agent!.session.deriveMessages())
+      includedRecentSourceIds=recentAcceptedOriginals.map((source:any)=>source.id)
+      return { ...assembly, tools: assembly.tools.filter((t: any) => allowedTools.includes(t.name)), contexts: [...assembly.contexts, { name: 'rp-memory', interpolate:false, text: canonical({ rpPacketId: p.id, data: JSON.parse(p.text), recentAcceptedOriginals }) }] }
+    }
     let completed = compose(packet)
-    const envelope = () => ({ provider: agent!.options.provider, model: agent!.options.model, maxTokens: agent!.options.maxTokens, system: renderPrompt(completed), tools: completed.tools, toolHistory: { tools: completed.tools, updates: [] }, messages: [...agent!.session.deriveMessages(), { role: 'user', content: [{ type: 'text', text: joinContextSections(renderContextSections(completed)) }] }] })
+    const envelope = () => ({ provider: agent!.options.provider, model: agent!.options.model, maxTokens: agent!.options.maxTokens, system: renderPrompt(completed), tools: completed.tools, toolHistory: { tools: completed.tools, updates: [] }, messages: [...planContextRetirement(agent!.session,b.data).messages, { role: 'user', content: [{ type: 'text', text: joinContextSections(renderContextSections(completed)) }] }] })
     const reserve = Math.max(config.budget!.outputReserveTokens, agent!.options.maxTokens ?? 0) + config.budget!.toolReserveTokens
     if (estimateFinalRequest(envelope()) > Math.min(config.budget!.inputLimit, config.budget!.contextWindow - reserve)) { packet = unwrap(await prepare(0)); completed = compose(packet) }
     if(memoryMeter){
       const parts=():MemoryPart[]=>[...collectMemoryParts(b,envelope()),{kind:'new-packet',text:canonical({role:'user',source:{kind:'runtime-context'},content:[{type:'text',text:joinContextSections(renderContextSections(completed))}]})},{kind:'native-id-reserve',text:'x'.repeat(128)}]
-      let allowance=memoryMeter.budget.limitTokens
+      let allowance=delivery.optionalLimit
       for(let attempt=0;attempt<4;attempt++){
         const usage=measureMemoryParts(parts(),memoryMeter,false)
         if(usage.total<=usage.limit)break
@@ -669,9 +679,19 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       checkMemory(b,parts(),memoryMeter)
     }
     const fullContext = joinContextSections(renderContextSections(completed)), snapshot: Snapshot = { ...(b.data.memoryBudget?{memoryBudget:structuredClone(b.data.memoryBudget)}:{}), ...(packet.injection ? {injection:packet.injection,injectionBinding:structuredClone(b.data.injectionBinding!)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), provenance: 'packet', packetProof: packet.proof, bodyHash: sha(fullContext), packetId: packet.id, fence: packet.inputFence, globals: [...packet.globalFences], globalDependencies: [...packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...packet.dependencyIds], eventIds: packet.proof.records.filter(r => r.kind === 'event').map(e => e.id), modeEpoch: policy.status(b.agent.id).modeEpoch }
-    b.lastContextBody=canonical({role:'user',source:{kind:'runtime-context'},content:[{type:'text',text:fullContext}]}); b.packet = packet; b.staticSystem = sha(renderPrompt(completed)); b.staticTools = sha(canonical(completed.tools)); b.staticToolDefinitions=structuredClone(completed.tools); b.data.pending[snapshot.bodyHash] = snapshot
+    b.lastContextBody=canonical({role:'user',source:{kind:'runtime-context'},content:[{type:'text',text:fullContext}]}); b.packet = packet; b.packetRecentSourceIds=includedRecentSourceIds; b.staticSystem = sha(renderPrompt(completed)); b.staticTools = sha(canonical(completed.tools)); b.staticToolDefinitions=structuredClone(completed.tools); b.data.pending[snapshot.bodyHash] = snapshot
     await save(b); b.requestAdmission={state:'prepared',stage:'assembly',at:new Date().toISOString()};return completed
     }catch(e){requestRejected(b,'assembly',e);throw e}
+  }) as never))
+  effects.push(root.on('agent/pre-step', (async function(this:any, payload:any, next:()=>Promise<any>){
+    const agent=payload.agent, b=agent&&bound.get(agent.id)
+    const decision=await next();if(!b||decision.kind!=='enter')return decision
+    await drain(b);payload.signal?.throwIfAborted()
+    if(!live(b.agent)||b.data.blocked||!b.packet)throw new RpError('stale_input','Memory surface owner changed')
+    const plan=planContextRetirement(b.agent.session,b.data)
+    for(const replacement of plan.replacements)b.agent.session.append('user/message',replacement.message,{surfaceOp:{op:'replace',startSeq:replacement.seq,endSeq:replacement.seq},sourceEventSeqs:[replacement.seq]})
+    if(plan.replacements.length){await drain(b);if(!await (root.get('sessions') as any).flush(b.agent.session))throw new RpError('persistence_uncertain','Memory surface replacement flush unconfirmed')}
+    return plan.replacements.length?{...decision,startsRequestSeries:true}:decision
   }) as never))
   const certify = async (b: Bound, options: any) => {
     if(b.data.runtimeBinding){if(!b.runtime || canonical(b.runtime.binding())!==canonical(b.data.runtimeBinding))throw new RpError('stale_input','Runtime binding changed');b.runtime.context()}
@@ -682,7 +702,9 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     if (!b.packet || policy.status(b.agent.id).mode !== 'rp') throw new RpError('scope_denied', 'No prepared RP assembly')
     const sources = unwrap(await memory.store.readAcceptedSources(b.authority)), sourceMap = new Map(sources.map(s => [s.id, s])), fence = unwrap(await memory.store.readFence(b.authority)), events = new Set(unwrap(await memory.store.readEvents(b.authority)).map(e => e.id))
     let systemSeen = b.staticSystem === sha(''), packetSeen = false
-    for (const message of options.messages ?? []) {
+    const actualSourceIds=new Set<string>()
+    for (const actualMessage of options.messages ?? []) {
+      const message=retiredContextOriginal(b.agent.session,b.data,actualMessage)??actualMessage
       if (message.role === 'system') { object(message, ['role', 'content', 'source', 'id']); object(message.source, ['kind']); if (message.source.kind !== 'system-prompt' || !Array.isArray(message.content) || !message.content.every((x: any) => { object(x, ['type', 'text']); return x.type === 'text' && typeof x.text === 'string' }) || sha(body(message)) !== b.staticSystem) throw new RpError('scope_denied', 'Uncertified system prompt/metadata'); systemSeen = true; continue }
       if (b.data.messageHashes[message.id] !== sha(normalizedMessage(message))) throw new RpError('scope_denied', 'Unknown or changed native history/metadata; use clean continuation')
       const snapshot = b.data.snapshots[message.id] ?? b.data.frames[message.id]
@@ -702,16 +724,20 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           for (const grant of globalAuthorities) { const result = await memory.global.store.readPublication(grant, dep.publicationId); if (!result.ok) continue; const p = result.value; if (p.source.id !== dep.sourceId || p.bodySha256 !== dep.bodySha256 || canonical(p.scope) !== canonical(dep.scope)) continue; if (p.scope.kind === 'profile' && !unwrap(await memory.global.store.listActive(grant)).some(x => x.id === p.id)) continue; authorized = true }
           if (!authorized) throw new RpError('scope_denied', 'Historical global source no longer authorized/applicable')
         }
-        if (b.data.snapshots[message.id] && snapshot.packetId === b.packet.id) packetSeen = true
+        if (message===actualMessage && b.data.snapshots[message.id] && snapshot.packetId === b.packet.id) packetSeen = true
       } else {
         object(message, ['role', 'content', 'source', 'id']); object(message.source, message.role === 'assistant' ? ['kind', 'provider', 'model'] : ['kind'])
         if (!Array.isArray(message.content) || !message.content.every((block: any) => { object(block, ['type', 'text']); return block.type === 'text' && typeof block.text === 'string' })) throw new RpError('capability_missing', 'Uncertified raw rich/reasoning content requires a clean continuation')
         const sourceId = b.data.hostSources[message.id], source = sourceMap.get(sourceId)
         if (!source || source.publicTextSha256 !== sha(body(message))) throw new RpError('scope_denied', 'Native history contains rejected, unselected, revised, deleted or wrong-branch source')
         unwrap(await memory.store.readSource(b.authority, fullSpan(source)))
+        actualSourceIds.add(sourceId)
       }
     }
     if (!systemSeen || !packetSeen || options.system !== undefined || sha(canonical(options.tools ?? [])) !== b.staticTools) throw new RpError('scope_denied', 'RP injection/static request envelope absent or changed')
+    // Pre-step middleware can remove queued inputs after assembly. Certify the
+    // exact final request covers every original omitted from this packet body.
+    if (!b.packetRecentSourceIds || b.packet.recent.some(source=>!b.packetRecentSourceIds!.includes(source.id)&&!actualSourceIds.has(source.id))) throw new RpError('scope_denied','Accepted input omitted from both the current memory packet and native request')
     // Direct unknown content channels are never an exemption from final gating.
     if (options.toolHistory && (sha(canonical(options.toolHistory.tools)) !== b.staticTools || options.toolHistory.updates?.length !== 0)) throw new RpError('scope_denied', 'Uncertified historical tool declarations')
     for (const key of Object.keys(options)) if (!['provider', 'model', 'messages', 'tools', 'toolHistory', 'sessionId', 'signal', 'maxTokens', 'temperature', 'reasoningEffort', 'stop'].includes(key)) throw new RpError('scope_denied', 'Uncertified final request channel: ' + key)

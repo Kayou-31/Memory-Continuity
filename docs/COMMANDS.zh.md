@@ -72,6 +72,8 @@
 
 五层为 self/situation/relationships/recollection/unfinished；三级深度为 overview/association/evidence。预算单位是 UTF-8 字节。条件不能越过授权、有效性和强制核心；本轮未选中的内容仍可能留在旧会话里。配置字段与限制见 [M5 说明](rp-memory-m5/README.md)。
 
+0.3 预览新增首轮／后续策略：显式启用 `/memcont budget set {}` 后，首轮按需使用最高 32,768 token 的总额度，后续可选记忆最多 2,048 当前计量单位；必需身份与已有工具历史另计，总预算仍有效。`injection preview` 会显示阶段、可选额度以及旧包是否退出发送视图。旧包原件保留用于认证，普通对话与工具结果不删减。完整规则见 [记忆预算](memory-budget.zh.md)。
+
 ## 人物、成长、经历与目标
 
 | 指令 | 用途 |

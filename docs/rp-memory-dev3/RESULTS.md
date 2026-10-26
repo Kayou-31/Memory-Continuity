@@ -660,3 +660,7 @@ node --test --test-concurrency=1 scripts/host-acceptance/dev3-companion.test.mjs
 ## 2026-10-24 正式版工作台接入
 
 当前 Memory-Continuity 0.2.0 的工作台、完整 253/253、实际插件包、浏览器交互和发布结果统一记录于 [正式版 RESULTS](../releases/0.2.0/RESULTS.md)。本文件以上为原阶段历史证据，保留当时未验证范围，不回填为当时已通过。
+
+## 2026-10-26 的 0.3 预览记录
+
+后续完整人物资料、共同日记、独立核心与管理桥，以及首轮/后续注入成本修复的结果见 [0.3 预览报告](../releases/0.3.0-preview.1/RESULTS.md)。本文件前文保持历史检查点，不回填为新功能当时已完成。
