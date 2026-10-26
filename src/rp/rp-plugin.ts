@@ -1,9 +1,10 @@
+import {requestLimits,currentRequestCost,requestStop,type RequestLimits} from './request-cost.js'
 import {memoryDelivery,missingRecentOriginals,planContextRetirement,retiredContextOriginal} from './context-retention.js'
 import {createMemoryBudget,openMemoryMeter,measureMemoryParts,type MemoryBudgetV2,type MemoryMeter,type MemoryPart,type MemoryUsage} from './token-budget.js'
 import {budgetMarkerValid,writeBudgetMarker} from './token-budget-marker.js'
 import {createInjectionBinding,verifyInjectionText,injectionMarkerValid,writeInjectionMarker,type InjectionBinding} from './injection-binding.js'
 /** Narrator injection-only adapter for pinned SDK. No automatic canonical selection. */
-import { createRuntimeBinding, type RuntimeConfig } from './modules/contract.js'
+import { createRuntimeBinding, MODULES, type RuntimeConfig } from './modules/contract.js'
 import type { ModuleRuntime } from './modules/runtime.js'
 import { runtimeCommand } from './modules/commands.js'
 import { rpCommandHelp } from './command-help.js'
@@ -28,7 +29,7 @@ import { retrievalEvidence, verifyRetrievalEvidence, type RetrievalEvidence } fr
 import { diaryEvidence, verifyDiaryEvidence, type DiaryReceiptContext } from './diary/evidence.js'
 import { validateDiaryDraft } from './diary/schema.js'
 import { diaryCommand } from './diary/commands.js'
-import { verifyPacketProof } from './packet-proof.js'
+import { verifyPacketProof, verifyPacketProofs } from './packet-proof.js'
 import { createUltraRpOptimizer } from './memory-optimizer.js'
 import { createPersonBinding, verifyPersonBinding } from './person/binding.js'
 import { openManagementServer } from './person/management-server.js'
@@ -68,8 +69,10 @@ const validReadToolContent = (content: unknown): boolean => {
 }
 import { validateJournal, type Snapshot, type Input, type DurableSession } from './host-journal.js'
 interface RequestAdmission {state:'prepared'|'admitted'|'rejected';stage:'assembly'|'send';at:string;code?:string;message?:string}
-interface Bound { requestAdmission?:RequestAdmission; lastMemoryUsage?:MemoryUsage; runtime?: ModuleRuntime; agent: Agent; authority: HostAuthority; data: DurableSession; queue: Promise<unknown>; saveQueue: Promise<void>; packet?: MemoryPacket; packetRecentSourceIds?:readonly string[]; staticSystem?: string; staticTools?: string; staticToolDefinitions?:unknown[]; lastContextBody?:string; generation: number; lastError?: string; recoveryOnly?: boolean; personPreview?: { id: string; handle: object; draftHash: string } }
+interface Bound { preparedContextHash?:string; requestInFlight?:boolean; requestAdmission?:RequestAdmission; lastMemoryUsage?:MemoryUsage; runtime?: ModuleRuntime; agent: Agent; authority: HostAuthority; data: DurableSession; queue: Promise<unknown>; saveQueue: Promise<void>; packet?: MemoryPacket; packetRecentSourceIds?:readonly string[]; staticSystem?: string; staticTools?: string; staticToolDefinitions?:unknown[]; lastContextBody?:string; generation: number; lastError?: string; recoveryOnly?: boolean; personPreview?: { id: string; handle: object; draftHash: string } }
 export interface RpPluginConfig {
+  /** Logical adapter admissions per explicit input; includes tool steps and retries. */
+  requestLimits?:Partial<RequestLimits>
   enabled?: boolean; profileRoot?: string; workspaceRoot?: string; campaignId?: string; entityIds?: readonly string[]; budget?: RuntimeBudget
   /** P5 remains gated. Both default false; true is rejected before bootstrap. */
   contextCompression?: boolean; strictPov?: boolean
@@ -89,6 +92,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     const root = context.root ?? context, remove = root.on('llm/stream', (async function* (options: any, next: () => AsyncIterable<any>) { if (options.sessionId && !engineeringAllowed(root, options.sessionId) && ((root.get('sessionMemoryPolicy') as any)?.status(options.sessionId).mode !== 'rp' || !(root.get('rpSessionAdmission') as any)?.permits(options.sessionId, options))) throw new LlmError('RP recovery owner is unavailable', 'RP_ADMISSION'); yield* next() }) as never)
     return Object.freeze({ enabled: false, close: async () => { remove() }, status: () => ({ enabled: false, contextCompression: false, strictPov: false }) })
   }
+  const limits=requestLimits(config.requestLimits)
   for (const key of ['contextCompression', 'strictPov', 'ultraMemoryOptimization'] as const) if (config[key] !== undefined && typeof config[key] !== 'boolean') throw new RpError('invalid_record', 'RP mode option must be boolean: ' + key)
   if (config.contextCompression === true || config.strictPov === true) throw new RpError('capability_missing', 'Native compaction CAS/lifecycle/ownership and complete strict POV filtering are not verified; both modes remain disabled')
   if (!config.profileRoot || !config.workspaceRoot || !config.budget) throw new Error('RP requires explicit profile/workspace and verified request capacity')
@@ -200,11 +204,12 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     if(!b)return {action:'start',detail:'先在空白根会话 start；损坏 journal 不作为授权依据，必要时明确指定独立授权的 branchId。'}
     if(closed)return {action:'reopen',detail:'插件已关闭；重新启用后检查状态，不自动重发输入。'}
     if(b.data.blocked||b.recoveryOnly)return {action:'continue-clean',detail:'先核对持久化记录和 ambiguous 输入，再干净续接。同宿主销毁重建可能改变 modeEpoch；历史认证不会放宽。'}
+    if(b.data.requestCost?.stopReason)return {action:'inspect-before-next-input',detail:'本次输入达到请求或重试上限。先检查已完成的回复和工具结果；需要继续时显式发送新输入，不自动重发。'}
     const failure=b.requestAdmission
     if(failure?.state==='rejected')return {action:'continue-clean',detail:failure.code==='context_budget_exceeded'?'本次请求超出记忆或模型总预算。检查输出预留、budget show，干净续接后明确调整；必需记忆不会自动截断。':failure.message?.includes('Model changed')?'模型绑定已改变。先 continue-clean，再在新会话 budget set {} 重新绑定实际模型。':'本次请求未通过来源或快照校验。检查采纳、修订、权限和历史有效性；需要时 continue-clean，不复制旧宿主回执。'}
     return {action:'none',detail:'绑定健康不等于下一次请求已获准；每次发送仍会重新校验。'}
   }
-  const diagnostic = (sessionId: string) => { const b = bound.get(sessionId); return {bindingHealth:closed?'closing':!b?'unbound':b.recoveryOnly?'recovery-only':b.data.blocked?'blocked':'healthy',requestAdmission:b?.requestAdmission??{state:'not_attempted'},recovery:recoveryFor(b), enabled: !closed, lifecycle: closed ? 'closing' : 'open', contextCompression: false, strictPov: false, nativeVersions, memoryOptimization: { available: optimizer()?.protocol ?? 'standalone', packet: b?.packet?.optimizer ?? null }, policy: policy.status(sessionId), branchId: b?.data.request.branchId, personId: b?.data.personBinding?.personId, injection: b?.data.injectionBinding ?? null, memoryBudget:b?.data.memoryBudget??null,memoryUsage:b?.lastMemoryUsage??null, purpose: b?.data.runtimeBinding?.config ?? null, blocked: !b || closed || b.data.blocked === true || b.recoveryOnly === true, lastError: b?.lastError, candidateIds: b ? Object.values(b.data.hostSources).filter(s => !b.data.inputs.some(i => i.sourceId === s)) : [], pendingInputIds: b?.data.inputs.filter(i => i.phase === 'observed' || i.phase === 'accepted').map(i => i.sourceId) ?? [], ambiguousInputIds: b?.data.inputs.filter(i => i.phase === 'dispatching' || i.phase === 'dispatched').map(i => i.sourceId) ?? [], snapshots: b ? Object.keys(b.data.snapshots).length : 0 } }
+  const diagnostic = (sessionId: string) => { const b = bound.get(sessionId); return {requestCost:{limits,...(b?.data.requestCost??{requests:0,stepRequests:0}),unit:'durably-reserved-adapter-admissions'},bindingHealth:closed?'closing':!b?'unbound':b.recoveryOnly?'recovery-only':b.data.blocked?'blocked':'healthy',requestAdmission:b?.requestAdmission??{state:'not_attempted'},recovery:recoveryFor(b), enabled: !closed, lifecycle: closed ? 'closing' : 'open', contextCompression: false, strictPov: false, nativeVersions, memoryOptimization: { available: optimizer()?.protocol ?? 'standalone', packet: b?.packet?.optimizer ?? null }, policy: policy.status(sessionId), branchId: b?.data.request.branchId, personId: b?.data.personBinding?.personId, injection: b?.data.injectionBinding ?? null, memoryBudget:b?.data.memoryBudget??null,memoryUsage:b?.lastMemoryUsage??null, purpose: b?.data.runtimeBinding?.config ?? null, blocked: !b || closed || b.data.blocked === true || b.recoveryOnly === true, lastError: b?.lastError, candidateIds: b ? Object.values(b.data.hostSources).filter(s => !b.data.inputs.some(i => i.sourceId === s)) : [], pendingInputIds: b?.data.inputs.filter(i => i.phase === 'observed' || i.phase === 'accepted').map(i => i.sourceId) ?? [], ambiguousInputIds: b?.data.inputs.filter(i => i.phase === 'dispatching' || i.phase === 'dispatched').map(i => i.sourceId) ?? [], snapshots: b ? Object.keys(b.data.snapshots).length : 0 } }
   const assertIdle = (agent: Agent) => { if (!live(agent) || agent.status !== 'idle') throw new RpError('scope_denied', 'RP controls require the exact live idle root session') }
   const requestFor = (session: string, branchId: string): AuthorityRequest => ({ workspaceId: binding.workspaceId, campaignId: config.campaignId ?? 'rp_campaign', branchId, sessionId: session, sceneId: 'rp_scene', viewpoint: { kind: 'narrator' }, visibility, audienceSetIds: ['rp_user'], permissions: ['read', 'observe', 'commit', 'control'] })
   const safe = (agent: Agent) => agent.session.deriveMessages().length === 0 && !agent.session.header.parentSession && !agent.session.header.isSeeded && !(root.get('compaction')) && !(root.get('ultraEvidenceSupport') as any)?.memory?.hasActiveSession(agent.id)
@@ -453,6 +458,8 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           const empty=safe(agent)&&agent.status==='idle'&&!b!.data.blocked&&!b!.recoveryOnly
           if(!empty&&!disable)throw new RpError('scope_denied','Runtime changes require an empty root; use continue-clean')
           if(!disable)await drain(b!)
+          await invocation.managementCheck?.()
+          if(invocation.managementCheck&&(!safe(agent)||agent.status!=='idle'||b!.data.blocked||b!.recoveryOnly))throw new RpError('stale_input','工作台配置确认期间会话已改变，请重新预览')
           b!.runtime?.revoke();b!.generation++;b!.packet=undefined;b!.data.blocked=true
           const generation=b!.generation
           b!.data.runtimeBinding=createRuntimeBinding(next)
@@ -484,18 +491,27 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           if(!await (root.get('sessions') as any).flush(agent.session))throw new RpError('persistence_uncertain','日记已提交，但宿主保存未确认；请先查看当前日记，不要盲目重试。')
         },
       }))}
+      const summaryOptions = { globalAuthorities, policyEpoch: () => { shutdown.signal.throwIfAborted(); if (closed || !live(agent) || policy.status(agent.id).mode !== 'rp') throw new RpError('ownership_lost', 'RP candidate owner changed'); return policy.status(agent.id).epoch } }
       if (action === 'person') {
         const parsed = /^(\S+)(?:\s+([\s\S]+))?$/u.exec(arg); if (!parsed) throw new RpError('invalid_record', 'Use person preview|confirm|show|use')
         const sub = parsed[1], value = parsed[2] ?? ''
         if(sub==='manage'){
           if(value)throw new RpError('invalid_record','Use person manage without arguments')
           await closeManager(agent.id);let generation=b.generation;const opening={};managerOpenings.set(agent.id,opening)
-          const hostSnapshot=()=>({generation:b!.generation,person:b!.data.personBinding??null,injection:b!.data.injectionBinding??null,budget:b!.data.memoryBudget??null,provider:agent.options.provider??'',model:agent.options.model??'',clean:safe(agent)})
+          const hostSnapshot=()=>({generation:b!.generation,person:b!.data.personBinding??null,injection:b!.data.injectionBinding??null,budget:b!.data.memoryBudget??null,runtime:b!.data.runtimeBinding??null,provider:agent.options.provider??'',model:agent.options.model??'',clean:safe(agent)})
           const controller=memory.management.create(b.authority,()=>live(agent)&&bound.get(agent.id)===b&&!b!.data.blocked&&!b!.recoveryOnly&&b!.generation===generation&&agent.status==='idle',{
             snapshot:hostSnapshot,
             async prepare(action,payload){
               if(!safe(agent))throw new RpError('scope_denied','请先干净续接，再修改会话配置')
               if(action==='host-person'){const p=object(payload,['personId']);id(p.personId);return {payload:await createPersonBinding(memory.store,b!.authority,p.personId),command:'person use '+p.personId}}
+              const current=b!.data.runtimeBinding?.config??createRuntimeBinding().config
+              if(action==='host-mode'){const p=object(payload,['mode']),config=createRuntimeBinding({...current,mode:p.mode}).config;return {payload:{config},command:'mode set '+config.mode}}
+              if(action==='host-module'){
+                const p=object(payload,['moduleId','enabled']);if(typeof p.enabled!=='boolean'||!MODULES.some(m=>m.id===p.moduleId))throw new RpError('capability_missing','只允许已有模块和明确的开关状态')
+                const config=createRuntimeBinding({...current,enabledModules:p.enabled?[...new Set([...current.enabledModules,p.moduleId])]:current.enabledModules.filter(id=>id!==p.moduleId)}).config
+                return {payload:{moduleId:p.moduleId,enabled:p.enabled,config},command:'modules '+(p.enabled?'enable ':'disable ')+p.moduleId}
+              }
+              if(action==='host-constraints'){const p=object(payload,['constraints']),config=createRuntimeBinding({...current,constraints:p.constraints}).config;return {payload:{config},command:'constraints set '+canonical(config.constraints)}}
               const p=object(payload,['config']),json=canonical(p.config)
               if(action==='host-budget')return {payload:{binding:p.config===null?null:createMemoryBudget({provider:agent.options.provider??'',model:agent.options.model??''},p.config)},command:'budget set '+json}
               if(!b!.data.personBinding)throw new RpError('scope_denied','请先绑定聊天人物')
@@ -507,8 +523,8 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
               if(!live(agent)||bound.get(agent.id)!==b||b!.generation!==before+1||b!.data.blocked)throw new RpError('ownership_lost','宿主配置已变化，请重新打开工作台')
               generation=b!.generation;return JSON.parse(result.text)
             },
-          })
-          const manager=await openManagementServer(controller,()=>({sessionId:agent.id,personId:b!.data.personBinding?.personId??null,mode:b!.data.runtimeBinding?.config.mode??'rp',config:b!.data.runtimeBinding?.config??null,injection:b!.data.injectionBinding??null,memoryBudget:b!.data.memoryBudget??null,memoryUsage:b!.lastMemoryUsage??null,model:{provider:agent.options.provider??'',model:agent.options.model??''},cleanRoot:safe(agent)}),async()=>{
+          },summaryOptions)
+          const manager=await openManagementServer(controller,()=>({sessionId:agent.id,personId:b!.data.personBinding?.personId??null,mode:b!.data.runtimeBinding?.config.mode??'rp',config:b!.data.runtimeBinding?.config??null,injection:b!.data.injectionBinding??null,memoryBudget:b!.data.memoryBudget??null,memoryUsage:b!.lastMemoryUsage??null,model:{provider:agent.options.provider??'',model:agent.options.model??''},cleanRoot:safe(agent),diagnostic:diagnostic(agent.id)}),async()=>{
             for(const session of bound.values())if(session.data.request.branchId===b!.data.request.branchId)session.packet=undefined
             if(!await (root.get('sessions') as any).flush(agent.session))throw new RpError('persistence_uncertain','Management committed; native flush unconfirmed. Inspect current state before another action.')
           },async query=>{if(!live(agent)||b!.generation!==generation||b!.data.blocked||agent.status!=='idle')throw new RpError('ownership_lost','工作台会话已变化，请重新打开');return injectionPreview(b!,query)})
@@ -572,7 +588,13 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         const value = action === 'relationships' ? projection.relationships : projection.state.filter(s => action === 'goals' ? /^(task|promise):/u.test(s.key) : ['identity', 'voice', 'background'].includes(s.key))
         return { kind: 'success', text: canonical(value) }
       }
-      const summaryOptions = { globalAuthorities, policyEpoch: () => { shutdown.signal.throwIfAborted(); if (closed || !live(agent) || policy.status(agent.id).mode !== 'rp') throw new RpError('ownership_lost', 'RP candidate owner changed'); return policy.status(agent.id).epoch } }
+      if(action==='organize'){
+        const match=/^(summary|review|handoff)(?:\s+([\s\S]+))?$/.exec(arg)
+        if(!match)throw new RpError('invalid_record','Use organize summary|review|handoff [JSON]')
+        const input=match[2]?JSON.parse(match[2]):{}
+        const result=match[1]==='summary'?await memory.organizer.summarize(b.authority,input,summaryOptions):match[1]==='review'?await memory.organizer.review(b.authority,input):await memory.organizer.handoff(b.authority,input)
+        return {kind:'success',text:canonical(unwrap<unknown>(result))}
+      }
       if (action === 'summarize-auto') throw new RpError('capability_missing', 'No trusted background candidate route; use /memcont summary then /memcont adopt')
       if (action === 'propose' || action === 'summary') {
         const op = commandObject(arg, ['selection', 'proposal']), candidate = unwrap(await memory.summaries.propose(b.authority, op.proposal, op.selection, summaryOptions))
@@ -679,16 +701,16 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       checkMemory(b,parts(),memoryMeter)
     }
     const fullContext = joinContextSections(renderContextSections(completed)), snapshot: Snapshot = { ...(b.data.memoryBudget?{memoryBudget:structuredClone(b.data.memoryBudget)}:{}), ...(packet.injection ? {injection:packet.injection,injectionBinding:structuredClone(b.data.injectionBinding!)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), provenance: 'packet', packetProof: packet.proof, bodyHash: sha(fullContext), packetId: packet.id, fence: packet.inputFence, globals: [...packet.globalFences], globalDependencies: [...packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...packet.dependencyIds], eventIds: packet.proof.records.filter(r => r.kind === 'event').map(e => e.id), modeEpoch: policy.status(b.agent.id).modeEpoch }
-    b.lastContextBody=canonical({role:'user',source:{kind:'runtime-context'},content:[{type:'text',text:fullContext}]}); b.packet = packet; b.packetRecentSourceIds=includedRecentSourceIds; b.staticSystem = sha(renderPrompt(completed)); b.staticTools = sha(canonical(completed.tools)); b.staticToolDefinitions=structuredClone(completed.tools); b.data.pending[snapshot.bodyHash] = snapshot
+    b.preparedContextHash=snapshot.bodyHash; b.lastContextBody=canonical({role:'user',source:{kind:'runtime-context'},content:[{type:'text',text:fullContext}]}); b.packet = packet; b.packetRecentSourceIds=includedRecentSourceIds; b.staticSystem = sha(renderPrompt(completed)); b.staticTools = sha(canonical(completed.tools)); b.staticToolDefinitions=structuredClone(completed.tools); b.data.pending[snapshot.bodyHash] = snapshot
     await save(b); b.requestAdmission={state:'prepared',stage:'assembly',at:new Date().toISOString()};return completed
     }catch(e){requestRejected(b,'assembly',e);throw e}
   }) as never))
   effects.push(root.on('agent/pre-step', (async function(this:any, payload:any, next:()=>Promise<any>){
     const agent=payload.agent, b=agent&&bound.get(agent.id)
-    const decision=await next();if(!b||decision.kind!=='enter')return decision
+    const decision=await next();if(!b||decision.kind!=='enter'||decision.messages.length===0)return decision
     await drain(b);payload.signal?.throwIfAborted()
     if(!live(b.agent)||b.data.blocked||!b.packet)throw new RpError('stale_input','Memory surface owner changed')
-    const plan=planContextRetirement(b.agent.session,b.data)
+    const plan=planContextRetirement(b.agent.session,b.data,undefined,b.preparedContextHash)
     for(const replacement of plan.replacements)b.agent.session.append('user/message',replacement.message,{surfaceOp:{op:'replace',startSeq:replacement.seq,endSeq:replacement.seq},sourceEventSeqs:[replacement.seq]})
     if(plan.replacements.length){await drain(b);if(!await (root.get('sessions') as any).flush(b.agent.session))throw new RpError('persistence_uncertain','Memory surface replacement flush unconfirmed')}
     return plan.replacements.length?{...decision,startsRequestSeries:true}:decision
@@ -700,11 +722,21 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     if(!await budgetMarkerValid(hostRoot,b.agent.id,b.data.memoryBudget))throw new RpError('stale_input','Memory budget marker changed')
     verifyNative()
     if (!b.packet || policy.status(b.agent.id).mode !== 'rp') throw new RpError('scope_denied', 'No prepared RP assembly')
-    const sources = unwrap(await memory.store.readAcceptedSources(b.authority)), sourceMap = new Map(sources.map(s => [s.id, s])), fence = unwrap(await memory.store.readFence(b.authority)), events = new Set(unwrap(await memory.store.readEvents(b.authority)).map(e => e.id))
+    const originals=(options.messages??[]).map((actual:any)=>({actual,message:retiredContextOriginal(b.agent.session,b.data,actual)??actual}))
+    const neededSources=new Set(originals.map(({message}:any)=>b.data.hostSources[message.id]))
+    const checked=unwrap(await memory.store.withReadView(b.authority,async view=>{
+      const bodies=new Map<string,string>()
+      for(const source of view.sources)if(neededSources.has(source.id))bodies.set(source.id,await view.readSource(fullSpan(source)))
+      return {sources:view.sources,fence:view.fence,eventIds:view.events.map(e=>e.id),bodies}
+    }))
+    const sourceMap=new Map(checked.sources.map(s=>[s.id,s])),fence=checked.fence,events=new Set(checked.eventIds)
+    await verifyPacketProofs(memory.store,b.authority,originals.flatMap(({message}:any)=>{
+      const snapshot=b.data.snapshots[message.id]??b.data.frames[message.id]
+      return snapshot&&(snapshot.provenance==='packet'||snapshot.provenance==='tool-call')?[snapshot.packetProof]:[]
+    }))
     let systemSeen = b.staticSystem === sha(''), packetSeen = false
     const actualSourceIds=new Set<string>()
-    for (const actualMessage of options.messages ?? []) {
-      const message=retiredContextOriginal(b.agent.session,b.data,actualMessage)??actualMessage
+    for (const {actual:actualMessage,message} of originals) {
       if (message.role === 'system') { object(message, ['role', 'content', 'source', 'id']); object(message.source, ['kind']); if (message.source.kind !== 'system-prompt' || !Array.isArray(message.content) || !message.content.every((x: any) => { object(x, ['type', 'text']); return x.type === 'text' && typeof x.text === 'string' }) || sha(body(message)) !== b.staticSystem) throw new RpError('scope_denied', 'Uncertified system prompt/metadata'); systemSeen = true; continue }
       if (b.data.messageHashes[message.id] !== sha(normalizedMessage(message))) throw new RpError('scope_denied', 'Unknown or changed native history/metadata; use clean continuation')
       const snapshot = b.data.snapshots[message.id] ?? b.data.frames[message.id]
@@ -715,7 +747,6 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         if(snapshot.injection && snapshot.injection.context.personId!==b.data.personBinding?.personId)throw new RpError('stale_input','Historical injection person mismatch')
         if(canonical(snapshot.runtimeBinding ?? null)!==canonical(b.data.runtimeBinding ?? null))throw new RpError('stale_input','Historical runtime binding proof mismatch')
         if (canonical(snapshot.personBinding ?? null) !== canonical(b.data.personBinding ?? null)) throw new RpError('stale_input', 'Historical person binding proof mismatch')
-        if (snapshot.provenance === 'packet' || snapshot.provenance === 'tool-call') await verifyPacketProof(memory.store, b.authority, snapshot.packetProof)
         if (snapshot.records) await verifyToolProof(b, { inputFence: snapshot.fence, records: snapshot.records, resultSha256: snapshot.resultSha256!, diary: snapshot.diary })
         if (snapshot.bodyHash !== sha(body(message)) || snapshot.modeEpoch !== policy.status(b.agent.id).modeEpoch || snapshot.fence.branchId !== fence.branchId || snapshot.fence.canonBindingsHash !== fence.canonBindingsHash || snapshot.fence.visibilityRevision !== fence.visibilityRevision || snapshot.fence.deletionGeneration !== fence.deletionGeneration || snapshot.fence.policyVersion !== fence.policyVersion || snapshot.dependencyIds.some(id => !sourceMap.has(id)) || snapshot.eventIds.some(id => !events.has(id))) throw new RpError('stale_input', 'Historical RP snapshot is invalid; use clean continuation')
         if (snapshot.globalPolicyHash !== globalPolicyHash() || snapshot.globals.length !== globalAuthorities.length) throw new RpError('scope_denied', 'Historical global grants changed')
@@ -730,7 +761,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         if (!Array.isArray(message.content) || !message.content.every((block: any) => { object(block, ['type', 'text']); return block.type === 'text' && typeof block.text === 'string' })) throw new RpError('capability_missing', 'Uncertified raw rich/reasoning content requires a clean continuation')
         const sourceId = b.data.hostSources[message.id], source = sourceMap.get(sourceId)
         if (!source || source.publicTextSha256 !== sha(body(message))) throw new RpError('scope_denied', 'Native history contains rejected, unselected, revised, deleted or wrong-branch source')
-        unwrap(await memory.store.readSource(b.authority, fullSpan(source)))
+        if(checked.bodies.get(sourceId)!==body(message))throw new RpError('stale_input','Native source body changed')
         actualSourceIds.add(sourceId)
       }
     }
@@ -758,14 +789,23 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     if (!b) {
       yield* next(); return
     }
-    let revoke:(()=>void)|undefined,release:(()=>void)|undefined,admitted=false
+    let revoke:(()=>void)|undefined,release:(()=>void)|undefined,admitted=false,claimed=false
     try{
+      if(b.requestInFlight)throw new RpError('scope_denied','Concurrent model request for one input')
+      b.requestInFlight=true;claimed=true
       await drain(b)
       const queueTail=b.queue,saveTail=b.saveQueue,generation=b.generation,state=policy.status(b.agent.id)
       release=await policy.request(b.agent.id,state.epoch)
       if(queueTail!==b.queue||saveTail!==b.saveQueue||generation!==b.generation)throw new RpError('stale_input','RP queues changed before request')
       await certify(b,options);shutdown.signal.throwIfAborted()
       if(queueTail!==b.queue||saveTail!==b.saveQueue||generation!==b.generation)throw new RpError('stale_input','RP queues changed during request certification')
+      const cost=currentRequestCost(b.agent.session,b.data),stop=requestStop(cost,limits)
+      b.data.requestCost=stop?{...cost,stopReason:stop}:{...cost,requests:cost.requests+1,stepRequests:cost.stepRequests+1}
+      // Reserve before entering the adapter; uncertain writes never get a free retry.
+      const reservation=save(b);await reservation
+      shutdown.signal.throwIfAborted();options.signal?.throwIfAborted()
+      if(queueTail!==b.queue||reservation!==b.saveQueue||generation!==b.generation||!live(b.agent)||b.data.blocked||policy.status(b.agent.id).epoch!==state.epoch)throw new RpError('stale_input','RP binding or queues changed during request reservation')
+      if(stop)throw new RpError('request_limit_exceeded','Request stopped: '+stop+'; inspect status and completed tool results before a new input')
       revoke=admission.issue(owner,b.agent.id,options,{epoch:state.epoch,generation,active:true})
       b.requestAdmission={state:'admitted',stage:'send',at:new Date().toISOString()};admitted=true
       yield* next()
@@ -773,8 +813,17 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       if(admitted)throw e
       requestRejected(b,'send',e)
       throw new LlmError(e instanceof RpError?e.code+': '+e.message:'RP request blocked','RP_ADMISSION')
-    }finally{revoke?.();release?.()}
+    }finally{revoke?.();release?.();if(claimed)b.requestInFlight=false}
   }) as never, { prepend: true }))
+  effects.push(root.on('agent/request-error',(async function(this:any,payload:any,next:()=>Promise<any>){
+    const b=payload.agent&&bound.get(payload.agent.id)
+    if(!b)return next()
+    // Admission/authority/persistence errors are terminal even if another plugin requests a retry.
+    if(payload.failure?.code==='RP_ADMISSION'||b.data.blocked||b.recoveryOnly)return
+    const cost=currentRequestCost(b.agent.session,b.data),stop=requestStop(cost,limits)
+    if(stop){b.data.requestCost={...cost,stopReason:stop};await save(b);requestRejected(b,'send',new RpError('request_limit_exceeded',stop));return}
+    return next()
+  }) as never,{prepend:true}))
   effects.push(root.on('agent/created', (async ({ agent, source }: any) => {
     if (closed || bound.has(agent.id) || source !== 'resume') return
     try {
@@ -812,7 +861,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     } finally { pendingTools.delete(exec.token) }
   }) as never, { prepend: true }))
   for (const name of ['rp_memory_search', 'rp_memory_get', 'rp_memory_status']) {
-    effects.push(tools.register(defineTool({ name, description: 'Read-only RP data. Cannot accept sources, execute commands, approve publications or grant authority.', parameters: name.endsWith('status') ? {} : name.endsWith('get') ? { id: { type: 'string' }, cursor: { type: 'string' }, maxChars: { type: 'integer' } } : { query: { type: 'string' }, cursor: { type: 'string' }, limit: { type: 'integer' } }, output, isConcurrencySafe: () => false,
+    effects.push(tools.register(defineTool({ name, description: 'Read-only RP data. Cannot accept sources, execute commands, approve publications or grant authority.', parameters: name.endsWith('status') ? {} : name.endsWith('get') ? { id: { type: 'string' }, cursor: { type: 'string' }, maxChars: { type: 'integer' } } : { query: { type: 'string' }, queryAlternatives: {type:'array',items:{type:'string'}}, cursor: { type: 'string' }, limit: { type: 'integer' } }, output, isConcurrencySafe: () => false,
       async execute(args: any, exec: any) {
         const b: Bound | undefined = exec.agent && bound.get(exec.agent.id)
         if (!b || b.agent !== exec.agent || !live(exec.agent) || policy.status(exec.agent.id).mode !== 'rp') throw new Error('RP read requires exact bound live caller')

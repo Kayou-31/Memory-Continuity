@@ -7,6 +7,7 @@ export {openManagementServer as openWorkbench} from '../rp/person/management-ser
 export {createMemoryBudget,validateMemoryBudget,openMemoryMeter,measureMemoryParts} from '../rp/token-budget.js'
 export {importPersonDocument} from '../rp/person/documents/import.js'
 export {validatePersonDocument} from '../rp/person/documents/schema.js'
+export {reconcileDocumentRevision} from '../rp/person/documents/reconcile.js'
 export {validateDiaryDraft} from '../rp/diary/schema.js'
 export {MemoryCoordinator} from '../rp/session-policy.js'
 export {canonical} from '../rp/store.js'

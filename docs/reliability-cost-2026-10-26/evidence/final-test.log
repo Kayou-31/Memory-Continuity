@@ -1,0 +1,2363 @@
+
+> @dsh-external/dsh-memory-continuity@0.3.0-preview.1 test
+> node --test --test-concurrency=1 test/*.test.mjs
+
+TAP version 13
+# Subtest: AstrBot package contains only reviewed adapter files, verifies its manifest and refuses overwrite
+ok 1 - AstrBot package contains only reviewed adapter files, verifies its manifest and refuses overwrite
+  ---
+  duration_ms: 594.6471
+  type: 'test'
+  ...
+# Subtest: explicit new core directory produces a usable real configuration and foreground workbench without DSH
+ok 2 - explicit new core directory produces a usable real configuration and foreground workbench without DSH
+  ---
+  duration_ms: 723.3589
+  type: 'test'
+  ...
+# Subtest: initialization rejects invalid identifiers and relative paths before creating data
+ok 3 - initialization rejects invalid identifiers and relative paths before creating data
+  ---
+  duration_ms: 144.1274
+  type: 'test'
+  ...
+# Subtest: initialization preserves an existing or interrupted directory without migration or overwrite
+ok 4 - initialization preserves an existing or interrupted directory without migration or overwrite
+  ---
+  duration_ms: 72.5182
+  type: 'test'
+  ...
+# Subtest: embedded DSH excludes a real independent core writer and releases ownership on normal shutdown
+ok 5 - embedded DSH excludes a real independent core writer and releases ownership on normal shutdown
+  ---
+  duration_ms: 428.6515
+  type: 'test'
+  ...
+# Subtest: a real second process cannot acquire an occupied profile; explicit release allows the next writer
+ok 6 - a real second process cannot acquire an occupied profile; explicit release allows the next writer
+  ---
+  duration_ms: 190.4036
+  type: 'test'
+  ...
+# Subtest: a killed process stays locked until verified recovery; stale recovery cannot remove a new owner
+ok 7 - a killed process stays locked until verified recovery; stale recovery cannot remove a new owner
+  ---
+  duration_ms: 103.7448
+  type: 'test'
+  ...
+# Subtest: interrupted recovery can resume without stealing from a concurrent recovery process
+ok 8 - interrupted recovery can resume without stealing from a concurrent recovery process
+  ---
+  duration_ms: 187.7475
+  type: 'test'
+  ...
+# Subtest: corrupt owner evidence is retained and refused instead of guessed or silently repaired
+ok 9 - corrupt owner evidence is retained and refused instead of guessed or silently repaired
+  ---
+  duration_ms: 96.8079
+  type: 'test'
+  ...
+# Subtest: the public core owns its profile and revokes old writes before waiting for queued work to finish
+ok 10 - the public core owns its profile and revokes old writes before waiting for queued work to finish
+  ---
+  duration_ms: 37.3508
+  type: 'test'
+  ...
+# Subtest: closing an owner rejects an in-flight global commit before rename and retained global handles cannot write
+ok 11 - closing an owner rejects an in-flight global commit before rename and retained global handles cannot write
+  ---
+  duration_ms: 43.2944
+  type: 'test'
+  ...
+# Subtest: real core TGZ installs without DSH, writes and cold-reads memory, and verifies bundled assets
+ok 12 - real core TGZ installs without DSH, writes and cold-reads memory, and verifies bundled assets
+  ---
+  duration_ms: 9969.0799
+  type: 'test'
+  ...
+# Subtest: loopback service rejects missing credentials, foreign origin/host and caller-invented authority
+ok 13 - loopback service rejects missing credentials, foreign origin/host and caller-invented authority
+  ---
+  duration_ms: 194.4648
+  type: 'test'
+  ...
+# Subtest: tool replies retain actual retrieval provenance and cannot borrow another session receipt
+ok 14 - tool replies retain actual retrieval provenance and cannot borrow another session receipt
+  ---
+  duration_ms: 252.8655
+  type: 'test'
+  ...
+# Subtest: revocation and expiration retire tool and workbench capabilities together
+ok 15 - revocation and expiration retire tool and workbench capabilities together
+  ---
+  duration_ms: 189.1368
+  type: 'test'
+  ...
+# Subtest: JSON, size and operation bounds fail closed without affecting the next valid read
+ok 16 - JSON, size and operation bounds fail closed without affecting the next valid read
+  ---
+  duration_ms: 153.8829
+  type: 'test'
+  ...
+# Subtest: concurrent workbench openings reuse one listener and shutdown closes every returned address
+ok 17 - concurrent workbench openings reuse one listener and shutdown closes every returned address
+  ---
+  duration_ms: 124.7591
+  type: 'test'
+  ...
+# Subtest: concurrent capability creation reserves the last slot before awaiting authorization
+ok 18 - concurrent capability creation reserves the last slot before awaiting authorization
+  ---
+  duration_ms: 298.6643
+  type: 'test'
+  ...
+# Subtest: revocation during a real source read prevents a late tool reply from releasing that memory
+ok 19 - revocation during a real source read prevents a late tool reply from releasing that memory
+  ---
+  duration_ms: 140.3009
+  type: 'test'
+  ...
+# Subtest: a cold service restart rejects old administrator, tool and receipt capabilities
+ok 20 - a cold service restart rejects old administrator, tool and receipt capabilities
+  ---
+  duration_ms: 154.5198
+  type: 'test'
+  ...
+# Subtest: an incomplete HTTP body times out without holding the next request or shutdown
+ok 21 - an incomplete HTTP body times out without holding the next request or shutdown
+  ---
+  duration_ms: 245.452
+  type: 'test'
+  ...
+# Subtest: in-flight RPC limit rejects excess work before allocating another read
+ok 22 - in-flight RPC limit rejects excess work before allocating another read
+  ---
+  duration_ms: 164.6856
+  type: 'test'
+  ...
+# Subtest: explicit confirmation returns a durable outcome and cold duplicate confirmation does not reapply it
+ok 23 - explicit confirmation returns a durable outcome and cold duplicate confirmation does not reapply it
+  ---
+  duration_ms: 323.6279
+  type: 'test'
+  ...
+# Subtest: a lost completion receipt stays uncertain after restart and never repeats an already applied change
+ok 24 - a lost completion receipt stays uncertain after restart and never repeats an already applied change
+  ---
+  duration_ms: 331.9081
+  type: 'test'
+  ...
+# Subtest: an unconfirmed old review cannot execute after restart and corrupt confirmation evidence is retained
+ok 25 - an unconfirmed old review cannot execute after restart and corrupt confirmation evidence is retained
+  ---
+  duration_ms: 246.5705
+  type: 'test'
+  ...
+# Subtest: a confirmation receipt cannot conceal corruption of the underlying memory history
+ok 26 - a confirmation receipt cannot conceal corruption of the underlying memory history
+  ---
+  duration_ms: 283.537
+  type: 'test'
+  ...
+# Subtest: Memory-Continuity has a consistent standalone entry and disabled defaults
+ok 27 - Memory-Continuity has a consistent standalone entry and disabled defaults
+  ---
+  duration_ms: 4.3255
+  type: 'test'
+  ...
+# Subtest: native explicit Agent controls feed goals and sourced experiences into the actual request
+ok 28 - native explicit Agent controls feed goals and sourced experiences into the actual request
+  ---
+  duration_ms: 843.5571
+  type: 'test'
+  ...
+# Subtest: R33 R34 R35 batch retract uses one original snapshot and explicit targets dominate suffix replay
+ok 29 - R33 R34 R35 batch retract uses one original snapshot and explicit targets dominate suffix replay
+  ---
+  duration_ms: 690.6528
+  type: 'test'
+  ...
+# Subtest: A05/P2 only explicit user selection accepts; rejected, completed and aborted alternatives never project
+ok 30 - A05/P2 only explicit user selection accepts; rejected, completed and aborted alternatives never project
+  ---
+  duration_ms: 198.7859
+  type: 'test'
+  ...
+# Subtest: A12/A13 fixed fork includes validity metadata and ignores parent future and sibling-only death after reload
+ok 31 - A12/A13 fixed fork includes validity metadata and ignores parent future and sibling-only death after reload
+  ---
+  duration_ms: 426.6486
+  type: 'test'
+  ...
+# Subtest: A14 child retcon leaves parent, sibling, existing descendant and original source bytes unchanged
+ok 32 - A14 child retcon leaves parent, sibling, existing descendant and original source bytes unchanged
+  ---
+  duration_ms: 280.0314
+  type: 'test'
+  ...
+# Subtest: A06/A15 edited suffix waits for explicit replay and dependency chain is inactive before the next query
+ok 33 - A06/A15 edited suffix waits for explicit replay and dependency chain is inactive before the next query
+  ---
+  duration_ms: 419.3173
+  type: 'test'
+  ...
+# Subtest: A16 deterministic world/belief/utterance/uncertain and three truth values retain sources and story time
+ok 34 - A16 deterministic world/belief/utterance/uncertain and three truth values retain sources and story time
+  ---
+  duration_ms: 157.9175
+  type: 'test'
+  ...
+# Subtest: A17 conflicting locations remain unresolved until targeted correction; old records remain privileged audit history
+ok 35 - A17 conflicting locations remain unresolved until targeted correction; old records remain privileged audit history
+  ---
+  duration_ms: 168.584
+  type: 'test'
+  ...
+# Subtest: A18/A19 knowledge needs a learn source; co-presence grants nothing and forget preserves narrator history without purge
+ok 36 - A18/A19 knowledge needs a learn source; co-presence grants nothing and forget preserves narrator history without purge
+  ---
+  duration_ms: 365.3464
+  type: 'test'
+  ...
+# Subtest: directional relationships, promises and causes remain source-backed without reverse inference
+ok 37 - directional relationships, promises and causes remain source-backed without reverse inference
+  ---
+  duration_ms: 115.9509
+  type: 'test'
+  ...
+# Subtest: story retraction is branch-local and keeps shared source bytes
+ok 38 - story retraction is branch-local and keeps shared source bytes
+  ---
+  duration_ms: 181.3562
+  type: 'test'
+  ...
+# Subtest: A20 privacy first tombstones every authorized shared-source branch, purges declared payload copies, rejects old jobs and survives restart
+ok 39 - A20 privacy first tombstones every authorized shared-source branch, purges declared payload copies, rejects old jobs and survives restart
+  ---
+  duration_ms: 439.2196
+  type: 'test'
+  ...
+# Subtest: unsupported native selection/edit/fork return exact capability errors without invented SDK calls
+ok 40 - unsupported native selection/edit/fork return exact capability errors without invented SDK calls
+  ---
+  duration_ms: 42.7643
+  type: 'test'
+  ...
+# Subtest: manual control receipts are idempotent across restart and reject a reused key with changed effects
+ok 41 - manual control receipts are idempotent across restart and reject a reused key with changed effects
+  ---
+  duration_ms: 130.668
+  type: 'test'
+  ...
+# Subtest: event retcon also suspends later host suffix and never grants old derived caches new life
+ok 42 - event retcon also suspends later host suffix and never grants old derived caches new life
+  ---
+  duration_ms: 234.6795
+  type: 'test'
+  ...
+# Subtest: whole-source character reads exclude mixed unlearned claims and occurrences
+ok 43 - whole-source character reads exclude mixed unlearned claims and occurrences
+  ---
+  duration_ms: 191.605
+  type: 'test'
+  ...
+# Subtest: direct correction invalidates target DAG, forged acceptedSeq and world character statements are rejected
+ok 44 - direct correction invalidates target DAG, forged acceptedSeq and world character statements are rejected
+  ---
+  duration_ms: 252.5644
+  type: 'test'
+  ...
+# Subtest: privacy sweep removes unpublished orphan payloads and includes content-address aliases in affected scope
+ok 45 - privacy sweep removes unpublished orphan payloads and includes content-address aliases in affected scope
+  ---
+  duration_ms: 307.7165
+  type: 'test'
+  ...
+# Subtest: A18 secret audience learn changes knowledge without expanding the host audience grant
+ok 46 - A18 secret audience learn changes knowledge without expanding the host audience grant
+  ---
+  duration_ms: 333.0658
+  type: 'test'
+  ...
+# Subtest: A15 real scene/chapter summaries and mixed audience dependency laundering obey the same DAG
+ok 47 - A15 real scene/chapter summaries and mixed audience dependency laundering obey the same DAG
+  ---
+  duration_ms: 282.8852
+  type: 'test'
+  ...
+# Subtest: privacy must explicitly include raw-source aliases of a derived blob before any purge
+ok 48 - privacy must explicitly include raw-source aliases of a derived blob before any purge
+  ---
+  duration_ms: 309.591
+  type: 'test'
+  ...
+# Subtest: state before metadata does not resolve a conflict; explicit supersedes performs a sourced transition
+ok 49 - state before metadata does not resolve a conflict; explicit supersedes performs a sourced transition
+  ---
+  duration_ms: 148.7108
+  type: 'test'
+  ...
+# Subtest: narrow narrator control cannot read secret control receipts or their source/event counts
+ok 50 - narrow narrator control cannot read secret control receipts or their source/event counts
+  ---
+  duration_ms: 163.1842
+  type: 'test'
+  ...
+# Subtest: blocked privacy tombstones reject new exact-byte copies through unrelated source provenance
+ok 51 - blocked privacy tombstones reject new exact-byte copies through unrelated source provenance
+  ---
+  duration_ms: 220.4371
+  type: 'test'
+  ...
+# Subtest: fixed fork preserves invalidations, canon and visibility even when a later parent revision keeps the same source manifest
+ok 52 - fixed fork preserves invalidations, canon and visibility even when a later parent revision keeps the same source manifest
+  ---
+  duration_ms: 248.6274
+  type: 'test'
+  ...
+# Subtest: accepted narration cannot supersede locked canon; explicit user correction can
+ok 53 - accepted narration cannot supersede locked canon; explicit user correction can
+  ---
+  duration_ms: 184.5988
+  type: 'test'
+  ...
+# Subtest: privacy retries require fresh authority for a secret copy alias in an independent branch
+ok 54 - privacy retries require fresh authority for a secret copy alias in an independent branch
+  ---
+  duration_ms: 348.2682
+  type: 'test'
+  ...
+# Subtest: failed command grant is durable before retry uses it and survives cold start
+ok 55 - failed command grant is durable before retry uses it and survives cold start
+  ---
+  duration_ms: 145.3025
+  type: 'test'
+  ...
+# Subtest: Chinese command help works before start and on blocked sessions without state writes or model calls
+ok 56 - Chinese command help works before start and on blocked sessions without state writes or model calls
+  ---
+  duration_ms: 140.8949
+  type: 'test'
+  ...
+# Subtest: memcont is discoverable and shares one live session with the legacy rp alias; disposal removes both
+ok 57 - memcont is discoverable and shares one live session with the legacy rp alias; disposal removes both
+  ---
+  duration_ms: 280.8643
+  type: 'test'
+  ...
+# Subtest: malformed runtime JSON is non-mutating invalid_record: constraints set {
+ok 58 - malformed runtime JSON is non-mutating invalid_record: constraints set {
+  ---
+  duration_ms: 147.1307
+  type: 'test'
+  ...
+# Subtest: malformed runtime JSON is non-mutating invalid_record: modules run {
+ok 59 - malformed runtime JSON is non-mutating invalid_record: modules run {
+  ---
+  duration_ms: 148.6583
+  type: 'test'
+  ...
+# Subtest: invalid retcon JSON is a recoverable input error
+ok 60 - invalid retcon JSON is a recoverable input error
+  ---
+  duration_ms: 219.0811
+  type: 'test'
+  ...
+# Subtest: invalid delete JSON is a recoverable input error
+ok 61 - invalid delete JSON is a recoverable input error
+  ---
+  duration_ms: 156.4604
+  type: 'test'
+  ...
+# Subtest: invalid publish JSON is a recoverable input error
+ok 62 - invalid publish JSON is a recoverable input error
+  ---
+  duration_ms: 145.7402
+  type: 'test'
+  ...
+# Subtest: invalid adopt-canon JSON is a recoverable input error
+ok 63 - invalid adopt-canon JSON is a recoverable input error
+  ---
+  duration_ms: 152.6328
+  type: 'test'
+  ...
+# Subtest: invalid summary JSON is a recoverable input error
+ok 64 - invalid summary JSON is a recoverable input error
+  ---
+  duration_ms: 152.551
+  type: 'test'
+  ...
+# Subtest: invalid propose JSON is a recoverable input error
+ok 65 - invalid propose JSON is a recoverable input error
+  ---
+  duration_ms: 142.4629
+  type: 'test'
+  ...
+# Subtest: invalid global preference JSON is a recoverable input error
+ok 66 - invalid global preference JSON is a recoverable input error
+  ---
+  duration_ms: 144.7226
+  type: 'test'
+  ...
+# Subtest: unchanged tool steps reuse their current certified memory context
+ok 67 - unchanged tool steps reuse their current certified memory context
+  ---
+  duration_ms: 367.417
+  type: 'test'
+  ...
+# Subtest: empty first-step decisions do not retire a context or manufacture a later request
+ok 68 - empty first-step decisions do not retire a context or manufacture a later request
+  ---
+  duration_ms: 231.2168
+  type: 'test'
+  ...
+# Subtest: request policy bounds a tool loop without deleting the completed tool history
+ok 69 - request policy bounds a tool loop without deleting the completed tool history
+  ---
+  duration_ms: 270.1104
+  type: 'test'
+  ...
+# Subtest: a host retry handler cannot retry a failing step past the configured limit
+ok 70 - a host retry handler cannot retry a failing step past the configured limit
+  ---
+  duration_ms: 158.0442
+  type: 'test'
+  ...
+# Subtest: a new explicit input receives its own allowance after a failed input
+ok 71 - a new explicit input receives its own allowance after a failed input
+  ---
+  duration_ms: 252.2351
+  type: 'test'
+  ...
+# Subtest: cost allowance survives a genuine cold restore and resume alone sends nothing
+ok 72 - cost allowance survives a genuine cold restore and resume alone sends nothing
+  ---
+  duration_ms: 281.5607
+  type: 'test'
+  ...
+# Subtest: failed reservation persistence does not reach the adapter and leaves diagnosis available
+ok 73 - failed reservation persistence does not reach the adapter and leaves diagnosis available
+  ---
+  duration_ms: 234.2645
+  type: 'test'
+  ...
+# Subtest: organizer commands are explicit, reuse candidates, and consume no additional model requests
+ok 74 - organizer commands are explicit, reuse candidates, and consume no additional model requests
+  ---
+  duration_ms: 268.4182
+  type: 'test'
+  ...
+# Subtest: status distinguishes unbound, healthy, and closed sessions
+ok 75 - status distinguishes unbound, healthy, and closed sessions
+  ---
+  duration_ms: 118.1289
+  type: 'test'
+  ...
+# Subtest: actual DSH tool writes an AI diary after explicit enable and certifies the returned revision across a native tool loop
+ok 76 - actual DSH tool writes an AI diary after explicit enable and certifies the returned revision across a native tool loop
+  ---
+  duration_ms: 1674.8364
+  type: 'test'
+  ...
+# Subtest: disabled AI diary tools return a certified refusal; no source or entry is published
+ok 77 - disabled AI diary tools return a certified refusal; no source or entry is published
+  ---
+  duration_ms: 511.3505
+  type: 'test'
+  ...
+# Subtest: failed diary receipt persistence blocks tool continuation, diagnoses safely, and keeps the single committed entry for clean recovery
+ok 78 - failed diary receipt persistence blocks tool continuation, diagnoses safely, and keeps the single committed entry for clean recovery
+  ---
+  duration_ms: 675.1517
+  type: 'test'
+  ...
+# Subtest: native diary search and read return the selected human entry with authenticated record receipts
+ok 79 - native diary search and read return the selected human entry with authenticated record receipts
+  ---
+  duration_ms: 754.9897
+  type: 'test'
+  ...
+# Subtest: free prose diary requires no reflection template and preserves original Unicode and newlines
+ok 80 - free prose diary requires no reflection template and preserves original Unicode and newlines
+  ---
+  duration_ms: 1.1453
+  type: 'test'
+  ...
+# Subtest: optional understanding remains subjective and retains exact evidence references and revision note
+ok 81 - optional understanding remains subjective and retains exact evidence references and revision note
+  ---
+  duration_ms: 0.3908
+  type: 'test'
+  ...
+# Subtest: body limit is 16 KiB UTF-8 and title limit is 256 code points without truncation
+ok 82 - body limit is 16 KiB UTF-8 and title limit is 256 code points without truncation
+  ---
+  duration_ms: 0.714
+  type: 'test'
+  ...
+# Subtest: author, authority, paths and truth claims cannot be smuggled into a diary draft
+ok 83 - author, authority, paths and truth claims cannot be smuggled into a diary draft
+  ---
+  duration_ms: 0.4935
+  type: 'test'
+  ...
+# Subtest: AI diary writer is disabled by default, explicit enable allows a write without per-entry human control, disable revokes it
+ok 84 - AI diary writer is disabled by default, explicit enable allows a write without per-entry human control, disable revokes it
+  ---
+  duration_ms: 811.1909
+  type: 'test'
+  ...
+# Subtest: AI cannot forge an author or rewrite human entries; human edits preserve AI authorship and originals
+ok 85 - AI cannot forge an author or rewrite human entries; human edits preserve AI authorship and originals
+  ---
+  duration_ms: 635.3867
+  type: 'test'
+  ...
+# Subtest: live owner revocation, stale revisions and repeated writes fail safely; cold retry does not create duplicates
+ok 86 - live owner revocation, stale revisions and repeated writes fail safely; cold retry does not create duplicates
+  ---
+  duration_ms: 804.827
+  type: 'test'
+  ...
+# Subtest: optional reflection authenticates exact event revision and quote; unrelated people and groups cannot read the shared diary
+ok 87 - optional reflection authenticates exact event revision and quote; unrelated people and groups cannot read the shared diary
+  ---
+  duration_ms: 527.302
+  type: 'test'
+  ...
+# Subtest: raw callers cannot forge AI diary sources or semantic publication without live writer admission
+ok 88 - raw callers cannot forge AI diary sources or semantic publication without live writer admission
+  ---
+  duration_ms: 421.7361
+  type: 'test'
+  ...
+# Subtest: revoking the writer while its commit is being prepared prevents publication
+ok 89 - revoking the writer while its commit is being prepared prevents publication
+  ---
+  duration_ms: 352.802
+  type: 'test'
+  ...
+# Subtest: current diary listing excludes superseded text, and privacy deletion purges all versions without removing the source conversation
+ok 90 - current diary listing excludes superseded text, and privacy deletion purges all versions without removing the source conversation
+  ---
+  duration_ms: 654.7983
+  type: 'test'
+  ...
+# Subtest: memory injection includes current shared diary prose as subjective, and ordinary recall cannot expose archived diary sources
+ok 91 - memory injection includes current shared diary prose as subjective, and ordinary recall cannot expose archived diary sources
+  ---
+  duration_ms: 549.172
+  type: 'test'
+  ...
+# Subtest: a fork keeps its original diary revision, unrelated branches have no diary authority, and deletion requires all affected branches
+ok 92 - a fork keeps its original diary revision, unrelated branches have no diary authority, and deletion requires all affected branches
+  ---
+  duration_ms: 826.6124
+  type: 'test'
+  ...
+# Subtest: correcting an interpretation evidence event invalidates its diary without deleting source history or unrelated diary entries
+ok 93 - correcting an interpretation evidence event invalidates its diary without deleting source history or unrelated diary entries
+  ---
+  duration_ms: 620.4339
+  type: 'test'
+  ...
+# Subtest: invalid current form clears old output without clipboard write or manual-copy fallback
+ok 94 - invalid current form clears old output without clipboard write or manual-copy fallback
+  ---
+  duration_ms: 0.5831
+  type: 'test'
+  ...
+# Subtest: clipboard rejection selects only the current validated command
+ok 95 - clipboard rejection selects only the current validated command
+  ---
+  duration_ms: 0.556
+  type: 'test'
+  ...
+# Subtest: form changed while clipboard was pending cannot fall back to stale command
+ok 96 - form changed while clipboard was pending cannot fall back to stale command
+  ---
+  duration_ms: 0.1756
+  type: 'test'
+  ...
+# Subtest: successful copy reports the validated command and does not select fallback text
+ok 97 - successful copy reports the validated command and does not select fallback text
+  ---
+  duration_ms: 0.1156
+  type: 'test'
+  ...
+# Subtest: R36 a gray-coat quote cannot support blue eyes in the same source
+ok 98 - R36 a gray-coat quote cannot support blue eyes in the same source
+  ---
+  duration_ms: 4.8344
+  type: 'test'
+  ...
+# Subtest: P6 annotated Chinese fixtures score support, attribution, POV and critical loss independently
+ok 99 - P6 annotated Chinese fixtures score support, attribution, POV and critical loss independently
+  ---
+  duration_ms: 1.6489
+  type: 'test'
+  ...
+# Subtest: public read/commit cannot explicitly invalidate a known secret event; no fence or data change
+ok 100 - public read/commit cannot explicitly invalidate a known secret event; no fence or data change
+  ---
+  duration_ms: 147.2847
+  type: 'test'
+  ...
+# Subtest: control still needs the target audience and current branch; unknown and source IDs cannot be smuggled into invalidatedIds
+ok 101 - control still needs the target audience and current branch; unknown and source IDs cannot be smuggled into invalidatedIds
+  ---
+  duration_ms: 179.1523
+  type: 'test'
+  ...
+# Subtest: authorized direct event invalidation preserves source evidence and an independent fixed child
+ok 102 - authorized direct event invalidation preserves source evidence and an independent fixed child
+  ---
+  duration_ms: 160.8599
+  type: 'test'
+  ...
+# Subtest: broad read visibility cannot retract a different audience source through dependency invalidation
+ok 103 - broad read visibility cannot retract a different audience source through dependency invalidation
+  ---
+  duration_ms: 137.2173
+  type: 'test'
+  ...
+# Subtest: raw tombstones require narrator control, source write audience and a real dependency closure
+ok 104 - raw tombstones require narrator control, source write audience and a real dependency closure
+  ---
+  duration_ms: 256.7644
+  type: 'test'
+  ...
+# Subtest: bare invalidation cannot bypass locked canon correction provenance, while explicit retcon with no replacement is valid
+ok 105 - bare invalidation cannot bypass locked canon correction provenance, while explicit retcon with no replacement is valid
+  ---
+  duration_ms: 143.9963
+  type: 'test'
+  ...
+# Subtest: read/commit and character control cannot invalidate through supersedes
+ok 106 - read/commit and character control cannot invalidate through supersedes
+  ---
+  duration_ms: 143.5337
+  type: 'test'
+  ...
+# Subtest: read/commit and character control cannot invalidate through correction
+ok 107 - read/commit and character control cannot invalidate through correction
+  ---
+  duration_ms: 151.3294
+  type: 'test'
+  ...
+# Subtest: read/commit and character control cannot invalidate through source_retraction
+ok 108 - read/commit and character control cannot invalidate through source_retraction
+  ---
+  duration_ms: 157.7646
+  type: 'test'
+  ...
+# OBSERVATION {"stage":"blob","failed":{"ok":false,"code":"persistence_failed","message":"REVIEW_EIO"},"deletion":{"ok":true,"value":{"deletionGeneration":1,"scope":{"kind":"world","profileId":"profile_03615dcfcd734b3bb0584fd7a06cbd5f","worldId":"review"},"scopeRevision":2,"visibilityRevision":0}},"remaining":["blobs\\\\approved_46cef0f96ec5439281faa5f79ec0716d\\\\blob_077c924fe8a5431c6340da56c0e205c7f740f03a2f31e25abf32326351b480e6.txt"],"profileRoot":"D:\\\\Codex\\\\2026-10-20\\\\https-github-com-kayou-31-dsh\\\\work\\\\rp-memory-m5\\\\work\\\\agent-memory-2026-10-22\\\\global-orphans\\\\global-blob-724c6c59-0928-4116-9304-3d743325e6f6"}
+# Subtest: privacy deletion erases failed publication at blob retry=false
+ok 109 - privacy deletion erases failed publication at blob retry=false
+  ---
+  duration_ms: 84.8925
+  type: 'test'
+  ...
+# OBSERVATION {"stage":"blob","failed":{"ok":false,"code":"persistence_failed","message":"REVIEW_EIO"},"deletion":{"ok":true,"value":{"deletionGeneration":1,"scope":{"kind":"world","profileId":"profile_ab98cdfd707049608530606048f737b8","worldId":"review"},"scopeRevision":3,"visibilityRevision":0}},"remaining":["blobs\\\\approved_65be98d66e4a42bba912ca1ebf5f03b1\\\\blob_077c924fe8a5431c6340da56c0e205c7f740f03a2f31e25abf32326351b480e6.txt"],"profileRoot":"D:\\\\Codex\\\\2026-10-20\\\\https-github-com-kayou-31-dsh\\\\work\\\\rp-memory-m5\\\\work\\\\agent-memory-2026-10-22\\\\global-orphans\\\\global-blob-559f89cb-1c48-4f54-86b7-f30f98c6dd5d"}
+# Subtest: privacy deletion erases failed publication at blob retry=true
+ok 110 - privacy deletion erases failed publication at blob retry=true
+  ---
+  duration_ms: 100.6632
+  type: 'test'
+  ...
+# OBSERVATION {"stage":"commit_before","failed":{"ok":false,"code":"persistence_failed","message":"REVIEW_EIO"},"deletion":{"ok":true,"value":{"deletionGeneration":1,"scope":{"kind":"world","profileId":"profile_5097482d780e4875ab120cf05d63be8c","worldId":"review"},"scopeRevision":2,"visibilityRevision":0}},"remaining":["blobs\\\\approved_e2dc7366d01947e896daf433ed9066e8\\\\blob_077c924fe8a5431c6340da56c0e205c7f740f03a2f31e25abf32326351b480e6.txt"],"profileRoot":"D:\\\\Codex\\\\2026-10-20\\\\https-github-com-kayou-31-dsh\\\\work\\\\rp-memory-m5\\\\work\\\\agent-memory-2026-10-22\\\\global-orphans\\\\global-commit_before-d73aa345-8025-4b8f-bd64-586623c402af"}
+# Subtest: privacy deletion erases failed publication at commit_before retry=false
+ok 111 - privacy deletion erases failed publication at commit_before retry=false
+  ---
+  duration_ms: 71.0144
+  type: 'test'
+  ...
+# OBSERVATION {"stage":"commit_before","failed":{"ok":false,"code":"persistence_failed","message":"REVIEW_EIO"},"deletion":{"ok":true,"value":{"deletionGeneration":1,"scope":{"kind":"world","profileId":"profile_710c9ca2acc941f68556f95766b51005","worldId":"review"},"scopeRevision":3,"visibilityRevision":0}},"remaining":["blobs\\\\approved_26db9da8c50b428c800b6990717f8f66\\\\blob_077c924fe8a5431c6340da56c0e205c7f740f03a2f31e25abf32326351b480e6.txt"],"profileRoot":"D:\\\\Codex\\\\2026-10-20\\\\https-github-com-kayou-31-dsh\\\\work\\\\rp-memory-m5\\\\work\\\\agent-memory-2026-10-22\\\\global-orphans\\\\global-commit_before-72c7ef94-13f4-4825-a158-9ef01c79cebd"}
+# Subtest: privacy deletion erases failed publication at commit_before retry=true
+ok 112 - privacy deletion erases failed publication at commit_before retry=true
+  ---
+  duration_ms: 90.3697
+  type: 'test'
+  ...
+# Subtest: R22 R23 R24 R25 complete UTF-8 envelope limits reject before blobs and preserve cold-readable state
+ok 113 - R22 R23 R24 R25 complete UTF-8 envelope limits reject before blobs and preserve cold-readable state
+  ---
+  duration_ms: 718.8237
+  type: 'test'
+  ...
+# Subtest: R26 R27 R28 consecutive seal EIO cannot publish a second unsealed commit; same input recovers
+ok 114 - R26 R27 R28 consecutive seal EIO cannot publish a second unsealed commit; same input recovers
+  ---
+  duration_ms: 80.0646
+  type: 'test'
+  ...
+# Subtest: R22 R24 hard control limit preserves the old envelope and permits an existing idempotent retry
+ok 115 - R22 R24 hard control limit preserves the old envelope and permits an existing idempotent retry
+  ---
+  duration_ms: 2749.4166
+  type: 'test'
+  ...
+# Subtest: R28 global I/O errors distinguish unpublished blobs from a commit rename already completed
+ok 116 - R28 global I/O errors distinguish unpublished blobs from a commit rename already completed
+  ---
+  duration_ms: 132.4225
+  type: 'test'
+  ...
+# Subtest: R29 wrong sealed hash and two unsealed commits remain corrupt rather than repaired
+ok 117 - R29 wrong sealed hash and two unsealed commits remain corrupt rather than repaired
+  ---
+  duration_ms: 54.0014
+  type: 'test'
+  ...
+# Subtest: segmented global upgrade backs up verified v1, reuses pages, survives cold read and rejects corruption/downgrade
+ok 118 - segmented global upgrade backs up verified v1, reuses pages, survives cold read and rejects corruption/downgrade
+  ---
+  duration_ms: 126.7098
+  type: 'test'
+  ...
+# SEGMENT_SAMPLE {"ms":1239.4234000000001,"maxRSSKiB":268908,"pages":17,"legacyBytes":3345010}
+# Subtest: segmented capacity allows cumulative metadata beyond legacy publish limit; cold controls preserve history
+ok 119 - segmented capacity allows cumulative metadata beyond legacy publish limit; cold controls preserve history
+  ---
+  duration_ms: 1423.1956
+  type: 'test'
+  ...
+# Subtest: backup failure cannot activate segments; consecutive seal failures recover idempotently after cold restart
+ok 120 - backup failure cannot activate segments; consecutive seal failures recover idempotently after cold restart
+  ---
+  duration_ms: 101.4932
+  type: 'test'
+  ...
+# Subtest: a source disappearing during backup cannot produce a completed migration
+ok 121 - a source disappearing during backup cannot produce a completed migration
+  ---
+  duration_ms: 39.7549
+  type: 'test'
+  ...
+# Subtest: upgrade refuses missing or altered approved bodies instead of certifying an unusable backup
+ok 122 - upgrade refuses missing or altered approved bodies instead of certifying an unusable backup
+  ---
+  duration_ms: 70.5506
+  type: 'test'
+  ...
+# Subtest: segmented full logical envelope reserves control capacity and hard cap preserves cold reads and idempotent retry
+ok 123 - segmented full logical envelope reserves control capacity and hard cap preserves cold reads and idempotent retry
+  ---
+  duration_ms: 22410.1392
+  type: 'test'
+  ...
+# Subtest: segmented 4097th short publication is writable and cold readable without widening legacy input arrays
+ok 124 - segmented 4097th short publication is writable and cold readable without widening legacy input arrays
+  ---
+  duration_ms: 2186.6703
+  type: 'test'
+  ...
+# Subtest: independent goals and promises progress explicitly, survive restart, and enter the packet
+ok 125 - independent goals and promises progress explicitly, survive restart, and enter the packet
+  ---
+  duration_ms: 692.9791
+  type: 'test'
+  ...
+# Subtest: goal controls reject invented completion and stale progress, with no autonomous changes
+ok 126 - goal controls reject invented completion and stale progress, with no autonomous changes
+  ---
+  duration_ms: 462.075
+  type: 'test'
+  ...
+# Subtest: sourced relationship and identity grow without erasing their previous experiences
+ok 127 - sourced relationship and identity grow without erasing their previous experiences
+  ---
+  duration_ms: 592.0033
+  type: 'test'
+  ...
+# Subtest: growth rejects stale predecessors, missing causes and non-current branch evidence
+ok 128 - growth rejects stale predecessors, missing causes and non-current branch evidence
+  ---
+  duration_ms: 426.9016
+  type: 'test'
+  ...
+# Subtest: retcon removes dependent growth but keeps initial history and a fork fixed at its prefix
+ok 129 - retcon removes dependent growth but keeps initial history and a fork fixed at its prefix
+  ---
+  duration_ms: 425.0694
+  type: 'test'
+  ...
+# Subtest: privacy deletion removes the causal growth closure; explicit null stays unknown
+ok 130 - privacy deletion removes the causal growth closure; explicit null stays unknown
+  ---
+  duration_ms: 224.2571
+  type: 'test'
+  ...
+# Subtest: growth stores only direct provenance and ancestor-only deletion still erases descendants
+ok 131 - growth stores only direct provenance and ancestor-only deletion still erases descendants
+  ---
+  duration_ms: 606.9041
+  type: 'test'
+  ...
+# Subtest: ordinary v1 JSON stays ordinary without an explicit growth ledger marker: agent-memory/v0
+ok 132 - ordinary v1 JSON stays ordinary without an explicit growth ledger marker: agent-memory/v0
+  ---
+  duration_ms: 100.6784
+  type: 'test'
+  ...
+# Subtest: ordinary v1 JSON stays ordinary without an explicit growth ledger marker: agent-memory/v1
+ok 133 - ordinary v1 JSON stays ordinary without an explicit growth ledger marker: agent-memory/v1
+  ---
+  duration_ms: 100.1059
+  type: 'test'
+  ...
+# Subtest: R01 R03 failed observation save cannot skip blocking any session on close
+ok 134 - R01 R03 failed observation save cannot skip blocking any session on close
+  ---
+  duration_ms: 162.7573
+  type: 'test'
+  ...
+# Subtest: R05 mode RP alone and copied options cannot enter the real SDK terminal
+ok 135 - R05 mode RP alone and copied options cannot enter the real SDK terminal
+  ---
+  duration_ms: 34.7577
+  type: 'test'
+  ...
+# Subtest: R04 R05 opaque owners and exact options remain isolated across retirement and stamp changes
+ok 136 - R04 R05 opaque owners and exact options remain isolated across retirement and stamp changes
+  ---
+  duration_ms: 36.5753
+  type: 'test'
+  ...
+# Subtest: R02 real SDK preserves admission identity; closing revokes before a paused stream ends
+ok 137 - R02 real SDK preserves admission identity; closing revokes before a paused stream ends
+  ---
+  duration_ms: 177.775
+  type: 'test'
+  ...
+# Subtest: R04 duplicate installation is rejected before acquiring sessions and preserves first owner
+ok 138 - R04 duplicate installation is rejected before acquiring sessions and preserves first owner
+  ---
+  duration_ms: 67.3533
+  type: 'test'
+  ...
+# Subtest: R04 failed installation releases its reservation so corrected configuration can be installed
+ok 139 - R04 failed installation releases its reservation so corrected configuration can be installed
+  ---
+  duration_ms: 61.0235
+  type: 'test'
+  ...
+# Subtest: R06 R07 failed queue permits diagnostics and clean root on the same verified branch
+ok 140 - R06 R07 failed queue permits diagnostics and clean root on the same verified branch
+  ---
+  duration_ms: 104.9591
+  type: 'test'
+  ...
+# Subtest: R08 failed clean journal publication leaves old root blocked and no new live owner
+ok 141 - R08 failed clean journal publication leaves old root blocked and no new live owner
+  ---
+  duration_ms: 82.0439
+  type: 'test'
+  ...
+# Subtest: R09 dispatch-marked input is diagnosed as ambiguous and never automatically resent in a clean root
+ok 142 - R09 dispatch-marked input is diagnosed as ambiguous and never automatically resent in a clean root
+  ---
+  duration_ms: 151.0304
+  type: 'test'
+  ...
+# Subtest: R19 R20 proofs bind Result identity and authority; summary/state refs survive append but fail retcon
+ok 143 - R19 R20 proofs bind Result identity and authority; summary/state refs survive append but fail retcon
+  ---
+  duration_ms: 625.2277
+  type: 'test'
+  ...
+# Subtest: R18 R20 retrieval receipt persists actual records and v2 provenance through real SDK rendering
+ok 144 - R18 R20 retrieval receipt persists actual records and v2 provenance through real SDK rendering
+  ---
+  duration_ms: 178.6585
+  type: 'test'
+  ...
+# Subtest: R18 retcon between query and receipt cannot certify the earlier event
+ok 145 - R18 retcon between query and receipt cannot certify the earlier event
+  ---
+  duration_ms: 288.0874
+  type: 'test'
+  ...
+# Subtest: R37 oversized v2 receipt is refused before replacing the readable journal; diagnosis and clean root survive
+ok 146 - R37 oversized v2 receipt is refused before replacing the readable journal; diagnosis and clean root survive
+  ---
+  duration_ms: 1138.8237
+  type: 'test'
+  ...
+# Subtest: R21 v1 with no tools upgrades with exact byte backup; tool history stays recovery-only
+not ok 147 - R21 v1 with no tools upgrades with exact byte backup; tool history stays recovery-only
+  ---
+  duration_ms: 313.5456
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-host-receipts.test.mjs:82:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + undefined
+    - 'legacy_tools_recovery_only'
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'legacy_tools_recovery_only'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-host-receipts.test.mjs:97:63)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: R09 R21 a corrupt journal supplies no trusted branch; explicit branch still needs independent authority
+ok 148 - R09 R21 a corrupt journal supplies no trusted branch; explicit branch still needs independent authority
+  ---
+  duration_ms: 195.6742
+  type: 'test'
+  ...
+# Subtest: R18 changed rendered text cannot acquire a receipt for an earlier result
+ok 149 - R18 changed rendered text cannot acquire a receipt for an earlier result
+  ---
+  duration_ms: 156.3618
+  type: 'test'
+  ...
+# Subtest: R19 disposal while evidence validation awaits cannot publish the retired owner receipt
+ok 150 - R19 disposal while evidence validation awaits cannot publish the retired owner receipt
+  ---
+  duration_ms: 152.3175
+  type: 'test'
+  ...
+# Subtest: R18 receipt validation cannot race a queue journal rename and lose a successful receipt
+ok 151 - R18 receipt validation cannot race a queue journal rename and lose a successful receipt
+  ---
+  duration_ms: 170.3238
+  type: 'test'
+  ...
+# Subtest: previous published journal reader rejects M5 while the exact pre-enable backup remains readable
+ok 152 - previous published journal reader rejects M5 while the exact pre-enable backup remains readable
+  ---
+  duration_ms: 229.683
+  type: 'test'
+  ...
+# Subtest: native follow-up carries one latest memory packet while all original snapshots and conversation stay auditable
+ok 153 - native follow-up carries one latest memory packet while all original snapshots and conversation stay auditable
+  ---
+  duration_ms: 1298.3413
+  type: 'test'
+  ...
+# Subtest: preview discloses first-load then follow-up optional allowance without consuming a model call
+ok 154 - preview discloses first-load then follow-up optional allowance without consuming a model call
+  ---
+  duration_ms: 443.7756
+  type: 'test'
+  ...
+# Subtest: retirement preserves foreign context sections byte-for-byte and does not hide a stale original proof
+ok 155 - retirement preserves foreign context sections byte-for-byte and does not hide a stale original proof
+  ---
+  duration_ms: 1217.1417
+  type: 'test'
+  ...
+# Subtest: retired context survives a genuine cold restore and forged replacement references are rejected
+ok 156 - retired context survives a genuine cold restore and forged replacement references are rejected
+  ---
+  duration_ms: 635.7872
+  type: 'test'
+  ...
+# Subtest: persistence failure after committing a retirement blocks the next provider request without deleting the original log
+ok 157 - persistence failure after committing a retirement blocks the next provider request without deleting the original log
+  ---
+  duration_ms: 421.9459
+  type: 'test'
+  ...
+# Subtest: reused same-packet tool context cannot certify a request with the current full packet removed
+ok 158 - reused same-packet tool context cannot certify a request with the current full packet removed
+  ---
+  duration_ms: 376.5837
+  type: 'test'
+  ...
+# Subtest: next-request preview includes the pending retired marker in actual memory accounting
+ok 159 - next-request preview includes the pending retired marker in actual memory accounting
+  ---
+  duration_ms: 313.8181
+  type: 'test'
+  ...
+# Subtest: a different pre-step middleware cannot drop queued input that was omitted from the memory duplicate
+ok 160 - a different pre-step middleware cannot drop queued input that was omitted from the memory duplicate
+  ---
+  duration_ms: 259.7729
+  type: 'test'
+  ...
+# Subtest: native M5 preview and real request share selections without a model call for preview; history is disclosed and clean continuation retains config
+ok 161 - native M5 preview and real request share selections without a model call for preview; history is disclosed and clean continuation retains config
+  ---
+  duration_ms: 558.0222
+  type: 'test'
+  ...
+# Subtest: native M5 binding resumes; stripped journal configuration cannot downgrade a marked root
+ok 162 - native M5 binding resumes; stripped journal configuration cannot downgrade a marked root
+  ---
+  duration_ms: 343.2681
+  type: 'test'
+  ...
+# Subtest: native M5 stale historical proof is visible in diagnostics and never reaches terminal
+ok 163 - native M5 stale historical proof is visible in diagnostics and never reaches terminal
+  ---
+  duration_ms: 529.9212
+  type: 'test'
+  ...
+# Subtest: M5 actual native tool loop retains original binding through tool-call frames and cold resume
+ok 164 - M5 actual native tool loop retains original binding through tool-call frames and cold resume
+  ---
+  duration_ms: 663.6503
+  type: 'test'
+  ...
+# Subtest: invalid injection JSON is a parameter error and cannot revoke a healthy session
+ok 165 - invalid injection JSON is a parameter error and cannot revoke a healthy session
+  ---
+  duration_ms: 274.3459
+  type: 'test'
+  ...
+# Subtest: changed historical trace cannot be authenticated by unchanged native packet text
+ok 166 - changed historical trace cannot be authenticated by unchanged native packet text
+  ---
+  duration_ms: 305.2327
+  type: 'test'
+  ...
+# Subtest: injection preview rejects a real concurrent retcon after packet assembly instead of returning old text
+ok 167 - injection preview rejects a real concurrent retcon after packet assembly instead of returning old text
+  ---
+  duration_ms: 255.064
+  type: 'test'
+  ...
+# Subtest: corrupt pre-M5 backup refuses re-enable without overwriting evidence or blocking legacy diagnosis
+ok 168 - corrupt pre-M5 backup refuses re-enable without overwriting evidence or blocking legacy diagnosis
+  ---
+  duration_ms: 172.806
+  type: 'test'
+  ...
+# Subtest: failed injection revocation marker-failure stays blocked across actual process termination
+ok 169 - failed injection revocation marker-failure stays blocked across actual process termination
+  ---
+  duration_ms: 1075.017
+  type: 'test'
+  ...
+# Subtest: failed injection revocation failure-2 stays blocked across actual process termination
+ok 170 - failed injection revocation failure-2 stays blocked across actual process termination
+  ---
+  duration_ms: 1010.2118
+  type: 'test'
+  ...
+# Subtest: failed injection revocation failure-3 stays blocked across actual process termination
+ok 171 - failed injection revocation failure-3 stays blocked across actual process termination
+  ---
+  duration_ms: 990.3462
+  type: 'test'
+  ...
+# Subtest: failed injection revocation failure-4 stays blocked across actual process termination
+ok 172 - failed injection revocation failure-4 stays blocked across actual process termination
+  ---
+  duration_ms: 990.666
+  type: 'test'
+  ...
+# Subtest: actual process interruption enable after durable transition 1
+ok 173 - actual process interruption enable after durable transition 1
+  ---
+  duration_ms: 989.747
+  type: 'test'
+  ...
+# Subtest: actual process interruption enable after durable transition 2
+ok 174 - actual process interruption enable after durable transition 2
+  ---
+  duration_ms: 976.8255
+  type: 'test'
+  ...
+# Subtest: actual process interruption enable after durable transition 3
+ok 175 - actual process interruption enable after durable transition 3
+  ---
+  duration_ms: 1006.2805
+  type: 'test'
+  ...
+# Subtest: actual process interruption enable after durable transition 4
+ok 176 - actual process interruption enable after durable transition 4
+  ---
+  duration_ms: 921.6653
+  type: 'test'
+  ...
+# Subtest: actual process interruption disable after durable transition 1
+ok 177 - actual process interruption disable after durable transition 1
+  ---
+  duration_ms: 984.9083
+  type: 'test'
+  ...
+# Subtest: actual process interruption disable after durable transition 2
+ok 178 - actual process interruption disable after durable transition 2
+  ---
+  duration_ms: 972.1776
+  type: 'test'
+  ...
+# Subtest: actual process interruption disable after durable transition 3
+ok 179 - actual process interruption disable after durable transition 3
+  ---
+  duration_ms: 985.1917
+  type: 'test'
+  ...
+# Subtest: actual process interruption disable after durable transition 4
+ok 180 - actual process interruption disable after durable transition 4
+  ---
+  duration_ms: 957.2773
+  type: 'test'
+  ...
+# Subtest: layered packet excludes unrelated classified fields without leaking full person or projection; core and current feeling survive
+ok 181 - layered packet excludes unrelated classified fields without leaking full person or projection; core and current feeling survive
+  ---
+  duration_ms: 159.2697
+  type: 'test'
+  ...
+# Subtest: recollection selects actual supported event at evidence depth and keeps explicit direction and source refs
+ok 182 - recollection selects actual supported event at evidence depth and keeps explicit direction and source refs
+  ---
+  duration_ms: 203.7159
+  type: 'test'
+  ...
+# Subtest: conditions combine mode scene terms and alias; explicit exclusions beat pins and cannot erase mandatory identity
+ok 183 - conditions combine mode scene terms and alias; explicit exclusions beat pins and cannot erase mandatory identity
+  ---
+  duration_ms: 223.9664
+  type: 'test'
+  ...
+# Subtest: optional budget drops with reasons; prepared proofs reject state changes and forged config; no person fails closed
+ok 184 - optional budget drops with reasons; prepared proofs reject state changes and forged config; no person fails closed
+  ---
+  duration_ms: 283.5066
+  type: 'test'
+  ...
+# Subtest: Chinese keyword selection is independent of odd or even phrase offset
+ok 185 - Chinese keyword selection is independent of odd or even phrase offset
+  ---
+  duration_ms: 140.7211
+  type: 'test'
+  ...
+# Subtest: situational feelings are labeled as subjective and expired feelings cannot be revived by pins
+ok 186 - situational feelings are labeled as subjective and expired feelings cannot be revived by pins
+  ---
+  duration_ms: 140.4018
+  type: 'test'
+  ...
+# Subtest: lexical truncation is disclosed rather than claimed as a complete relevance search
+ok 187 - lexical truncation is disclosed rather than claimed as a complete relevance search
+  ---
+  duration_ms: 125.9657
+  type: 'test'
+  ...
+# Subtest: life evaluator requires the annotated fact span, original revision and actual returned content
+ok 188 - life evaluator requires the annotated fact span, original revision and actual returned content
+  ---
+  duration_ms: 1.1408
+  type: 'test'
+  ...
+# Subtest: life evaluator reports omissions, duplicate and unknown claims without inflated scores
+ok 189 - life evaluator reports omissions, duplicate and unknown claims without inflated scores
+  ---
+  duration_ms: 0.2542
+  type: 'test'
+  ...
+# Subtest: M4 native story keeps original identity through twelve clean roots and cold resume; revoked root never dispatches
+ok 190 - M4 native story keeps original identity through twelve clean roots and cold resume; revoked root never dispatches
+  ---
+  duration_ms: 5511.6022
+  type: 'test'
+  ...
+# Subtest: Luna pilot citation must support the particular answer, including direction
+ok 191 - Luna pilot citation must support the particular answer, including direction
+  ---
+  duration_ms: 0.647
+  type: 'test'
+  ...
+# Subtest: Luna pilot supports exact original evidence and refuses invented record IDs
+ok 192 - Luna pilot supports exact original evidence and refuses invented record IDs
+  ---
+  duration_ms: 0.3209
+  type: 'test'
+  ...
+# Subtest: large document upload is ephemeral, preserves unknown sections, and confirms/reopens exactly
+ok 193 - large document upload is ephemeral, preserves unknown sections, and confirms/reopens exactly
+  ---
+  duration_ms: 890.8792
+  type: 'test'
+  ...
+# Subtest: uploads reject bad encoding/type/size, stale or cross-controller handles and expire
+ok 194 - uploads reject bad encoding/type/size, stale or cross-controller handles and expire
+  ---
+  duration_ms: 354.2782
+  type: 'test'
+  ...
+# Subtest: influence preference defaults on, changes only on explicit save, persists and never weakens authorization
+ok 195 - influence preference defaults on, changes only on explicit save, persists and never weakens authorization
+  ---
+  duration_ms: 485.1658
+  type: 'test'
+  ...
+# Subtest: human diary management keeps authors/revisions and produces impacts for policy, edits and deletion
+ok 196 - human diary management keeps authors/revisions and produces impacts for policy, edits and deletion
+  ---
+  duration_ms: 1050.7577
+  type: 'test'
+  ...
+# Subtest: native workbench previews and commits actual budget/binding settings without nested locks or provider calls
+ok 197 - native workbench previews and commits actual budget/binding settings without nested locks or provider calls
+  ---
+  duration_ms: 817.77
+  type: 'test'
+  ...
+# Subtest: native workbench refuses a stale budget review after person edits and preserves the old binding
+ok 198 - native workbench refuses a stale budget review after person edits and preserves the old binding
+  ---
+  duration_ms: 388.8223
+  type: 'test'
+  ...
+# Subtest: native manual manager creates and edits real person, explicit proposal/adoption survives and disposal revokes HTTP
+ok 199 - native manual manager creates and edits real person, explicit proposal/adoption survives and disposal revokes HTTP
+  ---
+  duration_ms: 1307.4585
+  type: 'test'
+  ...
+# Subtest: closing a manager while its listener opens prevents a late live endpoint
+ok 200 - closing a manager while its listener opens prevents a late live endpoint
+  ---
+  duration_ms: 69.0622
+  type: 'test'
+  ...
+# Subtest: workbench injection preview uses bound person and exact planner without mutations or model calls
+ok 201 - workbench injection preview uses bound person and exact planner without mutations or model calls
+  ---
+  duration_ms: 240.9919
+  type: 'test'
+  ...
+# Subtest: workbench serves only pinned local font bytes and does not expose other assets
+ok 202 - workbench serves only pinned local font bytes and does not expose other assets
+  ---
+  duration_ms: 94.505
+  type: 'test'
+  ...
+# Subtest: revoking endpoint while a snapshot response waits cannot release old person data
+ok 203 - revoking endpoint while a snapshot response waits cannot release old person data
+  ---
+  duration_ms: 73.2785
+  type: 'test'
+  ...
+# Subtest: revoking owner while a snapshot response waits cannot release old person data
+ok 204 - revoking owner while a snapshot response waits cannot release old person data
+  ---
+  duration_ms: 64.888
+  type: 'test'
+  ...
+# Subtest: manual management server binds loopback, rejects foreign callers and never exposes its token in HTML
+ok 205 - manual management server binds loopback, rejects foreign callers and never exposes its token in HTML
+  ---
+  duration_ms: 76.9551
+  type: 'test'
+  ...
+# Subtest: authenticated UTF8 upload has its own bounded route; cancel never publishes and normal actions retain the smaller limit
+ok 206 - authenticated UTF8 upload has its own bounded route; cancel never publishes and normal actions retain the smaller limit
+  ---
+  duration_ms: 77.0993
+  type: 'test'
+  ...
+# Subtest: management requires original review, uses explicit writes, and shares person growth history
+ok 207 - management requires original review, uses explicit writes, and shares person growth history
+  ---
+  duration_ms: 1137.636
+  type: 'test'
+  ...
+# Subtest: management refuses stale snapshots, request mutation, forged actions and revoked capabilities
+ok 208 - management refuses stale snapshots, request mutation, forged actions and revoked capabilities
+  ---
+  duration_ms: 582.2794
+  type: 'test'
+  ...
+# Subtest: management snapshots cannot be rewritten by their caller
+ok 209 - management snapshots cannot be rewritten by their caller
+  ---
+  duration_ms: 260.1014
+  type: 'test'
+  ...
+# Subtest: revocation during commit preparation prevents publication
+ok 210 - revocation during commit preparation prevents publication
+  ---
+  duration_ms: 278.5208
+  type: 'test'
+  ...
+# Subtest: a lost receipt can recover its original management review key
+ok 211 - a lost receipt can recover its original management review key
+  ---
+  duration_ms: 335.3935
+  type: 'test'
+  ...
+# Subtest: a second writer cannot rebase an old management proposal during control observation
+ok 212 - a second writer cannot rebase an old management proposal during control observation
+  ---
+  duration_ms: 427.3437
+  type: 'test'
+  ...
+# Subtest: native M3 modes and constraints reach terminal; switching history fails and module disable blocks old requests
+ok 213 - native M3 modes and constraints reach terminal; switching history fails and module disable blocks old requests
+  ---
+  duration_ms: 412.0314
+  type: 'test'
+  ...
+# Subtest: native M3 journal restores exact binding and missing proof enters recovery-only
+ok 214 - native M3 journal restores exact binding and missing proof enters recovery-only
+  ---
+  duration_ms: 220.4477
+  type: 'test'
+  ...
+# Subtest: failed module revocation journal cannot revive enabled capabilities from the old journal after cold restart
+ok 215 - failed module revocation journal cannot revive enabled capabilities from the old journal after cold restart
+  ---
+  duration_ms: 202.5977
+  type: 'test'
+  ...
+# Subtest: module disable revokes new requests while an actual SDK stream is paused
+ok 216 - module disable revokes new requests while an actual SDK stream is paused
+  ---
+  duration_ms: 156.646
+  type: 'test'
+  ...
+# Subtest: cold M3 resume after multiple empty-root configuration changes can send with original proofs
+ok 217 - cold M3 resume after multiple empty-root configuration changes can send with original proofs
+  ---
+  duration_ms: 294.7979
+  type: 'test'
+  ...
+# Subtest: overlapping runtime configuration commands reject the second mutation before overwriting markers
+ok 218 - overlapping runtime configuration commands reject the second mutation before overwriting markers
+  ---
+  duration_ms: 75.3983
+  type: 'test'
+  ...
+# Subtest: failed revocation marker falls back to a blocked journal across cold restart
+ok 219 - failed revocation marker falls back to a blocked journal across cold restart
+  ---
+  duration_ms: 98.6162
+  type: 'test'
+  ...
+# Subtest: module registry and dual-layer constraints reject unknown grants; core survives revoke
+ok 220 - module registry and dual-layer constraints reject unknown grants; core survives revoke
+  ---
+  duration_ms: 158.7315
+  type: 'test'
+  ...
+# Subtest: module evidence binds actual result, module version, fence and identity; mutation cannot be certified
+ok 221 - module evidence binds actual result, module version, fence and identity; mutation cannot be certified
+  ---
+  duration_ms: 234.9677
+  type: 'test'
+  ...
+# Subtest: module invocation revokes while queued
+ok 222 - module invocation revokes while queued
+  ---
+  duration_ms: 99.2941
+  type: 'test'
+  ...
+# Subtest: module context is an exact capability and revocation invalidates prepared packets
+ok 223 - module context is an exact capability and revocation invalidates prepared packets
+  ---
+  duration_ms: 44.8159
+  type: 'test'
+  ...
+# Subtest: in-flight module verification and packet admission recheck capabilities and actual contents
+ok 224 - in-flight module verification and packet admission recheck capabilities and actual contents
+  ---
+  duration_ms: 138.4166
+  type: 'test'
+  ...
+# Subtest: packet preparation captures the original runtime capability before awaiting the read view
+ok 225 - packet preparation captures the original runtime capability before awaiting the read view
+  ---
+  duration_ms: 41.5166
+  type: 'test'
+  ...
+# Subtest: module rejects data invalidated by a second writer while assembling a person view
+ok 226 - module rejects data invalidated by a second writer while assembling a person view
+  ---
+  duration_ms: 187.1366
+  type: 'test'
+  ...
+# Subtest: growth module only creates review candidates; protected fields and output budgets reject before publication
+ok 227 - growth module only creates review candidates; protected fields and output budgets reject before publication
+  ---
+  duration_ms: 330.8318
+  type: 'test'
+  ...
+# OBSERVATION {"mixed":false,"calls":2,"ready":true,"status":{"requestCost":{"limits":{"maxRequestsPerInput":16,"maxRetriesPerStep":2},"inputId":"rp_input_d8d057b3a03e4ca4a71d37a732e14536","requests":2,"stepKey":"1:2","stepRequests":1,"unit":"durably-reserved-adapter-admissions"},"bindingHealth":"healthy","requestAdmission":{"state":"admitted","stage":"send","at":"2026-10-26T14:15:05.457Z"},"recovery":{"action":"none","detail":"绑定健康不等于下一次请求已获准；每次发送仍会重新校验。"},"enabled":true,"lifecycle":"open","contextCompression":false,"strictPov":false,"nativeVersions":{"cordis":"4.0.5","dsh-agent":"0.2.1-rc.2","dsh-llm":"0.2.1-rc.2","dsh-session":"0.2.1-rc.2","dsh-system-prompt":"0.2.1-rc.2","dsh-tools":"0.2.1-rc.2","schemastery":"3.18.5"},"memoryOptimization":{"available":"standalone","packet":"standalone"},"policy":{"mode":"rp","epoch":1,"modeEpoch":1},"branchId":"branch_030f822d06da4021af219a0d9051ccaa","injection":null,"memoryBudget":null,"memoryUsage":null,"purpose":{"mode":"rp","enabledModules":[],"constraints":{"maxReadRecords":16,"maxOutputBytes":16384,"deniedCapabilities":[],"protectedFieldIds":[],"guidance":[]}},"blocked":false,"candidateIds":["source_9350ce02d9914678b8904daba6b9798f"],"pendingInputIds":[],"ambiguousInputIds":["source_c03ec66130364bd097a3dd097167f805"],"snapshots":1},"messages":[{"role":"user","types":["text"]},{"role":"user","types":["text"]},{"role":"assistant","types":["tool-call"]},{"role":"tool","types":["text"]},{"role":"assistant","types":["text"]}]}
+# Subtest: native tool cycle tool
+ok 228 - native tool cycle tool
+  ---
+  duration_ms: 281.1654
+  type: 'test'
+  ...
+# OBSERVATION {"mixed":true,"calls":2,"ready":true,"status":{"requestCost":{"limits":{"maxRequestsPerInput":16,"maxRetriesPerStep":2},"inputId":"rp_input_5945c61dc6e74b1a9ac09c83f5dc1faa","requests":2,"stepKey":"1:2","stepRequests":1,"unit":"durably-reserved-adapter-admissions"},"bindingHealth":"healthy","requestAdmission":{"state":"admitted","stage":"send","at":"2026-10-26T14:15:05.674Z"},"recovery":{"action":"none","detail":"绑定健康不等于下一次请求已获准；每次发送仍会重新校验。"},"enabled":true,"lifecycle":"open","contextCompression":false,"strictPov":false,"nativeVersions":{"cordis":"4.0.5","dsh-agent":"0.2.1-rc.2","dsh-llm":"0.2.1-rc.2","dsh-session":"0.2.1-rc.2","dsh-system-prompt":"0.2.1-rc.2","dsh-tools":"0.2.1-rc.2","schemastery":"3.18.5"},"memoryOptimization":{"available":"standalone","packet":"standalone"},"policy":{"mode":"rp","epoch":1,"modeEpoch":1},"branchId":"branch_f2dc6a7aaafe48308357eb56027ce3f2","injection":null,"memoryBudget":null,"memoryUsage":null,"purpose":{"mode":"rp","enabledModules":[],"constraints":{"maxReadRecords":16,"maxOutputBytes":16384,"deniedCapabilities":[],"protectedFieldIds":[],"guidance":[]}},"blocked":false,"candidateIds":["source_327145c335db4746bfa937d6b5419cf9"],"pendingInputIds":[],"ambiguousInputIds":["source_b80704ae47104587b4b6c3eac862de04"],"snapshots":1},"messages":[{"role":"user","types":["text"]},{"role":"user","types":["text"]},{"role":"assistant","types":["text","tool-call"]},{"role":"tool","types":["text"]},{"role":"assistant","types":["text"]}]}
+# Subtest: native tool cycle mixed
+ok 229 - native tool cycle mixed
+  ---
+  duration_ms: 210.2888
+  type: 'test'
+  ...
+# OBSERVATION {"mixed":true,"calls":1,"ready":false,"status":{"requestCost":{"limits":{"maxRequestsPerInput":16,"maxRetriesPerStep":2},"inputId":"rp_input_fcd7c7b4526644689166346e7aaee7d9","requests":1,"stepKey":"1:1","stepRequests":1,"unit":"durably-reserved-adapter-admissions"},"bindingHealth":"blocked","requestAdmission":{"state":"rejected","stage":"assembly","at":"2026-10-26T14:15:05.838Z","code":"ownership_lost","message":"RP session is unavailable"},"recovery":{"action":"continue-clean","detail":"先核对持久化记录和 ambiguous 输入，再干净续接。同宿主销毁重建可能改变 modeEpoch；历史认证不会放宽。"},"enabled":true,"lifecycle":"open","contextCompression":false,"strictPov":false,"nativeVersions":{"cordis":"4.0.5","dsh-agent":"0.2.1-rc.2","dsh-llm":"0.2.1-rc.2","dsh-session":"0.2.1-rc.2","dsh-system-prompt":"0.2.1-rc.2","dsh-tools":"0.2.1-rc.2","schemastery":"3.18.5"},"memoryOptimization":{"available":"standalone","packet":"standalone"},"policy":{"mode":"rp","epoch":1,"modeEpoch":1},"branchId":"branch_f17898163b7d4acb989c3068c838eddb","injection":null,"memoryBudget":null,"memoryUsage":null,"purpose":{"mode":"rp","enabledModules":[],"constraints":{"maxReadRecords":16,"maxOutputBytes":16384,"deniedCapabilities":[],"protectedFieldIds":[],"guidance":[]}},"blocked":true,"candidateIds":[],"pendingInputIds":[],"ambiguousInputIds":["source_820ea49d1ff042628dc70775a22e9e61"],"snapshots":1},"messages":[{"role":"user","types":["text"]},{"role":"user","types":["text"]},{"role":"assistant","types":["text","tool-call"]},{"role":"tool","types":["text"]}]}
+# Subtest: native tool cycle unknown
+ok 230 - native tool cycle unknown
+  ---
+  duration_ms: 146.0955
+  type: 'test'
+  ...
+# OBSERVATION {"mixed":true,"calls":1,"ready":false,"status":{"requestCost":{"limits":{"maxRequestsPerInput":16,"maxRetriesPerStep":2},"inputId":"rp_input_77742e8900cf480aba3f8357392169f9","requests":1,"stepKey":"1:1","stepRequests":1,"unit":"durably-reserved-adapter-admissions"},"bindingHealth":"blocked","requestAdmission":{"state":"rejected","stage":"assembly","at":"2026-10-26T14:15:05.983Z","code":"ownership_lost","message":"RP session is unavailable"},"recovery":{"action":"continue-clean","detail":"先核对持久化记录和 ambiguous 输入，再干净续接。同宿主销毁重建可能改变 modeEpoch；历史认证不会放宽。"},"enabled":true,"lifecycle":"open","contextCompression":false,"strictPov":false,"nativeVersions":{"cordis":"4.0.5","dsh-agent":"0.2.1-rc.2","dsh-llm":"0.2.1-rc.2","dsh-session":"0.2.1-rc.2","dsh-system-prompt":"0.2.1-rc.2","dsh-tools":"0.2.1-rc.2","schemastery":"3.18.5"},"memoryOptimization":{"available":"standalone","packet":"standalone"},"policy":{"mode":"rp","epoch":1,"modeEpoch":1},"branchId":"branch_5c78329c14414f9a82852c50c9d26be7","injection":null,"memoryBudget":null,"memoryUsage":null,"purpose":{"mode":"rp","enabledModules":[],"constraints":{"maxReadRecords":16,"maxOutputBytes":16384,"deniedCapabilities":[],"protectedFieldIds":[],"guidance":[]}},"blocked":true,"candidateIds":[],"pendingInputIds":[],"ambiguousInputIds":["source_176c8454942248b6aa7d0772645e0d77"],"snapshots":1},"messages":[{"role":"user","types":["text"]},{"role":"user","types":["text"]},{"role":"assistant","types":["reasoning","text","tool-call"]},{"role":"tool","types":["text"]}]}
+# Subtest: native tool cycle reasoning
+ok 231 - native tool cycle reasoning
+  ---
+  duration_ms: 145.3625
+  type: 'test'
+  ...
+# Subtest: optional optimizer uses bounded diverse authorized records while standalone remains usable
+ok 232 - optional optimizer uses bounded diverse authorized records while standalone remains usable
+  ---
+  duration_ms: 291.1796
+  type: 'test'
+  ...
+# Subtest: optimizer cannot inject foreign IDs or override hard request capacity
+ok 233 - optimizer cannot inject foreign IDs or override hard request capacity
+  ---
+  duration_ms: 110.5583
+  type: 'test'
+  ...
+# Subtest: on-demand extractive candidates reuse the same authenticated selection and never adopt themselves
+ok 234 - on-demand extractive candidates reuse the same authenticated selection and never adopt themselves
+  ---
+  duration_ms: 323.0293
+  type: 'test'
+  ...
+# Subtest: review only suggests duplicates and age checks; handoff quotes remain verbatim and bounded
+ok 235 - review only suggests duplicates and age checks; handoff quotes remain verbatim and bounded
+  ---
+  duration_ms: 209.5234
+  type: 'test'
+  ...
+# Subtest: retrieval alternatives find an alias/paraphrase across history with fixed pagination and exact evidence
+ok 236 - retrieval alternatives find an alias/paraphrase across history with fixed pagination and exact evidence
+  ---
+  duration_ms: 286.9236
+  type: 'test'
+  ...
+# Subtest: document revision suggests old classification and conditions only for unique matches
+ok 237 - document revision suggests old classification and conditions only for unique matches
+  ---
+  duration_ms: 1.5984
+  type: 'test'
+  ...
+# Subtest: handoff preserves commitment ownership and relationship direction, and drops corrected experiences
+ok 238 - handoff preserves commitment ownership and relationship direction, and drops corrected experiences
+  ---
+  duration_ms: 325.3584
+  type: 'test'
+  ...
+# OBSERVATION {"second":{"kind":"success","text":"Accepted input queued. Generated replies require /memcont accept."},"calls":1,"sentObsolete":false,"activeSummaries":0,"latestHistory":[{"id":"641d54fc-3672-4fa7-ad97-029d37c84b08","obsolete":true}]}
+# Subtest: obsolete source-only summary in native history must not reach terminal
+ok 239 - obsolete source-only summary in native history must not reach terminal
+  ---
+  duration_ms: 891.5677
+  type: 'test'
+  ...
+# Subtest: v2 packets without original derived proof remain recovery-only without backfilling
+ok 240 - v2 packets without original derived proof remain recovery-only without backfilling
+  ---
+  duration_ms: 206.1075
+  type: 'test'
+  ...
+# Subtest: malformed packet proof cannot supply a trusted branch during recovery
+ok 241 - malformed packet proof cannot supply a trusted branch during recovery
+  ---
+  duration_ms: 186.4816
+  type: 'test'
+  ...
+# Subtest: trusted private and group contexts select different voice entries, including evidence depth
+ok 242 - trusted private and group contexts select different voice entries, including evidence depth
+  ---
+  duration_ms: 305.7788
+  type: 'test'
+  ...
+# Subtest: text cannot impersonate an audience; forged, cross-authority and revoked contexts fail closed
+ok 243 - text cannot impersonate an audience; forged, cross-authority and revoked contexts fail closed
+  ---
+  duration_ms: 257.7615
+  type: 'test'
+  ...
+# Subtest: raw retrieval never reveals document manifests, inactive sources or hidden titles; pin cannot change audience
+ok 244 - raw retrieval never reveals document manifests, inactive sources or hidden titles; pin cannot change audience
+  ---
+  duration_ms: 385.2844
+  type: 'test'
+  ...
+# Subtest: documents without explicit per-section selection remain archived, and unknown accounts are not merged
+ok 245 - documents without explicit per-section selection remain archived, and unknown accounts are not merged
+  ---
+  duration_ms: 364.7888
+  type: 'test'
+  ...
+# Subtest: actual v1 global reader/writer rejects segmented scope and verified complete backup restores it
+ok 246 - actual v1 global reader/writer rejects segmented scope and verified complete backup restores it
+  ---
+  duration_ms: 177.3655
+  type: 'test'
+  ...
+# Subtest: raw fixed-prefix commit checks inherited person ownership before added events
+ok 247 - raw fixed-prefix commit checks inherited person ownership before added events
+  ---
+  duration_ms: 179.2214
+  type: 'test'
+  ...
+# Subtest: actual previous reader rejects all branches after person capability; complete backup restores old readability
+ok 248 - actual previous reader rejects all branches after person capability; complete backup restores old readability
+  ---
+  duration_ms: 390.0992
+  type: 'test'
+  ...
+# Subtest: backup IO failure prevents person publication and same operation can safely retry
+ok 249 - backup IO failure prevents person publication and same operation can safely retry
+  ---
+  duration_ms: 167.3258
+  type: 'test'
+  ...
+# Subtest: unknown and regressed reader capabilities are refused on cold load
+ok 250 - unknown and regressed reader capabilities are refused on cold load
+  ---
+  duration_ms: 251.8109
+  type: 'test'
+  ...
+# Subtest: raw store cannot bypass person ownership; old JSON remains ordinary and duplicate previews commit once
+ok 251 - raw store cannot bypass person ownership; old JSON remains ordinary and duplicate previews commit once
+  ---
+  duration_ms: 177.2426
+  type: 'test'
+  ...
+# Subtest: actual 0.2.1 reader refuses the document capability; verified full backup restores readability
+ok 252 - actual 0.2.1 reader refuses the document capability; verified full backup restores readability
+  ---
+  duration_ms: 445.7083
+  type: 'test'
+  ...
+# Subtest: actual 0.2.1 reader refuses a shared diary workspace and the pre-upgrade backup retains its readable person
+ok 253 - actual 0.2.1 reader refuses a shared diary workspace and the pre-upgrade backup retains its readable person
+  ---
+  duration_ms: 319.8661
+  type: 'test'
+  ...
+# Subtest: actual DSH SDK carries authenticated document spans, refuses superseded history, and continues cleanly
+ok 254 - actual DSH SDK carries authenticated document spans, refuses superseded history, and continues cleanly
+  ---
+  duration_ms: 1602.0656
+  type: 'test'
+  ...
+# Subtest: document publication stores exact original, declares the capability and preserves one accepted revision across reopen
+ok 255 - document publication stores exact original, declares the capability and preserves one accepted revision across reopen
+  ---
+  duration_ms: 430.2125
+  type: 'test'
+  ...
+# Subtest: backup and transaction publication faults preserve the prior readable state and allow retry
+ok 256 - backup and transaction publication faults preserve the prior readable state and allow retry
+  ---
+  duration_ms: 512.4944
+  type: 'test'
+  ...
+# Subtest: retcon never revives an old document, fixed child remains independent, privacy blocks both
+ok 257 - retcon never revives an old document, fixed child remains independent, privacy blocks both
+  ---
+  duration_ms: 564.2485
+  type: 'test'
+  ...
+# Subtest: raw canonical and store routes cannot bypass document markers, hashes or current version
+ok 258 - raw canonical and store routes cannot bypass document markers, hashes or current version
+  ---
+  duration_ms: 374.7134
+  type: 'test'
+  ...
+# Subtest: document preview rejects forged, cross-authority, unknown owner and stale confirmations
+ok 259 - document preview rejects forged, cross-authority, unknown owner and stale confirmations
+  ---
+  duration_ms: 253.4513
+  type: 'test'
+  ...
+# Subtest: revision and explicit withdrawal preserve original evidence without reviving old document text
+ok 260 - revision and explicit withdrawal preserve original evidence without reviving old document text
+  ---
+  duration_ms: 476.2198
+  type: 'test'
+  ...
+# Subtest: repeated confirmation and a fresh service retry return the original publication without another version
+ok 261 - repeated confirmation and a fresh service retry return the original publication without another version
+  ---
+  duration_ms: 351.7027
+  type: 'test'
+  ...
+# Subtest: document import preserves BOM CRLF markdown emoji and every source character with verified ranges
+ok 262 - document import preserves BOM CRLF markdown emoji and every source character with verified ranges
+  ---
+  duration_ms: 3.0278
+  type: 'test'
+  ...
+# Subtest: one MiB original passes, one extra byte rejects, and chunks never split emoji
+ok 263 - one MiB original passes, one extra byte rejects, and chunks never split emoji
+  ---
+  duration_ms: 50.7132
+  type: 'test'
+  ...
+# Subtest: deterministic drafts preserve unknown and fenced headings without executing or granting authority
+ok 264 - deterministic drafts preserve unknown and fenced headings without executing or granting authority
+  ---
+  duration_ms: 0.5859
+  type: 'test'
+  ...
+# Subtest: empty malformed or excessive structural input fails closed without repairing original text
+ok 265 - empty malformed or excessive structural input fails closed without repairing original text
+  ---
+  duration_ms: 0.684
+  type: 'test'
+  ...
+# Subtest: stored draft validation rejects forged hashes gaps overlaps IDs categories and unseen extra fields
+ok 266 - stored draft validation rejects forged hashes gaps overlaps IDs categories and unseen extra fields
+  ---
+  duration_ms: 2.2772
+  type: 'test'
+  ...
+# Subtest: JavaScript object property names remain ordinary unknown headings
+ok 267 - JavaScript object property names remain ordinary unknown headings
+  ---
+  duration_ms: 0.2035
+  type: 'test'
+  ...
+# Subtest: same length changes at the end produce a different original digest and draft section identity
+ok 268 - same length changes at the end produce a different original digest and draft section identity
+  ---
+  duration_ms: 0.3952
+  type: 'test'
+  ...
+# Subtest: saved editor draft can reopen and append fields and goals without hidden ID collisions
+ok 269 - saved editor draft can reopen and append fields and goals without hidden ID collisions
+  ---
+  duration_ms: 1.0363
+  type: 'test'
+  ...
+# Subtest: offline editor browser bundle has no server storage, crypto or writer admission dependencies
+ok 270 - offline editor browser bundle has no server storage, crypto or writer admission dependencies
+  ---
+  duration_ms: 11.5503
+  type: 'test'
+  ...
+# Subtest: person edit keeps history, grow needs growable policy and real experience; policy change stales candidates
+ok 271 - person edit keeps history, grow needs growable policy and real experience; policy change stales candidates
+  ---
+  duration_ms: 507.8358
+  type: 'test'
+  ...
+# Subtest: situational person fields expire by accepted sequence or scene without deleting history or reviving predecessors
+ok 272 - situational person fields expire by accepted sequence or scene without deleting history or reviving predecessors
+  ---
+  duration_ms: 306.9801
+  type: 'test'
+  ...
+# Subtest: growth batch is deterministic, supports explicit predecessor chains, rejects conflicts atomically and restores cold
+ok 273 - growth batch is deterministic, supports explicit predecessor chains, rejects conflicts atomically and restores cold
+  ---
+  duration_ms: 1279.9202
+  type: 'test'
+  ...
+# Subtest: Retcon invalidates dependent person growth without changing a fixed child; privacy removes growth candidates too
+ok 274 - Retcon invalidates dependent person growth without changing a fixed child; privacy removes growth candidates too
+  ---
+  duration_ms: 506.8842
+  type: 'test'
+  ...
+# Subtest: growth cannot borrow another field predecessor or carry policy edits in a candidate
+ok 275 - growth cannot borrow another field predecessor or carry policy edits in a candidate
+  ---
+  duration_ms: 169.3109
+  type: 'test'
+  ...
+# Subtest: reject retry is durable and immutable, sixteen changes fit and seventeen reject without publication
+ok 276 - reject retry is durable and immutable, sixteen changes fit and seventeen reject without publication
+  ---
+  duration_ms: 489.0794
+  type: 'test'
+  ...
+# Subtest: timeline invalidation IDs are scoped to that person and expired heads never revive earlier values
+ok 277 - timeline invalidation IDs are scoped to that person and expired heads never revive earlier values
+  ---
+  duration_ms: 399.6292
+  type: 'test'
+  ...
+# Subtest: native person preview, confirmation and binding reach actual offline terminal; clean root retains one primary person
+ok 278 - native person preview, confirmation and binding reach actual offline terminal; clean root retains one primary person
+  ---
+  duration_ms: 720.742
+  type: 'test'
+  ...
+# Subtest: native journal resumes original person proof; removed proof is recovery-only with no backfill
+ok 279 - native journal resumes original person proof; removed proof is recovery-only with no backfill
+  ---
+  duration_ms: 358.4153
+  type: 'test'
+  ...
+# Subtest: person binding survives actual SDK read-tool loop and cold resume
+ok 280 - person binding survives actual SDK read-tool loop and cold resume
+  ---
+  duration_ms: 618.4942
+  type: 'test'
+  ...
+# Subtest: native person growth review, policy and timeline reach the packaged request path
+ok 281 - native person growth review, policy and timeline reach the packaged request path
+  ---
+  duration_ms: 614.8237
+  type: 'test'
+  ...
+# Subtest: person preview confirms one atomic origin, fields, relationship and goal with durable retry
+ok 282 - person preview confirms one atomic origin, fields, relationship and goal with durable retry
+  ---
+  duration_ms: 266.1524
+  type: 'test'
+  ...
+# Subtest: person import rejects unknown entities, untrusted fields, excessive text and stale or forged previews
+ok 283 - person import rejects unknown entities, untrusted fields, excessive text and stale or forged previews
+  ---
+  duration_ms: 157.7115
+  type: 'test'
+  ...
+# Subtest: legacy identity conflicts are explicit and all canonical routes reject unmarked person fields
+ok 284 - legacy identity conflicts are explicit and all canonical routes reject unmarked person fields
+  ---
+  duration_ms: 236.5669
+  type: 'test'
+  ...
+# Subtest: raw canonical controls cannot create a fieldless person or append a second initialization later
+ok 285 - raw canonical controls cannot create a fieldless person or append a second initialization later
+  ---
+  duration_ms: 206.7824
+  type: 'test'
+  ...
+# Subtest: raw canonical person protocols cannot introduce entities outside the configured registry
+ok 286 - raw canonical person protocols cannot introduce entities outside the configured registry
+  ---
+  duration_ms: 208.9917
+  type: 'test'
+  ...
+# Subtest: historical packet proofs share one scoped read while each original proof is checked
+ok 287 - historical packet proofs share one scoped read while each original proof is checked
+  ---
+  duration_ms: 1.7075
+  type: 'test'
+  ...
+# Subtest: one verified view shares event provenance and rejects use after its operation
+ok 288 - one verified view shares event provenance and rejects use after its operation
+  ---
+  duration_ms: 187.9654
+  type: 'test'
+  ...
+# Subtest: deletion during a shared view never releases the previously assembled event
+ok 289 - deletion during a shared view never releases the previously assembled event
+  ---
+  duration_ms: 174.2804
+  type: 'test'
+  ...
+# Subtest: nested forks reuse validated prefixes with polynomial replay work
+ok 290 - nested forks reuse validated prefixes with polynomial replay work
+  ---
+  duration_ms: 399.1215
+  type: 'test'
+  ...
+# Subtest: oversized derived transaction is rejected before any blob and leaves the workspace cold-readable
+ok 291 - oversized derived transaction is rejected before any blob and leaves the workspace cold-readable
+  ---
+  duration_ms: 3401.2776
+  type: 'test'
+  ...
+# Subtest: draft payloads support corrections to an earlier event in the same batch
+ok 292 - draft payloads support corrections to an earlier event in the same batch
+  ---
+  duration_ms: 91.598
+  type: 'test'
+  ...
+# Subtest: commit revalidates workspace authority after staged payload publication
+ok 293 - commit revalidates workspace authority after staged payload publication
+  ---
+  duration_ms: 110.7003
+  type: 'test'
+  ...
+# Subtest: prefix reuse preserves fixed parent revisions and revalidates disk on later reads
+ok 294 - prefix reuse preserves fixed parent revisions and revalidates disk on later reads
+  ---
+  duration_ms: 145.1254
+  type: 'test'
+  ...
+# Subtest: R14 R15 ongoing result assembly rejects a retcon before the shared view exits
+ok 295 - R14 R15 ongoing result assembly rejects a retcon before the shared view exits
+  ---
+  duration_ms: 191.1321
+  type: 'test'
+  ...
+# Subtest: R14 privacy deletion after the final source-body read cannot leak the old event
+ok 296 - R14 privacy deletion after the final source-body read cannot leak the old event
+  ---
+  duration_ms: 171.6788
+  type: 'test'
+  ...
+# Subtest: A21 independent approved publication, whitelist, pinned adoption and explicit retained/deleted copies
+ok 297 - A21 independent approved publication, whitelist, pinned adoption and explicit retained/deleted copies
+  ---
+  duration_ms: 259.1793
+  type: 'test'
+  ...
+# Subtest: A22 authorizes before ranking; fixed search pages 23/7 survive insert and reject crossed or revoked cursors
+ok 298 - A22 authorizes before ranking; fixed search pages 23/7 survive insert and reject crossed or revoked cursors
+  ---
+  duration_ms: 3942.924
+  type: 'test'
+  ...
+# Subtest: A23 complete accepted turn3–10 plus current input; rejected alternatives and controls never count
+ok 299 - A23 complete accepted turn3–10 plus current input; rejected alternatives and controls never count
+  ---
+  duration_ms: 2493.3335
+  type: 'test'
+  ...
+# Subtest: A24 full final request includes system/tools/metadata; dynamic output reserve never drops mandatory turns
+ok 300 - A24 full final request includes system/tools/metadata; dynamic output reserve never drops mandatory turns
+  ---
+  duration_ms: 101.2677
+  type: 'test'
+  ...
+# Subtest: A25 prepared input and separate global fences are rechecked at actual consumption
+ok 301 - A25 prepared input and separate global fences are rechecked at actual consumption
+  ---
+  duration_ms: 116.7259
+  type: 'test'
+  ...
+# Subtest: A40 root policy shared across bundles; drain, epochs, request read locks and incompatible old owners
+ok 302 - A40 root policy shared across bundles; drain, epochs, request read locks and incompatible old owners
+  ---
+  duration_ms: 0.9405
+  type: 'test'
+  ...
+# Subtest: global narrow audience cannot overwrite/delete hidden publication; queued revoked approval loses authority
+ok 303 - global narrow audience cannot overwrite/delete hidden publication; queued revoked approval loses authority
+  ---
+  duration_ms: 108.8987
+  type: 'test'
+  ...
+# Subtest: global corrupt disk schema fails closed and writer recovery never steals a live lock
+ok 304 - global corrupt disk schema fails closed and writer recovery never steals a live lock
+  ---
+  duration_ms: 87.5588
+  type: 'test'
+  ...
+# Subtest: A22 fixed body survives changed external verification envelope without retaining a plaintext cursor copy
+ok 305 - A22 fixed body survives changed external verification envelope without retaining a plaintext cursor copy
+  ---
+  duration_ms: 148.7952
+  type: 'test'
+  ...
+# Subtest: global deletion tombstone survives physical purge failure and the same operation retries purge
+ok 306 - global deletion tombstone survives physical purge failure and the same operation retries purge
+  ---
+  duration_ms: 86.7621
+  type: 'test'
+  ...
+# Subtest: root RP-first barrier rejects original old-v1 acquisition semantics; old-first also rejects RP
+ok 307 - root RP-first barrier rejects original old-v1 acquisition semantics; old-first also rejects RP
+  ---
+  duration_ms: 0.2705
+  type: 'test'
+  ...
+# Subtest: entity IDs scope source/event/summary/state retrieval, including trusted command input and same-name entities
+ok 308 - entity IDs scope source/event/summary/state retrieval, including trusted command input and same-name entities
+  ---
+  duration_ms: 302.6615
+  type: 'test'
+  ...
+# Subtest: global write capacity validates the same state schema before publication and preserves the old committed state
+ok 309 - global write capacity validates the same state schema before publication and preserves the old committed state
+  ---
+  duration_ms: 179.0336
+  type: 'test'
+  ...
+# Subtest: profile superseded preference never reappears when its head is revoked; pinned world revisions stay explicit
+ok 310 - profile superseded preference never reappears when its head is revoked; pinned world revisions stay explicit
+  ---
+  duration_ms: 99.7902
+  type: 'test'
+  ...
+# Subtest: canon adoption rechecks revoked command approval inside the queued store commit
+ok 311 - canon adoption rechecks revoked command approval inside the queued store commit
+  ---
+  duration_ms: 77.0142
+  type: 'test'
+  ...
+# Subtest: long-lived Chinese experience search separates joined terms and shows the exact distant hit
+ok 312 - long-lived Chinese experience search separates joined terms and shows the exact distant hit
+  ---
+  duration_ms: 108.8543
+  type: 'test'
+  ...
+# Subtest: published metadata explicitly admits only rc.2 and rc.3
+ok 313 - published metadata explicitly admits only rc.2 and rc.3
+  ---
+  duration_ms: 4.0288
+  type: 'test'
+  ...
+# Subtest: the installed coherent native SDK boots and dispatches through the actual offline terminal
+ok 314 - the installed coherent native SDK boots and dispatches through the actual offline terminal
+  ---
+  duration_ms: 213.3827
+  type: 'test'
+  ...
+# Subtest: native gate permits both exact coherent SDK families without altering evidence
+ok 315 - native gate permits both exact coherent SDK families without altering evidence
+  ---
+  duration_ms: 0.9483
+  type: 'test'
+  ...
+# Subtest: each direct native DSH peer rejects the opposite family, even when both versions are supported
+ok 316 - each direct native DSH peer rejects the opposite family, even when both versions are supported
+  ---
+  duration_ms: 0.4745
+  type: 'test'
+  ...
+# Subtest: old, future, missing and malformed native versions remain fail-closed
+ok 317 - old, future, missing and malformed native versions remain fail-closed
+  ---
+  duration_ms: 0.6964
+  type: 'test'
+  ...
+# Subtest: Cordis and Schemastery remain exactly pinned for both SDK families
+ok 318 - Cordis and Schemastery remain exactly pinned for both SDK families
+  ---
+  duration_ms: 0.201
+  type: 'test'
+  ...
+# Subtest: durable retry repairs two seal failures and cold-reopens: canonical
+ok 319 - durable retry repairs two seal failures and cold-reopens: canonical
+  ---
+  duration_ms: 202.4434
+  type: 'test'
+  ...
+# Subtest: durable retry repairs two seal failures and cold-reopens: copy
+ok 320 - durable retry repairs two seal failures and cold-reopens: copy
+  ---
+  duration_ms: 173.8885
+  type: 'test'
+  ...
+# Subtest: durable retry repairs two seal failures and cold-reopens: adopt
+ok 321 - durable retry repairs two seal failures and cold-reopens: adopt
+  ---
+  duration_ms: 255.1956
+  type: 'test'
+  ...
+# Subtest: durable retry repairs two seal failures and cold-reopens: reject
+ok 322 - durable retry repairs two seal failures and cold-reopens: reject
+  ---
+  duration_ms: 232.0939
+  type: 'test'
+  ...
+# Subtest: durable retry repairs two seal failures and cold-reopens: enqueue
+ok 323 - durable retry repairs two seal failures and cold-reopens: enqueue
+  ---
+  duration_ms: 225.1286
+  type: 'test'
+  ...
+# Subtest: native manual storage upgrade changes only selected global scope with verified backup and no model calls
+ok 324 - native manual storage upgrade changes only selected global scope with verified backup and no model calls
+  ---
+  duration_ms: 144.4231
+  type: 'test'
+  ...
+# Subtest: A05 P1 rejected alternatives remain unaccepted and cannot be read as effective sources
+ok 325 - A05 P1 rejected alternatives remain unaccepted and cannot be read as effective sources
+  ---
+  duration_ms: 132.3706
+  type: 'test'
+  ...
+# Subtest: A06 P1 replacement preserves raw A and atomically invalidates its dependency closure
+ok 326 - A06 P1 replacement preserves raw A and atomically invalidates its dependency closure
+  ---
+  duration_ms: 161.6868
+  type: 'test'
+  ...
+# Subtest: A07 crash after publish and before acknowledgement replays one effect and rejects key conflicts
+ok 327 - A07 crash after publish and before acknowledgement replays one effect and rejects key conflicts
+  ---
+  duration_ms: 227.7729
+  type: 'test'
+  ...
+# Subtest: A08 each durable boundary recovers only an old or complete branch and queued-job relationship
+ok 328 - A08 each durable boundary recovers only an old or complete branch and queued-job relationship
+  ---
+  duration_ms: 1135.3256
+  type: 'test'
+  ...
+# Subtest: A09 same-directory migration preserves identity; copies, replacements and old authority are denied
+ok 329 - A09 same-directory migration preserves identity; copies, replacements and old authority are denied
+  ---
+  duration_ms: 122.8759
+  type: 'test'
+  ...
+# Subtest: A10 source bytes are UTF8 hashed, UTF16 spans preserve surrogate pairs, corruption never recovers summary text
+ok 330 - A10 source bytes are UTF8 hashed, UTF16 spans preserve surrogate pairs, corruption never recovers summary text
+  ---
+  duration_ms: 105.0417
+  type: 'test'
+  ...
+# Subtest: A11 cloned/forged authority and cross-scope mutations are denied before source blob I/O
+ok 331 - A11 cloned/forged authority and cross-scope mutations are denied before source blob I/O
+  ---
+  duration_ms: 153.227
+  type: 'test'
+  ...
+# Subtest: runtime schema rejects unknown fields, unsafe revisions, paths, malformed event kinds and deep JSON
+ok 332 - runtime schema rejects unknown fields, unsafe revisions, paths, malformed event kinds and deep JSON
+  ---
+  duration_ms: 55.9953
+  type: 'test'
+  ...
+# Subtest: P1 deletion tombstones immediately block raw and derived reads while immutable metadata stays replayable
+ok 333 - P1 deletion tombstones immediately block raw and derived reads while immutable metadata stays replayable
+  ---
+  duration_ms: 132.8371
+  type: 'test'
+  ...
+# Subtest: real independent processes serialize commits and refuse abandoned locks without timeout stealing
+ok 334 - real independent processes serialize commits and refuse abandoned locks without timeout stealing
+  ---
+  duration_ms: 156.652
+  type: 'test'
+  ...
+# Subtest: A07 actual process exit after transaction publication is recovered explicitly and consumed once
+ok 335 - A07 actual process exit after transaction publication is recovered explicitly and consumed once
+  ---
+  duration_ms: 187.7265
+  type: 'test'
+  ...
+# Subtest: source page snapshots are opaque, hash-stable, UTF16 safe and reauthorized on every page
+ok 336 - source page snapshots are opaque, hash-stable, UTF16 safe and reauthorized on every page
+  ---
+  duration_ms: 92.3621
+  type: 'test'
+  ...
+# Subtest: source adapter captures public blocks without reasoning or automatic accepted bindings
+ok 337 - source adapter captures public blocks without reasoning or automatic accepted bindings
+  ---
+  duration_ms: 117.9701
+  type: 'test'
+  ...
+# Subtest: A11 raw ledger metadata requires narrator control; low permission and character handles reveal no IDs or counts
+ok 338 - A11 raw ledger metadata requires narrator control; low permission and character handles reveal no IDs or counts
+  ---
+  duration_ms: 79.1454
+  type: 'test'
+  ...
+# Subtest: A11 narrator control with public audience cannot inspect secret binding or task metadata
+ok 339 - A11 narrator control with public audience cannot inspect secret binding or task metadata
+  ---
+  duration_ms: 78.1257
+  type: 'test'
+  ...
+# Subtest: bootstrap root writer death has a trusted explicit recovery path before control can be acquired
+ok 340 - bootstrap root writer death has a trusted explicit recovery path before control can be acquired
+  ---
+  duration_ms: 103.9554
+  type: 'test'
+  ...
+# Subtest: losing a published tail transaction fails closed instead of reviving the source it tombstoned
+ok 341 - losing a published tail transaction fails closed instead of reviving the source it tombstoned
+  ---
+  duration_ms: 99.5316
+  type: 'test'
+  ...
+# Subtest: read overlapping a new transaction seal reports stale rather than corrupt and can retry
+ok 342 - read overlapping a new transaction seal reports stale rather than corrupt and can retry
+  ---
+  duration_ms: 111.0946
+  type: 'test'
+  ...
+# Subtest: deleting an unseen candidate source is scope denied and secret deletion metadata stays out of public audit
+ok 343 - deleting an unseen candidate source is scope denied and secret deletion metadata stays out of public audit
+  ---
+  duration_ms: 87.3055
+  type: 'test'
+  ...
+# Subtest: fixed parent prefix metadata is exact and replayable without following later parent commits
+ok 344 - fixed parent prefix metadata is exact and replayable without following later parent commits
+  ---
+  duration_ms: 153.431
+  type: 'test'
+  ...
+# Subtest: canon binding requires a trusted publication verifier and visibility mutation revokes old read authority
+ok 345 - canon binding requires a trusted publication verifier and visibility mutation revokes old read authority
+  ---
+  duration_ms: 105.2166
+  type: 'test'
+  ...
+# Subtest: active derived payload becomes unavailable when its original source bytes disappear
+ok 346 - active derived payload becomes unavailable when its original source bytes disappear
+  ---
+  duration_ms: 104.4364
+  type: 'test'
+  ...
+# Subtest: host read access to two audiences cannot widen a secret source into a public derived record
+ok 347 - host read access to two audiences cannot widen a secret source into a public derived record
+  ---
+  duration_ms: 96.4699
+  type: 'test'
+  ...
+# Subtest: semantic dependency IDs and supersession remain authoritative while payloads live only in blobs
+ok 348 - semantic dependency IDs and supersession remain authoritative while payloads live only in blobs
+  ---
+  duration_ms: 130.3531
+  type: 'test'
+  ...
+# Subtest: R10 R11 R12 R13 source-only scene created before event invalidates through arc on retcon, preserving evidence and sibling
+ok 349 - R10 R11 R12 R13 source-only scene created before event invalidates through arc on retcon, preserving evidence and sibling
+  ---
+  duration_ms: 1322.1738
+  type: 'test'
+  ...
+# Subtest: R13 transitive event invalidation also expires summaries of the dependent event source
+ok 350 - R13 transitive event invalidation also expires summaries of the dependent event source
+  ---
+  duration_ms: 353.9014
+  type: 'test'
+  ...
+# Subtest: R30 R31 final merged anchors reject 258 and 257 before candidate persistence; deduplicated 256 reads and adopts
+ok 351 - R30 R31 final merged anchors reject 258 and 257 before candidate persistence; deduplicated 256 reads and adopts
+  ---
+  duration_ms: 1736.6983
+  type: 'test'
+  ...
+# Subtest: A31 manual candidate is persisted without canon effect; explicit adoption derives event authority and holder
+ok 352 - A31 manual candidate is persisted without canon effect; explicit adoption derives event authority and holder
+  ---
+  duration_ms: 260.8754
+  type: 'test'
+  ...
+# Subtest: A31 rejects forged metadata, no-source relationships, wrong entity and unknown belief holder
+ok 353 - A31 rejects forged metadata, no-source relationships, wrong entity and unknown belief holder
+  ---
+  duration_ms: 270.1511
+  type: 'test'
+  ...
+# Subtest: A26 generation releases writer gate; append invalidates paused result and leaves no summary
+ok 354 - A26 generation releases writer gate; append invalidates paused result and leaves no summary
+  ---
+  duration_ms: 324.9094
+  type: 'test'
+  ...
+# Subtest: A27 publication rechecks independently changed branch fields, globals and policy epoch
+ok 355 - A27 publication rechecks independently changed branch fields, globals and policy epoch
+  ---
+  duration_ms: 1665.1948
+  type: 'test'
+  ...
+# Subtest: A28 stale retries stop exactly at three and shared profile slot spans memory instances/workspaces
+ok 356 - A28 stale retries stop exactly at three and shared profile slot spans memory instances/workspaces
+  ---
+  duration_ms: 1383.5932
+  type: 'test'
+  ...
+# Subtest: A29 rejects mixed audience summary instead of trusting self-declared public
+ok 357 - A29 rejects mixed audience summary instead of trusting self-declared public
+  ---
+  duration_ms: 176.8867
+  type: 'test'
+  ...
+# Subtest: A32 real source and valid schema permit blue-to-gold distortion; annotated scorer rejects it
+ok 358 - A32 real source and valid schema permit blue-to-gold distortion; annotated scorer rejects it
+  ---
+  duration_ms: 153.1389
+  type: 'test'
+  ...
+# Subtest: A05 unaccepted and rejected alternatives cannot enter candidate source coverage
+ok 359 - A05 unaccepted and rejected alternatives cannot enter candidate source coverage
+  ---
+  duration_ms: 317.3581
+  type: 'test'
+  ...
+# Subtest: A30/A15 scene/chapter/arc retain original union and anchors; retcon invalidates only dependent closure
+ok 360 - A30/A15 scene/chapter/arc retain original union and anchors; retcon invalidates only dependent closure
+  ---
+  duration_ms: 1021.7605
+  type: 'test'
+  ...
+# Subtest: A20 deletion purges candidate/job input and old async output cannot resurrect after cold reopen
+ok 361 - A20 deletion purges candidate/job input and old async output cannot resurrect after cold reopen
+  ---
+  duration_ms: 379.2382
+  type: 'test'
+  ...
+# Subtest: job legal state CAS, cancellation, exception release and cold recovery do not invoke generator automatically
+ok 362 - job legal state CAS, cancellation, exception release and cold recovery do not invoke generator automatically
+  ---
+  duration_ms: 1074.9074
+  type: 'test'
+  ...
+# Subtest: job idempotent retry seals uncertain publication; losing acknowledged last transaction is store_corrupt
+ok 363 - job idempotent retry seals uncertain publication; losing acknowledged last transaction is store_corrupt
+  ---
+  duration_ms: 91.3563
+  type: 'test'
+  ...
+# Subtest: queued cancellation before running lease never calls generator; cancellation at adoption lease never publishes
+ok 364 - queued cancellation before running lease never calls generator; cancellation at adoption lease never publishes
+  ---
+  duration_ms: 690.4678
+  type: 'test'
+  ...
+# Subtest: native explicit token budget is visible, checks actual model identity, and blocks mandatory over-budget requests before the provider
+ok 365 - native explicit token budget is visible, checks actual model identity, and blocks mandatory over-budget requests before the provider
+  ---
+  duration_ms: 483.1165
+  type: 'test'
+  ...
+# Subtest: actual tokenizer budget admits a native request and repeated memory tool pages remain certified within one shared limit
+ok 366 - actual tokenizer budget admits a native request and repeated memory tool pages remain certified within one shared limit
+  ---
+  duration_ms: 1506.2963
+  type: 'test'
+  ...
+# Subtest: dynamic output reserve blocks even an otherwise valid token-budget memory packet
+ok 367 - dynamic output reserve blocks even an otherwise valid token-budget memory packet
+  ---
+  duration_ms: 317.4917
+  type: 'test'
+  ...
+# Subtest: explicit budget upgrades back up the original journal and a stripped binding cannot silently downgrade after resume
+ok 368 - explicit budget upgrades back up the original journal and a stripped binding cannot silently downgrade after resume
+  ---
+  duration_ms: 190.7007
+  type: 'test'
+  ...
+# Subtest: deletion between a native sized retrieval and receipt publication refuses the old data and the next provider request
+ok 369 - deletion between a native sized retrieval and receipt publication refuses the old data and the next provider request
+  ---
+  duration_ms: 462.2345
+  type: 'test'
+  ...
+# Subtest: two memory calls in one assistant turn share budget without concurrent over-allocation
+ok 370 - two memory calls in one assistant turn share budget without concurrent over-allocation
+  ---
+  duration_ms: 820.3521
+  type: 'test'
+  ...
+# Subtest: downstream provider failure is not mislabeled as a memory admission rejection
+ok 371 - downstream provider failure is not mislabeled as a memory admission rejection
+  ---
+  duration_ms: 285.6982
+  type: 'test'
+  ...
+# Subtest: search sizes the fixed result before certification and preserves offsets across smaller pages and unrelated appends
+ok 372 - search sizes the fixed result before certification and preserves offsets across smaller pages and unrelated appends
+  ---
+  duration_ms: 497.1558
+  type: 'test'
+  ...
+# Subtest: body pages fit before binding, retain whole emoji and reproduce exact original without clipping the certified result
+ok 373 - body pages fit before binding, retain whole emoji and reproduce exact original without clipping the certified result
+  ---
+  duration_ms: 550.9731
+  type: 'test'
+  ...
+# Subtest: 32768 actual tokenizer tokens fit; 32769 fail without clipping or treating UTF-8 as tokens
+ok 374 - 32768 actual tokenizer tokens fit; 32769 fail without clipping or treating UTF-8 as tokens
+  ---
+  duration_ms: 302.9133
+  type: 'test'
+  ...
+# Subtest: every retained packet, tool result and repeated wrapping consumes the same memory budget
+ok 375 - every retained packet, tool result and repeated wrapping consumes the same memory budget
+  ---
+  duration_ms: 78.7357
+  type: 'test'
+  ...
+# Subtest: unknown model is explicitly conservative and changing the actual model cannot reuse the old meter
+ok 376 - unknown model is explicitly conservative and changing the actual model cannot reuse the old meter
+  ---
+  duration_ms: 0.6202
+  type: 'test'
+  ...
+# Subtest: token budget configuration is authenticated, includes layer units and cannot be downgraded by a changed receipt
+ok 377 - token budget configuration is authenticated, includes layer units and cannot be downgraded by a changed receipt
+  ---
+  duration_ms: 0.2055
+  type: 'test'
+  ...
+# Subtest: packaged tokenizer counts match independently generated Hugging Face Rust reference vectors
+ok 378 - packaged tokenizer counts match independently generated Hugging Face Rust reference vectors
+  ---
+  duration_ms: 41.2535
+  type: 'test'
+  ...
+# Subtest: token layers admit a 48 KiB document while legacy byte limits retain their old meaning
+ok 379 - token layers admit a 48 KiB document while legacy byte limits retain their old meaning
+  ---
+  duration_ms: 375.2711
+  type: 'test'
+  ...
+# Subtest: independent core admission enforces the bound meter even without the DSH send gate
+ok 380 - independent core admission enforces the bound meter even without the DSH send gate
+  ---
+  duration_ms: 77.0047
+  type: 'test'
+  ...
+# Subtest: independent core refuses a caller-mutated request across asynchronous admission
+ok 381 - independent core refuses a caller-mutated request across asynchronous admission
+  ---
+  duration_ms: 45.3586
+  type: 'test'
+  ...
+# Subtest: workbench ships document, diary, budget and settings pages with one inline review container
+ok 382 - workbench ships document, diary, budget and settings pages with one inline review container
+  ---
+  duration_ms: 0.9966
+  type: 'test'
+  ...
+# Subtest: workbench transport limits bearer requests to management routes and rejects missing credentials
+ok 383 - workbench transport limits bearer requests to management routes and rejects missing credentials
+  ---
+  duration_ms: 12.4188
+  type: 'test'
+  ...
+# Subtest: revocation rejects an older successful response and does not restore its private snapshot
+ok 384 - revocation rejects an older successful response and does not restore its private snapshot
+  ---
+  duration_ms: 0.5739
+  type: 'test'
+  ...
+# Subtest: uncertain confirmation reports uncertainty without retry and can reuse the same review id explicitly
+ok 385 - uncertain confirmation reports uncertainty without retry and can reuse the same review id explicitly
+  ---
+  duration_ms: 0.9151
+  type: 'test'
+  ...
+# Subtest: real close revokes local requests and ignores late success while persistence uncertainty stays visible
+ok 386 - real close revokes local requests and ignores late success while persistence uncertainty stays visible
+  ---
+  duration_ms: 0.5232
+  type: 'test'
+  ...
+# Subtest: disabled influence dialog uses an explicit inline review; mandatory confirmations remain dialogs
+ok 387 - disabled influence dialog uses an explicit inline review; mandatory confirmations remain dialogs
+  ---
+  duration_ms: 0.1446
+  type: 'test'
+  ...
+1..387
+# tests 387
+# suites 0
+# pass 386
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 195245.6874

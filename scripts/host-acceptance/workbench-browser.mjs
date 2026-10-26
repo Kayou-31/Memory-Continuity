@@ -7,7 +7,7 @@ const {host}=await import('../../test/fixtures/rp/native-host.mjs')
 const directory=path.resolve('work/frontend-integration-2026-10-24/browser-'+Date.now())
 await fs.mkdir(directory,{recursive:true})
 const install=process.env.RP_PERSON_BUNDLE?(await import(pathToFileURL(path.resolve(process.env.RP_PERSON_BUNDLE)))).installRpPlugin:undefined
-const f=await host({entityIds:['erin','bea','kai']},{directory,...(install?{install}:{})})
+const f=await host({entityIds:['erin','bea','kai'],...(process.env.RP_WORKBENCH_REJECT==='1'?{requestLimits:{maxRequestsPerInput:1,maxRetriesPerStep:0}}:{})},{directory,...(install?{install}:{})})
 const a=await f.create(),ok=r=>{if(r.kind!=='success')throw Error(r.text);return r.text}
 ok(await f.command(a,'start'))
 const visual=process.env.RP_WORKBENCH_VISUAL==='1'
@@ -31,6 +31,22 @@ if(visual){
  const friend=JSON.parse(ok(await f.command(a,'person preview '+JSON.stringify({schemaVersion:1,kind:'person-draft',personId:'bea',fields:[{fieldId:'name',kind:'identity',value:'贝雅',policy:'stable'},{fieldId:'background',kind:'background',value:'住在书店楼上，喜欢替旧故事找到新的读者。',policy:'stable'}],relationships:[],goals:[]}))))
  ok(await f.command(a,'person confirm '+friend.previewId))
  ok(await f.command(a,'agent '+JSON.stringify({kind:'experience',actorIds:['erin','bea'],description:'两人一起修好了钟楼的旧钟。收拾工具时，约好下次抽空去海边走走。',fictionalTime:'钟楼修好后的傍晚',sourceRevisionIds:[]})))
+}
+if(process.env.RP_WORKBENCH_STABLE==='1'){
+ const third=JSON.parse(ok(await f.command(a,'person preview '+JSON.stringify({schemaVersion:1,kind:'person-draft',personId:'kai',fields:[{fieldId:'name',kind:'identity',value:'陈屿',policy:'stable'},{fieldId:'background',kind:'background',value:'城市建筑师，最近回到海边，想与老朋友重新谈谈未来。',policy:'stable'}],relationships:[],goals:[]}))))
+ ok(await f.command(a,'person confirm '+third.previewId))
+ ok(await f.command(a,'agent '+JSON.stringify({kind:'experience',actorIds:['erin','kai'],description:'陈屿带来了旧城改造的邀请。林澈没有立刻答应，约好下周再认真聊聊。',fictionalTime:'2026年10月21日',sourceRevisionIds:[]})))
+ ok(await f.command(a,'agent '+JSON.stringify({kind:'experience',actorIds:['erin','bea'],description:'下雨的晚上，两人把修好的旧钟送回钟楼。林澈说，下次可以试着独自接一项新委托。',fictionalTime:'2026年10月23日',sourceRevisionIds:[]})))
+ if(process.env.RP_WORKBENCH_CLEAN!=='1'){
+ if(process.env.RP_WORKBENCH_REJECT==='1'){
+  const {LlmAdapter}=await import('@deepseek-ai/dsh-llm');class Failure extends LlmAdapter{async *stream(){yield {type:'finish',reason:{kind:'error',failure:{code:'offline_failure',message:'Offline browser acceptance failure',retryable:true}}}}}
+  f.ctx.llm.registerAdapter(['browser-offline-failure'],new Failure());a.options.provider='browser-offline-failure';f.ctx.on('agent/request-error',async()=>({kind:'retry'}))
+ }
+ // Use the native input path and bounded offline adapter; never a network model.
+ ok(await f.command(a,'input 我想记住今天这段原话：下周一起去看星星。'))
+ for(let i=0;i<250&&a.status!=='idle';i++)await new Promise(resolve=>setTimeout(resolve,20))
+ if(a.status!=='idle')throw Error('Browser fixture did not reach idle within five seconds')
+ }
 }
 const live=JSON.parse(ok(await f.command(a,'person manage')))
 await fs.writeFile(path.resolve('work/frontend-integration-2026-10-24/browser-session.json'),JSON.stringify({url:live.url,directory,sessionId:a.id},null,2))

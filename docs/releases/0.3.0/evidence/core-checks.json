@@ -1,0 +1,50 @@
+[
+  {
+    "name": "core-pack",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js\" pack --json --ignore-scripts --pack-destination D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\release-0.3.0\\candidate",
+    "exitCode": 0,
+    "seconds": 1.637
+  },
+  {
+    "name": "core-offline-install",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js\" install --offline --ignore-scripts --no-audit --no-fund --package-lock=false D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\release-0.3.0\\candidate\\memory-continuity-core-0.1.0-preview.2.tgz",
+    "exitCode": 0,
+    "seconds": 1.127
+  },
+  {
+    "name": "core-write",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe package-smoke.mjs write",
+    "exitCode": 0,
+    "seconds": 1.088
+  },
+  {
+    "name": "core-cold-read",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe package-smoke.mjs read",
+    "exitCode": 0,
+    "seconds": 0.626
+  },
+  {
+    "name": "core-service-recovery",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe service-process.mjs",
+    "exitCode": 0,
+    "seconds": 1.357
+  },
+  {
+    "name": "core-init",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe node_modules/@memory-continuity/core/lib/cli.js init --directory D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\memory-continuity-03-core-acceptance\\new-person --entity erin",
+    "exitCode": 0,
+    "seconds": 0.128
+  },
+  {
+    "name": "astrbot-pack",
+    "command": "C:\\Users\\kayou\\AppData\\Local\\Programs\\Python\\Python313\\python.exe scripts/build-astrbot.py --out D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\release-0.3.0\\candidate\\astrbot-memory-continuity-0.1.0-preview.1.zip",
+    "exitCode": 0,
+    "seconds": 0.094
+  },
+  {
+    "name": "astrbot-native",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\task8-host\\astrbot-v4.29.3\\.venv\\Scripts\\python.exe -m unittest discover -s adapters/astrbot/tests -v",
+    "exitCode": 1,
+    "seconds": 0.814
+  }
+]

@@ -1,0 +1,84 @@
+TAP version 13
+# Subtest: unchanged tool steps reuse their current certified memory context
+ok 1 - unchanged tool steps reuse their current certified memory context
+  ---
+  duration_ms: 502.0084
+  type: 'test'
+  ...
+# Subtest: empty first-step decisions do not retire a context or manufacture a later request
+ok 2 - empty first-step decisions do not retire a context or manufacture a later request
+  ---
+  duration_ms: 256.8486
+  type: 'test'
+  ...
+# Subtest: request policy bounds a tool loop without deleting the completed tool history
+ok 3 - request policy bounds a tool loop without deleting the completed tool history
+  ---
+  duration_ms: 374.8587
+  type: 'test'
+  ...
+# Subtest: a host retry handler cannot retry a failing step past the configured limit
+ok 4 - a host retry handler cannot retry a failing step past the configured limit
+  ---
+  duration_ms: 192.7415
+  type: 'test'
+  ...
+# Subtest: a new explicit input receives its own allowance after a failed input
+not ok 5 - a new explicit input receives its own allowance after a failed input
+  ---
+  duration_ms: 293.4655
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-cost-reliability-host.test.mjs:45:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    1 !== 2
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 2
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-cost-reliability-host.test.mjs:49:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: cost allowance survives a genuine cold restore and resume alone sends nothing
+not ok 6 - cost allowance survives a genuine cold restore and resume alone sends nothing
+  ---
+  duration_ms: 323.6002
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-cost-reliability-host.test.mjs:53:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    0 !== 1
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-cost-reliability-host.test.mjs:57:44)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: failed reservation persistence does not reach the adapter and leaves diagnosis available
+ok 7 - failed reservation persistence does not reach the adapter and leaves diagnosis available
+  ---
+  duration_ms: 256.5721
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 5
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2767.042

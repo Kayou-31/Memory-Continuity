@@ -1,0 +1,384 @@
+TAP version 13
+# Subtest: actual TGZ blocks every native session after an observation persistence failure and failed close
+not ok 1 - actual TGZ blocks every native session after an observation persistence failure and failed close
+  ---
+  duration_ms: 25.9025
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\scripts\\host-acceptance\\package-compat.test.mjs:27:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/scripts/host-acceptance/package-compat.test.mjs:28:13)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: actual TGZ permits diagnosis and clean continuation after journal failure without carrying old messages
+not ok 2 - actual TGZ permits diagnosis and clean continuation after journal failure without carrying old messages
+  ---
+  duration_ms: 13.0229
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\scripts\\host-acceptance\\package-compat.test.mjs:39:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/scripts/host-acceptance/package-compat.test.mjs:40:13)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: unchanged tool steps reuse their current certified memory context
+not ok 3 - unchanged tool steps reuse their current certified memory context
+  ---
+  duration_ms: 26.2599
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-cost-reliability-host.test.mjs:14:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-cost-reliability-host.test.mjs:15:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: empty first-step decisions do not retire a context or manufacture a later request
+not ok 4 - empty first-step decisions do not retire a context or manufacture a later request
+  ---
+  duration_ms: 10.2847
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-cost-reliability-host.test.mjs:23:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-cost-reliability-host.test.mjs:24:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: request policy bounds a tool loop without deleting the completed tool history
+not ok 5 - request policy bounds a tool loop without deleting the completed tool history
+  ---
+  duration_ms: 8.7291
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-cost-reliability-host.test.mjs:31:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-cost-reliability-host.test.mjs:32:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: a host retry handler cannot retry a failing step past the configured limit
+not ok 6 - a host retry handler cannot retry a failing step past the configured limit
+  ---
+  duration_ms: 9.509
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-cost-reliability-host.test.mjs:40:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-cost-reliability-host.test.mjs:41:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: a new explicit input receives its own allowance after a failed input
+not ok 7 - a new explicit input receives its own allowance after a failed input
+  ---
+  duration_ms: 7.595
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-cost-reliability-host.test.mjs:48:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-cost-reliability-host.test.mjs:49:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: cost allowance survives a genuine cold restore and resume alone sends nothing
+not ok 8 - cost allowance survives a genuine cold restore and resume alone sends nothing
+  ---
+  duration_ms: 7.8199
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-cost-reliability-host.test.mjs:56:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-cost-reliability-host.test.mjs:57:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: failed reservation persistence does not reach the adapter and leaves diagnosis available
+not ok 9 - failed reservation persistence does not reach the adapter and leaves diagnosis available
+  ---
+  duration_ms: 9.0848
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-cost-reliability-host.test.mjs:64:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-cost-reliability-host.test.mjs:65:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: organizer commands are explicit, reuse candidates, and consume no additional model requests
+not ok 10 - organizer commands are explicit, reuse candidates, and consume no additional model requests
+  ---
+  duration_ms: 7.5033
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-cost-reliability-host.test.mjs:72:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-cost-reliability-host.test.mjs:73:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: a native history change during durable request reservation is checked before adapter admission
+not ok 11 - a native history change during durable request reservation is checked before adapter admission
+  ---
+  duration_ms: 8.2246
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-cost-reliability-host.test.mjs:81:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-cost-reliability-host.test.mjs:82:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: native follow-up carries one latest memory packet while all original snapshots and conversation stay auditable
+not ok 12 - native follow-up carries one latest memory packet while all original snapshots and conversation stay auditable
+  ---
+  duration_ms: 24.7835
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-injection-cost-host.test.mjs:14:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-injection-cost-host.test.mjs:15:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: preview discloses first-load then follow-up optional allowance without consuming a model call
+not ok 13 - preview discloses first-load then follow-up optional allowance without consuming a model call
+  ---
+  duration_ms: 10.3224
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-injection-cost-host.test.mjs:25:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-injection-cost-host.test.mjs:26:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: retirement preserves foreign context sections byte-for-byte and does not hide a stale original proof
+not ok 14 - retirement preserves foreign context sections byte-for-byte and does not hide a stale original proof
+  ---
+  duration_ms: 9.4882
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-injection-cost-host.test.mjs:31:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-injection-cost-host.test.mjs:32:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: retired context survives a genuine cold restore and forged replacement references are rejected
+not ok 15 - retired context survives a genuine cold restore and forged replacement references are rejected
+  ---
+  duration_ms: 9.7944
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-injection-cost-host.test.mjs:41:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-injection-cost-host.test.mjs:42:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: persistence failure after committing a retirement blocks the next provider request without deleting the original log
+not ok 16 - persistence failure after committing a retirement blocks the next provider request without deleting the original log
+  ---
+  duration_ms: 7.519
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-injection-cost-host.test.mjs:53:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-injection-cost-host.test.mjs:54:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: reused same-packet tool context cannot certify a request with the current full packet removed
+not ok 17 - reused same-packet tool context cannot certify a request with the current full packet removed
+  ---
+  duration_ms: 9.0408
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-injection-cost-host.test.mjs:63:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-injection-cost-host.test.mjs:64:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: next-request preview includes the pending retired marker in actual memory accounting
+not ok 18 - next-request preview includes the pending retired marker in actual memory accounting
+  ---
+  duration_ms: 7.8601
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-injection-cost-host.test.mjs:71:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-injection-cost-host.test.mjs:72:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: a different pre-step middleware cannot drop queued input that was omitted from the memory duplicate
+not ok 19 - a different pre-step middleware cannot drop queued input that was omitted from the memory duplicate
+  ---
+  duration_ms: 7.7807
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-injection-cost-host.test.mjs:76:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-injection-cost-host.test.mjs:77:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: summary candidates interoperate between native commands and workbench with the same policy epoch
+not ok 20 - summary candidates interoperate between native commands and workbench with the same policy epoch
+  ---
+  duration_ms: 25.8082
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-management-host-extension.test.mjs:9:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-management-host-extension.test.mjs:10:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: native workbench previews and commits actual budget/binding settings without nested locks or provider calls
+not ok 21 - native workbench previews and commits actual budget/binding settings without nested locks or provider calls
+  ---
+  duration_ms: 10.6655
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-management-host-extension.test.mjs:23:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-management-host-extension.test.mjs:24:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: native workbench refuses a stale budget review after person edits and preserves the old binding
+not ok 22 - native workbench refuses a stale budget review after person edits and preserves the old binding
+  ---
+  duration_ms: 9.3468
+  type: 'test'
+  location: 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\test\\rp-management-host-extension.test.mjs:38:1'
+  failureType: 'testCodeFailure'
+  error: 'Live pinned native services changed or are unavailable: agents,llm,prompt'
+  code: 'capability_missing'
+  stack: |-
+    verifyNative (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14199:31)
+    installRpPlugin (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/work/release-0.3.0/candidate/extracted/package/lib/index.js:14201:3)
+    async host (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/fixtures/rp/native-host.mjs:34:14)
+    async TestContext.<anonymous> (file:///D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5/test/rp-management-host-extension.test.mjs:39:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 0
+# fail 22
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6711.9087

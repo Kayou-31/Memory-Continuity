@@ -1,0 +1,209 @@
+test_connection_replacement_is_not_automatic_reauthorization (test_core_client.CoreClientTests.test_connection_replacement_is_not_automatic_reauthorization) ... ERROR
+test_connection_validation_refuses_remote_urls_and_malformed_credentials (test_core_client.CoreClientTests.test_connection_validation_refuses_remote_urls_and_malformed_credentials) ... ERROR
+test_failed_revoke_keeps_cleanup_record_until_explicit_close (test_core_client.CoreClientTests.test_failed_revoke_keeps_cleanup_record_until_explicit_close) ... ERROR
+test_missing_connection_cannot_revive_after_file_is_restored (test_core_client.CoreClientTests.test_missing_connection_cannot_revive_after_file_is_restored) ... ERROR
+test_real_core_read_and_revision_receipt (test_core_client.CoreClientTests.test_real_core_read_and_revision_receipt) ... ERROR
+test_revocation_and_client_retirement_do_not_reissue_capabilities (test_core_client.CoreClientTests.test_revocation_and_client_retirement_do_not_reissue_capabilities) ... ERROR
+test_revoke_of_expired_session_requires_confirmed_absence_then_allows_new_open (test_core_client.CoreClientTests.test_revoke_of_expired_session_requires_confirmed_absence_then_allows_new_open) ... ERROR
+test_transport_failure_retires_old_handles_without_reconnect (test_core_client.CoreClientTests.test_transport_failure_retires_old_handles_without_reconnect) ... ERROR
+test_real_loader_private_admin_controls_and_unload (test_host_management.HostManagementTests.test_real_loader_private_admin_controls_and_unload) ... ERROR
+test_dedicated_http_client_can_block_retry_before_second_network_send (test_provider_boundary.ProviderBoundaryTests.test_dedicated_http_client_can_block_retry_before_second_network_send) ... ERROR
+test_disabling_inner_retry_does_not_disable_context_error_retry (test_provider_boundary.ProviderBoundaryTests.test_disabling_inner_retry_does_not_disable_context_error_retry) ... ERROR
+test_one_provider_entry_can_send_multiple_http_requests (test_provider_boundary.ProviderBoundaryTests.test_one_provider_entry_can_send_multiple_http_requests) ... ERROR
+
+======================================================================
+ERROR: test_connection_replacement_is_not_automatic_reauthorization (test_core_client.CoreClientTests.test_connection_replacement_is_not_automatic_reauthorization)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_core_client.py", line 19, in asyncSetUp
+    os.environ['MEMCONT_TEST_NODE'], str(ROOT / 'test/fixtures/core/astrbot-service.mjs'),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 717, in __getitem__
+KeyError: 'MEMCONT_TEST_NODE'
+
+======================================================================
+ERROR: test_connection_validation_refuses_remote_urls_and_malformed_credentials (test_core_client.CoreClientTests.test_connection_validation_refuses_remote_urls_and_malformed_credentials)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_core_client.py", line 19, in asyncSetUp
+    os.environ['MEMCONT_TEST_NODE'], str(ROOT / 'test/fixtures/core/astrbot-service.mjs'),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 717, in __getitem__
+KeyError: 'MEMCONT_TEST_NODE'
+
+======================================================================
+ERROR: test_failed_revoke_keeps_cleanup_record_until_explicit_close (test_core_client.CoreClientTests.test_failed_revoke_keeps_cleanup_record_until_explicit_close)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_core_client.py", line 19, in asyncSetUp
+    os.environ['MEMCONT_TEST_NODE'], str(ROOT / 'test/fixtures/core/astrbot-service.mjs'),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 717, in __getitem__
+KeyError: 'MEMCONT_TEST_NODE'
+
+======================================================================
+ERROR: test_missing_connection_cannot_revive_after_file_is_restored (test_core_client.CoreClientTests.test_missing_connection_cannot_revive_after_file_is_restored)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_core_client.py", line 19, in asyncSetUp
+    os.environ['MEMCONT_TEST_NODE'], str(ROOT / 'test/fixtures/core/astrbot-service.mjs'),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 717, in __getitem__
+KeyError: 'MEMCONT_TEST_NODE'
+
+======================================================================
+ERROR: test_real_core_read_and_revision_receipt (test_core_client.CoreClientTests.test_real_core_read_and_revision_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_core_client.py", line 19, in asyncSetUp
+    os.environ['MEMCONT_TEST_NODE'], str(ROOT / 'test/fixtures/core/astrbot-service.mjs'),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 717, in __getitem__
+KeyError: 'MEMCONT_TEST_NODE'
+
+======================================================================
+ERROR: test_revocation_and_client_retirement_do_not_reissue_capabilities (test_core_client.CoreClientTests.test_revocation_and_client_retirement_do_not_reissue_capabilities)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_core_client.py", line 19, in asyncSetUp
+    os.environ['MEMCONT_TEST_NODE'], str(ROOT / 'test/fixtures/core/astrbot-service.mjs'),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 717, in __getitem__
+KeyError: 'MEMCONT_TEST_NODE'
+
+======================================================================
+ERROR: test_revoke_of_expired_session_requires_confirmed_absence_then_allows_new_open (test_core_client.CoreClientTests.test_revoke_of_expired_session_requires_confirmed_absence_then_allows_new_open)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_core_client.py", line 19, in asyncSetUp
+    os.environ['MEMCONT_TEST_NODE'], str(ROOT / 'test/fixtures/core/astrbot-service.mjs'),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 717, in __getitem__
+KeyError: 'MEMCONT_TEST_NODE'
+
+======================================================================
+ERROR: test_transport_failure_retires_old_handles_without_reconnect (test_core_client.CoreClientTests.test_transport_failure_retires_old_handles_without_reconnect)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_core_client.py", line 19, in asyncSetUp
+    os.environ['MEMCONT_TEST_NODE'], str(ROOT / 'test/fixtures/core/astrbot-service.mjs'),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 717, in __getitem__
+KeyError: 'MEMCONT_TEST_NODE'
+
+======================================================================
+ERROR: test_real_loader_private_admin_controls_and_unload (test_host_management.HostManagementTests.test_real_loader_private_admin_controls_and_unload)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_core_client.py", line 19, in asyncSetUp
+    os.environ['MEMCONT_TEST_NODE'], str(ROOT / 'test/fixtures/core/astrbot-service.mjs'),
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 717, in __getitem__
+KeyError: 'MEMCONT_TEST_NODE'
+
+======================================================================
+ERROR: test_dedicated_http_client_can_block_retry_before_second_network_send (test_provider_boundary.ProviderBoundaryTests.test_dedicated_http_client_can_block_retry_before_second_network_send)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_provider_boundary.py", line 36, in asyncSetUp
+    sdk = Path(os.environ['MEMCONT_ASTRBOT_SOURCE']).resolve()
+               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 717, in __getitem__
+KeyError: 'MEMCONT_ASTRBOT_SOURCE'
+
+======================================================================
+ERROR: test_disabling_inner_retry_does_not_disable_context_error_retry (test_provider_boundary.ProviderBoundaryTests.test_disabling_inner_retry_does_not_disable_context_error_retry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_provider_boundary.py", line 36, in asyncSetUp
+    sdk = Path(os.environ['MEMCONT_ASTRBOT_SOURCE']).resolve()
+               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 717, in __getitem__
+KeyError: 'MEMCONT_ASTRBOT_SOURCE'
+
+======================================================================
+ERROR: test_one_provider_entry_can_send_multiple_http_requests (test_provider_boundary.ProviderBoundaryTests.test_one_provider_entry_can_send_multiple_http_requests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 119, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 726, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_provider_boundary.py", line 36, in asyncSetUp
+    sdk = Path(os.environ['MEMCONT_ASTRBOT_SOURCE']).resolve()
+               ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen os>", line 717, in __getitem__
+KeyError: 'MEMCONT_ASTRBOT_SOURCE'
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.353s
+
+FAILED (errors=12)

@@ -77,6 +77,7 @@ export function durableManagement(base:ManagementController,journal:Awaited<Retu
  const active=()=>{if(retired)throw new RpError('ownership_lost','Management closed');base.assertActive()}
  const track=async<T>(work:()=>Promise<T>)=>{active();const run=(async()=>{await authorize();active();return work()})();pending.add(run);try{return await run}finally{pending.delete(run)}}
  return{...base,
+  organize(value:unknown){return track(async()=>{const result=await base.organize(value);active();return result})},
   prepare(value:unknown){return track(async()=>{const p=await base.prepare(value);active();await journal.prepare(bindingHash,p.id,p.action,p.payload);active();if(live.size>=32)live.delete(live.values().next().value!);live.add(p.id);return p})},
   confirm(id:string){
    active();const existing=confirming.get(id);if(existing)return existing

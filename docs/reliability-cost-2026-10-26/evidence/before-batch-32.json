@@ -1,0 +1,429 @@
+{
+  "kind": "offline-native-adapter",
+  "paidModelCalls": 0,
+  "billingVerified": false,
+  "requests": [
+    {
+      "round": 1,
+      "call": 1,
+      "messages": 2,
+      "packets": 1,
+      "retired": 0,
+      "requestObjectUtf8Bytes": 6773,
+      "messageTextUtf8Bytes": 2358,
+      "runtimeContextTextUtf8Bytes": 2240,
+      "toolResultCount": 0
+    },
+    {
+      "round": 2,
+      "call": 2,
+      "messages": 5,
+      "packets": 1,
+      "retired": 1,
+      "requestObjectUtf8Bytes": 7719,
+      "messageTextUtf8Bytes": 2691,
+      "runtimeContextTextUtf8Bytes": 2401,
+      "toolResultCount": 0
+    },
+    {
+      "round": 3,
+      "call": 3,
+      "messages": 8,
+      "packets": 1,
+      "retired": 2,
+      "requestObjectUtf8Bytes": 8665,
+      "messageTextUtf8Bytes": 3024,
+      "runtimeContextTextUtf8Bytes": 2562,
+      "toolResultCount": 0
+    },
+    {
+      "round": 4,
+      "call": 4,
+      "messages": 11,
+      "packets": 1,
+      "retired": 3,
+      "requestObjectUtf8Bytes": 9613,
+      "messageTextUtf8Bytes": 3358,
+      "runtimeContextTextUtf8Bytes": 2724,
+      "toolResultCount": 0
+    },
+    {
+      "round": 5,
+      "call": 5,
+      "messages": 14,
+      "packets": 1,
+      "retired": 4,
+      "requestObjectUtf8Bytes": 10559,
+      "messageTextUtf8Bytes": 3691,
+      "runtimeContextTextUtf8Bytes": 2885,
+      "toolResultCount": 0
+    },
+    {
+      "round": 6,
+      "call": 6,
+      "messages": 17,
+      "packets": 1,
+      "retired": 5,
+      "requestObjectUtf8Bytes": 11505,
+      "messageTextUtf8Bytes": 4024,
+      "runtimeContextTextUtf8Bytes": 3046,
+      "toolResultCount": 0
+    },
+    {
+      "round": 7,
+      "call": 7,
+      "messages": 20,
+      "packets": 1,
+      "retired": 6,
+      "requestObjectUtf8Bytes": 12451,
+      "messageTextUtf8Bytes": 4357,
+      "runtimeContextTextUtf8Bytes": 3207,
+      "toolResultCount": 0
+    },
+    {
+      "round": 8,
+      "call": 8,
+      "messages": 23,
+      "packets": 1,
+      "retired": 7,
+      "requestObjectUtf8Bytes": 13397,
+      "messageTextUtf8Bytes": 4690,
+      "runtimeContextTextUtf8Bytes": 3368,
+      "toolResultCount": 0
+    },
+    {
+      "round": 8,
+      "call": 9,
+      "messages": 25,
+      "packets": 1,
+      "retired": 7,
+      "requestObjectUtf8Bytes": 13923,
+      "messageTextUtf8Bytes": 4782,
+      "runtimeContextTextUtf8Bytes": 3368,
+      "toolResultCount": 1
+    },
+    {
+      "round": 9,
+      "call": 10,
+      "messages": 28,
+      "packets": 1,
+      "retired": 8,
+      "requestObjectUtf8Bytes": 14869,
+      "messageTextUtf8Bytes": 5115,
+      "runtimeContextTextUtf8Bytes": 3529,
+      "toolResultCount": 1
+    },
+    {
+      "round": 10,
+      "call": 11,
+      "messages": 31,
+      "packets": 1,
+      "retired": 9,
+      "requestObjectUtf8Bytes": 15816,
+      "messageTextUtf8Bytes": 5449,
+      "runtimeContextTextUtf8Bytes": 3690,
+      "toolResultCount": 1
+    },
+    {
+      "round": 11,
+      "call": 12,
+      "messages": 34,
+      "packets": 1,
+      "retired": 10,
+      "requestObjectUtf8Bytes": 16764,
+      "messageTextUtf8Bytes": 5784,
+      "runtimeContextTextUtf8Bytes": 3851,
+      "toolResultCount": 1
+    },
+    {
+      "round": 12,
+      "call": 13,
+      "messages": 37,
+      "packets": 1,
+      "retired": 11,
+      "requestObjectUtf8Bytes": 17712,
+      "messageTextUtf8Bytes": 6119,
+      "runtimeContextTextUtf8Bytes": 4012,
+      "toolResultCount": 1
+    },
+    {
+      "round": 13,
+      "call": 14,
+      "messages": 40,
+      "packets": 1,
+      "retired": 12,
+      "requestObjectUtf8Bytes": 18660,
+      "messageTextUtf8Bytes": 6454,
+      "runtimeContextTextUtf8Bytes": 4173,
+      "toolResultCount": 1
+    },
+    {
+      "round": 14,
+      "call": 15,
+      "messages": 43,
+      "packets": 1,
+      "retired": 13,
+      "requestObjectUtf8Bytes": 19608,
+      "messageTextUtf8Bytes": 6789,
+      "runtimeContextTextUtf8Bytes": 4334,
+      "toolResultCount": 1
+    },
+    {
+      "round": 15,
+      "call": 16,
+      "messages": 46,
+      "packets": 1,
+      "retired": 14,
+      "requestObjectUtf8Bytes": 20556,
+      "messageTextUtf8Bytes": 7124,
+      "runtimeContextTextUtf8Bytes": 4495,
+      "toolResultCount": 1
+    },
+    {
+      "round": 16,
+      "call": 17,
+      "messages": 49,
+      "packets": 1,
+      "retired": 15,
+      "requestObjectUtf8Bytes": 21504,
+      "messageTextUtf8Bytes": 7459,
+      "runtimeContextTextUtf8Bytes": 4656,
+      "toolResultCount": 1
+    },
+    {
+      "round": 16,
+      "call": 18,
+      "messages": 51,
+      "packets": 1,
+      "retired": 15,
+      "requestObjectUtf8Bytes": 22033,
+      "messageTextUtf8Bytes": 7551,
+      "runtimeContextTextUtf8Bytes": 4656,
+      "toolResultCount": 2
+    },
+    {
+      "round": 17,
+      "call": 19,
+      "messages": 54,
+      "packets": 1,
+      "retired": 16,
+      "requestObjectUtf8Bytes": 22981,
+      "messageTextUtf8Bytes": 7886,
+      "runtimeContextTextUtf8Bytes": 4817,
+      "toolResultCount": 2
+    },
+    {
+      "round": 18,
+      "call": 20,
+      "messages": 57,
+      "packets": 1,
+      "retired": 17,
+      "requestObjectUtf8Bytes": 23929,
+      "messageTextUtf8Bytes": 8221,
+      "runtimeContextTextUtf8Bytes": 4978,
+      "toolResultCount": 2
+    },
+    {
+      "round": 19,
+      "call": 21,
+      "messages": 60,
+      "packets": 1,
+      "retired": 18,
+      "requestObjectUtf8Bytes": 24877,
+      "messageTextUtf8Bytes": 8556,
+      "runtimeContextTextUtf8Bytes": 5139,
+      "toolResultCount": 2
+    },
+    {
+      "round": 20,
+      "call": 22,
+      "messages": 63,
+      "packets": 1,
+      "retired": 19,
+      "requestObjectUtf8Bytes": 25825,
+      "messageTextUtf8Bytes": 8891,
+      "runtimeContextTextUtf8Bytes": 5300,
+      "toolResultCount": 2
+    },
+    {
+      "round": 21,
+      "call": 23,
+      "messages": 66,
+      "packets": 1,
+      "retired": 20,
+      "requestObjectUtf8Bytes": 26773,
+      "messageTextUtf8Bytes": 9226,
+      "runtimeContextTextUtf8Bytes": 5461,
+      "toolResultCount": 2
+    },
+    {
+      "round": 22,
+      "call": 24,
+      "messages": 69,
+      "packets": 1,
+      "retired": 21,
+      "requestObjectUtf8Bytes": 27721,
+      "messageTextUtf8Bytes": 9561,
+      "runtimeContextTextUtf8Bytes": 5622,
+      "toolResultCount": 2
+    },
+    {
+      "round": 23,
+      "call": 25,
+      "messages": 72,
+      "packets": 1,
+      "retired": 22,
+      "requestObjectUtf8Bytes": 28669,
+      "messageTextUtf8Bytes": 9896,
+      "runtimeContextTextUtf8Bytes": 5783,
+      "toolResultCount": 2
+    },
+    {
+      "round": 24,
+      "call": 26,
+      "messages": 75,
+      "packets": 1,
+      "retired": 23,
+      "requestObjectUtf8Bytes": 29617,
+      "messageTextUtf8Bytes": 10231,
+      "runtimeContextTextUtf8Bytes": 5944,
+      "toolResultCount": 2
+    },
+    {
+      "round": 24,
+      "call": 27,
+      "messages": 77,
+      "packets": 1,
+      "retired": 23,
+      "requestObjectUtf8Bytes": 30146,
+      "messageTextUtf8Bytes": 10323,
+      "runtimeContextTextUtf8Bytes": 5944,
+      "toolResultCount": 3
+    },
+    {
+      "round": 25,
+      "call": 28,
+      "messages": 80,
+      "packets": 1,
+      "retired": 24,
+      "requestObjectUtf8Bytes": 31094,
+      "messageTextUtf8Bytes": 10658,
+      "runtimeContextTextUtf8Bytes": 6105,
+      "toolResultCount": 3
+    },
+    {
+      "round": 26,
+      "call": 29,
+      "messages": 83,
+      "packets": 1,
+      "retired": 25,
+      "requestObjectUtf8Bytes": 32042,
+      "messageTextUtf8Bytes": 10993,
+      "runtimeContextTextUtf8Bytes": 6266,
+      "toolResultCount": 3
+    },
+    {
+      "round": 27,
+      "call": 30,
+      "messages": 86,
+      "packets": 1,
+      "retired": 26,
+      "requestObjectUtf8Bytes": 32990,
+      "messageTextUtf8Bytes": 11328,
+      "runtimeContextTextUtf8Bytes": 6427,
+      "toolResultCount": 3
+    },
+    {
+      "round": 28,
+      "call": 31,
+      "messages": 89,
+      "packets": 1,
+      "retired": 27,
+      "requestObjectUtf8Bytes": 33938,
+      "messageTextUtf8Bytes": 11663,
+      "runtimeContextTextUtf8Bytes": 6588,
+      "toolResultCount": 3
+    },
+    {
+      "round": 29,
+      "call": 32,
+      "messages": 92,
+      "packets": 1,
+      "retired": 28,
+      "requestObjectUtf8Bytes": 34886,
+      "messageTextUtf8Bytes": 11998,
+      "runtimeContextTextUtf8Bytes": 6749,
+      "toolResultCount": 3
+    },
+    {
+      "round": 30,
+      "call": 33,
+      "messages": 95,
+      "packets": 1,
+      "retired": 29,
+      "requestObjectUtf8Bytes": 35834,
+      "messageTextUtf8Bytes": 12333,
+      "runtimeContextTextUtf8Bytes": 6910,
+      "toolResultCount": 3
+    },
+    {
+      "round": 31,
+      "call": 34,
+      "messages": 98,
+      "packets": 1,
+      "retired": 30,
+      "requestObjectUtf8Bytes": 36782,
+      "messageTextUtf8Bytes": 12668,
+      "runtimeContextTextUtf8Bytes": 7071,
+      "toolResultCount": 3
+    },
+    {
+      "round": 32,
+      "call": 35,
+      "messages": 101,
+      "packets": 1,
+      "retired": 31,
+      "requestObjectUtf8Bytes": 37730,
+      "messageTextUtf8Bytes": 13003,
+      "runtimeContextTextUtf8Bytes": 7232,
+      "toolResultCount": 3
+    },
+    {
+      "round": 32,
+      "call": 36,
+      "messages": 103,
+      "packets": 1,
+      "retired": 31,
+      "requestObjectUtf8Bytes": 38259,
+      "messageTextUtf8Bytes": 13095,
+      "runtimeContextTextUtf8Bytes": 7232,
+      "toolResultCount": 4
+    }
+  ],
+  "recoveries": [],
+  "completedInputs": 32,
+  "checkpoints": [
+    {
+      "round": 16,
+      "durationMs": 6380.967700000001,
+      "memoryUsageTotal": 14525,
+      "bindingHealth": "healthy",
+      "requestAdmission": {
+        "state": "admitted",
+        "stage": "send",
+        "at": "2026-10-26T13:53:15.652Z"
+      }
+    },
+    {
+      "round": 32,
+      "durationMs": 22607.252500000002,
+      "memoryUsageTotal": 23163,
+      "bindingHealth": "healthy",
+      "requestAdmission": {
+        "state": "admitted",
+        "stage": "send",
+        "at": "2026-10-26T13:55:30.384Z"
+      }
+    }
+  ]
+}

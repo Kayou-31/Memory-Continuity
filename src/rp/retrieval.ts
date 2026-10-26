@@ -9,7 +9,7 @@ const sha = (s: string) => createHash('sha256').update(s).digest('hex')
 export const fullSpan = (s: SourceRevision) => ({ sourceRevisionId: s.id, publicTextSha256: s.publicTextSha256, startUtf16: 0, endUtf16: s.publicTextLengthUtf16, quoteSha256: s.publicTextSha256 })
 export function unwrap<T>(r: Result<T>): T { if (!r.ok) throw new RpError(r.code, r.message); return r.value }
 export interface RetrievalSizing {fits?:(result:any)=>boolean}
-interface Fixed { authority: HostAuthority; fence: InputFence; ids: readonly { id: string; revision: string }[]; snapshotId: string; queryHash: string; query?: string }
+interface Fixed { authority: HostAuthority; fence: InputFence; ids: readonly { id: string; revision: string }[]; snapshotId: string; queryHash: string; query?: string; queries?:string[] }
 export function createRetrieval(store: RpStore, options: { inputSourceIds?: (authority: HostAuthority) => ReadonlySet<string>; entityIds?: readonly string[]; verification?: (recordId: string) => Promise<'source-match' | 'unavailable' | 'hash-mismatch'> } = {}) {
   const searches = new Map<string, { fixed: Fixed; offset: number }>(), bodies = new Map<string, { fixed: Fixed; source: Pick<RetrievalRecord, 'id' | 'revision'>; offset: number }>()
   const records = (authority: HostAuthority) => readConsistentRecords(store, authority, options.inputSourceIds?.(authority) ?? new Set())
@@ -24,29 +24,34 @@ export function createRetrieval(store: RpStore, options: { inputSourceIds?: (aut
   }
   const bounded = (n: unknown, fallback: number, max: number) => { const value = n ?? fallback; integer(value, 1); if (value > max) throw new RpError('invalid_record', 'RP page limit'); return value }
   return Object.freeze({
-    async search(authority: HostAuthority, input: { query?: string; cursor?: string; limit?: number; entityId?: string; kind?: string }, sizing:RetrievalSizing={}) {
+    async search(authority: HostAuthority, input: { query?: string; queryAlternatives?:string[]; cursor?: string; limit?: number; entityId?: string; kind?: string }, sizing:RetrievalSizing={}) {
       try {
-        object(input, [], ['query', 'cursor', 'limit', 'entityId', 'kind']); const limit = bounded(input.limit, 7, 100)
+        object(input, [], ['query', 'queryAlternatives', 'cursor', 'limit', 'entityId', 'kind']); const limit = bounded(input.limit, 7, 100)
         let fixed: Fixed, offset = 0
         if (input.cursor !== undefined) {
           const saved = searches.get(input.cursor); if (!saved) denied('unknown search cursor'); fixed = saved!.fixed; offset = saved!.offset
         } else {
           text(input.query ?? '', 4096, true)
-          const terms = queryGroups(input.query ?? ''), { fence, records: sources } = await records(authority)
+          const alternatives=input.queryAlternatives??[]
+          if(!Array.isArray(alternatives)||alternatives.length>8)throw new RpError('invalid_record','Use at most eight explicit recall alternatives')
+          alternatives.forEach(q=>text(q,4096))
+          const queries=[...new Set([input.query??'',...alternatives])].filter(q=>q.trim()||!alternatives.length),terms=queries.map(queryGroups)
+          if(terms.flat(2).length>128)throw new RpError('invalid_record','Use at most 128 total recall terms')
+          const { fence, records: sources } = await records(authority)
           const hits: { id: string; revision: string; score: number }[] = []
           for (const source of sources) {
             if (input.entityId && (!(options.entityIds ?? []).includes(input.entityId) || !source.entities.includes(input.entityId))) continue
             if (input.kind && source.kind !== input.kind) continue
-            const score = lexicalScore(source.body, terms)
-            if (score !== null) hits.push({ id: source.id, revision: source.revision, score })
+            const scores=terms.map(t=>lexicalScore(source.body,t)).filter((s):s is number=>s!==null)
+            if(scores.length)hits.push({id:source.id,revision:source.revision,score:Math.max(...scores)})
           }
           hits.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id, 'en'))
-          fixed = { authority, fence, ids: hits.map(({ id, revision }) => ({ id, revision })), snapshotId: token(), queryHash: sha(input.query ?? ''), query: input.query ?? '' }
+          fixed = { authority, fence, ids: hits.map(({ id, revision }) => ({ id, revision })), snapshotId: token(), queryHash: sha(alternatives.length?JSON.stringify(queries):input.query??''),query:input.query??'',queries }
         }
         const { map, fence } = await validate(authority, fixed), items: {id:string;revision:string;kind:RetrievalRecord['kind'];excerpt:string}[] = []
-        for (const hit of fixed.ids.slice(offset, offset + limit)) { const source = map.get(hit.id)!; items.push({ id: source.id, revision: source.revision, kind: source.kind, excerpt: hitExcerpt(source.body, fixed.query ?? '') }) }
+        for (const hit of fixed.ids.slice(offset, offset + limit)) { const source = map.get(hit.id)!; items.push({ id: source.id, revision: source.revision, kind: source.kind, excerpt: hitExcerpt(source.body,fixed.queries?.find(q=>lexicalScore(source.body,queryGroups(q))!==null)??fixed.query??'') }) }
         const candidateCursor=token()
-        const result=()=>({ok:true as const,value:{snapshotId:fixed.snapshotId,queryHash:fixed.queryHash,resultManifestHash:sha(JSON.stringify(fixed.ids)),sortVersion:'rp-terms/v2',items:[...items],nextCursor:offset+items.length<fixed.ids.length?candidateCursor:null}})
+        const result=()=>({ok:true as const,value:{snapshotId:fixed.snapshotId,queryHash:fixed.queryHash,resultManifestHash:sha(JSON.stringify(fixed.ids)),sortVersion:fixed.queries&&fixed.queries.length>1?'rp-terms/v3':'rp-terms/v2',items:[...items],nextCursor:offset+items.length<fixed.ids.length?candidateCursor:null}})
         while(sizing.fits&&!sizing.fits(result())){if(items.length<=1)throw new RpError('context_budget_exceeded','No complete search item fits the remaining memory budget');items.pop()}
         const selected=result()
         if(selected.value.nextCursor)searches.set(candidateCursor,{fixed,offset:offset+items.length})

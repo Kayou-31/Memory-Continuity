@@ -1,3 +1,4 @@
+import {reconcileDocumentRevision} from './reconcile.js'
 import {createHash} from 'node:crypto'
 import {canonical, type RpStore} from '../../store.js'
 import type {createCanonicalService} from '../../canonical.js'
@@ -48,9 +49,16 @@ export function createDocumentService(store:RpStore, service:ReturnType<typeof c
           if(head!==previousEventId)invalid('document predecessor changed')
           if(head) {const e=view.events.find(e=>e.id===head),p=e&&documentValue(e);if(!p||p.operation==='retract')invalid('document predecessor unavailable or withdrawn')}
         }
+        const revisionReview=previousEventId?unwrap(await store.withReadView(authority,async current=>{
+          const event=current.events.find(e=>e.id===previousEventId),value=event&&documentValue(event)
+          if(!event||!value?.manifest)throw new RpError('source_unavailable','Previous document unavailable')
+          const span=event.sources.find(s=>s.sourceRevisionId===value.manifest!.sourceRevisionId)
+          if(!span)throw new RpError('source_unavailable','Previous document original missing')
+          return reconcileDocumentRevision(documentFromManifest(value.manifest,await current.readSource(span)),draft,value.policies??[])
+        },{audit:true})):undefined
         const handle=Object.freeze({}),p={authority,draft,policies,previousEventId,originEventId:view.person.originEventId,eventId,key,expected:view.ledger.fence}
         previews.set(handle,p)
-        return {ok:true as const,value:{handle,documentId:draft.documentId,personId:draft.personId,sha256:draft.sha256,utf8Bytes:draft.utf8Bytes,inputFence:structuredClone(p.expected),operation:previousEventId?'revise':'import',draft:structuredClone(draft),policies:structuredClone(policies)}}
+        return {ok:true as const,value:{handle,...(revisionReview?{revisionReview}:{}),documentId:draft.documentId,personId:draft.personId,sha256:draft.sha256,utf8Bytes:draft.utf8Bytes,inputFence:structuredClone(p.expected),operation:previousEventId?'revise':'import',draft:structuredClone(draft),policies:structuredClone(policies)}}
       }catch(e){return failure(e)}
     },
     async confirm(authority:HostAuthority,handle:object,source:SourceRevision) {

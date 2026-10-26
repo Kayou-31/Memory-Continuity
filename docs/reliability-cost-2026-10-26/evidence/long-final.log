@@ -1,0 +1,20 @@
+TAP version 13
+# completed inputs 16 adapter calls 18
+# completed inputs 32 adapter calls 36
+# completed inputs 48 adapter calls 54
+# completed inputs 64 adapter calls 72
+# Subtest: 64 explicit inputs, tool steps, cold resume and clean continuation through the native SDK
+ok 1 - 64 explicit inputs, tool steps, cold resume and clean continuation through the native SDK
+  ---
+  duration_ms: 156543.9172
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 157154.6468

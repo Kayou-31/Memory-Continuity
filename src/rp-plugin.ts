@@ -21,6 +21,7 @@ export const Config = z.object({
   entityIds: z.array(z.string()).default([]),
   knownCooperatingWriters: z.boolean().default(false),
   ultraMemoryOptimization: z.boolean().default(true),
+  requestLimits: z.any().required(false),
   budget: z.any().required(false),
   globalGrants: z.array(z.any()).required(false),
 })

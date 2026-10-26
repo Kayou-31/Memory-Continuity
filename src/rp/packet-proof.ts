@@ -30,13 +30,19 @@ export function capturePacketProof(events: readonly SemanticEvent[], summaries: 
   validatePacketProof(proof); return proof
 }
 export async function verifyPacketProof(store: RpStore, authority: HostAuthority, proof: PacketProof | undefined): Promise<void> {
-  if (!proof) throw new RpError('stale_input', 'Historical packet has no original proof; use clean continuation')
-  validatePacketProof(proof)
+  return verifyPacketProofs(store,authority,[proof])
+}
+/** One authorization snapshot per admission, with no cross-request validity cache. */
+export async function verifyPacketProofs(store: RpStore, authority: HostAuthority, input: readonly (PacketProof|undefined)[]): Promise<void> {
+  const proofs:PacketProof[]=[]
+  for(const proof of input){if(!proof)throw new RpError('stale_input','Historical packet has no original proof; use clean continuation');validatePacketProof(proof);proofs.push(proof)}
+  if(!proofs.length)return
   unwrap(await store.withReadView(authority,view=>{
     const diaries=new Set(currentDiaryEvents(view,undefined,undefined).map(e=>e.id))
     const events=view.events.filter(event=>{if(event.payload.kind==='diary_entry')return diaries.has(event.id);const d=documentValue(event);return !d||!!view.ledger&&!!d.manifest&&documentHead(view.ledger.authorityChanges,d.personId,d.documentId)===event.id})
     const records = new Map<string, { kind: 'event' | 'summary'; revision: string }>([...events.map(event => [event.id, { kind: 'event', revision: digest(event) }] as const), ...view.summaries.map(summary => [summary.id, { kind: 'summary', revision: digest(summary) }] as const)])
-    if (proof.projectionSha256 !== projectionHash(view.projection) || proof.records.some(record => records.get(record.id)?.kind !== record.kind || records.get(record.id)?.revision !== record.revision)) throw new RpError('stale_input', 'Historical packet records changed; use clean continuation')
+    const projected=projectionHash(view.projection)
+    for(const proof of proofs)if (proof.projectionSha256 !== projected || proof.records.some(record => records.get(record.id)?.kind !== record.kind || records.get(record.id)?.revision !== record.revision)) throw new RpError('stale_input', 'Historical packet records changed; use clean continuation')
     return true
   },{audit:authority.viewpoint.kind==='narrator'}))
 }

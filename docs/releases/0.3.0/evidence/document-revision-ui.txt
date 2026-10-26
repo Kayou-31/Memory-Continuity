@@ -1,0 +1,14 @@
+Browser tab: 7, Title: "Memory-Continuity 工作台", URL: "http://127.0.0.1:51982/".
+The following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 75
++				183 text 旧条件已填入当前草稿；尚未保存，请核对后预览确认。
+~							108 pop up button (collapsed, settable) Description: 分类, Value: 人物, Secondary Actions: Expand
+~									110 (selected) 人物
+~									115 待分类
+~							124 pop up button (collapsed, settable) Description: 注入资格, Value: 允许按条件选入, Secondary Actions: Expand
+~									126 (selected) 允许按条件选入
+~									127 仅保存，不注入
+~							130 pop up button (collapsed, settable) Description: 对话类型, Value: 仅私聊, Secondary Actions: Expand
+~									132 全部授权对话
+~									133 (selected) 仅私聊
+The focused UI element is 140 button 将旧条件填入草稿，继续核对

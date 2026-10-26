@@ -1,0 +1,32 @@
+[
+  {
+    "command": "npm run typecheck",
+    "exitCode": 0,
+    "seconds": 2.366,
+    "log": "final-typecheck.log"
+  },
+  {
+    "command": "npm run build",
+    "exitCode": 0,
+    "seconds": 2.863,
+    "log": "final-build.log"
+  },
+  {
+    "command": "npm test",
+    "exitCode": 0,
+    "seconds": 219.404,
+    "log": "final-test.log"
+  },
+  {
+    "command": "npm run evaluate:fixture",
+    "exitCode": 0,
+    "seconds": 0.177,
+    "log": "final-fixture.log"
+  },
+  {
+    "command": "npm pack --dry-run",
+    "exitCode": 0,
+    "seconds": 2.353,
+    "log": "final-pack-dry.log"
+  }
+]

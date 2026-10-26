@@ -74,6 +74,13 @@ export function createSummaryService(input: { store: RpStore; global: Awaited<Re
       try { const snapshot = await capture(authority, selection, options), candidate = unwrap(validateCandidate(raw, snapshot)); return { ok: true as const, value: await coordinator.mutate(async () => { await guard(authority, snapshot, options); return persist(authority, candidate, snapshot) }) } }
       catch (e) { return failure(e) }
     },
+    async proposeOnce(authority:HostAuthority,raw:unknown,selection:SummarySelection,options:SummaryContext={}) {
+      try {
+        const snapshot=await capture(authority,selection,options),candidate=unwrap(validateCandidate(raw,snapshot))
+        candidate.id='candidate_'+sha(canonical({proposal:raw,selection:snapshot.selection,fence:snapshot.inputFence,globals:snapshot.globalFences,policyEpoch:snapshot.policyEpoch}))
+        return {ok:true as const,value:await coordinator.mutate(async()=>{await guard(authority,snapshot,options);return persist(authority,candidate,snapshot)})}
+      }catch(e){return failure(e)}
+    },
     async fromGenerated(authority: HostAuthority, raw: unknown, snapshot: CandidateSnapshot, options: SummaryContext = {}) {
       const candidate = unwrap(validateCandidate(raw, snapshot))
       return coordinator.mutate(async () => { await guard(authority, snapshot, options); return persist(authority, candidate, snapshot) })

@@ -7,6 +7,7 @@ import {object,cloneInput,text,id,RpError} from '../schema.js'
 import {unwrap} from '../retrieval.js'
 import {createDocumentService} from './documents/service.js'
 import {importPersonDocument} from './documents/import.js'
+import {reconcileDocumentRevision} from './documents/reconcile.js'
 import {documentValue,documentHead} from './documents/format.js'
 import type {PersonDocumentDraft} from './documents/types.js'
 import {createDiaryService} from '../diary/service.js'
@@ -16,7 +17,7 @@ import type {WorkbenchSettings} from './management-settings.js'
 export interface ManagementImpact {title:string;changes:string[];personIds:string[];branchId:string;history:string;recovery:string;mandatory:boolean}
 export interface ExtensionReview {payload:any;execute:(source:SourceRevision)=>Promise<unknown>}
 export function managementImpact(action:string,payload:any,branchId:string):ManagementImpact{
- const labels:Record<string,string>={create:'建立人物起点',edit:'修改人物定义','set-policy':'修改成长边界',agent:'改变经历、关系或目标',adopt:'采纳人物成长',reject:'拒绝成长候选',propose:'提交待审阅成长','document-import':'保存完整人物资料','document-retract':'撤回人物资料','diary-configure':'修改共同日记权限','diary-write':'保存共同日记','diary-delete':'隐私删除日记',settings:'保存工作台提醒偏好','host-budget':'改变记忆预算','host-injection':'改变注入规则','host-person':'改变聊天人物绑定'}
+ const labels:Record<string,string>={'summary-adopt':'采纳摘要候选',create:'建立人物起点',edit:'修改人物定义','set-policy':'修改成长边界',agent:'改变经历、关系或目标',adopt:'采纳人物成长',reject:'拒绝成长候选',propose:'提交待审阅成长','document-import':'保存完整人物资料','document-retract':'撤回人物资料','diary-configure':'修改共同日记权限','diary-write':'保存共同日记','diary-delete':'隐私删除日记',settings:'保存工作台提醒偏好','host-budget':'改变记忆预算','host-injection':'改变注入规则','host-person':'改变聊天人物绑定','host-mode':'切换聊天用途','host-module':'调整可选能力模块','host-constraints':'修改人物与用途规则'}
  const changes:Record<string,string>={
   settings:'只改变修改前的提醒方式；每次保存仍需要你明确确认。',
   'diary-configure':payload.allowAgentWrite?'允许该人物在获授权的当前对话中写自己的日记。':payload.previousEventId?'关闭 AI 日记写入，已有日记保留。':'建立共同日记，先只允许你写入。',
@@ -46,10 +47,16 @@ export function managementExtensions(store:RpStore,service:ReturnType<typeof cre
    let original:string;try{original=new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(bytes)}catch{throw new RpError('invalid_record','文件不是有效 UTF-8；未替换或丢弃字符')}
    const draft=importPersonDocument({personId:v.personId,documentId:v.documentId,title:v.title,format:v.mime==='text/markdown'?'markdown':'text',text:original})
    if(v.previousEventId!==undefined)id(v.previousEventId)
+   let revisionReview:ReturnType<typeof reconcileDocumentRevision>|undefined
+   if(v.previousEventId!==undefined){
+    const prior=unwrap(await documents.read(authority,v.personId,v.documentId))
+    if(prior.eventId!==v.previousEventId||prior.status!=='active')throw new RpError('stale_input','修订版本已变化；请重新载入资料')
+    revisionReview=reconcileDocumentRevision(prior.draft,draft,prior.policies)
+   }
    for(const [key,u]of uploads)if(u.expires<Date.now())uploads.delete(key)
    if(uploads.size>=4)throw new RpError('capacity_exceeded','最多保留四份待导入草稿；请取消旧草稿')
    const fence=unwrap(await store.readFence(authority));guard();const key=randomUUID().replaceAll('-',''),u={draft,previousEventId:v.previousEventId,fence,expires:Date.now()+600000};uploads.set(key,u)
-   return {id:key,draft:structuredClone(draft),expiresAt:new Date(u.expires).toISOString(),command:'/memcont document preview '+key}
+   return {id:key,draft:structuredClone(draft),...(revisionReview?{revisionReview}:{}),expiresAt:new Date(u.expires).toISOString(),command:'/memcont document preview '+key}
   },
   discardUpload(key:string){text(key,64);uploads.delete(key);return {discarded:true}},
   async read(input:unknown){
@@ -70,7 +77,7 @@ export function managementExtensions(store:RpStore,service:ReturnType<typeof cre
     const v=object(input,['uploadId'],['policies']),u=uploads.get(v.uploadId);if(!u)throw new RpError('scope_denied','Unknown upload handle');if(u.expires<Date.now())throw new RpError('scope_denied','Upload expired; upload again')
     if(canonical(u.fence)!==canonical(expected))throw new RpError('stale_input','Upload snapshot changed')
     const p=unwrap(await documents.preview(authority,{draft:u.draft,...(u.previousEventId?{previousEventId:u.previousEventId}:{}),...(v.policies?{policies:v.policies}:{})},key))
-    return {payload:{...p.draft,policies:p.policies,previousEventId:u.previousEventId??null},execute:async source=>{const result=unwrap(await documents.confirm(authority,p.handle,source));uploads.delete(v.uploadId);return result}}
+    return {payload:{...p.draft,policies:p.policies,revisionReview:p.revisionReview??null,previousEventId:u.previousEventId??null},execute:async source=>{const result=unwrap(await documents.confirm(authority,p.handle,source));uploads.delete(v.uploadId);return result}}
    }
    if(action==='document-retract'){
     const v=object(input,['personId','documentId']),prior=unwrap(await documents.read(authority,v.personId,v.documentId));if(prior.status!=='active')throw new RpError('source_unavailable','Document already withdrawn')

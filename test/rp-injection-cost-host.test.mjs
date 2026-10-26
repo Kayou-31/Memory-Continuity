@@ -60,11 +60,11 @@ test('persistence failure after committing a retirement blocks the next provider
  }finally{undo?.();await f.dispose()}
 })
 
-test('retired same-packet tool context cannot certify a request with the current full packet removed',async()=>{
+test('reused same-packet tool context cannot certify a request with the current full packet removed',async()=>{
  const f=await host({entityIds:['erin']}),seen=[];let calls=0
  class Terminal extends LlmAdapter{async *stream(options){seen.push(options);if(++calls===1){yield {type:'tool-call-delta',index:0,id:'cost_status',name:'rp_memory_status',argumentsDelta:'{}'};yield {type:'finish',reason:{kind:'tool-calls'}}}else{yield {type:'text-delta',index:0,text:'已核对'};yield {type:'finish',reason:{kind:'stop'}}}}}
  try{const a=await setup(f);a.options.provider='cost-loop';f.ctx.llm.registerAdapter(['cost-loop'],new Terminal());ok(await f.command(a,'input 你好'));await a.whenIdle();await f.rp.ready(a.id);assert.equal(calls,2)
-  const request=seen[1],messages=request.messages.filter(m=>!packetMessages(request).includes(m));assert.ok(messages.some(m=>m.id.startsWith('retired_')))
+  const request=seen[1],messages=request.messages.filter(m=>!packetMessages(request).includes(m));assert.equal(messages.some(m=>m.id.startsWith('retired_')),false)
   await assert.rejects(f.stream(a,{...request,messages}),/injection.static request envelope absent or changed/);assert.equal(calls,2)
  }finally{await f.dispose()}
 })

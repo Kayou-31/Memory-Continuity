@@ -37,8 +37,9 @@ export function retiredContextOriginal(session:any,journal:DurableSession,messag
 }
 
 /** Pure proposed surface used by sizing and then committed through the SDK's single-node API. */
-export function planContextRetirement(session:any,journal:DurableSession,keepPacketId?:string){
+export function planContextRetirement(session:any,journal:DurableSession,keepPacketId?:string,keepBodyHash?:string){
  const replacements:{seq:any;message:any}[]=[],messages=session.deriveMessages().map((message:any)=>{
+  if(keepBodyHash&&journal.snapshots[message.id]?.bodyHash===keepBodyHash)return message
   if(journal.snapshots[message.id]?.packetId===keepPacketId)return message
   const next=remainder(message,journal);if(!next)return message
   const seq=session.surface.nodes.find((s:any)=>{const e=session.eventAt(s);return e?.type==='user/message'&&e.data.id===message.id&&e.surfaceOp==='append'})

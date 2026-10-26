@@ -20,7 +20,7 @@ export async function openManagementServer(controller:ManagementController,conte
    const font=/^\/assets\/fonts\/(noto-serif-sc-\d{3}\.woff2)$/u.exec(req.url??'')
    if(req.method==='GET'&&font){const bytes=await readWorkbenchFont(font[1]);res.setHeader('Content-Type','font/woff2');res.setHeader('Cache-Control','public, max-age=31536000, immutable');res.end(bytes);return}
    if(req.method==='GET'&&req.url==='/'){res.setHeader('Content-Type','text/html; charset=utf-8');res.end(managerPage(nonce));return}
-   if(req.method!=='POST'||!auth(req)||!['/api/snapshot','/api/prepare','/api/confirm','/api/close','/api/injection-preview','/api/upload','/api/discard-upload','/api/read'].includes(req.url??''))throw new RpError('scope_denied','Management authorization denied')
+   if(req.method!=='POST'||!auth(req)||!['/api/snapshot','/api/prepare','/api/confirm','/api/close','/api/injection-preview','/api/upload','/api/discard-upload','/api/read','/api/organize'].includes(req.url??''))throw new RpError('scope_denied','Management authorization denied')
    if(req.headers['content-type']!=='application/json')throw new RpError('invalid_record','JSON content type required')
    const chunks:Buffer[]=[];let size=0
    const limit=req.url==='/api/upload'?1450000:131072
@@ -28,6 +28,7 @@ export async function openManagementServer(controller:ManagementController,conte
    if(!auth(req))throw new RpError('ownership_lost','Management revoked')
    const input=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(Buffer.concat(chunks)));let value:unknown
    if(req.url==='/api/snapshot'){object(input,[]);value={...await controller.snapshot(),context:context()}}
+   else if(req.url==='/api/organize')value=await controller.organize(input)
    else if(req.url==='/api/injection-preview'){
     const q=object(input,['query']);if(typeof q.query!=='string'||Buffer.byteLength(q.query,'utf8')>8192)throw new RpError('invalid_record','Preview query exceeds 8 KiB')
     if(!injectionPreview)throw new RpError('capability_missing','当前宿主没有注入预览入口')

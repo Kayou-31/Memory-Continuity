@@ -13,6 +13,8 @@ import type {HostAuthority,InputFence} from '../types.js'
 import type {MemoryCoordinator} from '../session-policy.js'
 import {workbenchSettings,type WorkbenchSettings} from './management-settings.js'
 import {managementExtensions,managementImpact,type ExtensionReview} from './management-extensions.js'
+import type {createOrganizer} from '../organizer.js'
+import type {SummaryService,SummaryContext} from '../summarizer.js'
 
 const digest=(v:unknown)=>createHash('sha256').update(canonical(v)).digest('hex')
 const uid=()=>randomUUID().replaceAll('-','')
@@ -21,16 +23,16 @@ export interface ManagementHost {
  prepare(action:string,payload:unknown):Promise<{payload:unknown;command:string}>
  apply(command:string,key:string,check:()=>Promise<void>):Promise<unknown>
 }
-export function createManagementService(store:RpStore,control:Parameters<typeof createCanonicalService>[1],entities:readonly string[],coordinator:MemoryCoordinator,profileRoot:string){
+export function createManagementService(store:RpStore,control:Parameters<typeof createCanonicalService>[1],entities:readonly string[],coordinator:MemoryCoordinator,profileRoot:string,assistance?:{organizer:ReturnType<typeof createOrganizer>;summaries:SummaryService}){
  const canonicalService=createCanonicalService(store,control,{entityIds:entities}),person=createPersonService(store,canonicalService,entities),agent=createAgentMemory(store,canonicalService,entities)
  const settings=workbenchSettings(profileRoot)
- return Object.freeze({create(authority:HostAuthority,active:()=>boolean=()=>true,host?:ManagementHost){
+ return Object.freeze({create(authority:HostAuthority,active:()=>boolean=()=>true,host?:ManagementHost,summaryContext:SummaryContext={}){
   let revoked=false
   const guard=()=>{if(revoked||!active())throw new RpError('ownership_lost','Management capability revoked')}
   const authorize=async()=>{guard();unwrap(await control.checkManagement(authority));guard()}
   const extra=managementExtensions(store,canonicalService,entities,authority,guard,settings)
   type Stamp={fence:InputFence;candidatesHash:string;preferences:WorkbenchSettings;hostHash:string}
-  type Review={stamp:Stamp;action:string;payload:any;handle?:object;extension?:ExtensionReview;hostCommand?:string;key:string;result?:unknown;done?:boolean;attempted?:boolean}
+  type Review={stamp:Stamp;action:string;payload:any;handle?:object;extension?:ExtensionReview;hostCommand?:string;key:string;result?:unknown;done?:boolean;attempted?:boolean;confirming?:Promise<unknown>}
   const snapshots=new Map<string,Stamp>(),reviews=new Map<string,Review>()
   const retain=<T>(map:Map<string,T>,id:string,value:T)=>{if(map.size>=32)map.delete(map.keys().next().value!);map.set(id,value)}
   const check=async(stamp:Stamp)=>{
@@ -43,6 +45,21 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
    async upload(input:unknown){return coordinator.mutate(async()=>{await authorize();const result=await extra.upload(input);guard();return result})},
    async discardUpload(id:string){await authorize();return extra.discardUpload(id)},
    async read(input:unknown){await authorize();const result=await extra.read(input);guard();return result},
+   async organize(input:unknown){
+    const r=object(cloneInput(input),['snapshotId','operation'],['candidateId']);text(r.snapshotId,64)
+    await authorize();const stamp=snapshots.get(r.snapshotId);if(!stamp)throw new RpError('scope_denied','Unknown management snapshot');await check(stamp)
+    if(!assistance)throw new RpError('capability_missing','当前核心未接入整理能力')
+    const result=await withPublicationGuard(guard,async()=>{
+     if(r.operation==='summary')return unwrap(await assistance.organizer.summarize(authority,{},summaryContext))
+     if(r.operation==='review')return unwrap(await assistance.organizer.review(authority))
+     if(r.operation==='handoff')return unwrap(await assistance.organizer.handoff(authority))
+     if(r.operation==='candidates')return unwrap(await assistance.summaries.list(authority))
+     if(r.operation==='candidate'){text(r.candidateId,256);return unwrap(await assistance.summaries.get(authority,r.candidateId,summaryContext))}
+     throw new RpError('invalid_record','Unknown organizer operation')
+    })
+    await check(stamp);if(Buffer.byteLength(canonical(result))>2*1024*1024)throw new RpError('capacity_exceeded','整理结果超过 2 MiB；请使用有界核心指令')
+    return result
+   },
    async snapshot(){return coordinator.mutate(async()=>{
     await authorize()
     const data=unwrap(await store.withReadView(authority,view=>{
@@ -73,10 +90,15 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
      }else if(r.action==='adopt')object(r.payload,['candidateIds'])
      else if(r.action==='reject')object(r.payload,['candidateId'])
      else if(r.action==='propose')object(r.payload,['changes'])
+     else if(r.action==='summary-adopt'){
+      object(r.payload,['candidateId']);if(!assistance)throw new RpError('capability_missing','当前核心未接入摘要审阅')
+      const candidate=unwrap(await assistance.summaries.get(authority,r.payload.candidateId,summaryContext))
+      review.payload={candidateId:r.payload.candidateId,summary:candidate.proposedSummary,proposedEvents:candidate.proposedEvents}
+     }
      else if(r.action==='agent'){
       object(r.payload,['kind'],['actorIds','description','sourceRevisionIds','fictionalTime','fromId','toId','relation','value','previousEventId','causeEventIds','note','ownerId','goalId','category','objective','status','progress','nextAction','targetEntityId'])
       if(!['experience','relationship','goal'].includes(r.payload.kind))throw new RpError('scope_denied','Unsupported management Agent operation')
-     }else if(['host-budget','host-injection','host-person'].includes(r.action)){
+     }else if(['host-budget','host-injection','host-person','host-mode','host-module','host-constraints'].includes(r.action)){
       if(!host)throw new RpError('capability_missing','当前宿主不支持此工作台控制')
       const next=await host.prepare(r.action,r.payload);review.payload=next.payload;review.hostCommand=next.command
      }else{
@@ -91,6 +113,19 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
    },
    async confirm(id:string){
     text(id,64);const candidate=reviews.get(id)
+    if(candidate?.action==='summary-adopt'){
+     await authorize();if(candidate.done){unwrap(await store.ensureDurable(authority,unwrap(await store.readFence(authority))));guard();return structuredClone(candidate.result)}
+     // Summary publication owns the coordinator itself; never await it under the management lock.
+     if(!candidate.confirming)candidate.confirming=withPublicationGuard(guard,async()=>{
+      const source=await coordinator.mutate(async()=>{
+       await authorize();if(!candidate.attempted)await check(candidate.stamp);candidate.attempted=true
+       return unwrap(await store.observeSource(authority,{idempotencyKey:candidate.key,origin:'user_control',role:'user_control',turnId:candidate.key,publicText:'用户明确采纳摘要候选 '+candidate.payload.candidateId}))
+      })
+      guard();const result=unwrap(await assistance!.summaries.adopt(authority,source,candidate.payload.candidateId,{...summaryContext,idempotencyKey:candidate.key}));guard()
+      candidate.result=result;candidate.done=true;return structuredClone(result)
+     }).finally(()=>{candidate.confirming=undefined})
+     return candidate.confirming
+    }
     if(candidate?.hostCommand){
      // Host commands drain this coordinator themselves. Reserve the review under
      // the lock, then execute outside it to avoid a queue/coordinator deadlock.

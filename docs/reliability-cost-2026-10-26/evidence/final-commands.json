@@ -1,0 +1,32 @@
+[
+  {
+    "command": "npm run typecheck",
+    "exitCode": 0,
+    "log": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\task10-injection-cost\\final2-typecheck.log",
+    "durationSeconds": 2.3678515
+  },
+  {
+    "command": "npm run build",
+    "exitCode": 0,
+    "log": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\task10-injection-cost\\final2-build.log",
+    "durationSeconds": 2.9059427
+  },
+  {
+    "command": "npm test",
+    "exitCode": 0,
+    "log": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\task10-injection-cost\\final2-test.log",
+    "durationSeconds": 196.4451728
+  },
+  {
+    "command": "npm run evaluate:fixture",
+    "exitCode": 0,
+    "log": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\task10-injection-cost\\final2-fixture.log",
+    "durationSeconds": 0.1729515
+  },
+  {
+    "command": "npm pack --dry-run",
+    "exitCode": 0,
+    "log": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\task10-injection-cost\\final2-pack-dry-run.log",
+    "durationSeconds": 2.5912252
+  }
+]

@@ -68,10 +68,15 @@ ambiguous 输入严禁自动重发；先核对宿主与持久记录。
 /memcont agent <JSON>：人工记录 experience、relationship、goal 等受支持操作。
 /memcont goals、/memcont relationships、/memcont self：查看目标、方向关系与基础状态。
 /memcont summary <JSON>、/memcont candidates、/memcont candidate <ID>：提出并检查结构化摘要候选。
+/memcont organize summary [JSON]：按需生成带原文范围的本地摘录候选；同一来源快照复用，不调用模型、不自动采纳。可指定 sourceRevisionIds。
+/memcont organize review [JSON]：查看重复、冲突、待办与久未复核的来源；只建议，不修改正史。
+/memcont organize handoff [JSON]：查看关键用户原话、当前状态、方向关系、已确认经历和未完成约定，附来源。
 /memcont adopt <ID>、/memcont reject-candidate <ID>：人工采纳或拒绝摘要候选。
 /memcont retcon <JSON>、/memcont delete <JSON>、/memcont fork：纠正、明确隐私删除、创建剧情分支。
 /memcont global preference <JSON>、/memcont global publish <JSON>、/memcont global list <JSON>、/memcont global adopt <JSON>：通用偏好和显式世界发布/采用。
-通用记忆工具保持只读：rp_memory_search、rp_memory_get、rp_memory_status。共同日记的独立写入开关见 /memcont help diary。`,
+rp_memory_search 可带 queryAlternatives（最多 8 种别称或改写），合并后固定分页；提示词不证明身份或事实等价。
+通用记忆工具保持只读：rp_memory_search、rp_memory_get、rp_memory_status。共同日记的独立写入开关见 /memcont help diary。
+status 中 requestCost 显示本次输入的持久化请求预留次数；默认最多 16 次、同一步最多重试 2 次。达到上限后检查已有结果，再明确发新输入；不会自动重发。`,
  modules:`用途、能力与约束
 /memcont mode show、/memcont mode set <rp|companion|creation|project>：查看或选择用途。
 /memcont modules list、/memcont modules enable <ID>、/memcont modules disable <ID>：查看与人工启停能力。
