@@ -1,3 +1,4 @@
+import type {ExperienceReceipt} from './experience-candidates.js'
 import {checkGlobalDependencies,globalDependencyKey} from './global-dependencies.js'
 import {requestPayloadDiagnostics,selectionCost} from './request-diagnostics.js'
 import {requestLimits,currentRequestCost,requestStop,requestCostDiagnostic,type RequestLimits} from './request-cost.js'
@@ -45,9 +46,9 @@ import type { HostAuthority, InputFence, SourceRevision } from './types.js'
 import type { GlobalFence } from './global.js'
 const sha = (s: string) => createHash('sha256').update(s).digest('hex')
 const uid = (p: string) => p + '_' + randomUUID().replaceAll('-', '')
-const memoryToolNames = ['rp_memory_search', 'rp_memory_get', 'rp_memory_status', 'memcont_diary_write', 'memcont_diary_read', 'memcont_diary_search', 'memcont_document_search', 'memcont_document_get']
-type ToolProof = RetrievalEvidence & { diary?: DiaryReceiptContext; document?:DocumentReceiptContext }
-type ToolProvenance = 'retrieval-result' | 'diary-result' | 'document-result' | 'status' | 'error'
+const memoryToolNames = ['rp_memory_search', 'rp_memory_get', 'rp_memory_status', 'memcont_diary_write', 'memcont_diary_read', 'memcont_diary_search', 'memcont_document_search', 'memcont_document_get', 'memcont_experience_propose']
+type ToolProof = RetrievalEvidence & { experience?:ExperienceReceipt; diary?: DiaryReceiptContext; document?:DocumentReceiptContext }
+type ToolProvenance = 'experience-result' | 'retrieval-result' | 'diary-result' | 'document-result' | 'status' | 'error'
 const body = (m: any) => (m.content ?? []).filter((b: any) => b.type === 'text').map((b: any) => b.text).join('\n')
 const normalizedMessage = (m: any) => canonical(m)
 const commandObject = (input: string, required: readonly string[], optional: readonly string[] = []) => {
@@ -282,7 +283,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       await created?.dispose(); throw e
     }
   }
-  const verifyToolProof = (b: Bound, proof: ToolProof) => proof.document ? memory.documentRetrieval.verify(b.authority,{inputFence:proof.inputFence,records:proof.records,resultSha256:proof.resultSha256,document:proof.document},{personId:b.data.personBinding?.personId??''}) : proof.diary ? verifyDiaryEvidence(memory.store, b.authority, {...proof, diary: proof.diary}, b.data.personBinding?.personId) : verifyRetrievalEvidence(memory.store, b.authority, proof, new Set(b.data.inputs.map(i=>i.sourceId)))
+  const verifyToolProof = (b: Bound, proof: ToolProof) => proof.experience ? memory.experienceCandidates.verify(b.authority,b.data.personBinding?.personId??'',proof.experience) : proof.document ? memory.documentRetrieval.verify(b.authority,{inputFence:proof.inputFence,records:proof.records,resultSha256:proof.resultSha256,document:proof.document},{personId:b.data.personBinding?.personId??''}) : proof.diary ? verifyDiaryEvidence(memory.store, b.authority, {...proof, diary: proof.diary}, b.data.personBinding?.personId) : verifyRetrievalEvidence(memory.store, b.authority, proof, new Set(b.data.inputs.map(i=>i.sourceId)))
   // Planned retirement markers are also counted before their commit. This is
   // conservative sizing only; certify separately reconstructs their provenance.
   const collectMemoryParts = (b:Bound, options:any):MemoryPart[] => [
@@ -297,16 +298,20 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
   const sessionMeter = (b:Bound) => b.data.memoryBudget?openMemoryMeter(b.data.memoryBudget,{provider:b.agent.options.provider??'',model:b.agent.options.model??''}):Promise.resolve(undefined)
   const toolSizing=async(b:Bound,callId:string)=>{
     const meter=await sessionMeter(b)
-    return {fits:(result:unknown)=>{
+    const fits=(result:unknown,reserve:number,complete:boolean)=>{
       if(!meter)return true
       const tools=b.staticToolDefinitions??[]
       const plan=planContextRetirement(b.agent.session,b.data,undefined,b.preparedContextHash)
       const retained=plan.messages.some((m:any)=>b.data.snapshots[m.id]?.bodyHash===b.preparedContextHash)
       // A reused packet is already in the native surface. Only reserve a new
       // snapshot when the proposed surface does not contain the prepared one.
-      const usage=measureMemoryParts([...collectMemoryParts(b,{messages:plan.messages,tools,toolHistory:{tools,updates:[]}}),...(!retained&&b.lastContextBody?[{kind:'new-packet',text:b.lastContextBody}]:[]),{kind:'proposed-tool-result',text:canonical({role:'tool',toolCallId:callId,content:[{type:'text',text:canonical(result)}]})}],meter,false)
-      return usage.total+256<=usage.limit
-    }}
+      const message={role:'tool',toolCallId:callId,content:[{type:'text',text:canonical(result)}],...(complete?{id:'a1-'.repeat(32),source:{kind:'tool',callId},isError:false}:{})}
+      const usage=measureMemoryParts([...collectMemoryParts(b,{messages:plan.messages,tools,toolHistory:{tools,updates:[]}}),...(!retained&&b.lastContextBody?[{kind:'new-packet',text:b.lastContextBody}]:[]),{kind:'proposed-tool-result',text:canonical(message)}],meter,false)
+      return usage.total+reserve<=usage.limit
+    }
+    // Read-only refusals may consume the response reserve, but still count the
+    // complete native wrapper and an ID longer/more token-dense than its UUID.
+    return {fits:(result:unknown)=>fits(result,256,false),fitsReceipt:(result:unknown)=>fits(result,0,true)}
   }
   const injectionPreview = async (b:Bound, query:string) => {
     if(Buffer.byteLength(query,'utf8')>8192)throw new RpError('invalid_record','Preview query exceeds 8 KiB')
@@ -328,7 +333,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           if(canonical(s.memoryBudget??null)!==canonical(b.data.memoryBudget??null))throw new RpError('stale_input','历史记忆预算绑定不匹配')
           if(canonical(s.injectionBinding??null)!==bindingHash||canonical(s.personBinding??null)!==canonical(b.data.personBinding??null)||canonical(s.runtimeBinding??null)!==canonical(b.data.runtimeBinding??null))throw new RpError('stale_input','历史配置绑定不匹配')
           if(s.provenance==='packet'||s.provenance==='tool-call')await verifyPacketProof(memory.store,b.authority,s.packetProof)
-          if(s.records)await verifyToolProof(b,{inputFence:s.fence,records:s.records,resultSha256:s.resultSha256!,diary:s.diary,document:s.document})
+          if(s.records)await verifyToolProof(b,{inputFence:s.fence,records:s.records,resultSha256:s.resultSha256!,diary:s.diary,document:s.document,experience:s.experience})
           if(s.bodyHash!==sha(body(message))||s.modeEpoch!==policy.status(b.agent.id).modeEpoch||s.fence.branchId!==fence.branchId||s.fence.visibilityRevision!==fence.visibilityRevision||s.fence.deletionGeneration!==fence.deletionGeneration||s.fence.canonBindingsHash!==fence.canonBindingsHash||s.fence.policyVersion!==fence.policyVersion||s.dependencyIds.some(id=>!sources.has(id)))throw new RpError('stale_input','历史来源或权限已失效')
           if(s.globalPolicyHash!==globalPolicyHash()||s.globals.length!==globalAuthorities.length)throw new RpError('scope_denied','历史全局授权已改变')
           if(s.globalDependencies.some(dep=>!globalCheck.valid.has(globalDependencyKey(dep))))throw new RpError('scope_denied','历史全局来源已失效')
@@ -492,6 +497,16 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         if(!m||!manager)throw new RpError('scope_denied','先打开 person manage 并上传文档；使用本窗口返回的短句柄')
         const c=manager.controller
         const result=m[1]==='preview'?await c.prepare({snapshotId:(await c.snapshot()).id,action:'document-import',payload:{uploadId:m[2]}}):m[1]==='confirm'?await manager.confirm(m[2]):await c.discardUpload(m[2])
+        return {kind:'success',text:canonical(result)}
+      }
+      if(action==='experience'){
+        const match=/^(status|enable|disable|list|show|adopt|reject)(?:\s+(\S+))?$/u.exec(arg),personId=b.data.personBinding?.personId;if(!match||!personId)throw new RpError('invalid_record','先绑定人物；使用 experience status|enable|disable|list|show|adopt|reject')
+        const sub=match[1],candidateId=match[2];if(['show','adopt','reject'].includes(sub)!==!!candidateId)throw new RpError('invalid_record','候选操作需要明确编号')
+        let result:unknown
+        if(sub==='status')result=unwrap(await memory.experienceCandidates.settings(b.authority,personId))
+        else if(sub==='list')result=unwrap(await memory.experienceCandidates.list(b.authority,personId))
+        else if(sub==='show')result=unwrap(await memory.experienceCandidates.get(b.authority,personId,candidateId!))
+        else{const ctl=unwrap(await controlSource(b,commandId,'用户明确确认经历操作 '+arg));result=sub==='enable'||sub==='disable'?unwrap(await memory.experienceCandidates.configure(b.authority,ctl,{personId,enabled:sub==='enable',key:commandId})):unwrap(await memory.experienceCandidates.decide(b.authority,ctl,{personId,candidateId:candidateId!,decision:sub==='adopt'?'accepted':'rejected',key:commandId}));for(const session of bound.values())if(session.data.request.branchId===b.data.request.branchId)session.packet=undefined}
         return {kind:'success',text:canonical(result)}
       }
       if(action==='diary')return {kind:'success',text:canonical(await diaryCommand(arg,{
@@ -683,7 +698,11 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     await drain(b); request.signal?.throwIfAborted(); const generation = ++b.generation, assembly = await next()
     const diaryConfigured=b.data.personBinding?await memory.diary.settings(b.authority,{personId:b.data.personBinding.personId,boardId:'shared'}):undefined
     if(diaryConfigured&&!diaryConfigured.ok&&diaryConfigured.code!=='scope_denied')throw new RpError(diaryConfigured.code,diaryConfigured.message)
-    const allowedTools=memoryToolNames.filter(name=>(!name.startsWith('memcont_diary_')||diaryConfigured?.ok)&&(!name.startsWith('memcont_document_')||b.data.personBinding))
+    const experienceSettings=b.data.personBinding?unwrap(await memory.experienceCandidates.settings(b.authority,b.data.personBinding.personId)):undefined
+    // Native registry changes insert developer messages. Pin declaration visibility for
+    // this session; live policy and durable quotas are still checked on every execution.
+    b.data.experienceToolVisible??=Object.keys(b.data.snapshots).length===0&&experienceSettings?.enabled===true
+    const allowedTools=memoryToolNames.filter(name=>(!name.startsWith('memcont_diary_')||diaryConfigured?.ok)&&(!name.startsWith('memcont_document_')||b.data.personBinding)&&(name!=='memcont_experience_propose'||b.data.experienceToolVisible))
     const memoryMeter=await sessionMeter(b)
     const delivery=memoryDelivery(b.data,memoryMeter?.budget.limitTokens??config.budget!.packetSoftTokens)
     const prepare=(optionalTokens=delivery.optionalLimit)=>memory.packets.prepare(b.authority,{budget:config.budget!,globalAuthorities,inputBindings:b.data.inputs,personId:b.data.personBinding?.personId,injection:b.data.injectionBinding?.config,runtime:b.runtime?.context(),memoryMeter,optionalTokens})
@@ -761,7 +780,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         if(snapshot.injection && snapshot.injection.context.personId!==b.data.personBinding?.personId)throw new RpError('stale_input','Historical injection person mismatch')
         if(canonical(snapshot.runtimeBinding ?? null)!==canonical(b.data.runtimeBinding ?? null))throw new RpError('stale_input','Historical runtime binding proof mismatch')
         if (canonical(snapshot.personBinding ?? null) !== canonical(b.data.personBinding ?? null)) throw new RpError('stale_input', 'Historical person binding proof mismatch')
-        if (snapshot.records) await verifyToolProof(b, { inputFence: snapshot.fence, records: snapshot.records, resultSha256: snapshot.resultSha256!, diary: snapshot.diary, document:snapshot.document })
+        if (snapshot.records) await verifyToolProof(b, { inputFence: snapshot.fence, records: snapshot.records, resultSha256: snapshot.resultSha256!, diary: snapshot.diary, document:snapshot.document, experience:snapshot.experience })
         if (snapshot.bodyHash !== sha(body(message)) || snapshot.modeEpoch !== policy.status(b.agent.id).modeEpoch || snapshot.fence.branchId !== fence.branchId || snapshot.fence.canonBindingsHash !== fence.canonBindingsHash || snapshot.fence.visibilityRevision !== fence.visibilityRevision || snapshot.fence.deletionGeneration !== fence.deletionGeneration || snapshot.fence.policyVersion !== fence.policyVersion || snapshot.dependencyIds.some(id => !sourceMap.has(id)) || snapshot.eventIds.some(id => !events.has(id))) throw new RpError('stale_input', 'Historical RP snapshot is invalid; use clean continuation')
         if (snapshot.globalPolicyHash !== globalPolicyHash() || snapshot.globals.length !== globalAuthorities.length) throw new RpError('scope_denied', 'Historical global grants changed')
         if(snapshot.globalDependencies.some(dep=>!globalCheck.valid.has(globalDependencyKey(dep))))throw new RpError('scope_denied','Historical global source no longer authorized/applicable')
@@ -867,7 +886,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         checkPublication()
         await verifyToolProof(b, pending.proof)
         checkPublication()
-        const snapshot: Snapshot = { ...(b.data.memoryBudget?{memoryBudget:structuredClone(b.data.memoryBudget)}:{}), ...(b.data.injectionBinding ? {injectionBinding:structuredClone(b.data.injectionBinding)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), ...(pending.proof.diary ? {diary: pending.proof.diary} : {}), ...(pending.proof.document ? {document:pending.proof.document} : {}), provenance: pending.provenance, records: pending.proof.records, resultSha256: pending.proof.resultSha256, bodyHash: sha(pending.text), packetId: pending.packetId, fence: pending.proof.inputFence, globals: [...b.packet!.globalFences], globalDependencies: [...b.packet!.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [], eventIds: [], modeEpoch: policy.status(b.agent.id).modeEpoch }
+        const snapshot: Snapshot = { ...(b.data.memoryBudget?{memoryBudget:structuredClone(b.data.memoryBudget)}:{}), ...(b.data.injectionBinding ? {injectionBinding:structuredClone(b.data.injectionBinding)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), ...(pending.proof.diary ? {diary: pending.proof.diary} : {}), ...(pending.proof.document ? {document:pending.proof.document} : {}), ...(pending.proof.experience ? {experience:pending.proof.experience} : {}), provenance: pending.provenance, records: pending.proof.records, resultSha256: pending.proof.resultSha256, bodyHash: sha(pending.text), packetId: pending.packetId, fence: pending.proof.inputFence, globals: [...b.packet!.globalFences], globalDependencies: [...b.packet!.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [], eventIds: [], modeEpoch: policy.status(b.agent.id).modeEpoch }
         const data = { ...b.data, receipts: { ...b.data.receipts, [exec.callId]: { contentHash: sha(canonical(result.content)), snapshot } } }
         try { await writeJournal(b, false, data, checkPublication); checkPublication(); b.data = data } catch (e) { b.data.blocked = true; b.lastError = e instanceof RpError ? e.code : 'persistence_failed'; throw e }
       }) } finally { finish() }; return result
@@ -890,11 +909,41 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           else { result = { ok: false, code: result.code }; proof = { inputFence: unwrap(await memory.store.readFence(b.authority)), records: [], resultSha256: sha(canonical(result)) }; provenance = 'error' }
         }
         exec.signal.throwIfAborted(); if (closed || b.generation !== generation) throw new RpError('ownership_lost', 'Late tool result')
-        if(!sizing.fits(result))throw new RpError('context_budget_exceeded','Tool receipt cannot fit; use clean continuation')
+        if(!sizing.fits(result)&&provenance!=='error'){result={ok:false,code:'context_budget_exceeded'};proof={inputFence:unwrap(await memory.store.readFence(b.authority)),records:[],resultSha256:sha(canonical(result))};provenance='error'}
+        if(provenance==='error'&&!sizing.fitsReceipt(result)){b.lastError='context_budget_exceeded';throw new RpError('context_budget_exceeded','Tool refusal cannot fit; use clean continuation')}
         const text = canonical(result); pendingTools.set(exec.token, { agent: b.agent, callId: exec.callId, generation, packetId, text, proof, provenance }); return { text }
       },
     } as any)))
   }
+  effects.push(tools.register(defineTool({name:'memcont_experience_propose',description:'When an important event, explicit promise, scene ending or correction occurs, propose ONE experience for human review. This does not save a confirmed memory. Use exact quotes from the supplied recent conversation; never invent evidence or repeatedly call after a refusal. Parameters are a JSON object with description, epistemic (world/utterance/uncertain), reason, evidence [{quote, optional sourceId, optional startUtf16}]. No background generation.',parameters:{proposal:{type:'string',required:true}},output,isConcurrencySafe:()=>false,
+    async execute(args:any,exec:any){
+      const b:Bound|undefined=exec.agent&&bound.get(exec.agent.id);if(!b||b.agent!==exec.agent||!live(exec.agent)||policy.status(exec.agent.id).mode!=='rp')throw new RpError('scope_denied','Experience needs the exact bound caller')
+      await drain(b);const generation=b.generation,packetId=b.packet?.id,personId=b.data.personBinding?.personId
+      if(!packetId||!personId||typeof exec.token!=='symbol')throw new RpError('scope_denied','Experience needs a bound person and execution packet')
+      const active=()=>!closed&&!exec.signal.aborted&&live(b.agent)&&generation===b.generation&&packetId===b.packet?.id&&!b.data.blocked&&policy.status(b.agent.id).mode==='rp',sizing=await toolSizing(b,exec.callId)
+      let result:any,proof:ToolProof,provenance:ToolProvenance,published=false
+      try{
+        object(args,['proposal']);text(args.proposal,32768);let draft:unknown
+        try{draft=JSON.parse(args.proposal)}catch{throw new RpError('invalid_candidate','Proposal must be valid JSON')}
+        if(!sizing.fits({candidate:'x'.repeat(1024)}))throw new RpError('context_budget_exceeded','Experience receipt cannot fit; continue cleanly before proposing')
+        const input=b.data.inputs.findLast(i=>i.turnId===b.data.currentTurnId&&(i.phase==='dispatched'||i.phase==='dispatching'));if(!input)throw new RpError('scope_denied','No certified current conversation input')
+        const sourceIndex=new Map(unwrap(await memory.store.readLedger(b.authority)).sources.map(s=>[s.id,s]))
+        const sourceRevisionIds=[...new Set([input.sourceId,...b.packet!.recent.filter(s=>{const source=sourceIndex.get(s.id);return ['user','assistant'].includes(s.role)&&source?.scope.kind==='session'&&source.scope.sessionId===b.agent.id&&source.host?.sessionId===b.agent.id}).map(s=>s.id)])].slice(0,64)
+        const writer=unwrap(await memory.experienceCandidates.writer(b.authority,{personId,sessionId:b.agent.id,inputSourceId:input.sourceId,sourceRevisionIds},active))
+        try{result=unwrap(await writer.propose(draft));published=true;const receipt=unwrap(await memory.experienceCandidates.receipt(b.authority,personId,result));proof={inputFence:unwrap(await memory.store.readFence(b.authority)),records:[],resultSha256:sha(canonical(result)),experience:receipt};provenance='experience-result'}finally{writer.revoke()}
+        if(!active())throw new RpError('ownership_lost','Late experience result');if(!sizing.fits(result))throw new RpError('context_budget_exceeded','Experience result budget exceeded')
+        const resultText=canonical(result);pendingTools.set(exec.token,{agent:b.agent,callId:exec.callId,generation,packetId,text:resultText,proof,provenance});return {text:resultText}
+      }catch(cause){
+        // The proposal may already be durable even when its receipt cannot be
+        // certified. Never turn a committed write into an ordinary refusal.
+        const e=published?new RpError('persistence_uncertain','Experience was saved but its receipt could not be certified; inspect candidates before retrying'):cause
+        if(!(e instanceof RpError)||['persistence_failed','persistence_uncertain','ownership_lost'].includes(e.code)){b.data.blocked=true;b.lastError=e instanceof RpError?e.code:'persistence_failed';throw e}
+        result={ok:false,code:e.code};proof={inputFence:unwrap(await memory.store.readFence(b.authority)),records:[],resultSha256:sha(canonical(result))};provenance='error'
+        if(!active())throw new RpError('ownership_lost','Late experience refusal');if(!sizing.fitsReceipt(result))throw new RpError('context_budget_exceeded','Experience refusal cannot fit; use clean continuation')
+        const resultText=canonical(result);pendingTools.set(exec.token,{agent:b.agent,callId:exec.callId,generation,packetId,text:resultText,proof,provenance});return {text:resultText}
+      }
+    }
+  } as any)))
   for(const name of ['memcont_diary_write','memcont_diary_read','memcont_diary_search']){
     effects.push(tools.register(defineTool({name,
       description:name.endsWith('write')?'在人类已开启共同日记时，记录自己的主观日记。entry 是 JSON 字符串，含 entryId、title、body；修改自己的旧日记必须附 previousEventId。可选 reflection 含 understanding、context、uncertainty、revisionNote、evidence。不能修改人类日记、权限、人格或事实；禁止把猜测当作事实。':'读取当前人物获准共享的最新日记。日记包含主观感受与推测，不等于已确认事实。',

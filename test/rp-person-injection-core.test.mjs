@@ -26,3 +26,6 @@ test('management previews core selection without changing growth policy or apply
  const cold=await setup(f.directory,f.request);try{assert.match(must(await prepare(cold,'你好')).text,/CORE_CURIOUS/)}finally{await cold.close()}
  }finally{await f.close()}
 })
+test('empty person revision reason is rejected before creating a misleading confirmation preview',async()=>{
+ const f=await setup();try{await create(f,draft());const m=f.management.create(f.authority),s=await m.snapshot();await assert.rejects(m.prepare({snapshotId:s.id,action:'set-injection',payload:{personId:'erin',fieldId:'curiosity',injection:'core',note:''}}),e=>e.code==='invalid_record')}finally{await f.close()}
+})

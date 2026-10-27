@@ -17,3 +17,4 @@ export type {MemoryBudgetV2,MemoryMeter,MemoryUsage,ModelTarget} from '../rp/tok
 export type {PersonDocumentDraft,PersonDocumentInput} from '../rp/person/documents/types.js'
 export type {DiaryDraft,DiaryReflection} from '../rp/diary/types.js'
 export type {ManagementController,ManagementHost} from '../rp/person/management.js'
+export type {ExperienceService,ExperienceExecution,ExperienceReceipt} from '../rp/experience-candidates.js'

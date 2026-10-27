@@ -4,7 +4,10 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import {LlmAdapter} from '@deepseek-ai/dsh-llm'
-import {host} from '../../test/fixtures/rp/native-host.mjs'
+import {pathToFileURL} from 'node:url'
+import {host as nativeHost} from '../../test/fixtures/rp/native-host.mjs'
+const bundle=process.env.RP_PERSON_BUNDLE?await import(pathToFileURL(path.resolve(process.env.RP_PERSON_BUNDLE)).href):null
+const host=(config,options={})=>nativeHost(config,{...options,...(bundle?{install:bundle.installRpPlugin}:{})})
 const output=path.resolve(process.env.RP_LONG_REPORT??'work/task10-injection-cost/long-conversation.json')
 const ok=r=>{assert.equal(r.kind,'success',r.text);return r.text},value=r=>JSON.parse(ok(r))
 const bytes=x=>Buffer.byteLength(JSON.stringify(x))

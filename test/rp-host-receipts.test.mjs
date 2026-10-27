@@ -91,6 +91,7 @@ test('R21 v1 with no tools upgrades with exact byte backup; tool history stays r
       if(tools){assert.equal((await f.command(a,'input MEMORY_FACT')).kind,'success');await a.whenIdle();await f.rp.ready(a.id);await execute(f,a,'rp_memory_status')}
       const j = await journal(f, a); await f.drop(a); j.data.schemaVersion = 1
       delete j.data.requestCost // v1 never had the new v2 admission counters.
+      delete j.data.experienceToolVisible // nor a persisted v2 tool declaration choice.
       for (const s of [...Object.values(j.data.pending), ...Object.values(j.data.snapshots), ...Object.values(j.data.frames), ...Object.values(j.data.receipts).map(r => r.snapshot)]) { delete s.provenance; delete s.records; delete s.resultSha256 }
       j.sha256 = sha(canonical(j.data)); const bytes = canonical(j); await fs.writeFile(journalPath(f, a), bytes)
       const resumed = await f.resume(a)

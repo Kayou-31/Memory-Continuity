@@ -21,10 +21,10 @@ test('native explicit token budget is visible, checks actual model identity, and
 const journalPath=(f,a)=>path.join(f.profile,'.dsh-rp/v1/host',createHash('sha256').update(a.id).digest('hex')+'.json')
 const readJournal=async(f,a)=>JSON.parse(await fs.readFile(journalPath(f,a),'utf8'))
 const must=r=>{assert.equal(r.ok,true,JSON.stringify(r));return r.value}
-test('actual tokenizer budget admits a native request and repeated memory tool pages remain certified within one shared limit',async()=>{
+for(const maxChars of [2048,65536])test('actual tokenizer budget certifies bounded pages or a complete refusal for maxChars='+maxChars,async()=>{
  const f=await host({entityIds:['erin']}),seen=[];let calls=0,id,cursor
- class Terminal extends LlmAdapter{async *stream(options){calls++;seen.push(options);const tool=options.messages.findLast(m=>m.role==='tool');if(tool){const r=JSON.parse(tool.content[0].text);assert.equal(r.ok,true,JSON.stringify(r));cursor=r.value.nextCursor;assert.ok(r.value.text.length<60000);assert.ok(cursor)}
-  if(calls<3){yield {type:'tool-call-delta',index:0,id:'budget_get_'+calls,name:'rp_memory_get',argumentsDelta:JSON.stringify(cursor?{cursor,maxChars:65536}:{id,maxChars:65536})};yield {type:'finish',reason:{kind:'tool-calls'}}}
+ class Terminal extends LlmAdapter{async *stream(options){calls++;seen.push(options);const tool=options.messages.findLast(m=>m.role==='tool');if(tool){const r=JSON.parse(tool.content[0].text);if(r.ok){cursor=r.value.nextCursor;assert.ok(r.value.text.length<60000);assert.ok(cursor)}else{assert.equal(maxChars,65536);assert.equal(r.code,'context_budget_exceeded')}}
+  if(calls<3){yield {type:'tool-call-delta',index:0,id:'budget_get_'+calls,name:'rp_memory_get',argumentsDelta:JSON.stringify(cursor?{cursor,maxChars}:{id,maxChars})};yield {type:'finish',reason:{kind:'tool-calls'}}}
   else{yield {type:'text-delta',text:'离线工具预算验证'};yield {type:'finish',reason:{kind:'stop'}}}
  }}
  try{
@@ -32,12 +32,16 @@ test('actual tokenizer budget admits a native request and repeated memory tool p
   ok(await f.command(a,'budget set {"limitTokens":8000}'))
   const j=await readJournal(f,a),auth=must(await f.rp.memory.control.authorize(j.data.request)),ctl=must(await f.rp.memory.store.observeSource(auth,{idempotencyKey:'big_event',origin:'user_control',role:'user_control',publicText:'Approved offline test event',turnId:'big_turn'}))
   id=must(await f.rp.memory.agentMemory.apply(auth,ctl,{kind:'experience',actorIds:['erin'],description:' hello'.repeat(10000),fictionalTime:'test',sourceRevisionIds:[],idempotencyKey:'big_event',expected:must(await f.rp.memory.store.readFence(auth))})).eventId
-  ok(await f.command(a,'input 查阅原文'));await a.whenIdle();await f.rp.ready(a.id);assert.equal(calls,3,JSON.stringify(f.rp.status(a.id)))
-  const status=value(await f.command(a,'status'));assert.equal(status.memoryUsage.mode,'tokenizer-text');assert.ok(status.memoryUsage.total<=8000);assert.equal(status.memoryUsage.parts.filter(p=>p.kind==='retained-memory').length,5)
-  const final=await readJournal(f,a);for(const key of ['budget_get_1','budget_get_2']){const receipt=final.data.receipts[key].snapshot;assert.equal(receipt.records[0].id,id);assert.equal(receipt.memoryBudget.sha256,status.memoryBudget.sha256)}
+  ok(await f.command(a,'input 查阅原文'));await a.whenIdle();await f.rp.ready(a.id).catch(e=>{throw new Error(JSON.stringify(f.rp.status(a.id)),{cause:e})});const status=value(await f.command(a,'status'));assert.equal(status.memoryUsage.mode,'tokenizer-text');assert.equal(status.blocked,false)
+  if(calls===2&&maxChars===65536){
+   // The new packet can grow after tool evidence is authenticated. Its final
+   // complete envelope must still stop at the gate, never bypass that limit.
+   assert.equal(status.bindingHealth,'healthy');assert.equal(status.requestAdmission.state,'rejected');assert.equal(status.requestAdmission.stage,'assembly');assert.equal(status.requestAdmission.code,'context_budget_exceeded');assert.ok(status.memoryUsage.total>8000);assert.equal(status.recovery.action,'continue-clean')
+  }else{assert.equal(calls,3,JSON.stringify(status));assert.ok(status.memoryUsage.total<=8000);assert.equal(status.memoryUsage.parts.filter(p=>p.kind==='retained-memory').length,5)}
+  const final=await readJournal(f,a);for(const key of ['budget_get_1','budget_get_2']){const receipt=final.data.receipts[key].snapshot;if(receipt.provenance==='error'){assert.equal(maxChars,65536);assert.equal(receipt.records.length,0);const actual=a.session.deriveMessages().find(m=>m.role==='tool'&&m.toolCallId===key),body=actual?.content?.[0]?.text;assert.ok(body);assert.deepEqual(JSON.parse(body),{ok:false,code:'context_budget_exceeded'});assert.equal(createHash('sha256').update(body).digest('hex'),receipt.resultSha256)}else assert.equal(receipt.records[0].id,id);assert.equal(receipt.memoryBudget.sha256,status.memoryBudget.sha256)}
   // Reconstruct each actual memory envelope independently with the packaged meter.
   const {api}=await import('./fixtures/rp/growth.mjs'),meter=await api.openMemoryMeter(status.memoryBudget,status.memoryBudget.target)
-  for(const req of seen){const parts=req.messages.filter(m=>final.data.snapshots[m.id]||final.data.frames[m.id]).map(m=>({kind:'actual',text:api.canonical(m)}));parts.push({kind:'tools',text:api.canonical(req.tools)},{kind:'toolHistory',text:api.canonical(req.toolHistory)});assert.ok(api.measureMemoryParts(parts,meter).total<=8000)}
+  for(const req of seen){const parts=req.messages.filter(m=>final.data.snapshots[m.id]||final.data.frames[m.id]||m.id?.startsWith('retired_')).map(m=>({kind:'actual',text:api.canonical(m)}));parts.push({kind:'tools',text:api.canonical(req.tools)},{kind:'toolHistory',text:api.canonical(req.toolHistory)});assert.ok(api.measureMemoryParts(parts,meter).total<=8000)}
  }finally{await f.dispose()}
 })
 test('dynamic output reserve blocks even an otherwise valid token-budget memory packet',async()=>{
@@ -64,15 +68,15 @@ test('deletion between a native sized retrieval and receipt publication refuses 
  }finally{remove?.();await f.dispose()}
 })
 
-test('two memory calls in one assistant turn share budget without concurrent over-allocation',async()=>{
+test('two small memory calls in one assistant turn share budget and both complete',async()=>{
  const f=await host({entityIds:['erin']});let calls=0,id,received=[]
- class Terminal extends LlmAdapter{async *stream(options){calls++;if(calls===1){for(let i=0;i<2;i++)yield {type:'tool-call-delta',index:i,id:'sibling_'+i,name:'rp_memory_get',argumentsDelta:JSON.stringify({id,maxChars:65536})};yield {type:'finish',reason:{kind:'tool-calls'}}}else{received=options.messages.filter(m=>m.role==='tool');yield {type:'text-delta',text:'本轮两个工具已完成'};yield {type:'finish',reason:{kind:'stop'}}}}}
+ class Terminal extends LlmAdapter{async *stream(options){calls++;if(calls===1){for(let i=0;i<2;i++)yield {type:'tool-call-delta',index:i,id:'sibling_'+i,name:'rp_memory_get',argumentsDelta:JSON.stringify({id,maxChars:2048})};yield {type:'finish',reason:{kind:'tool-calls'}}}else{received=options.messages.filter(m=>m.role==='tool');yield {type:'text-delta',text:'本轮两个工具已完成'};yield {type:'finish',reason:{kind:'stop'}}}}}
  try{
   const a=await setup(f);a.options.provider='budget-siblings';a.options.model='deepseek-ai/DeepSeek-V3.2';f.ctx.llm.registerAdapter(['budget-siblings'],new Terminal());ok(await f.command(a,'budget set {"limitTokens":8000}'))
   const j=await readJournal(f,a),m=f.rp.memory,auth=must(await m.control.authorize(j.data.request)),source=must(await m.store.observeSource(auth,{idempotencyKey:'siblings',origin:'user_control',role:'user_control',publicText:'授权测试',turnId:'siblings'}))
   id=must(await m.agentMemory.apply(auth,source,{kind:'experience',actorIds:['erin'],description:' hello'.repeat(10000),fictionalTime:'test',sourceRevisionIds:[],idempotencyKey:'siblings',expected:must(await m.store.readFence(auth))})).eventId
-  ok(await f.command(a,'input 两次核对原文'));await a.whenIdle();await f.rp.ready(a.id);assert.equal(calls,2,JSON.stringify(f.rp.status(a.id)));assert.equal(received.length,2)
-  for(const msg of received)assert.equal(JSON.parse(msg.content[0].text).ok,true,JSON.stringify(msg))
+  ok(await f.command(a,'input 两次核对原文'));await a.whenIdle();await f.rp.ready(a.id).catch(e=>{throw new Error(JSON.stringify(f.rp.status(a.id)),{cause:e})});assert.equal(calls,2,JSON.stringify(f.rp.status(a.id)));assert.equal(received.length,2)
+  assert.equal(JSON.parse(received[0].content[0].text).ok,true);for(const msg of received){const r=JSON.parse(msg.content[0].text);assert.equal(r.ok,true,JSON.stringify(r))}
   assert.ok(value(await f.command(a,'status')).memoryUsage.total<=8000)
  }finally{await f.dispose()}
 })

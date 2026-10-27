@@ -1,7 +1,7 @@
 name: astrbot_plugin_memory_continuity
 display_name: Memory-Continuity 管理桥（预览版）
 desc: 独立核心的显式本机管理入口；模型记忆注入尚未开放。
-version: 0.1.0-preview.1
+version: 0.1.0-preview.2
 author: Kayou
 repo: https://github.com/Kayou-31/Memory-Continuity
 astrbot_version: "==4.29.3"

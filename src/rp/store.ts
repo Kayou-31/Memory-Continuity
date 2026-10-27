@@ -778,11 +778,21 @@ export class RpStore {
       })
     } catch (cause) { return failure(cause) }
   }
-  readPayloadCopies(authority: HostAuthority): Promise<Result<readonly (PayloadCopy & { readonly body: string })[]>> {
+  /** Metadata only, for bounded managed-payload selection before any blob reads. */
+  readPayloadCopyIndex(authority:HostAuthority,prefix:string):Promise<Result<readonly PayloadCopy[]>>{
+    return this.#read(authority,async(state,branch,request)=>{
+      text(prefix,128);if(request.viewpoint.kind!=='narrator')denied('managed index requires narrator');
+      return [...this.#activeCopies(state,branch).values()].filter(copy=>copy.id.startsWith(prefix)&&this.#visible(copy.visibility,request)&&copy.sourceRevisionIds.every(id=>{const s=state.sources.get(id);return !!s&&this.#visible(s.visibility,request)}))
+    })
+  }
+  readPayloadCopies(authority: HostAuthority, selectedIds?:readonly string[]): Promise<Result<readonly (PayloadCopy & { readonly body: string })[]>> {
+    const selected=selectedIds===undefined?undefined:cloneInput(selectedIds)
     return this.#read(authority, async (state, branch, request) => {
+      if(selected!==undefined){if(!Array.isArray(selected)||selected.length>256)invalid('managed selection limit');selected.forEach(id)}
       const result: (PayloadCopy & { body: string })[] = []
       const known = request.viewpoint.kind === 'character' ? new Set(eventsForView(await this.#readEventBodies(state, branch, request), branch.fence, request.viewpoint).map(e => e.id)) : null
       for (const copy of this.#activeCopies(state, branch).values()) {
+        if(selected&&!selected.includes(copy.id))continue
         if (!this.#visible(copy.visibility, request) || (known && (copy.dependencyIds.some(id => !known.has(id)) || !copy.dependencyIds.length))) continue
         if (copy.sourceRevisionIds.some(id => { const s = state.sources.get(id); return !s || !this.#visible(s.visibility, request) })) continue
         for (const source of copy.sourceRevisionIds) await this.#sourceText(state, branch, request, source)

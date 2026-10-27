@@ -1,6 +1,6 @@
 {
   "name": "@memory-continuity/core",
-  "version": "0.1.0-preview.2",
+  "version": "0.1.0-preview.3",
   "description": "Memory-Continuity 独立核心：人物、原文资料、共同日记、记忆预算与本机工作台",
   "type": "module",
   "main": "./lib/index.js",
