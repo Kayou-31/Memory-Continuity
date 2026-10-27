@@ -43,7 +43,9 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
    assertActive:guard,
    revoke(){revoked=true;snapshots.clear();reviews.clear();extra.revoke()},
    async upload(input:unknown){return coordinator.mutate(async()=>{await authorize();const result=await extra.upload(input);guard();return result})},
-   async discardUpload(id:string){await authorize();return extra.discardUpload(id)},
+   async discardUpload(id:string){return coordinator.mutate(async()=>{await authorize();return extra.discardUpload(id)})},
+   async updateUpload(input:unknown){return coordinator.mutate(async()=>{await authorize();return extra.updateUpload(input)})},
+   async cancel(id:string):Promise<unknown>{return coordinator.mutate(async()=>{await authorize();text(id,64);const review=reviews.get(id);if(review?.attempted&&!review.done)throw new RpError('persistence_uncertain','这项修改已尝试，请核对结果；不能当作未执行预览取消');if(review?.done)return {committed:true};reviews.delete(id);return {cancelled:true}})},
    async read(input:unknown){await authorize();const result=await extra.read(input);guard();return result},
    async organize(input:unknown){
     const r=object(cloneInput(input),['snapshotId','operation'],['candidateId']);text(r.snapshotId,64)
@@ -140,6 +142,7 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
     const prefix=r.action==='create'?'person:':r.action==='edit'||r.action==='set-policy'||r.action==='set-injection'?'person_edit:':r.action==='adopt'?'person_adopt:':r.action==='reject'?'person_reject:':''
     const prior=r.attempted&&r.action!=='propose'?unwrap(await store.readControlCommit(authority,prefix+r.key)):null
     if(!prior&&!(r.attempted&&r.extension))await check(r.stamp)
+    if(!r.attempted)r.extension?.validate?.()
     r.attempted=true
     const ctl=unwrap(await store.observeSource(authority,{idempotencyKey:r.key,origin:'user_control',role:'user_control',turnId:r.key,publicText:'用户在本机管理页明确确认 '+r.action+' '+digest(r.payload)}));guard()
     let result:unknown

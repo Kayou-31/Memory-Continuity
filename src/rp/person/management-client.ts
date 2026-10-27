@@ -8,7 +8,7 @@ export function createManagementClient(send:typeof fetch,token:string,onRevoke:(
   return review.showImpactDialog||review.impact.mandatory?'dialog' as const:'inline' as const
  },async request<T=any>(route:string,input:unknown={}):Promise<T>{
   if(revoked||!/^[a-f0-9]{64}$/.test(token)){revoke();throw closed()}
-  if(!['snapshot','prepare','confirm','close','injection-preview','upload','discard-upload','read','organize'].includes(route))throw Error('不支持的管理接口')
+  if(!['snapshot','prepare','confirm','cancel','close','injection-preview','upload','update-upload','discard-upload','read','organize'].includes(route))throw Error('不支持的管理接口')
   let response:Response,body:any
   try{
    response=await send('/api/'+route,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(input),cache:'no-store',redirect:'error'})

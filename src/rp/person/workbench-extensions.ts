@@ -9,10 +9,13 @@ export function workbenchExtensions(page:string,root:HTMLElement,u:any):boolean 
   const c=card(root,'修改前提示对后续对话的影响'),choice=select(c,'影响提示',{on:'开启弹窗（默认）',off:'关闭弹窗，在页面内预览'},snapshot.preferences.impactConfirmation?'on':'off')
   note(c,'关闭后仍须点击确认写入。创建人物和隐私删除保留必要确认；不会关闭权限、来源或版本检查。')
   button(c,'保存提醒偏好',()=>preview('settings',{impactConfirmation:choice.value==='on'}),'btn btn-primary')
-  note(c,'本机 profile 内持久保存；不向 AI 开放此设置。');return true
+  note(c,'本机 profile 内持久保存；不向 AI 开放此设置。')
+  if(snapshot.confirmationCapacity){const state=snapshot.confirmationCapacity,records=card(root,'操作确认记录');note(records,'活动确认 '+state.active+' / '+state.limit+'；待确认 '+state.prepared+'，结果未知 '+state.uncertain+'，归档清理待完成 '+state.cleanupPending+'。');note(records,state.notice);if(state.nearCapacity)note(records,'活动记录接近上限。请先处理未确认预览，并核对结果未知的操作。')}
+  return true
  }
  if(page==='budget'){
   title(root,'记忆预算','完整人物、相关往事、全局记忆和已返回的工具内容，共用一份总额。')
+  if(!snapshot.capabilities?.features.requestBudget){const c=card(root,'当前入口未连接模型请求');note(c,snapshot.capabilities?.notice??'请在已接入的聊天宿主中管理请求预算。');note(c,'人物核心选择和资料整理仍可在这里独立完成。');return true}
   const binding=snapshot.context?.memoryBudget,c=card(root,'当前预算'),usage=snapshot.context?.memoryUsage
   chip(c,binding?binding.limitTokens.toLocaleString()+' 总上限':'尚未启用 token 预算')
   note(c,binding?.meter.mode==='tokenizer-text'?'使用已校验的本地模型 tokenizer 计量文本 token。':'当前模型未匹配精确 tokenizer，使用 conservative-utf8 保守估算；中文容量不等于精确 token 容量。')
@@ -33,25 +36,41 @@ export function workbenchExtensions(page:string,root:HTMLElement,u:any):boolean 
   form.addEventListener('input',()=>{if(staging.childElementCount){staging.replaceChildren();note(staging,'原文或信息已修改，请重新解析后再保存。')}})
   body.oninput=()=>{bytes.textContent=new TextEncoder().encode(loadedText!==undefined&&body.value===loadedView?loadedText:body.value).length.toLocaleString()+' UTF-8 字节'}
   file.onchange=async()=>{const f=file.files?.[0];if(!f)return;try{if(f.size>1048576)throw Error('文件超过 1 MiB，请自行整理后重新选择；不会截断。');const value=new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(await f.arrayBuffer());body.value=value;loadedText=value;loadedView=body.value;body.oninput();format.value=/\.(md|markdown)$/i.test(f.name)?'markdown':'text';docTitle.value=f.name}catch(e){message(String(e),true)}}
+  const showDraft=(uploaded:any)=>{uploadId=uploaded.id;staging.replaceChildren();
+    const ready=card(staging,'核对分类与注入范围');note(ready,'临时草稿保留 10 分钟，尚未写入人物。下方修改只改变分类与条件；原文保持完整。');chip(ready,uploaded.draft.utf8Bytes.toLocaleString()+' 字节');details(ready,'原文校验与分段', {sha256:uploaded.draft.sha256,sections:uploaded.draft.sections.length,chunks:uploaded.draft.chunks.length})
+    if(uploaded.revisionReview){const r=uploaded.revisionReview;note(ready,'修订核对：'+r.matches.length+' 个章节可对应旧稿，'+r.unmatchedNext.length+' 个新章节需要重新检查。旧条件不会因标题相似而自动启用。');details(ready,'查看章节对应建议',r)}
+    const values=uploaded.draft.sections.map((s:any)=>{
+     const old=(uploaded.policies?.length?uploaded.policies:policies)?.find((p:any)=>p.sectionId===s.sectionId),row=card(ready,s.title),category=select(row,'分类',categories,old?.category??s.category),label=input(row,'自定义分类标签',old?.label??s.title),tags=input(row,'标签（逗号分隔）',old?.tags.join(', ')??''),enabled=select(row,'注入资格',{yes:'允许按条件选入',no:'仅保存，不注入'},old?.enabled===true?'yes':'no'),kind=select(row,'对话类型',{all:'全部授权对话',direct:'仅私聊',group:'仅群聊'},old?.when.kind??'all')
+     const filters=elem('details','',row,'mc-details');elem('summary','进一步限定平台、账号与参与者',filters)
+     const platform=input(filters,'平台（留空不限）',old?.when.platform??''),accountId=input(filters,'账号（留空不限）',old?.when.accountId??''),senderIds=input(filters,'发送者编号（逗号分隔）',old?.when.senderIds?.join(', ')??''),groupIds=input(filters,'群编号（逗号分隔）',old?.when.groupIds?.join(', ')??''),sceneIds=input(filters,'场景编号（逗号分隔）',old?.when.sceneIds?.join(', ')??'')
+     const match=uploaded.revisionReview?.matches.find((m:any)=>m.nextSectionId===s.sectionId)
+     if(match){note(row,match.textChanged?'正文有变化，请重新检查分类与适用对象。':'原文与旧稿一致。');if(match.suggestedPolicy){details(row,'建议沿用的旧条件',match.suggestedPolicy);button(row,'将旧条件填入草稿，继续核对',()=>{const p=match.suggestedPolicy;category.value=p.category;label.value=p.label;tags.value=p.tags.join(', ');enabled.value=p.enabled?'yes':'no';kind.value=p.when.kind;platform.value=p.when.platform??'';accountId.value=p.when.accountId??'';senderIds.value=p.when.senderIds?.join(', ')??'';groupIds.value=p.when.groupIds?.join(', ')??'';sceneIds.value=p.when.sceneIds?.join(', ')??'';ready.dispatchEvent(new Event('change'));message('旧条件已填入当前草稿；请核对后预览确认。')},'btn btn-sm')}}
+     return ()=>{const split=(s:string)=>s.split(/[,，]/).map(v=>v.trim()).filter(Boolean);return {sectionId:s.sectionId,category:category.value,label:label.value,tags:split(tags.value),enabled:enabled.value==='yes',when:{kind:kind.value,...(platform.value?{platform:platform.value}:{}),...(accountId.value?{accountId:accountId.value}:{}),...(senderIds.value?{senderIds:split(senderIds.value)}:{}),...(groupIds.value?{groupIds:split(groupIds.value)}:{}),...(sceneIds.value?{sceneIds:split(sceneIds.value)}:{})}}}
+    })
+    let saving=Promise.resolve(),saveError:unknown
+    const saveChoices=()=>{const current=values.map((v:any)=>v());saving=saving.catch(()=>{}).then(async()=>{try{await api.request('update-upload',{id:uploaded.id,personId:selected,policies:current});saveError=undefined;message('分类选择已暂存，仍未导入人物。')}catch(e){saveError=e;message('分类暂存失败：'+String(e),true)}});return saving}
+    ready.addEventListener('change',()=>{void saveChoices()})
+    button(ready,'暂存分类选择',saveChoices)
+    button(ready,'预览保存资料',async()=>{await saveChoices();if(saveError)throw saveError;await preview('document-import',{uploadId:uploaded.id})},'btn btn-primary')
+    button(ready,'取消这份草稿',async()=>{await api.request('discard-upload',{id:uploaded.id});uploadId='';staging.replaceChildren();snapshot.pendingUploads=(snapshot.pendingUploads??[]).filter((x:any)=>x.id!==uploaded.id);renderPending();message('已取消临时草稿，没有导入资料。')})
+    if(snapshot.capabilities?.host==='dsh')details(ready,'宿主短指令（使用默认分类，不包含此处未保存的调整）',uploaded.command);message('原文已解析，尚未确认写入。')
+  }
+  const pending=elem('section','',root,'stack')
+  const renderPending=()=>{pending.replaceChildren();const drafts=(snapshot.pendingUploads??[]).filter((x:any)=>x.personId===selected);if(!drafts.length)return
+   elem('h2','尚未导入的草稿',pending,'h2');note(pending,'当前管理入口内保留 10 分钟，最多四份。切换页面或点击刷新后可以继续；关闭入口后不保留。')
+   for(const d of drafts){const row=card(pending,d.title);note(row,d.bytes.toLocaleString()+' 字节 · 到期 '+new Date(d.expiresAt).toLocaleTimeString());if(d.status!=='pending')note(row,d.status==='uncertain'?'保存结果需要核对，请刷新正式资料；不要新建重复操作。':'记忆版本已经变化。可载入原文与分类，再重新解析核对。')
+    button(row,'继续整理',async()=>{const u=await read('upload',d.id);docId.value=u.draft.documentId;docTitle.value=u.draft.title;format.value=u.draft.format;body.value=u.draft.text;loadedText=u.draft.text;loadedView=body.value;body.oninput();previousEventId=u.previousEventId??undefined;policies=u.policies;form.parentElement.open=true;if(u.snapshotChanged||u.attempted){staging.replaceChildren();note(staging,u.attempted?'请先核对上次保存的结果。':'原文和分类已载入；请重新解析，按当前版本检查后保存。');uploadId=u.id}else showDraft(u)})
+    button(row,'取消草稿',async()=>{await api.request('discard-upload',{id:d.id});snapshot.pendingUploads=snapshot.pendingUploads.filter((x:any)=>x.id!==d.id);if(uploadId===d.id){staging.replaceChildren();uploadId=''}renderPending();message('已取消草稿；正式资料没有变化。')},'btn btn-danger-ghost')
+   }
+  }
+  renderPending()
   button(form,'解析并检查分类',async()=>{
    const original=new TextEncoder().encode(loadedText!==undefined&&body.value===loadedView?loadedText:body.value);if(!original.length||original.length>1048576)throw Error('原文须为 1 字节至 1 MiB。')
    let binary='';for(let offset=0;offset<original.length;offset+=8192)binary+=String.fromCharCode(...original.subarray(offset,offset+8192))
    setBusy(true);try{
-    if(uploadId)await api.request('discard-upload',{id:uploadId});uploadId=''
+    if(uploadId){const prior=uploadId;await api.request('discard-upload',{id:prior});snapshot.pendingUploads=(snapshot.pendingUploads??[]).filter((x:any)=>x.id!==prior);renderPending()}uploadId=''
     const uploaded=await api.request('upload',{personId:selected,documentId:docId.value,title:docTitle.value,mime:format.value==='markdown'?'text/markdown':'text/plain',encoding:'utf8',base64:btoa(binary),...(previousEventId?{previousEventId}:{})});uploadId=uploaded.id;staging.replaceChildren()
-    const ready=card(staging,'核对分类与注入范围');note(ready,'临时草稿保留 10 分钟，尚未写入人物。下方修改只改变分类与条件；原文保持完整。');chip(ready,uploaded.draft.utf8Bytes.toLocaleString()+' 字节');details(ready,'原文校验与分段', {sha256:uploaded.draft.sha256,sections:uploaded.draft.sections.length,chunks:uploaded.draft.chunks.length})
-    if(uploaded.revisionReview){const r=uploaded.revisionReview;note(ready,'修订核对：'+r.matches.length+' 个章节可对应旧稿，'+r.unmatchedNext.length+' 个新章节需要重新检查。旧条件不会因标题相似而自动启用。');details(ready,'查看章节对应建议',r)}
-    const values=uploaded.draft.sections.map((s:any)=>{
-     const old=policies?.find(p=>p.sectionId===s.sectionId),row=card(ready,s.title),category=select(row,'分类',categories,old?.category??s.category),label=input(row,'自定义分类标签',old?.label??s.title),tags=input(row,'标签（逗号分隔）',old?.tags.join(', ')??''),enabled=select(row,'注入资格',{yes:'允许按条件选入',no:'仅保存，不注入'},old?.enabled===true?'yes':'no'),kind=select(row,'对话类型',{all:'全部授权对话',direct:'仅私聊',group:'仅群聊'},old?.when.kind??'all')
-     const filters=elem('details','',row,'mc-details');elem('summary','进一步限定平台、账号与参与者',filters)
-     const platform=input(filters,'平台（留空不限）',old?.when.platform??''),accountId=input(filters,'账号（留空不限）',old?.when.accountId??''),senderIds=input(filters,'发送者编号（逗号分隔）',old?.when.senderIds?.join(', ')??''),groupIds=input(filters,'群编号（逗号分隔）',old?.when.groupIds?.join(', ')??''),sceneIds=input(filters,'场景编号（逗号分隔）',old?.when.sceneIds?.join(', ')??'')
-     const match=uploaded.revisionReview?.matches.find((m:any)=>m.nextSectionId===s.sectionId)
-     if(match){note(row,match.textChanged?'正文有变化，请重新检查分类与适用对象。':'原文与旧稿一致。');if(match.suggestedPolicy){details(row,'建议沿用的旧条件',match.suggestedPolicy);button(row,'将旧条件填入草稿，继续核对',()=>{const p=match.suggestedPolicy;category.value=p.category;label.value=p.label;tags.value=p.tags.join(', ');enabled.value=p.enabled?'yes':'no';kind.value=p.when.kind;platform.value=p.when.platform??'';accountId.value=p.when.accountId??'';senderIds.value=p.when.senderIds?.join(', ')??'';groupIds.value=p.when.groupIds?.join(', ')??'';sceneIds.value=p.when.sceneIds?.join(', ')??'';message('旧条件已填入当前草稿；尚未保存，请核对后预览确认。')},'btn btn-sm')}}
-     return ()=>{const split=(s:string)=>s.split(/[,，]/).map(v=>v.trim()).filter(Boolean);return {sectionId:s.sectionId,category:category.value,label:label.value,tags:split(tags.value),enabled:enabled.value==='yes',when:{kind:kind.value,...(platform.value?{platform:platform.value}:{}),...(accountId.value?{accountId:accountId.value}:{}),...(senderIds.value?{senderIds:split(senderIds.value)}:{}),...(groupIds.value?{groupIds:split(groupIds.value)}:{}),...(sceneIds.value?{sceneIds:split(sceneIds.value)}:{})}}}
-    })
-    button(ready,'预览保存资料',()=>preview('document-import',{uploadId:uploaded.id,policies:values.map((v:any)=>v())}),'btn btn-primary')
-    button(ready,'取消这份草稿',async()=>{await api.request('discard-upload',{id:uploaded.id});uploadId='';staging.replaceChildren();message('已取消临时草稿，没有导入资料。')})
-    details(ready,'宿主短指令（使用默认分类，不包含此处未保存的调整）',uploaded.command);message('原文已解析，尚未确认写入。')
+    snapshot.pendingUploads=[...(snapshot.pendingUploads??[]).filter((x:any)=>x.id!==uploaded.id),{id:uploaded.id,personId:selected,title:uploaded.draft.title,bytes:uploaded.draft.utf8Bytes,expiresAt:uploaded.expiresAt,status:'pending'}];renderPending();showDraft(uploaded)
    }finally{setBusy(false)}
   },'btn btn-primary')
   button(pageHead,'导入资料',()=>{form.parentElement.open=true;form.scrollIntoView({behavior:'smooth'})},'btn btn-primary').prepend(icon('plus'));const list=elem('section','',root,'stack-lg'),listHead=elem('div','',list,'section-head');elem('h2','已经保存的资料',listHead,'h2');elem('span',snapshot.documents.filter((d:any)=>d.personId===selected&&d.status==='active').length+' 份原文',listHead,'sub');if(!snapshot.documents.some((d:any)=>d.personId===selected)){const welcome=card(list,'把完整的故事留下来');note(welcome,'身份、语气、习惯，或还没想好如何归类的一段文字。原文会被完整保留，何时进入对话由你决定。');button(welcome,'导入第一份资料',()=>{form.parentElement.open=true;form.scrollIntoView({behavior:'smooth'})},'btn btn-primary')}for(const d of snapshot.documents.filter((d:any)=>d.personId===selected)){

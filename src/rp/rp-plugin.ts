@@ -538,7 +538,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           const manager=await openManagementServer(controller,()=>({sessionId:agent.id,personId:b!.data.personBinding?.personId??null,mode:b!.data.runtimeBinding?.config.mode??'rp',config:b!.data.runtimeBinding?.config??null,injection:b!.data.injectionBinding??null,memoryBudget:b!.data.memoryBudget??null,memoryUsage:b!.lastMemoryUsage??null,model:{provider:agent.options.provider??'',model:agent.options.model??''},cleanRoot:safe(agent),diagnostic:diagnostic(agent.id)}),async()=>{
             for(const session of bound.values())if(session.data.request.branchId===b!.data.request.branchId)session.packet=undefined
             if(!await (root.get('sessions') as any).flush(agent.session))throw new RpError('persistence_uncertain','Management committed; native flush unconfirmed. Inspect current state before another action.')
-          },async query=>{if(!live(agent)||b!.generation!==generation||b!.data.blocked||agent.status!=='idle')throw new RpError('ownership_lost','工作台会话已变化，请重新打开');return injectionPreview(b!,query)})
+          },async query=>{if(!live(agent)||b!.generation!==generation||b!.data.blocked||agent.status!=='idle')throw new RpError('ownership_lost','工作台会话已变化，请重新打开');return injectionPreview(b!,query)},'dsh')
           if(!live(agent)||b.generation!==generation||managerOpenings.get(agent.id)!==opening){await manager.close();throw new RpError('ownership_lost','Management owner changed while opening')}
           managerOpenings.delete(agent.id)
           managers.set(agent.id,manager);return {kind:'success',text:JSON.stringify({url:manager.url,notice:'仅本机、仅本会话，手动刷新和确认。关闭页面不会自动改人物；person manage-close 撤销入口。不要分享完整地址。'})}

@@ -1,3 +1,4 @@
+import {managementCapabilities,type ManagementCapabilities} from './management-capabilities.js'
 import {createManagementClient} from './management-client.js'
 import {workbenchClient} from './workbench-client.js'
 import {workbenchExtensions} from './workbench-extensions.js'
@@ -7,9 +8,9 @@ import {workbenchReading} from './workbench-reading.js'
 export {createManagementClient}
 
 /** Static shell contains no person data or credentials. Assets stay inside the nonce CSP. */
-export function managerPage(nonce:string){
+export function managerPage(nonce:string,capabilities:ManagementCapabilities=managementCapabilities()){
  const safe=nonce.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!))
- const script=`(${workbenchClient.toString()})(${createManagementClient.toString()},${workbenchExtensions.toString()},${workbenchVisuals.toString()},${workbenchReading.toString()});`.replace(/<\/script/gi,'<\\/script')
+ const script=`(${workbenchClient.toString()})(${createManagementClient.toString()},${workbenchExtensions.toString()},${workbenchVisuals.toString()},${workbenchReading.toString()},${JSON.stringify(capabilities)});`.replace(/<\/script/gi,'<\\/script')
  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="description" content="Memory-Continuity：人物与记忆工作台"><title>Memory-Continuity 工作台</title><style nonce="${safe}">${workbenchStyle}</style></head><body>
 <a class="skip-link" href="#main">跳到主要内容</a>
 <header class="topbar"><div class="topbar-inner"><button class="btn btn-ghost icon-btn menu-btn" id="menu" aria-label="打开导航" aria-controls="sidebar" aria-expanded="false">☰</button><a class="brand" href="#" id="brand"><svg class="brand-mark" viewBox="0 0 28 28" aria-hidden="true"><rect x="1" y="1" width="26" height="26" rx="7" fill="var(--accent)"/><path d="M5 17c3-6 6-6 9 0s6 6 9 0" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/><circle cx="5" cy="17" r="2" fill="var(--accent-ink)"/><circle cx="14" cy="17" r="2" fill="var(--accent-ink)"/><circle cx="23" cy="17" r="2" fill="var(--accent-ink)"/></svg><span class="brand-name">Memory-Continuity</span><span class="brand-sub">人物与记忆工作台</span></a><div class="mc-breadcrumb" id="breadcrumb" aria-label="当前位置">人物 / 全部人物</div><div class="topbar-spacer"></div><div class="chat-indicator"><span class="live-dot" aria-hidden="true"></span><span class="lbl">当前聊天</span><span class="who" id="chat-person">未绑定</span></div><div class="topbar-actions"><span id="stamp" class="data-stamp num hide-sm"></span><button class="btn btn-ghost icon-btn" id="refresh" aria-label="手动刷新全部数据" title="手动刷新全部数据">↻</button><div class="theme-switch" id="theme" role="group" aria-label="外观"></div><button class="btn btn-ghost mc-top-close" id="close">关闭入口</button></div></div></header>

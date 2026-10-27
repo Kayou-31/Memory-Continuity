@@ -198,7 +198,7 @@ class CoreClient:
 
     async def workbench(self, session: CoreSession):
         self._session(session)
-        result = await self._call('/v1/admin/workbench', {'sessionId': session.session_id})
+        result = await self._call('/v1/admin/workbench', {'sessionId': session.session_id, 'host': 'astrbot'})
         self._session(session)
         return result
 

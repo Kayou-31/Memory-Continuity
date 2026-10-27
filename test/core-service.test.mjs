@@ -161,6 +161,22 @@ test('explicit confirmation returns a durable outcome and cold duplicate confirm
  assert.equal((await next.call('/v1/admin/confirm',{sessionId:separate.sessionId,id:review.id})).code,'scope_denied')
 })
 
+test('core HTTP cancellation retires a prepared review and exposes bounded activity in the workbench',async t=>{
+ const f=await fixture(t),session=await f.session(),review=await editReview(f,session)
+ const before=must(await f.memory.store.readFence(f.authority))
+ assert.equal(must((await f.call('/v1/admin/cancel',{sessionId:session.sessionId,id:review.id})).body).status,'cancelled')
+ assert.equal((await f.call('/v1/admin/confirm',{sessionId:session.sessionId,id:review.id})).body.code,'stale_input')
+ assert.equal(must((await f.call('/v1/admin/snapshot',{sessionId:session.sessionId})).body).confirmationCapacity.active,0)
+ assert.deepEqual(must(await f.memory.store.readFence(f.authority)),before)
+})
+
+for(const host of ['independent-core','astrbot'])test(host+' workbench describes its actual capabilities and reopening path',async t=>{
+ const f=await fixture(t),session=await f.session(),opened=must((await f.call('/v1/admin/workbench',{sessionId:session.sessionId,...(host==='astrbot'?{host}:{})})).body),url=new URL(opened.url),token=url.hash.slice(1);url.hash=''
+ const page=await(await fetch(url)).text(),snapshot=must(await(await fetch(new URL('api/snapshot',url),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:'{}'})).json())
+ assert.equal(snapshot.capabilities.host,host);assert.equal(snapshot.capabilities.features.injectionPreview,false);assert.equal(snapshot.capabilities.features.chatBinding,false);assert.equal(snapshot.capabilities.features.continuation,false);assert.equal(snapshot.capabilities.features.documents,true)
+ assert.ok(page.includes(snapshot.capabilities.reopen));assert.match(snapshot.capabilities.reopen,host==='astrbot'?/memcont open/:/核心服务/)
+})
+
 test('a lost completion receipt stays uncertain after restart and never repeats an already applied change',async t=>{
  const f=await fixture(t),session=await f.session(),review=await editReview(f,session),link=fs.link
  fs.link=async(from,to)=>{if(String(to).endsWith('.committed.json'))throw Object.assign(new Error('injected receipt EIO'),{code:'EIO'});return link(from,to)}
