@@ -1,0 +1,76 @@
+[
+  {
+    "name": "typecheck",
+    "executable": "D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/toolchain/node-v22.23.3-win-x64/node.exe",
+    "argv": [
+      "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+      "run",
+      "typecheck"
+    ],
+    "cwd": "D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5",
+    "head": "ba28665533db42dfdf1675b0cf83ee660bf3a937",
+    "startedAtUtc": "2026-10-27T16:25:11.7951065+00:00",
+    "exitCode": 0,
+    "seconds": 2.693,
+    "log": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-review-2026-10-27\\handoff-typecheck.log"
+  },
+  {
+    "name": "build",
+    "executable": "D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/toolchain/node-v22.23.3-win-x64/node.exe",
+    "argv": [
+      "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+      "run",
+      "build"
+    ],
+    "cwd": "D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5",
+    "head": "ba28665533db42dfdf1675b0cf83ee660bf3a937",
+    "startedAtUtc": "2026-10-27T16:25:14.5227536+00:00",
+    "exitCode": 0,
+    "seconds": 3.46,
+    "log": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-review-2026-10-27\\handoff-build.log"
+  },
+  {
+    "name": "test",
+    "executable": "D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/toolchain/node-v22.23.3-win-x64/node.exe",
+    "argv": [
+      "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+      "test"
+    ],
+    "cwd": "D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5",
+    "head": "ba28665533db42dfdf1675b0cf83ee660bf3a937",
+    "startedAtUtc": "2026-10-27T16:25:17.9864105+00:00",
+    "exitCode": 0,
+    "seconds": 287.325,
+    "log": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-review-2026-10-27\\handoff-test.log"
+  },
+  {
+    "name": "fixture",
+    "executable": "D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/toolchain/node-v22.23.3-win-x64/node.exe",
+    "argv": [
+      "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+      "run",
+      "evaluate:fixture"
+    ],
+    "cwd": "D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5",
+    "head": "ba28665533db42dfdf1675b0cf83ee660bf3a937",
+    "startedAtUtc": "2026-10-27T16:30:05.3135511+00:00",
+    "exitCode": 0,
+    "seconds": 0.18,
+    "log": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-review-2026-10-27\\handoff-fixture.log"
+  },
+  {
+    "name": "pack-dry",
+    "executable": "D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/toolchain/node-v22.23.3-win-x64/node.exe",
+    "argv": [
+      "C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js",
+      "pack",
+      "--dry-run"
+    ],
+    "cwd": "D:/Codex/2026-10-20/https-github-com-kayou-31-dsh/work/rp-memory-m5",
+    "head": "ba28665533db42dfdf1675b0cf83ee660bf3a937",
+    "startedAtUtc": "2026-10-27T16:30:05.4959324+00:00",
+    "exitCode": 0,
+    "seconds": 2.014,
+    "log": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-review-2026-10-27\\handoff-pack-dry.log"
+  }
+]

@@ -1,5 +1,8 @@
-import {requestLimits,currentRequestCost,requestStop,type RequestLimits} from './request-cost.js'
-import {memoryDelivery,missingRecentOriginals,planContextRetirement,retiredContextOriginal} from './context-retention.js'
+import type {ExperienceReceipt} from './experience-candidates.js'
+import {checkGlobalDependencies,globalDependencyKey} from './global-dependencies.js'
+import {requestPayloadDiagnostics,selectionCost} from './request-diagnostics.js'
+import {requestLimits,currentRequestCost,requestStop,requestCostDiagnostic,type RequestLimits} from './request-cost.js'
+import {memoryDelivery,missingRecentOriginals,planContextRetirement,retiredContextOriginal,proposedContextMessage,createSurfaceIndex} from './context-retention.js'
 import {createMemoryBudget,openMemoryMeter,measureMemoryParts,type MemoryBudgetV2,type MemoryMeter,type MemoryPart,type MemoryUsage} from './token-budget.js'
 import {budgetMarkerValid,writeBudgetMarker} from './token-budget-marker.js'
 import {createInjectionBinding,verifyInjectionText,injectionMarkerValid,writeInjectionMarker,type InjectionBinding} from './injection-binding.js'
@@ -27,6 +30,7 @@ import { acquireSessionPolicy, engineeringAllowed, type SessionMemoryPolicy } fr
 import { acquireRpAdmission } from './admission.js'
 import { retrievalEvidence, verifyRetrievalEvidence, type RetrievalEvidence } from './retrieval-evidence.js'
 import { diaryEvidence, verifyDiaryEvidence, type DiaryReceiptContext } from './diary/evidence.js'
+import type {DocumentReceiptContext} from './person/documents/retrieval.js'
 import { validateDiaryDraft } from './diary/schema.js'
 import { diaryCommand } from './diary/commands.js'
 import { verifyPacketProof, verifyPacketProofs } from './packet-proof.js'
@@ -42,9 +46,9 @@ import type { HostAuthority, InputFence, SourceRevision } from './types.js'
 import type { GlobalFence } from './global.js'
 const sha = (s: string) => createHash('sha256').update(s).digest('hex')
 const uid = (p: string) => p + '_' + randomUUID().replaceAll('-', '')
-const memoryToolNames = ['rp_memory_search', 'rp_memory_get', 'rp_memory_status', 'memcont_diary_write', 'memcont_diary_read', 'memcont_diary_search']
-type ToolProof = RetrievalEvidence & { diary?: DiaryReceiptContext }
-type ToolProvenance = 'retrieval-result' | 'diary-result' | 'status' | 'error'
+const memoryToolNames = ['rp_memory_search', 'rp_memory_get', 'rp_memory_status', 'memcont_diary_write', 'memcont_diary_read', 'memcont_diary_search', 'memcont_document_search', 'memcont_document_get', 'memcont_experience_propose']
+type ToolProof = RetrievalEvidence & { experience?:ExperienceReceipt; diary?: DiaryReceiptContext; document?:DocumentReceiptContext }
+type ToolProvenance = 'experience-result' | 'retrieval-result' | 'diary-result' | 'document-result' | 'status' | 'error'
 const body = (m: any) => (m.content ?? []).filter((b: any) => b.type === 'text').map((b: any) => b.text).join('\n')
 const normalizedMessage = (m: any) => canonical(m)
 const commandObject = (input: string, required: readonly string[], optional: readonly string[] = []) => {
@@ -69,7 +73,7 @@ const validReadToolContent = (content: unknown): boolean => {
 }
 import { validateJournal, type Snapshot, type Input, type DurableSession } from './host-journal.js'
 interface RequestAdmission {state:'prepared'|'admitted'|'rejected';stage:'assembly'|'send';at:string;code?:string;message?:string}
-interface Bound { preparedContextHash?:string; requestInFlight?:boolean; requestAdmission?:RequestAdmission; lastMemoryUsage?:MemoryUsage; runtime?: ModuleRuntime; agent: Agent; authority: HostAuthority; data: DurableSession; queue: Promise<unknown>; saveQueue: Promise<void>; packet?: MemoryPacket; packetRecentSourceIds?:readonly string[]; staticSystem?: string; staticTools?: string; staticToolDefinitions?:unknown[]; lastContextBody?:string; generation: number; lastError?: string; recoveryOnly?: boolean; personPreview?: { id: string; handle: object; draftHash: string } }
+interface Bound { lastRequestPayload?:ReturnType<typeof requestPayloadDiagnostics>; preparedContextHash?:string; requestInFlight?:boolean; requestAdmission?:RequestAdmission; lastMemoryUsage?:MemoryUsage; runtime?: ModuleRuntime; agent: Agent; authority: HostAuthority; data: DurableSession; queue: Promise<unknown>; saveQueue: Promise<void>; packet?: MemoryPacket; packetRecentSourceIds?:readonly string[]; staticSystem?: string; staticTools?: string; staticToolDefinitions?:unknown[]; lastContextBody?:string; generation: number; lastError?: string; recoveryOnly?: boolean; personPreview?: { id: string; handle: object; draftHash: string } }
 export interface RpPluginConfig {
   /** Logical adapter admissions per explicit input; includes tool steps and retries. */
   requestLimits?:Partial<RequestLimits>
@@ -209,7 +213,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     if(failure?.state==='rejected')return {action:'continue-clean',detail:failure.code==='context_budget_exceeded'?'本次请求超出记忆或模型总预算。检查输出预留、budget show，干净续接后明确调整；必需记忆不会自动截断。':failure.message?.includes('Model changed')?'模型绑定已改变。先 continue-clean，再在新会话 budget set {} 重新绑定实际模型。':'本次请求未通过来源或快照校验。检查采纳、修订、权限和历史有效性；需要时 continue-clean，不复制旧宿主回执。'}
     return {action:'none',detail:'绑定健康不等于下一次请求已获准；每次发送仍会重新校验。'}
   }
-  const diagnostic = (sessionId: string) => { const b = bound.get(sessionId); return {requestCost:{limits,...(b?.data.requestCost??{requests:0,stepRequests:0}),unit:'durably-reserved-adapter-admissions'},bindingHealth:closed?'closing':!b?'unbound':b.recoveryOnly?'recovery-only':b.data.blocked?'blocked':'healthy',requestAdmission:b?.requestAdmission??{state:'not_attempted'},recovery:recoveryFor(b), enabled: !closed, lifecycle: closed ? 'closing' : 'open', contextCompression: false, strictPov: false, nativeVersions, memoryOptimization: { available: optimizer()?.protocol ?? 'standalone', packet: b?.packet?.optimizer ?? null }, policy: policy.status(sessionId), branchId: b?.data.request.branchId, personId: b?.data.personBinding?.personId, injection: b?.data.injectionBinding ?? null, memoryBudget:b?.data.memoryBudget??null,memoryUsage:b?.lastMemoryUsage??null, purpose: b?.data.runtimeBinding?.config ?? null, blocked: !b || closed || b.data.blocked === true || b.recoveryOnly === true, lastError: b?.lastError, candidateIds: b ? Object.values(b.data.hostSources).filter(s => !b.data.inputs.some(i => i.sourceId === s)) : [], pendingInputIds: b?.data.inputs.filter(i => i.phase === 'observed' || i.phase === 'accepted').map(i => i.sourceId) ?? [], ambiguousInputIds: b?.data.inputs.filter(i => i.phase === 'dispatching' || i.phase === 'dispatched').map(i => i.sourceId) ?? [], snapshots: b ? Object.keys(b.data.snapshots).length : 0 } }
+  const diagnostic = (sessionId: string) => { const b = bound.get(sessionId); return {requestCost:requestCostDiagnostic(b?.data.requestCost,limits),requestPayload:b?.lastRequestPayload??null,bindingHealth:closed?'closing':!b?'unbound':b.recoveryOnly?'recovery-only':b.data.blocked?'blocked':'healthy',requestAdmission:b?.requestAdmission??{state:'not_attempted'},recovery:recoveryFor(b), enabled: !closed, lifecycle: closed ? 'closing' : 'open', contextCompression: false, strictPov: false, nativeVersions, memoryOptimization: { available: optimizer()?.protocol ?? 'standalone', packet: b?.packet?.optimizer ?? null }, policy: policy.status(sessionId), branchId: b?.data.request.branchId, personId: b?.data.personBinding?.personId, injection: b?.data.injectionBinding ?? null, memoryBudget:b?.data.memoryBudget??null,memoryUsage:b?.lastMemoryUsage??null, purpose: b?.data.runtimeBinding?.config ?? null, blocked: !b || closed || b.data.blocked === true || b.recoveryOnly === true, lastError: b?.lastError, candidateIds: b ? Object.values(b.data.hostSources).filter(s => !b.data.inputs.some(i => i.sourceId === s)) : [], pendingInputIds: b?.data.inputs.filter(i => i.phase === 'observed' || i.phase === 'accepted').map(i => i.sourceId) ?? [], ambiguousInputIds: b?.data.inputs.filter(i => i.phase === 'dispatching' || i.phase === 'dispatched').map(i => i.sourceId) ?? [], snapshots: b ? Object.keys(b.data.snapshots).length : 0 } }
   const assertIdle = (agent: Agent) => { if (!live(agent) || agent.status !== 'idle') throw new RpError('scope_denied', 'RP controls require the exact live idle root session') }
   const requestFor = (session: string, branchId: string): AuthorityRequest => ({ workspaceId: binding.workspaceId, campaignId: config.campaignId ?? 'rp_campaign', branchId, sessionId: session, sceneId: 'rp_scene', viewpoint: { kind: 'narrator' }, visibility, audienceSetIds: ['rp_user'], permissions: ['read', 'observe', 'commit', 'control'] })
   const safe = (agent: Agent) => agent.session.deriveMessages().length === 0 && !agent.session.header.parentSession && !agent.session.header.isSeeded && !(root.get('compaction')) && !(root.get('ultraEvidenceSupport') as any)?.memory?.hasActiveSession(agent.id)
@@ -279,7 +283,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       await created?.dispose(); throw e
     }
   }
-  const verifyToolProof = (b: Bound, proof: ToolProof) => proof.diary ? verifyDiaryEvidence(memory.store, b.authority, {...proof, diary: proof.diary}, b.data.personBinding?.personId) : verifyRetrievalEvidence(memory.store, b.authority, proof, new Set(b.data.inputs.map(i=>i.sourceId)))
+  const verifyToolProof = (b: Bound, proof: ToolProof) => proof.experience ? memory.experienceCandidates.verify(b.authority,b.data.personBinding?.personId??'',proof.experience) : proof.document ? memory.documentRetrieval.verify(b.authority,{inputFence:proof.inputFence,records:proof.records,resultSha256:proof.resultSha256,document:proof.document},{personId:b.data.personBinding?.personId??''}) : proof.diary ? verifyDiaryEvidence(memory.store, b.authority, {...proof, diary: proof.diary}, b.data.personBinding?.personId) : verifyRetrievalEvidence(memory.store, b.authority, proof, new Set(b.data.inputs.map(i=>i.sourceId)))
   // Planned retirement markers are also counted before their commit. This is
   // conservative sizing only; certify separately reconstructs their provenance.
   const collectMemoryParts = (b:Bound, options:any):MemoryPart[] => [
@@ -294,12 +298,20 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
   const sessionMeter = (b:Bound) => b.data.memoryBudget?openMemoryMeter(b.data.memoryBudget,{provider:b.agent.options.provider??'',model:b.agent.options.model??''}):Promise.resolve(undefined)
   const toolSizing=async(b:Bound,callId:string)=>{
     const meter=await sessionMeter(b)
-    return {fits:(result:unknown)=>{
+    const fits=(result:unknown,reserve:number,complete:boolean)=>{
       if(!meter)return true
       const tools=b.staticToolDefinitions??[]
-      const usage=measureMemoryParts([...collectMemoryParts(b,{messages:planContextRetirement(b.agent.session,b.data,b.packet?.id).messages,tools,toolHistory:{tools,updates:[]}}),...(b.lastContextBody?[{kind:'next-runtime-context-reserve',text:b.lastContextBody}]:[]),{kind:'proposed-tool-result',text:canonical({role:'tool',toolCallId:callId,content:[{type:'text',text:canonical(result)}]})}],meter,false)
-      return usage.total+256<=usage.limit
-    }}
+      const plan=planContextRetirement(b.agent.session,b.data,undefined,b.preparedContextHash)
+      const retained=plan.messages.some((m:any)=>b.data.snapshots[m.id]?.bodyHash===b.preparedContextHash)
+      // A reused packet is already in the native surface. Only reserve a new
+      // snapshot when the proposed surface does not contain the prepared one.
+      const message={role:'tool',toolCallId:callId,content:[{type:'text',text:canonical(result)}],...(complete?{id:'a1-'.repeat(32),source:{kind:'tool',callId},isError:false}:{})}
+      const usage=measureMemoryParts([...collectMemoryParts(b,{messages:plan.messages,tools,toolHistory:{tools,updates:[]}}),...(!retained&&b.lastContextBody?[{kind:'new-packet',text:b.lastContextBody}]:[]),{kind:'proposed-tool-result',text:canonical(message)}],meter,false)
+      return usage.total+reserve<=usage.limit
+    }
+    // Read-only refusals may consume the response reserve, but still count the
+    // complete native wrapper and an ID longer/more token-dense than its UUID.
+    return {fits:(result:unknown)=>fits(result,256,false),fitsReceipt:(result:unknown)=>fits(result,0,true)}
   }
   const injectionPreview = async (b:Bound, query:string) => {
     if(Buffer.byteLength(query,'utf8')>8192)throw new RpError('invalid_record','Preview query exceeds 8 KiB')
@@ -308,30 +320,34 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     const delivery=memoryDelivery(b.data,memoryMeter?.budget.limitTokens??config.budget!.packetSoftTokens)
     const packet=b.data.injectionBinding?unwrap(await memory.packets.prepare(b.authority,{budget:config.budget!,globalAuthorities,inputBindings:b.data.inputs,personId:b.data.personBinding?.personId,injection:b.data.injectionBinding.config,runtime:b.runtime?.context(),query,memoryMeter,optionalTokens:delivery.optionalLimit})):undefined
     const fence=packet?.inputFence??unwrap(await memory.store.readFence(b.authority)),sources=new Set(unwrap(await memory.store.readAcceptedSources(b.authority)).map(s=>s.id)),history=[]
+    const surfaceIndex=createSurfaceIndex(b.agent.session)
+    const globalCheck=await checkGlobalDependencies(memory.global.store,globalAuthorities,[...Object.values(b.data.snapshots),...Object.values(b.data.frames)].flatMap(s=>s.globalDependencies))
     for(const actualMessage of b.agent.session.deriveMessages() as any[]){
       let message=actualMessage,s=b.data.snapshots[message.id]??b.data.frames[message.id]
       let status='carried',reason='旧宿主消息仍在上下文中；本轮未选中不会删除它。'
       try{
-        const original=retiredContextOriginal(b.agent.session,b.data,actualMessage);if(original){message=original;s=b.data.snapshots[message.id];status='retired';reason='旧记忆正文已移出发送视图；原始快照仍保存并校验来源。'}
+        const original=retiredContextOriginal(b.agent.session,b.data,actualMessage,undefined,surfaceIndex);if(original){message=original;s=b.data.snapshots[message.id];status='retired';reason='旧记忆正文已移出发送视图；原始快照仍保存并校验来源。'}
         if(b.data.messageHashes[message.id]!==sha(normalizedMessage(message)))throw new RpError('stale_input','未知或改动过的宿主消息')
         if(s){
           if(s.injection)verifyInjectionText(s.injection,body(message))
           if(canonical(s.memoryBudget??null)!==canonical(b.data.memoryBudget??null))throw new RpError('stale_input','历史记忆预算绑定不匹配')
           if(canonical(s.injectionBinding??null)!==bindingHash||canonical(s.personBinding??null)!==canonical(b.data.personBinding??null)||canonical(s.runtimeBinding??null)!==canonical(b.data.runtimeBinding??null))throw new RpError('stale_input','历史配置绑定不匹配')
           if(s.provenance==='packet'||s.provenance==='tool-call')await verifyPacketProof(memory.store,b.authority,s.packetProof)
-          if(s.records)await verifyToolProof(b,{inputFence:s.fence,records:s.records,resultSha256:s.resultSha256!,diary:s.diary})
+          if(s.records)await verifyToolProof(b,{inputFence:s.fence,records:s.records,resultSha256:s.resultSha256!,diary:s.diary,document:s.document,experience:s.experience})
           if(s.bodyHash!==sha(body(message))||s.modeEpoch!==policy.status(b.agent.id).modeEpoch||s.fence.branchId!==fence.branchId||s.fence.visibilityRevision!==fence.visibilityRevision||s.fence.deletionGeneration!==fence.deletionGeneration||s.fence.canonBindingsHash!==fence.canonBindingsHash||s.fence.policyVersion!==fence.policyVersion||s.dependencyIds.some(id=>!sources.has(id)))throw new RpError('stale_input','历史来源或权限已失效')
           if(s.globalPolicyHash!==globalPolicyHash()||s.globals.length!==globalAuthorities.length)throw new RpError('scope_denied','历史全局授权已改变')
-          for(const dep of s.globalDependencies){let found=false;for(const g of globalAuthorities){const r=await memory.global.store.readPublication(g,dep.publicationId);if(r.ok&&r.value.source.id===dep.sourceId&&r.value.bodySha256===dep.bodySha256&&canonical(r.value.scope)===canonical(dep.scope)&&(r.value.scope.kind!=='profile'||unwrap(await memory.global.store.listActive(g)).some(x=>x.id===r.value.id)))found=true}if(!found)throw new RpError('scope_denied','历史全局来源已失效')}
+          if(s.globalDependencies.some(dep=>!globalCheck.valid.has(globalDependencyKey(dep))))throw new RpError('scope_denied','历史全局来源已失效')
         }else if(!sources.has(b.data.hostSources[message.id]))throw new RpError('scope_denied','宿主原文尚未采纳或已失效')
       }catch(e){status='blocked';reason=e instanceof Error?e.message:'历史验证失败'}
       history.push({messageId:actualMessage.id,status,reason,kind:s?.provenance??'original',snapshotId:s?.injection?.sha256??s?.packetId??null,selectedIds:s?.injection?.entries.filter(e=>e.selected).map(e=>e.id)??[]})
     }
+    await globalCheck.assertCurrent()
     if(generation!==b.generation||bindingHash!==canonical(b.data.injectionBinding??null)||!live(b.agent)||canonical(fence)!==canonical(unwrap(await memory.store.readFence(b.authority))))throw new RpError('stale_input','预览期间状态改变，请重新预览')
     if(packet)for(let i=0;i<globalAuthorities.length;i++)if(canonical(packet.globalFences[i])!==canonical(unwrap(await memory.global.store.readFence(globalAuthorities[i]))))throw new RpError('stale_input','预览期间全局记忆改变')
     const tools=(root.get('tools') as any).schemas(b.agent).filter((t:any)=>memoryToolNames.includes(t.name))
     const memoryUsage=memoryMeter?measureMemoryParts([...collectMemoryParts(b,{messages:planContextRetirement(b.agent.session,b.data).messages,tools,toolHistory:{tools,updates:[]}}),...(packet?[{kind:'preview-packet',text:canonical({rpPacketId:packet.id,data:JSON.parse(packet.text),recentAcceptedOriginals:missingRecentOriginals(b.data,packet,b.agent.session.deriveMessages())})}]:[])],memoryMeter,false):undefined
-    return {delivery,...(memoryMeter?{memoryBudget:{binding:memoryMeter.budget,usage:memoryUsage,notice:'预览计入当前记忆和工具；宿主包装在实际请求中重新计量。超限不会发送。'}}:{}),binding:b.data.injectionBinding??null,current:packet?{text:JSON.parse(packet.text).personContinuity.text,trace:packet.injection,packetId:packet.id}:null,history,blocked:b.data.blocked===true||b.recoveryOnly===true,notice:'只读预览，实际发送会重新组装与验证。旧记忆包会替换为轻量保留标记；普通对话与工具结果仍保留，历史失效请 continue-clean。未启用 budget v2 时仍按旧版 UTF-8 字节估计；v2 的计量方式见 memoryBudget。'}
+    const historyBytes=Buffer.byteLength(canonical(b.agent.session.deriveMessages().filter((m:any)=>!b.data.snapshots[m.id]&&!b.data.frames[m.id]&&!m.id?.startsWith('retired_'))),'utf8')
+    return {cost:{provenance:'preview',historyBytes,selection:selectionCost(packet),providerBilling:null,notice:'普通聊天历史单列；预览计量不是实际账单。'},delivery,...(memoryMeter?{memoryBudget:{binding:memoryMeter.budget,usage:memoryUsage,notice:'预览计入当前记忆和工具；宿主包装在实际请求中重新计量。超限不会发送。'}}:{}),binding:b.data.injectionBinding??null,current:packet?{text:JSON.parse(packet.text).personContinuity.text,trace:packet.injection,packetId:packet.id}:null,history,blocked:b.data.blocked===true||b.recoveryOnly===true,notice:'只读预览，实际发送会重新组装与验证。旧记忆包会替换为轻量保留标记；普通对话与工具结果仍保留，历史失效请 continue-clean。未启用 budget v2 时仍按旧版 UTF-8 字节估计；v2 的计量方式见 memoryBudget。'}
   }
   const controlSource = (b: Bound, commandId: string, value: string) => memory.store.observeSource(b.authority, { idempotencyKey: 'command_' + sha(commandId), origin: 'user_control', role: 'user_control', publicText: value, turnId: uid('control') })
   const canonicalControl = async (b: Bound, commandId: string, operation: any) => {
@@ -483,6 +499,16 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         const result=m[1]==='preview'?await c.prepare({snapshotId:(await c.snapshot()).id,action:'document-import',payload:{uploadId:m[2]}}):m[1]==='confirm'?await manager.confirm(m[2]):await c.discardUpload(m[2])
         return {kind:'success',text:canonical(result)}
       }
+      if(action==='experience'){
+        const match=/^(status|enable|disable|list|show|adopt|reject)(?:\s+(\S+))?$/u.exec(arg),personId=b.data.personBinding?.personId;if(!match||!personId)throw new RpError('invalid_record','先绑定人物；使用 experience status|enable|disable|list|show|adopt|reject')
+        const sub=match[1],candidateId=match[2];if(['show','adopt','reject'].includes(sub)!==!!candidateId)throw new RpError('invalid_record','候选操作需要明确编号')
+        let result:unknown
+        if(sub==='status')result=unwrap(await memory.experienceCandidates.settings(b.authority,personId))
+        else if(sub==='list')result=unwrap(await memory.experienceCandidates.list(b.authority,personId))
+        else if(sub==='show')result=unwrap(await memory.experienceCandidates.get(b.authority,personId,candidateId!))
+        else{const ctl=unwrap(await controlSource(b,commandId,'用户明确确认经历操作 '+arg));result=sub==='enable'||sub==='disable'?unwrap(await memory.experienceCandidates.configure(b.authority,ctl,{personId,enabled:sub==='enable',key:commandId})):unwrap(await memory.experienceCandidates.decide(b.authority,ctl,{personId,candidateId:candidateId!,decision:sub==='adopt'?'accepted':'rejected',key:commandId}));for(const session of bound.values())if(session.data.request.branchId===b.data.request.branchId)session.packet=undefined}
+        return {kind:'success',text:canonical(result)}
+      }
       if(action==='diary')return {kind:'success',text:canonical(await diaryCommand(arg,{
         diary:memory.diary,authority:b.authority,personId:b.data.personBinding?.personId,commandId,
         control:async value=>unwrap(await controlSource(b!,commandId,value)),fence:async()=>unwrap(await memory.store.readFence(b!.authority)),
@@ -527,7 +553,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           const manager=await openManagementServer(controller,()=>({sessionId:agent.id,personId:b!.data.personBinding?.personId??null,mode:b!.data.runtimeBinding?.config.mode??'rp',config:b!.data.runtimeBinding?.config??null,injection:b!.data.injectionBinding??null,memoryBudget:b!.data.memoryBudget??null,memoryUsage:b!.lastMemoryUsage??null,model:{provider:agent.options.provider??'',model:agent.options.model??''},cleanRoot:safe(agent),diagnostic:diagnostic(agent.id)}),async()=>{
             for(const session of bound.values())if(session.data.request.branchId===b!.data.request.branchId)session.packet=undefined
             if(!await (root.get('sessions') as any).flush(agent.session))throw new RpError('persistence_uncertain','Management committed; native flush unconfirmed. Inspect current state before another action.')
-          },async query=>{if(!live(agent)||b!.generation!==generation||b!.data.blocked||agent.status!=='idle')throw new RpError('ownership_lost','工作台会话已变化，请重新打开');return injectionPreview(b!,query)})
+          },async query=>{if(!live(agent)||b!.generation!==generation||b!.data.blocked||agent.status!=='idle')throw new RpError('ownership_lost','工作台会话已变化，请重新打开');return injectionPreview(b!,query)},'dsh')
           if(!live(agent)||b.generation!==generation||managerOpenings.get(agent.id)!==opening){await manager.close();throw new RpError('ownership_lost','Management owner changed while opening')}
           managerOpenings.delete(agent.id)
           managers.set(agent.id,manager);return {kind:'success',text:JSON.stringify({url:manager.url,notice:'仅本机、仅本会话，手动刷新和确认。关闭页面不会自动改人物；person manage-close 撤销入口。不要分享完整地址。'})}
@@ -557,9 +583,9 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           const proposal=commandObject(value,['changes'])
           return {kind:'success',text:canonical(unwrap(await memory.person.propose(b.authority,proposal,commandId)))}
         }
-        if(['edit','set-policy','adopt','reject'].includes(sub)) {
+        if(['edit','set-policy','set-injection','adopt','reject'].includes(sub)) {
           if(Buffer.byteLength(value,'utf8')>65536)throw new RpError('invalid_record','Person control exceeds 64 KiB')
-          const op= sub==='adopt'?commandObject(value,['candidateIds']):sub==='reject'?commandObject(value,['candidateId']):commandObject(value,['personId','fieldId','previousEventId','note',sub==='edit'?'value':'policy'],['validity'])
+          const op= sub==='adopt'?commandObject(value,['candidateIds']):sub==='reject'?commandObject(value,['candidateId']):commandObject(value,['personId','fieldId','previousEventId','note',sub==='edit'?'value':sub==='set-injection'?'injection':'policy'],['validity'])
           const ctl=unwrap(await controlSource(b,commandId,value))
           const result=sub==='adopt'?unwrap(await memory.person.adopt(b.authority,ctl,op.candidateIds,commandId)):sub==='reject'?unwrap<any>(await memory.person.reject(b.authority,ctl,op.candidateId,commandId)):unwrap(await memory.person.apply(b.authority,ctl,{...op,operation:sub,expected:unwrap(await memory.store.readFence(b.authority)),idempotencyKey:commandId}))
           for(const session of bound.values())if(session.data.request.branchId===b.data.request.branchId)session.packet=undefined
@@ -574,7 +600,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           b.generation++; b.packet = undefined; b.data.personBinding = binding; await save(b)
           return { kind: 'success', text: canonical({ personId: value, branchId: binding.boundAt.branchId }) }
         }
-        throw new RpError('invalid_record', 'Use person preview|confirm|show|use|edit|set-policy|propose|candidates|adopt|reject|timeline')
+        throw new RpError('invalid_record', 'Use person preview|confirm|show|use|edit|set-policy|set-injection|propose|candidates|adopt|reject|timeline')
       }
       if (action === 'agent') {
         const op = commandObject(arg, ['kind'], ['actorIds', 'description', 'sourceRevisionIds', 'fictionalTime', 'entityId', 'key', 'value', 'fromId', 'toId', 'relation', 'previousEventId', 'causeEventIds', 'note', 'ownerId', 'goalId', 'category', 'objective', 'status', 'progress', 'nextAction', 'targetEntityId'])
@@ -672,7 +698,11 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     await drain(b); request.signal?.throwIfAborted(); const generation = ++b.generation, assembly = await next()
     const diaryConfigured=b.data.personBinding?await memory.diary.settings(b.authority,{personId:b.data.personBinding.personId,boardId:'shared'}):undefined
     if(diaryConfigured&&!diaryConfigured.ok&&diaryConfigured.code!=='scope_denied')throw new RpError(diaryConfigured.code,diaryConfigured.message)
-    const allowedTools=memoryToolNames.filter(name=>!name.startsWith('memcont_diary_')||diaryConfigured?.ok)
+    const experienceSettings=b.data.personBinding?unwrap(await memory.experienceCandidates.settings(b.authority,b.data.personBinding.personId)):undefined
+    // Native registry changes insert developer messages. Pin declaration visibility for
+    // this session; live policy and durable quotas are still checked on every execution.
+    b.data.experienceToolVisible??=Object.keys(b.data.snapshots).length===0&&experienceSettings?.enabled===true
+    const allowedTools=memoryToolNames.filter(name=>(!name.startsWith('memcont_diary_')||diaryConfigured?.ok)&&(!name.startsWith('memcont_document_')||b.data.personBinding)&&(name!=='memcont_experience_propose'||b.data.experienceToolVisible))
     const memoryMeter=await sessionMeter(b)
     const delivery=memoryDelivery(b.data,memoryMeter?.budget.limitTokens??config.budget!.packetSoftTokens)
     const prepare=(optionalTokens=delivery.optionalLimit)=>memory.packets.prepare(b.authority,{budget:config.budget!,globalAuthorities,inputBindings:b.data.inputs,personId:b.data.personBinding?.personId,injection:b.data.injectionBinding?.config,runtime:b.runtime?.context(),memoryMeter,optionalTokens})
@@ -685,11 +715,12 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       return { ...assembly, tools: assembly.tools.filter((t: any) => allowedTools.includes(t.name)), contexts: [...assembly.contexts, { name: 'rp-memory', interpolate:false, text: canonical({ rpPacketId: p.id, data: JSON.parse(p.text), recentAcceptedOriginals }) }] }
     }
     let completed = compose(packet)
-    const envelope = () => ({ provider: agent!.options.provider, model: agent!.options.model, maxTokens: agent!.options.maxTokens, system: renderPrompt(completed), tools: completed.tools, toolHistory: { tools: completed.tools, updates: [] }, messages: [...planContextRetirement(agent!.session,b.data).messages, { role: 'user', content: [{ type: 'text', text: joinContextSections(renderContextSections(completed)) }] }] })
+    const nextContext=()=>proposedContextMessage(renderContextSections(completed))
+    const envelope = () => ({ provider: agent!.options.provider, model: agent!.options.model, maxTokens: agent!.options.maxTokens, system: renderPrompt(completed), tools: completed.tools, toolHistory: { tools: completed.tools, updates: [] }, messages: [...planContextRetirement(agent!.session,b.data).messages, nextContext()] })
     const reserve = Math.max(config.budget!.outputReserveTokens, agent!.options.maxTokens ?? 0) + config.budget!.toolReserveTokens
     if (estimateFinalRequest(envelope()) > Math.min(config.budget!.inputLimit, config.budget!.contextWindow - reserve)) { packet = unwrap(await prepare(0)); completed = compose(packet) }
     if(memoryMeter){
-      const parts=():MemoryPart[]=>[...collectMemoryParts(b,envelope()),{kind:'new-packet',text:canonical({role:'user',source:{kind:'runtime-context'},content:[{type:'text',text:joinContextSections(renderContextSections(completed))}]})},{kind:'native-id-reserve',text:'x'.repeat(128)}]
+      const parts=():MemoryPart[]=>[...collectMemoryParts(b,envelope()),{kind:'new-packet',text:canonical(nextContext())}]
       let allowance=delivery.optionalLimit
       for(let attempt=0;attempt<4;attempt++){
         const usage=measureMemoryParts(parts(),memoryMeter,false)
@@ -701,7 +732,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       checkMemory(b,parts(),memoryMeter)
     }
     const fullContext = joinContextSections(renderContextSections(completed)), snapshot: Snapshot = { ...(b.data.memoryBudget?{memoryBudget:structuredClone(b.data.memoryBudget)}:{}), ...(packet.injection ? {injection:packet.injection,injectionBinding:structuredClone(b.data.injectionBinding!)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), provenance: 'packet', packetProof: packet.proof, bodyHash: sha(fullContext), packetId: packet.id, fence: packet.inputFence, globals: [...packet.globalFences], globalDependencies: [...packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...packet.dependencyIds], eventIds: packet.proof.records.filter(r => r.kind === 'event').map(e => e.id), modeEpoch: policy.status(b.agent.id).modeEpoch }
-    b.preparedContextHash=snapshot.bodyHash; b.lastContextBody=canonical({role:'user',source:{kind:'runtime-context'},content:[{type:'text',text:fullContext}]}); b.packet = packet; b.packetRecentSourceIds=includedRecentSourceIds; b.staticSystem = sha(renderPrompt(completed)); b.staticTools = sha(canonical(completed.tools)); b.staticToolDefinitions=structuredClone(completed.tools); b.data.pending[snapshot.bodyHash] = snapshot
+    b.preparedContextHash=snapshot.bodyHash; b.lastContextBody=canonical(nextContext()); b.packet = packet; b.packetRecentSourceIds=includedRecentSourceIds; b.staticSystem = sha(renderPrompt(completed)); b.staticTools = sha(canonical(completed.tools)); b.staticToolDefinitions=structuredClone(completed.tools); b.data.pending[snapshot.bodyHash] = snapshot
     await save(b); b.requestAdmission={state:'prepared',stage:'assembly',at:new Date().toISOString()};return completed
     }catch(e){requestRejected(b,'assembly',e);throw e}
   }) as never))
@@ -722,7 +753,8 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     if(!await budgetMarkerValid(hostRoot,b.agent.id,b.data.memoryBudget))throw new RpError('stale_input','Memory budget marker changed')
     verifyNative()
     if (!b.packet || policy.status(b.agent.id).mode !== 'rp') throw new RpError('scope_denied', 'No prepared RP assembly')
-    const originals=(options.messages??[]).map((actual:any)=>({actual,message:retiredContextOriginal(b.agent.session,b.data,actual)??actual}))
+    const surfaceIndex=createSurfaceIndex(b.agent.session)
+    const originals=(options.messages??[]).map((actual:any)=>({actual,message:retiredContextOriginal(b.agent.session,b.data,actual,undefined,surfaceIndex)??actual}))
     const neededSources=new Set(originals.map(({message}:any)=>b.data.hostSources[message.id]))
     const checked=unwrap(await memory.store.withReadView(b.authority,async view=>{
       const bodies=new Map<string,string>()
@@ -734,6 +766,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       const snapshot=b.data.snapshots[message.id]??b.data.frames[message.id]
       return snapshot&&(snapshot.provenance==='packet'||snapshot.provenance==='tool-call')?[snapshot.packetProof]:[]
     }))
+    const globalCheck=await checkGlobalDependencies(memory.global.store,globalAuthorities,originals.flatMap(({message}:any)=>(b.data.snapshots[message.id]??b.data.frames[message.id])?.globalDependencies??[]))
     let systemSeen = b.staticSystem === sha(''), packetSeen = false
     const actualSourceIds=new Set<string>()
     for (const {actual:actualMessage,message} of originals) {
@@ -747,14 +780,10 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         if(snapshot.injection && snapshot.injection.context.personId!==b.data.personBinding?.personId)throw new RpError('stale_input','Historical injection person mismatch')
         if(canonical(snapshot.runtimeBinding ?? null)!==canonical(b.data.runtimeBinding ?? null))throw new RpError('stale_input','Historical runtime binding proof mismatch')
         if (canonical(snapshot.personBinding ?? null) !== canonical(b.data.personBinding ?? null)) throw new RpError('stale_input', 'Historical person binding proof mismatch')
-        if (snapshot.records) await verifyToolProof(b, { inputFence: snapshot.fence, records: snapshot.records, resultSha256: snapshot.resultSha256!, diary: snapshot.diary })
+        if (snapshot.records) await verifyToolProof(b, { inputFence: snapshot.fence, records: snapshot.records, resultSha256: snapshot.resultSha256!, diary: snapshot.diary, document:snapshot.document, experience:snapshot.experience })
         if (snapshot.bodyHash !== sha(body(message)) || snapshot.modeEpoch !== policy.status(b.agent.id).modeEpoch || snapshot.fence.branchId !== fence.branchId || snapshot.fence.canonBindingsHash !== fence.canonBindingsHash || snapshot.fence.visibilityRevision !== fence.visibilityRevision || snapshot.fence.deletionGeneration !== fence.deletionGeneration || snapshot.fence.policyVersion !== fence.policyVersion || snapshot.dependencyIds.some(id => !sourceMap.has(id)) || snapshot.eventIds.some(id => !events.has(id))) throw new RpError('stale_input', 'Historical RP snapshot is invalid; use clean continuation')
         if (snapshot.globalPolicyHash !== globalPolicyHash() || snapshot.globals.length !== globalAuthorities.length) throw new RpError('scope_denied', 'Historical global grants changed')
-        for (const dep of snapshot.globalDependencies) {
-          let authorized = false
-          for (const grant of globalAuthorities) { const result = await memory.global.store.readPublication(grant, dep.publicationId); if (!result.ok) continue; const p = result.value; if (p.source.id !== dep.sourceId || p.bodySha256 !== dep.bodySha256 || canonical(p.scope) !== canonical(dep.scope)) continue; if (p.scope.kind === 'profile' && !unwrap(await memory.global.store.listActive(grant)).some(x => x.id === p.id)) continue; authorized = true }
-          if (!authorized) throw new RpError('scope_denied', 'Historical global source no longer authorized/applicable')
-        }
+        if(snapshot.globalDependencies.some(dep=>!globalCheck.valid.has(globalDependencyKey(dep))))throw new RpError('scope_denied','Historical global source no longer authorized/applicable')
         if (message===actualMessage && b.data.snapshots[message.id] && snapshot.packetId === b.packet.id) packetSeen = true
       } else {
         object(message, ['role', 'content', 'source', 'id']); object(message.source, message.role === 'assistant' ? ['kind', 'provider', 'model'] : ['kind'])
@@ -772,17 +801,19 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     // Direct unknown content channels are never an exemption from final gating.
     if (options.toolHistory && (sha(canonical(options.toolHistory.tools)) !== b.staticTools || options.toolHistory.updates?.length !== 0)) throw new RpError('scope_denied', 'Uncertified historical tool declarations')
     for (const key of Object.keys(options)) if (!['provider', 'model', 'messages', 'tools', 'toolHistory', 'sessionId', 'signal', 'maxTokens', 'temperature', 'reasoningEffort', 'stop'].includes(key)) throw new RpError('scope_denied', 'Uncertified final request channel: ' + key)
-    if(b.data.memoryBudget){const meter=await openMemoryMeter(b.data.memoryBudget,{provider:options.provider,model:options.model});checkMemory(b,collectMemoryParts(b,options),meter)}
+    const meter=await sessionMeter(b)
+    if(meter)checkMemory(b,collectMemoryParts(b,options),meter)
     const admittedRequest=Object.fromEntries(Object.entries(options).filter(([k])=>k!=='signal'))
     certifiedMemory.set(admittedRequest,{authority:b.authority,packet:b.packet,digest:sha(canonical(admittedRequest)),parts:collectMemoryParts(b,admittedRequest)})
     let admission
     try{admission=unwrap(await memory.packets.admit(b.authority,b.packet,admittedRequest))}finally{certifiedMemory.delete(admittedRequest)}
+    await globalCheck.assertCurrent()
     // Equivalent live readiness gate: it is derived here from exact registry
     // identity, observed source bindings, every history frame, branch/canon
     // authorization, real request budget and the held consumption lease. No
     // serialized configuration boolean or report can supply this evidence.
     if (!live(b.agent) || options.sessionId !== b.agent.id || policy.status(b.agent.id).mode !== 'rp' || b.packet.inputFence.branchId !== b.data.request.branchId) throw new RpError('capability_missing', 'Live RP application readiness is unavailable')
-    return admission
+    return {admission,payload:requestPayloadDiagnostics(options,b.data,b.packet,meter)}
   }
   effects.push(root.on('llm/stream', (async function* (options: any, next: () => AsyncIterable<any>) {
     const b = options.sessionId && bound.get(options.sessionId)
@@ -797,7 +828,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       const queueTail=b.queue,saveTail=b.saveQueue,generation=b.generation,state=policy.status(b.agent.id)
       release=await policy.request(b.agent.id,state.epoch)
       if(queueTail!==b.queue||saveTail!==b.saveQueue||generation!==b.generation)throw new RpError('stale_input','RP queues changed before request')
-      await certify(b,options);shutdown.signal.throwIfAborted()
+      const certified=await certify(b,options);shutdown.signal.throwIfAborted()
       if(queueTail!==b.queue||saveTail!==b.saveQueue||generation!==b.generation)throw new RpError('stale_input','RP queues changed during request certification')
       const cost=currentRequestCost(b.agent.session,b.data),stop=requestStop(cost,limits)
       b.data.requestCost=stop?{...cost,stopReason:stop}:{...cost,requests:cost.requests+1,stepRequests:cost.stepRequests+1}
@@ -807,6 +838,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       if(queueTail!==b.queue||reservation!==b.saveQueue||generation!==b.generation||!live(b.agent)||b.data.blocked||policy.status(b.agent.id).epoch!==state.epoch)throw new RpError('stale_input','RP binding or queues changed during request reservation')
       if(stop)throw new RpError('request_limit_exceeded','Request stopped: '+stop+'; inspect status and completed tool results before a new input')
       revoke=admission.issue(owner,b.agent.id,options,{epoch:state.epoch,generation,active:true})
+      b.lastRequestPayload=certified.payload
       b.requestAdmission={state:'admitted',stage:'send',at:new Date().toISOString()};admitted=true
       yield* next()
     }catch(e){
@@ -854,33 +886,64 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         checkPublication()
         await verifyToolProof(b, pending.proof)
         checkPublication()
-        const snapshot: Snapshot = { ...(b.data.memoryBudget?{memoryBudget:structuredClone(b.data.memoryBudget)}:{}), ...(b.data.injectionBinding ? {injectionBinding:structuredClone(b.data.injectionBinding)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), ...(pending.proof.diary ? {diary: pending.proof.diary} : {}), provenance: pending.provenance, records: pending.proof.records, resultSha256: pending.proof.resultSha256, bodyHash: sha(pending.text), packetId: pending.packetId, fence: pending.proof.inputFence, globals: [...b.packet!.globalFences], globalDependencies: [...b.packet!.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [], eventIds: [], modeEpoch: policy.status(b.agent.id).modeEpoch }
+        const snapshot: Snapshot = { ...(b.data.memoryBudget?{memoryBudget:structuredClone(b.data.memoryBudget)}:{}), ...(b.data.injectionBinding ? {injectionBinding:structuredClone(b.data.injectionBinding)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), ...(pending.proof.diary ? {diary: pending.proof.diary} : {}), ...(pending.proof.document ? {document:pending.proof.document} : {}), ...(pending.proof.experience ? {experience:pending.proof.experience} : {}), provenance: pending.provenance, records: pending.proof.records, resultSha256: pending.proof.resultSha256, bodyHash: sha(pending.text), packetId: pending.packetId, fence: pending.proof.inputFence, globals: [...b.packet!.globalFences], globalDependencies: [...b.packet!.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [], eventIds: [], modeEpoch: policy.status(b.agent.id).modeEpoch }
         const data = { ...b.data, receipts: { ...b.data.receipts, [exec.callId]: { contentHash: sha(canonical(result.content)), snapshot } } }
         try { await writeJournal(b, false, data, checkPublication); checkPublication(); b.data = data } catch (e) { b.data.blocked = true; b.lastError = e instanceof RpError ? e.code : 'persistence_failed'; throw e }
       }) } finally { finish() }; return result
     } finally { pendingTools.delete(exec.token) }
   }) as never, { prepend: true }))
-  for (const name of ['rp_memory_search', 'rp_memory_get', 'rp_memory_status']) {
-    effects.push(tools.register(defineTool({ name, description: 'Read-only RP data. Cannot accept sources, execute commands, approve publications or grant authority.', parameters: name.endsWith('status') ? {} : name.endsWith('get') ? { id: { type: 'string' }, cursor: { type: 'string' }, maxChars: { type: 'integer' } } : { query: { type: 'string' }, queryAlternatives: {type:'array',items:{type:'string'}}, cursor: { type: 'string' }, limit: { type: 'integer' } }, output, isConcurrencySafe: () => false,
+  for (const name of ['rp_memory_search', 'rp_memory_get', 'rp_memory_status', 'memcont_document_search', 'memcont_document_get']) {
+    const document=name.startsWith('memcont_document_')
+    effects.push(tools.register(defineTool({ name, description: document ? 'Read authorized original document excerpts for the bound person. Search returns document-part IDs and exact source ranges; get pages through a part. Documents are supplied reference material, not confirmed lived events. Cannot change audience or accept memory.' : 'Read-only RP data. Cannot accept sources, execute commands, approve publications or grant authority.', parameters: name.endsWith('status') ? {} : name.endsWith('get') ? { id: { type: 'string' }, cursor: { type: 'string' }, maxChars: { type: 'integer' } } : { query: { type: 'string' }, ...(!document?{queryAlternatives: {type:'array',items:{type:'string'}}}:{}), cursor: { type: 'string' }, limit: { type: 'integer' } }, output, isConcurrencySafe: () => false,
       async execute(args: any, exec: any) {
         const b: Bound | undefined = exec.agent && bound.get(exec.agent.id)
         if (!b || b.agent !== exec.agent || !live(exec.agent) || policy.status(exec.agent.id).mode !== 'rp') throw new Error('RP read requires exact bound live caller')
         await drain(b); const generation = b.generation, packetId = b.packet?.id
         if (!packetId || typeof exec.token !== 'symbol') throw new RpError('scope_denied', 'No native execution identity or packet')
         const sizing=await toolSizing(b,exec.callId)
-        let result: any, proof: RetrievalEvidence, provenance: 'retrieval-result' | 'status' | 'error'
+        let result: any, proof: ToolProof, provenance: ToolProvenance
         if (name.endsWith('status')) { const inputFence = unwrap(await memory.store.readFence(b.authority)); result = { mode: 'memory', branchId: inputFence.branchId, pendingInputIds: b.data.inputs.filter(i => !i.dispatched).map(i => i.sourceId) }; proof = { inputFence, records: [], resultSha256: sha(canonical(result)) }; provenance = 'status' }
         else {
-          result = name.endsWith('get') ? await memory.retrieval.get(b.authority, args,sizing) : await memory.retrieval.search(b.authority, args,sizing)
-          if (result.ok) { proof = retrievalEvidence(result, b.authority); provenance = 'retrieval-result' }
+          result = document ? b.data.personBinding ? name.endsWith('get') ? await memory.documentRetrieval.get(b.authority,{personId:b.data.personBinding.personId},args,sizing) : await memory.documentRetrieval.search(b.authority,{personId:b.data.personBinding.personId},args,sizing) : {ok:false,code:'scope_denied'} : name.endsWith('get') ? await memory.retrieval.get(b.authority, args,sizing) : await memory.retrieval.search(b.authority, args,sizing)
+          if (result.ok) { proof = document ? memory.documentRetrieval.evidence(result,b.authority) : retrievalEvidence(result, b.authority); provenance = document ? 'document-result' : 'retrieval-result' }
           else { result = { ok: false, code: result.code }; proof = { inputFence: unwrap(await memory.store.readFence(b.authority)), records: [], resultSha256: sha(canonical(result)) }; provenance = 'error' }
         }
         exec.signal.throwIfAborted(); if (closed || b.generation !== generation) throw new RpError('ownership_lost', 'Late tool result')
-        if(!sizing.fits(result))throw new RpError('context_budget_exceeded','Tool receipt cannot fit; use clean continuation')
+        if(!sizing.fits(result)&&provenance!=='error'){result={ok:false,code:'context_budget_exceeded'};proof={inputFence:unwrap(await memory.store.readFence(b.authority)),records:[],resultSha256:sha(canonical(result))};provenance='error'}
+        if(provenance==='error'&&!sizing.fitsReceipt(result)){b.lastError='context_budget_exceeded';throw new RpError('context_budget_exceeded','Tool refusal cannot fit; use clean continuation')}
         const text = canonical(result); pendingTools.set(exec.token, { agent: b.agent, callId: exec.callId, generation, packetId, text, proof, provenance }); return { text }
       },
     } as any)))
   }
+  effects.push(tools.register(defineTool({name:'memcont_experience_propose',description:'When an important event, explicit promise, scene ending or correction occurs, propose ONE experience for human review. This does not save a confirmed memory. Use exact quotes from the supplied recent conversation; never invent evidence or repeatedly call after a refusal. Parameters are a JSON object with description, epistemic (world/utterance/uncertain), reason, evidence [{quote, optional sourceId, optional startUtf16}]. No background generation.',parameters:{proposal:{type:'string',required:true}},output,isConcurrencySafe:()=>false,
+    async execute(args:any,exec:any){
+      const b:Bound|undefined=exec.agent&&bound.get(exec.agent.id);if(!b||b.agent!==exec.agent||!live(exec.agent)||policy.status(exec.agent.id).mode!=='rp')throw new RpError('scope_denied','Experience needs the exact bound caller')
+      await drain(b);const generation=b.generation,packetId=b.packet?.id,personId=b.data.personBinding?.personId
+      if(!packetId||!personId||typeof exec.token!=='symbol')throw new RpError('scope_denied','Experience needs a bound person and execution packet')
+      const active=()=>!closed&&!exec.signal.aborted&&live(b.agent)&&generation===b.generation&&packetId===b.packet?.id&&!b.data.blocked&&policy.status(b.agent.id).mode==='rp',sizing=await toolSizing(b,exec.callId)
+      let result:any,proof:ToolProof,provenance:ToolProvenance,published=false
+      try{
+        object(args,['proposal']);text(args.proposal,32768);let draft:unknown
+        try{draft=JSON.parse(args.proposal)}catch{throw new RpError('invalid_candidate','Proposal must be valid JSON')}
+        if(!sizing.fits({candidate:'x'.repeat(1024)}))throw new RpError('context_budget_exceeded','Experience receipt cannot fit; continue cleanly before proposing')
+        const input=b.data.inputs.findLast(i=>i.turnId===b.data.currentTurnId&&(i.phase==='dispatched'||i.phase==='dispatching'));if(!input)throw new RpError('scope_denied','No certified current conversation input')
+        const sourceIndex=new Map(unwrap(await memory.store.readLedger(b.authority)).sources.map(s=>[s.id,s]))
+        const sourceRevisionIds=[...new Set([input.sourceId,...b.packet!.recent.filter(s=>{const source=sourceIndex.get(s.id);return ['user','assistant'].includes(s.role)&&source?.scope.kind==='session'&&source.scope.sessionId===b.agent.id&&source.host?.sessionId===b.agent.id}).map(s=>s.id)])].slice(0,64)
+        const writer=unwrap(await memory.experienceCandidates.writer(b.authority,{personId,sessionId:b.agent.id,inputSourceId:input.sourceId,sourceRevisionIds},active))
+        try{result=unwrap(await writer.propose(draft));published=true;const receipt=unwrap(await memory.experienceCandidates.receipt(b.authority,personId,result));proof={inputFence:unwrap(await memory.store.readFence(b.authority)),records:[],resultSha256:sha(canonical(result)),experience:receipt};provenance='experience-result'}finally{writer.revoke()}
+        if(!active())throw new RpError('ownership_lost','Late experience result');if(!sizing.fits(result))throw new RpError('context_budget_exceeded','Experience result budget exceeded')
+        const resultText=canonical(result);pendingTools.set(exec.token,{agent:b.agent,callId:exec.callId,generation,packetId,text:resultText,proof,provenance});return {text:resultText}
+      }catch(cause){
+        // The proposal may already be durable even when its receipt cannot be
+        // certified. Never turn a committed write into an ordinary refusal.
+        const e=published?new RpError('persistence_uncertain','Experience was saved but its receipt could not be certified; inspect candidates before retrying'):cause
+        if(!(e instanceof RpError)||['persistence_failed','persistence_uncertain','ownership_lost'].includes(e.code)){b.data.blocked=true;b.lastError=e instanceof RpError?e.code:'persistence_failed';throw e}
+        result={ok:false,code:e.code};proof={inputFence:unwrap(await memory.store.readFence(b.authority)),records:[],resultSha256:sha(canonical(result))};provenance='error'
+        if(!active())throw new RpError('ownership_lost','Late experience refusal');if(!sizing.fitsReceipt(result))throw new RpError('context_budget_exceeded','Experience refusal cannot fit; use clean continuation')
+        const resultText=canonical(result);pendingTools.set(exec.token,{agent:b.agent,callId:exec.callId,generation,packetId,text:resultText,proof,provenance});return {text:resultText}
+      }
+    }
+  } as any)))
   for(const name of ['memcont_diary_write','memcont_diary_read','memcont_diary_search']){
     effects.push(tools.register(defineTool({name,
       description:name.endsWith('write')?'在人类已开启共同日记时，记录自己的主观日记。entry 是 JSON 字符串，含 entryId、title、body；修改自己的旧日记必须附 previousEventId。可选 reflection 含 understanding、context、uncertainty、revisionNote、evidence。不能修改人类日记、权限、人格或事实；禁止把猜测当作事实。':'读取当前人物获准共享的最新日记。日记包含主观感受与推测，不等于已确认事实。',
@@ -940,7 +1003,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           b.data.blocked = true; await attempt(() => save(b, true))
         }
         for (const dispose of effects.reverse()) if (typeof dispose === 'function') await attempt(dispose)
-        await attempt(() => memory.retrieval.dispose()); for (const h of handles.reverse()) await attempt(() => h.dispose()); await attempt(() => lease.release()); await attempt(() => memory.close()); admission.unreserve(owner)
+        await attempt(() => memory.retrieval.dispose()); await attempt(() => memory.documentRetrieval.dispose()); for (const h of handles.reverse()) await attempt(() => h.dispose()); await attempt(() => lease.release()); await attempt(() => memory.close()); admission.unreserve(owner)
         if (errors.length) throw new AggregateError(errors, 'RP close failed; request ownership remains retired')
       })(); return closePromise
     },

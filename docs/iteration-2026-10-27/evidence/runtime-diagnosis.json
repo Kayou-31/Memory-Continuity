@@ -1,0 +1,21 @@
+{
+  "kind": "bounded-runtime-diagnosis",
+  "testProcessExitCode": 3221226356,
+  "testProcessStatusHex": "0xC0000374",
+  "interpretation": "STATUS_HEAP_CORRUPTION; not a diagnosed cause",
+  "source": "https://learn.microsoft.com/ja-jp/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55",
+  "testFile": "test/rp-management-server.test.mjs",
+  "fullTestLog": "final-test.log",
+  "isolatedLog": "heap-isolation-test.log",
+  "isolatedExitCode": 0,
+  "isolatedTests": 5,
+  "nodeVersion": "22.23.3",
+  "nodeSha256": "9C9245166B4A8E182E0B797DA9C20136117FF24368EAFF1FEC8343A123C8DB0E",
+  "matchesExistingRuntimeProvenance": true,
+  "windowsVersion": "10.0.26300",
+  "diagnosisFreePhysicalMemoryKiB": 16893244,
+  "attributableNodeEventOrDumpObtained": false,
+  "systemConfigurationChanged": false,
+  "repeatedFullTestWithoutCodeChange": false,
+  "rootCause": "unresolved"
+}

@@ -1,0 +1,17 @@
+{
+  "note": "Synthetic author-labeled cases, fixed before benchmark execution; not a blind human study or model evaluation. same and contrast both merit manual review; different does not.",
+  "cases": [
+    {"id":"exact","label":"same","left":"林澈把蓝色钥匙交给了小贝。","right":"林澈把蓝色钥匙交给了小贝。"},
+    {"id":"near","label":"same","left":"周末我会去书屋帮小贝一起整理作品集。","right":"周末我会去书屋帮小贝整理作品集。"},
+    {"id":"unicode","label":"same","left":"Ｐｒｏｊｅｃｔ Ａ：资料已经整理完毕。","right":"Project A:资料已经整理完毕。"},
+    {"id":"paraphrase","label":"same","left":"阿澈打算等雨停后陪她去海边。","right":"林澈计划天晴时与小贝一同看海。"},
+    {"id":"negation","label":"contrast","left":"林澈答应周五回来帮忙修理钟楼。","right":"林澈没有答应周五回来帮忙修理钟楼。"},
+    {"id":"date","label":"contrast","left":"约定在11月15日完成旧城项目的设计图。","right":"约定在11月16日完成旧城项目的设计图。"},
+    {"id":"direction","label":"contrast","left":"小贝信任林澈，会把不确定的想法告诉他。","right":"林澈信任小贝，会把不确定的想法告诉她。"},
+    {"id":"topic_only","label":"different","left":"陈屿下午在办公室阅读旧城项目的设计图。","right":"陈屿下午在办公室销毁旧城项目的设计图。"},
+    {"id":"independent","label":"different","left":"书店今天进了三箱新的旅行杂志。","right":"钟楼的齿轮昨天已经彻底修好了。"},
+    {"id":"english","label":"contrast","left":"Erin will visit the gallery with Bea on Sunday.","right":"Erin will not visit the gallery with Bea on Sunday."},
+    {"id":"owner","label":"different","left":"周末我会去书屋帮小贝整理作品集。","right":"周末我会去书屋帮小贝整理作品集。","rightPartition":"bea/world"},
+    {"id":"belief","label":"different","left":"林澈认为老钟在午夜会自己停下。","right":"林澈认为老钟在午夜会自己停下。","rightPartition":"erin/belief"}
+  ]
+}

@@ -8,7 +8,8 @@ import {personValue} from './person/format.js'
 import {growthValue,goalValue} from './growth-format.js'
 import {semanticProtocol} from './semantic-registry.js'
 import type {InputFence,SemanticEvent,Summary,SourceSpan} from './types.js'
-import {selectDocumentSections} from './person/documents/selection.js'
+import {selectDocumentSections,type SelectedDocumentChunk} from './person/documents/selection.js'
+import {documentExcerpt} from './person/documents/excerpt.js'
 import type {AudienceIdentity} from './person/documents/audience.js'
 import {selectDiaryEntries} from './diary/selection.js'
 
@@ -17,10 +18,11 @@ export const DEPTHS=['overview','association','evidence'] as const
 export type Layer=typeof LAYERS[number]
 export type Depth=typeof DEPTHS[number]
 type When={modes?:string[];persons?:string[];branches?:string[];scenes?:string[];entities?:string[];terms?:string[];recall?:boolean}
-export interface InjectionConfig {depth:Depth;budgets:Record<Layer,number>;pin:string[];exclude:string[];aliases:Record<string,string[]>;rules:{layer:Layer;when:When;depth:Depth}[]}
+export interface InjectionConfig {coreBudget?:number;depth:Depth;budgets:Record<Layer,number>;pin:string[];exclude:string[];aliases:Record<string,string[]>;rules:{layer:Layer;when:When;depth:Depth}[]}
 export const digest=(v:unknown)=>createHash('sha256').update(canonical(v)).digest('hex')
 export function injectionConfig(input:unknown={}):InjectionConfig{
- const v=object(structuredClone(input),[],['depth','budgets','pin','exclude','aliases','rules'])
+ const v=object(structuredClone(input),[],['coreBudget','depth','budgets','pin','exclude','aliases','rules'])
+ if(v.coreBudget!==undefined){integer(v.coreBudget,1);if(v.coreBudget>8192)throw new RpError('invalid_record','Person core budget must be at most 8192 measured units')}
  if(Buffer.byteLength(canonical(v),'utf8')>32768)throw new RpError('invalid_record','Injection configuration exceeds 32 KiB')
  const depth=(x:unknown):Depth=>{if(!DEPTHS.includes(x as Depth))throw new RpError('invalid_record','Unknown injection depth');return x as Depth}
  const list=(x:unknown,max:number,ids=false):string[]=>{if(!Array.isArray(x)||x.length>max||new Set(x).size!==x.length)throw new RpError('invalid_record','Invalid injection list');x.forEach(s=>ids?id(s):text(s,128));return x}
@@ -30,7 +32,7 @@ export function injectionConfig(input:unknown={}):InjectionConfig{
  for(const [key,value]of Object.entries(aliases)){id(key);list(value,8)}
  if(!Array.isArray(v.rules??[])||(v.rules??[]).length>32)throw new RpError('invalid_record','Too many injection rules')
  const rules=(v.rules??[]).map((rule:unknown)=>{const r=object(rule,['layer','when'],['depth']);if(!LAYERS.includes(r.layer))throw new RpError('invalid_record','Unknown memory layer');const w=object(r.when,[],['modes','persons','branches','scenes','entities','terms','recall']);for(const [key,value]of Object.entries(w)){if(key==='recall'){if(typeof value!=='boolean')throw new RpError('invalid_record','Invalid recall condition')}else{list(value,32,!['modes','terms'].includes(key));if(key==='modes'&&(value as string[]).some(m=>!['rp','companion','creation','project'].includes(m)))throw new RpError('invalid_record','Unknown purpose')}}return {layer:r.layer,when:w,depth:depth(r.depth??v.depth??'association')}})
- return {depth:depth(v.depth??'association'),budgets,pin:list(v.pin??[],256,true),exclude:list(v.exclude??[],256,true),aliases,rules}
+ return {...(v.coreBudget!==undefined?{coreBudget:v.coreBudget}:{}),depth:depth(v.depth??'association'),budgets,pin:list(v.pin??[],256,true),exclude:list(v.exclude??[],256,true),aliases,rules}
 }
 export interface InjectionEntry {id:string;kind:'event'|'summary'|'document'|'diary';revision:string;bodySha256:string;layer:Layer;depth:Depth;selected:boolean;mandatory:boolean;reasons:string[];bytes:number;tokens?:number;sourceIds:string[];recordId?:string;sourceSpan?:SourceSpan}
 export interface InjectionTrace {protocol:'rp.injection-snapshot/v1';memoryBudgetSha256?:string;configSha256:string;query:string;querySha256:string;lexicalTermsTruncated:boolean;context:{personId:string;branchId:string;sceneId:string|null;acceptedSeq:number;mode:string;inputSourceId:string|null};fence:InputFence;entries:InjectionEntry[];renderedSha256:string;sha256:string}
@@ -39,7 +41,7 @@ const normal=(v:string)=>v.normalize('NFKC').toLowerCase()
 // Bounded lexical matching, not a semantic score. No regular expression from configuration.
 function terms(query:string){const values=new Set<string>();let truncated=false;const add=(t:string)=>{if(t.length<2||values.has(t))return;if(values.size<128)values.add(t);else truncated=true};for(const run of normal(query).match(/\p{Script=Han}+|[\p{L}\p{N}_-]+/gu)??[]){if(/^\p{Script=Han}+$/u.test(run)){const chars=[...run];for(let i=0;i<chars.length-1;i++)add(chars[i]+chars[i+1])}else add(run)}return {values:[...values],truncated}}
 const epistemic=(e:SemanticEvent)=>personValue(e)?.kind==='feeling'?'感受记录（非客观世界断言）':e.epistemic==='world'?'事实':e.epistemic==='belief'?'信念（持有者 '+e.beliefHolderId+'）':e.epistemic==='utterance'?'曾表达的说法':'未确定'
-type Candidate={record:SemanticEvent|Summary;kind:'event'|'summary'|'document'|'diary';id?:string;span?:SourceSpan;layer:Layer;line:string;search:string;entities:string[];mandatory:boolean;defaultMatch:boolean;rank:number;sources:string[]}
+type Candidate={record:SemanticEvent|Summary;kind:'event'|'summary'|'document'|'diary';document?:SelectedDocumentChunk;id?:string;span?:SourceSpan;layer:Layer;line:string;search:string;entities:string[];mandatory:boolean;defaultMatch:boolean;rank:number;sources:string[]}
 
 export async function planInjection(view:RpReadView,input:{personId:string;query:string;config:InjectionConfig;mode:string;inputSourceId?:string;optionalBytes:number;memoryMeter?:MemoryMeter;audience?:AudienceIdentity}){
  const {config,personId}=input,person=projectPerson(view,personId),events=new Map(view.events.map(e=>[e.id,e])),query=normal(input.query),lexical=terms(input.query),tokens=lexical.values,recall=/回忆|记得|往事|之前|过去|remember|recall/iu.test(query)
@@ -48,33 +50,52 @@ export async function planInjection(view:RpReadView,input:{personId:string;query
  const related=(body:string)=>tokens.some(t=>normal(body).includes(t))
  const candidates:Candidate[]=[],classified=new Set<string>()
  const add=(e:SemanticEvent,layer:Layer,line:string,entities:string[],mandatory:boolean,match:boolean,rank:number)=>{classified.add(e.id);candidates.push({record:e,kind:'event',layer,line,search:line,entities,mandatory,defaultMatch:match,rank,sources:e.sources.map(s=>s.sourceRevisionId)})}
- for(const f of person.fields){const e=events.get(f.eventId)!,mandatory=['identity','values','boundaries','voice'].includes(f.kind),layer=f.kind==='feeling'||f.kind==='stage'?'situation':'self';add(e,layer,(f.kind==='feeling'?'当时的感受':f.kind==='stage'?'人生阶段':({identity:'身份',values:'价值观',boundaries:'边界',voice:'表达',background:'背景',trait:'性格'}[f.kind]??f.kind))+'：'+f.value,[personId],mandatory,mandatory||layer==='situation'||related(f.value),50)}
+ for(const f of person.fields){const e=events.get(f.eventId)!,mandatory=f.injection==='core'||['identity','values','boundaries','voice'].includes(f.kind),layer=f.kind==='feeling'||f.kind==='stage'?'situation':'self';add(e,layer,(f.kind==='feeling'?'当时的感受':f.kind==='stage'?'人生阶段':({identity:'身份',values:'价值观',boundaries:'边界',voice:'表达',background:'背景',trait:'性格'}[f.kind]??f.kind))+'：'+f.value,[personId],mandatory,mandatory||layer==='situation'||related(f.value),50)}
  for(const r of person.relationships){const e=events.get(r.supportEventIds[0]);if(!e)throw new RpError('source_unavailable','Relationship proof missing');add(e,'relationships',r.fromId+' → '+r.toId+'，'+r.relation+'：'+canonical(r.value)+(r.unresolvedTension?'；尚未解决：'+r.unresolvedTension:''),[r.toId],r.resolution==='conflict'||!!r.unresolvedTension,mentions([r.toId])||related(canonical(r.value)),40)}
  for(const g of person.goals){const e=events.get(g.supportEventIds[0]);if(!e||growthValue(e)?.channel!=='goal')continue;const goal=goalValue(g.value),active=goal.status==='active';add(e,'unfinished',(goal.category==='promise'?'承诺':'目标')+'：'+goal.objective+'；状态 '+({active:'进行中',paused:'暂停',completed:'已完成',abandoned:'已放弃'}[goal.status])+'；进度 '+goal.progress+'%；下一步 '+goal.nextAction+(goal.targetEntityId?'；对象 '+goal.targetEntityId:''),goal.targetEntityId?[goal.targetEntityId]:[],g.resolution==='conflict',active||related(goal.objective)||!!goal.targetEntityId&&mentions([goal.targetEntityId]),active?45:10)}
  for(const e of view.events){if(e.payload.kind!=='occurrence'||semanticProtocol(e)==='person-origin/v1')continue;add(e,'recollection',e.payload.description,[...e.payload.actorIds],false,related(e.payload.description)||recall&&mentions(e.payload.actorIds),related(e.payload.description)?30:20)}
  for(const s of view.summaries)candidates.push({record:s,kind:'summary',layer:'recollection',line:s.text,search:s.text,entities:[],mandatory:false,defaultMatch:related(s.text),rank:25,sources:[...s.sourceRevisionIds]})
- for(const d of await selectDocumentSections(view,personId,input.audience))candidates.push({record:d.event,id:d.id,span:d.span,kind:'document',layer:d.category==='persona'||d.category==='rule'?'self':'recollection',line:d.label+'：'+d.text,search:d.text,entities:[personId],mandatory:false,defaultMatch:related(d.text)||['persona','rule'].includes(d.category),rank:35,sources:[d.span.sourceRevisionId]})
+ for(const d of await selectDocumentSections(view,personId,input.audience))candidates.push({record:d.event,document:d,id:d.id,span:d.span,kind:'document',layer:d.category==='persona'||d.category==='rule'?'self':'recollection',line:d.label+'：'+d.text,search:d.text,entities:[personId],mandatory:false,defaultMatch:related(d.text)||['persona','rule'].includes(d.category),rank:related(d.text)?36:35,sources:[d.span.sourceRevisionId]})
  for(const d of await selectDiaryEntries(view,personId,input.audience))candidates.push({record:d.event,span:d.value.content,kind:'diary',layer:'recollection',line:d.text,search:d.text,entities:[personId],mandatory:false,defaultMatch:related(d.text)||recall,rank:30,sources:[d.value.content.sourceRevisionId]})
  const candidateId=(c:Candidate)=>c.id??c.record.id
  candidates.sort((a,b)=>Number(b.mandatory)-Number(a.mandatory)||Number(config.pin.includes(candidateId(b)))-Number(config.pin.includes(candidateId(a)))||b.rank-a.rank||candidateId(a).localeCompare(candidateId(b)))
  const context={personId,branchId:view.fence.branchId,sceneId:view.context.sceneId??null,acceptedSeq:view.context.acceptedSeq,mode:input.mode,inputSourceId:input.inputSourceId??null}
  const matches=(w:When,c:Candidate)=>(!w.modes||w.modes.includes(context.mode))&&(!w.persons||w.persons.includes(personId))&&(!w.branches||w.branches.includes(context.branchId))&&(!w.scenes||w.scenes.includes(context.sceneId??''))&&(!w.entities||w.entities.some(e=>c.entities.includes(e)&&mentions([e])))&&(!w.terms||w.terms.some(t=>query.includes(normal(t))))&&(w.recall===undefined||w.recall===recall)
  const used=Object.fromEntries(LAYERS.map(l=>[l,0])) as Record<Layer,number>,sections:Record<Layer,string[]>={self:[],situation:[],relationships:[],recollection:[],unfinished:[]},entries:InjectionEntry[]=[],selectedSummaries:Summary[]=[]
- let remaining=Math.max(0,input.optionalBytes)
+ let remaining=Math.max(0,input.optionalBytes),coreUsed=0
+ const explicitCore=person.fields.some(f=>f.injection==='core'),coreLimit=config.coreBudget??4096
  for(const c of candidates){const entryId=candidateId(c),rules=config.rules.filter(r=>r.layer===c.layer),rule=rules.find(r=>matches(r.when,c)),pinned=config.pin.includes(entryId),excluded=config.exclude.includes(entryId),eligible=c.mandatory||pinned||(rules.length?!!rule:c.defaultMatch),depth=c.mandatory?'association':rule?.depth??config.depth
   if(excluded&&c.mandatory)throw new RpError('scope_denied','Cannot exclude mandatory identity, boundary or conflict: '+c.record.id)
   const reasons:string[]=[c.mandatory?'mandatory':excluded?'excluded':pinned?'pinned':eligible?(rule?'rule_matched':'relevant'):'condition_not_matched']
-  const snippet=depth==='overview'&&!c.mandatory?[...c.line].slice(0,100).join('')+(Array.from(c.line).length>100?'（概览节选）':''):c.line
+  let documentLimit=depth==='overview'?100:256
+  const setDocumentExcerpt=()=>{const part=documentExcerpt(c.document!,input.query,documentLimit);c.line=c.document!.label+'：'+part.text;c.span=part.span}
+  if(c.document)setDocumentExcerpt()
+  const snippet=depth==='overview'&&!c.mandatory&&!c.document?[...c.line].slice(0,100).join('')+(Array.from(c.line).length>100?'（概览节选）':''):c.line
   let rendered='['+entryId+'] '+(c.kind==='diary'?'主观日记（不是已确认的事实或关系结论）':c.kind==='document'?'用户选入的人物资料（非亲历或世界事实）':c.kind==='event'?epistemic(c.record as SemanticEvent):'已采纳摘要')+' · '+snippet
-  if(depth==='evidence'&&eligible&&!excluded){for(const sourceId of [...new Set(c.sources)].slice(0,2)){const source=view.sources.find(s=>s.id===sourceId);if(!source)throw new RpError('source_unavailable','Evidence source missing');const span=c.span??(c.kind==='event'?(c.record as SemanticEvent).sources.find(s=>s.sourceRevisionId===sourceId):undefined);const sourceText=span?await view.readSource(span):await view.readSource({sourceRevisionId:source.id,publicTextSha256:source.publicTextSha256,startUtf16:0,endUtf16:source.publicTextLengthUtf16,quoteSha256:source.publicTextSha256});rendered+='\n来源 '+sourceId+'（节选）：'+[...sourceText].slice(0,256).join('')}}
-  const bytes=Buffer.byteLength(rendered,'utf8'),units=input.memoryMeter?.count(rendered)??bytes,layerLimit=input.memoryMeter?.budget.layers[c.layer]??config.budgets[c.layer],fits=c.mandatory||units<=layerLimit-used[c.layer]&&units<=remaining,selected=eligible&&!excluded&&fits
+  if(depth==='evidence'&&eligible&&!excluded&&!c.document){for(const sourceId of [...new Set(c.sources)].slice(0,2)){const source=view.sources.find(s=>s.id===sourceId);if(!source)throw new RpError('source_unavailable','Evidence source missing');const span=c.span??(c.kind==='event'?(c.record as SemanticEvent).sources.find(s=>s.sourceRevisionId===sourceId):undefined);const sourceText=span?await view.readSource(span):await view.readSource({sourceRevisionId:source.id,publicTextSha256:source.publicTextSha256,startUtf16:0,endUtf16:source.publicTextLengthUtf16,quoteSha256:source.publicTextSha256});rendered+='\n来源 '+sourceId+'（节选）：'+[...sourceText].slice(0,256).join('')}}
+  const layerLimit=input.memoryMeter?.budget.layers[c.layer]??config.budgets[c.layer],count=()=>input.memoryMeter?.count(rendered)??Buffer.byteLength(rendered,'utf8')
+  if(c.document){
+   const render=()=>'['+entryId+'] 用户选入的人物资料（原文节选，非亲历或世界事实） · '+c.line+'\n来源 '+c.span!.sourceRevisionId+' @'+c.span!.startUtf16+'..'+c.span!.endUtf16+'；用 memcont_document_get 读取本段更多原文。'
+   rendered=render()
+   while(eligible&&!excluded&&documentLimit>2&&(count()>layerLimit-used[c.layer]||count()>remaining)){documentLimit=Math.max(2,Math.floor(documentLimit/2));setDocumentExcerpt();rendered=render()}
+  }
+  const bytes=Buffer.byteLength(rendered,'utf8'),units=count(),fits=c.mandatory||units<=layerLimit-used[c.layer]&&units<=remaining,selected=eligible&&!excluded&&fits
+  if((explicitCore||config.coreBudget!==undefined)&&c.mandatory&&c.kind==='event'&&personValue(c.record as SemanticEvent)){
+   coreUsed+=units
+   if(coreUsed>coreLimit)throw new RpError('context_budget_exceeded',`人物核心 core 需要 ${coreUsed}/${coreLimit} ${input.memoryMeter?.identity.mode==='tokenizer-text'?'tokenizer tokens':'UTF-8 保守单位'}；请在人物档案 profile 调整核心选择或 coreBudget，不会静默丢弃 ${personValue(c.record as SemanticEvent)!.fieldId}`)
+  }
   if(c.mandatory&&input.memoryMeter&&units>layerLimit-used[c.layer])throw new RpError('context_budget_exceeded','Mandatory '+c.layer+' memory exceeds its token layer budget')
   if(eligible&&!excluded&&!fits)reasons.push('budget_exceeded')
   entries.push({id:entryId,kind:c.kind,revision:digest(c.record),bodySha256:digest(c.line),layer:c.layer,depth,selected,mandatory:c.mandatory,reasons,bytes,...(input.memoryMeter?{tokens:units}:{}),sourceIds:[...new Set(c.sources)],...(c.span?{sourceSpan:c.span,recordId:c.record.id}:{})})
   if(selected){sections[c.layer].push(rendered);if(!c.mandatory||input.memoryMeter)used[c.layer]+=units;if(!c.mandatory)remaining-=units;if(c.kind==='summary')selectedSummaries.push(c.record as Summary)}
  }
- // Remove only semantically recognized current-person optional slots. Unknown legacy data and conflicts stay mandatory.
- const state={...view.projection,state:view.projection.state.filter(s=>s.conflict==='unresolved'||s.subjectId!==personId||!s.supportEventIds.every(id=>classified.has(id)||!!events.get(id)&&!!personValue(events.get(id)!))),relationships:view.projection.relationships.filter(r=>r.fromId!==personId||r.resolution==='conflict')}
+ // Other initialized people do not become this person's identity through the raw projection.
+ // Preserve unknown legacy/world slots and current-person unresolved conflicts.
+ const state={...view.projection,state:view.projection.state.filter(s=>{
+  const personSlot=s.supportEventIds.length>0&&s.supportEventIds.every(id=>!!events.get(id)&&!!personValue(events.get(id)!))
+  if(personSlot&&s.subjectId!==personId)return false
+  return s.conflict==='unresolved'||s.subjectId!==personId||!s.supportEventIds.every(id=>classified.has(id)||!!events.get(id)&&!!personValue(events.get(id)!))
+ }),relationships:view.projection.relationships.filter(r=>r.fromId!==personId||r.resolution==='conflict')}
  const narrative='人物 '+personId+' 的记忆视图。快照场景 '+(context.sceneId??'未指定')+'，序号 '+context.acceptedSeq+'。以下是记录支持的事实、说法与感受；不据此推断未记载的经历或互惠关系。情境描述只在本快照时点成立。\n'+LAYERS.map(l=>labels[l]+'\n'+(sections[l].join('\n')||'本轮没有选入条目。')).join('\n\n')+'\n需要更多细节时，使用只读记忆检索工具核对来源。'
  const traceBase={...(input.memoryMeter?{memoryBudgetSha256:input.memoryMeter.budget.sha256}:{}),protocol:'rp.injection-snapshot/v1' as const,configSha256:digest(config),query:input.query,querySha256:digest(input.query),lexicalTermsTruncated:lexical.truncated,context,fence:view.fence,entries,renderedSha256:digest(narrative)}
  return {narrative,state,summaries:selectedSummaries,trace:{...traceBase,sha256:digest(traceBase)} as InjectionTrace}

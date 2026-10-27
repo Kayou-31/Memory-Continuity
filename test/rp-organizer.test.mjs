@@ -6,6 +6,20 @@ async function source(f,key,body,role='user',accepted=true){
  if(accepted){const ctl=must(await f.store.observeSource(f.authority,{idempotencyKey:'ctl_'+key,origin:'user_control',role:'user_control',publicText:'确认',turnId:'ctl_'+key}));must(await f.canonical.applyControl(f.authority,ctl,{kind:'accept',sourceRevisionIds:[s.id],events:[],idempotencyKey:'accept_'+key,expected:await f.fence()}))}return s
 }
 
+test('similarity review keeps event ownership and evidence, writes nothing and drops deleted history',async()=>{
+ const f=await setup();try{
+  const add=async(key,description,actor='erin')=>{const s=await source(f,key,description),ctl=await f.controlSource('event_'+key);must(await f.canonical.applyControl(f.authority,ctl,{kind:'accept',idempotencyKey:'event_'+key,expected:await f.fence(),sourceRevisionIds:[s.id],events:[{id:'similar_'+key,payload:{kind:'occurrence',actorIds:[actor],description},epistemic:'world'}]}));return s}
+  const a=await add('a','周末我会去书屋帮小贝一起整理作品集。'),b=await add('b','周末我会去书屋帮小贝整理作品集。');await add('other','周末我会去书屋帮小贝整理一下作品集。','bea')
+  const before=await f.fence(),r=must(await f.organizer.review(f.authority));assert.deepEqual(await f.fence(),before);assert.equal(r.modelCalls,0)
+  assert.deepEqual(r.similarity.pairs.map(p=>p.ids),[['similar_a','similar_b']]);assert.equal(r.similarity.records.length,2)
+  const evidence=r.similarity.records.find(x=>x.id==='similar_a').evidence;assert.ok(evidence.some(e=>e.sourceRevisionId===a.id&&e.text.includes('作品集')))
+  for(const e of evidence)assert.equal(must(await f.store.readSource(f.authority,e.span)),e.text)
+  const other=must(await f.control.createBranch(f.request.workspaceId,'other')),auth=must(await f.control.authorize({...f.request,branchId:other.id,campaignId:'other'}));assert.equal(must(await f.organizer.review(auth)).similarity.pairs.length,0)
+  must(await f.canonical.applyControl(f.authority,await f.controlSource('remove_similar'),{kind:'privacy_delete',idempotencyKey:'remove_similar',expected:await f.fence(),sourceRevisionIds:[b.id],affectedBranchIds:[f.request.branchId]}))
+  assert.equal(must(await f.organizer.review(f.authority)).similarity.pairs.length,0)
+ }finally{await f.close()}
+})
+
 test('on-demand extractive candidates reuse the same authenticated selection and never adopt themselves',async()=>{
  const f=await setup();try{
  const s=await source(f,'one','我说的是：下周五一起去看星星。😀'),before=await f.fence()
@@ -15,6 +29,17 @@ test('on-demand extractive candidates reuse the same authenticated selection and
  const c=must(await f.summaries.get(f.authority,a.id));assert.match(c.proposedSummary.text,/下周五/);assert.equal(c.proposedSummary.exactAnchors[0].sourceRevisionId,s.id);assert.equal(c.proposedEvents.length,0)
  const untrusted=await source(f,'untrusted','未确认的模型故事','assistant',false)
  deny(await f.organizer.summarize(f.authority,{sourceRevisionIds:[untrusted.id]}),'source_unavailable')
+ }finally{await f.close()}
+})
+
+test('similarity evidence preserves an event quote at the end of a long conversation',async()=>{
+ const f=await setup();try{
+  for(const [key,quote]of [['a','周末我会去书屋帮小贝一起整理作品集。'],['b','周末我会去书屋帮小贝整理作品集。']]){
+   const padding='无关开场。'.repeat(120),s=await source(f,'quote_'+key,padding+quote,'assistant'),span=must(await f.store.sourceSpan(f.authority,s.id,padding.length,padding.length+quote.length)),expected=await f.fence(),ledger=must(await f.store.readLedger(f.authority)),seq=ledger.sourceBindings.find(b=>b.sourceRevisionId===s.id).acceptedSeq
+   must(await f.store.commit(f.authority,{schemaVersion:1,idempotencyKey:'quote_event_'+key,expected,sourceBindings:[],events:[{schemaVersion:1,id:'quote_event_'+key,scope:f.authority.scope,acceptedSeq:seq,fictionalTime:null,payload:{kind:'occurrence',actorIds:['erin'],description:quote},epistemic:'world',authority:'accepted_narration',sources:[span],visibility:f.authority.visibility,supersedes:[],policyVersion:expected.policyVersion}],summaries:[],jobs:[],invalidatedIds:[],authorityChanges:[],nextContextRevision:expected.contextRevision+1}))
+  }
+  const r=must(await f.organizer.review(f.authority));assert.equal(r.similarity.pairs.length,1)
+  for(const record of r.similarity.records){const proof=record.evidence[0];assert.equal(proof.text,record.text);assert.ok(proof.span.startUtf16>=600);assert.deepEqual(proof.originalSpan,proof.span);assert.equal(must(await f.store.readSource(f.authority,proof.span)),proof.text)}
  }finally{await f.close()}
 })
 

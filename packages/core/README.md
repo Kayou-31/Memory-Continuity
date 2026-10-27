@@ -75,17 +75,19 @@ memcont-core serve --config <配置绝对路径> --connection <新连接文件�
 | `/v1/admin/status` | 管理凭据；列出绑定和会话，明确返回 `modelDispatch: false` |
 | `/v1/admin/session` | 管理凭据；传入配置中的 `bindingId`，签发短期 `sessionId` 和只读 `toolToken` |
 | `/v1/admin/workbench` | 管理凭据与 `sessionId`；显式打开该绑定的工作台 |
-| `/v1/admin/snapshot`、`prepare`、`confirm`、`confirmation` | 管理凭据与 `sessionId`；取得快照、预览修改、明确确认、查询持久回执 |
+| `/v1/admin/snapshot`、`prepare`、`confirm`、`confirmation`、`cancel` | 管理凭据与 `sessionId`；取得快照、预览修改、明确确认、查询持久回执或取消未执行预览 |
 | `/v1/admin/verify` | 管理凭据与 `sessionId`、`receiptId`；复核此前实际检索结果，不能用新版本替旧内容背书 |
 | `/v1/admin/revoke` | 管理凭据与 `sessionId`；撤销会话并关闭对应工作台 |
 | `/v1/tool/search`、`get` | 只读 `toolToken`；沿用有界检索参数，返回实际结果及认证回执 |
 
 普通请求和响应各限 128 KiB；最多 32 个在途请求、16 个连接、64 个会话，会话最长十分钟。默认请求时限十秒，超时和断开后的在途操作仍受发布检查约束。较大的原文导入使用显式工作台的独立上传通道。`personId` 用于人物上下文，不取代分支、受众和权限检查。
 
-确认回执保存在 profile 的 `core-confirmations` 目录中，仅保存操作类型、绑定摘要和内容摘要，不复制人物或日记正文。冷启动后，同一已完成确认返回原回执，不重复修改；旧的未确认预览必须重新预览，已尝试但完成证据缺失的操作保持 `persistence_uncertain`，需要先核对当前内容。损坏回执不会自动修复。最多保留 4096 份预览历史，达到上限后拒绝新预览，已有读取与诊断仍可用；暂未提供归档工具，不能自行删历史来绕过上限。
+确认回执保存在 profile 的 `core-confirmations` 目录中，仅保存操作类型、绑定摘要和内容摘要，不复制人物或日记正文。冷启动后，同一已完成确认返回原回执，不重复修改；旧的未确认预览必须重新预览，已尝试但完成证据缺失的操作保持 `persistence_uncertain`，需要先核对当前内容。损坏回执不会自动修复。活动记录上限 4096；完成或取消的阶段链先写入并校验 `archive/`，再清理活动副本，保留旧回执及取消墓碑。归档中断可恢复，未知尝试不清理；接近容量时可在工作台设置查看诊断。历史仍占磁盘，不通过截断事务或删除归档解决容量。
 
 当前 RPC 尚不提供模型派发、模型侧日记写入、平台身份绑定或跨进程模型请求准入。工作台与只读检索可以独立运行，AstrBot / NapCat / Snow Luma 的完整适配仍需后续验证。
 
+Node API 还提供 `memory.experienceCandidates`：可信宿主绑定原话与当前输入后，可签发有限的候选 writer；模型不能取得 `control`。当前只在 DSH 聊天路径完成接线，其他应用可以自行适配。开关默认关闭，候选需要人工采纳；模型工具后续请求仍计入宿主调用预算。接口与权限接入说明见完整源码中的 `docs/adapters/THIRD-PARTY.zh.md`。
+
 数据沿用已有 branch/global v1 与新人物、原文、共同日记的能力标记及备份规则。不要把新版工作区直接交给旧读取器；恢复旧版前核对完整备份。固定 tokenizer 与字体资源保留各自的上游许可证；`SOURCE-MANIFEST.json` 记录实际包中文件大小与 SHA-256。
 
-在完整源码仓库执行 `npm run build:core` 生成新的独立打包目录。核心 JavaScript 和声明从 `src/core/index.ts` 及共用源码构建，不维护另一份存储代码。npm 包内的 sourcemap 包含对应 TypeScript 源文；完整仓库包含构建脚本、回归测试和 DSH / 后续其他适配源码。本轮通过 GitHub 分发，不在 npm 注册表自动发布。
+在完整源码仓库执行 `npm run build:core` 生成新的独立打包目录。核心 JavaScript 和声明从 `src/core/index.ts` 及共用源码构建，不维护另一份存储代码。npm 包内的 sourcemap 包含对应 TypeScript 源文；完整仓库包含构建脚本、回归测试和 DSH / 后续其他适配源码。正式版本通过 GitHub 分发，不在 npm 注册表自动发布；0.1.0-preview.3 随 0.3.1 分包发布，仍保留预览标记；完整模型宿主适配应另外验证。

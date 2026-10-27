@@ -33,15 +33,15 @@ test('packaged tokenizer counts match independently generated Hugging Face Rust 
  assert.equal(vectors.version,'0.22.2');for(const v of vectors.vectors)assert.equal(meter.count(v.text),v.ids.length,JSON.stringify(v.text.slice(0,30)))
 })
 
-test('token layers admit a 48 KiB document while legacy byte limits retain their old meaning',async()=>{
+test('token and legacy byte budgets select authenticated excerpts while the 48 KiB original remains intact',async()=>{
  const f=await setup();try{
   const p=must(await f.person.preview(f.authority,{schemaVersion:1,kind:'person-draft',personId:'erin',fields:[{fieldId:'name',kind:'identity',value:'林澈',policy:'stable'}],relationships:[],goals:[]},'person'));must(await f.person.confirm(f.authority,p.handle,await f.controlSource('person')))
   const original=' hello'.repeat(8192),draft=api.importPersonDocument({documentId:'long',personId:'erin',title:'完整资料',format:'text',text:original}),policies=draft.sections.map(s=>({sectionId:s.sectionId,category:'knowledge',label:'资料',tags:[],enabled:true,when:{kind:'all'}}))
   const preview=must(await f.documents.preview(f.authority,{draft,policies},'doc'));must(await f.documents.confirm(f.authority,preview.handle,await f.controlSource('doc')))
   const budget={recentCompleteTurns:8,targetTotalTokens:48000,triggerTotalTokens:72000,outputReserveTokens:8192,toolReserveTokens:2048,packetSoftTokens:8000,contextWindow:100000,inputLimit:90000},input={budget,globalAuthorities:[],inputBindings:[],personId:'erin',injection:{},query:'hello'}
-  const old=must(await f.packets.prepare(f.authority,input));assert.equal(old.injection.entries.filter(e=>e.kind==='document'&&e.selected).length,0)
+  const old=must(await f.packets.prepare(f.authority,input)),legacy=old.injection.entries.filter(e=>e.kind==='document'&&e.selected);assert.ok(legacy.length>0,'legacy byte budget can now select bounded original excerpts');assert.ok(legacy.reduce((n,e)=>n+e.bytes,0)<=input.budget.packetSoftTokens);assert.ok(legacy.every(e=>e.sourceSpan&&e.sourceSpan.endUtf16>e.sourceSpan.startUtf16))
   const meter=await api.openMemoryMeter(api.createMemoryBudget(target),target),next=must(await f.packets.prepare(f.authority,{...input,memoryMeter:meter}))
-  const entries=next.injection.entries.filter(e=>e.kind==='document'&&e.selected);assert.equal(entries.length,draft.chunks.length);assert.ok(entries.reduce((n,e)=>n+e.bytes,0)>48000);assert.ok(entries.reduce((n,e)=>n+e.tokens,0)<12288);assert.equal(next.injection.memoryBudgetSha256,meter.budget.sha256)
+  const entries=next.injection.entries.filter(e=>e.kind==='document'&&e.selected);assert.equal(entries.length,draft.chunks.length);assert.ok(entries.reduce((n,e)=>n+e.bytes,0)<Buffer.byteLength(original));assert.equal(must(await f.documents.read(f.authority,'erin','long')).draft.text,original);assert.ok(entries.every(e=>e.sourceSpan&&e.tokens<e.bytes));assert.ok(entries.reduce((n,e)=>n+e.tokens,0)<12288);assert.equal(next.injection.memoryBudgetSha256,meter.budget.sha256)
   const usage=api.measureMemoryParts([{kind:'packet',text:next.text}],meter);assert.ok(usage.total<32768)
  }finally{await f.close()}
 })

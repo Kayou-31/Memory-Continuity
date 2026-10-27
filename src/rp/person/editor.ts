@@ -21,14 +21,14 @@ function select(parent: HTMLElement, title: string, choices: Record<string,strin
 function entry(container: string) { const el=document.createElement('div'); el.className='entry'; const remove=document.createElement('button'); remove.textContent='移除这一项'; remove.onclick=()=>{el.remove();changed()}; el.append(remove); $(container).append(el); return el }
 const readers = new WeakMap<HTMLElement, () => unknown>()
 function field(value: PersonField) {
-  const row=entry('fields'), kind=select(row,'项目',kinds,value.kind), content=input(row,'内容',value.value,true), policy=select(row,'改变方式',policies,value.policy)
+  const row=entry('fields'), kind=select(row,'项目',kinds,value.kind), content=input(row,'内容',value.value,true), policy=select(row,'改变方式',policies,value.policy), injection=select(row,'参与记忆注入',{legacy:'保持原有规则',core:'人物核心：日常对话也带上',default:'按原有类型和话题规则'},value.injection??'legacy')
   const validity=document.createElement('div');row.append(validity)
   const mode=select(validity,'有效范围',{scene:'指定场景',sequence:'已接受记录序号区间'},value.validity?.kind??'scene')
   const scene=input(validity,'场景 ID（原生 RP 默认 rp_scene）',value.validity?.kind==='scene'?value.validity.sceneId:'rp_scene')
   const from=input(validity,'起始接受序号（含）',String(value.validity?.kind==='sequence'?value.validity.from:1)),through=input(validity,'结束接受序号（含）',String(value.validity?.kind==='sequence'?value.validity.through:10))
   const update=()=>{validity.hidden=policy.value!=='situational';scene.parentElement!.hidden=mode.value!=='scene';from.parentElement!.hidden=through.parentElement!.hidden=mode.value!=='sequence'}
   policy.onchange=mode.onchange=update;update()
-  readers.set(row,()=>({fieldId:value.fieldId,kind:kind.value,value:content.value,policy:policy.value,...(policy.value==='situational'?{validity:mode.value==='scene'?{kind:'scene',sceneId:scene.value.trim()}:{kind:'sequence',from:Number(from.value),through:Number(through.value)}}:{})}))
+  readers.set(row,()=>({fieldId:value.fieldId,kind:kind.value,value:content.value,policy:policy.value,...(injection.value!=='legacy'?{injection:injection.value}:{}),...(policy.value==='situational'?{validity:mode.value==='scene'?{kind:'scene',sceneId:scene.value.trim()}:{kind:'sequence',from:Number(from.value),through:Number(through.value)}}:{})}))
 }
 function relationship(value: PersonDraft['relationships'][number]) {
   const row=entry('relationships'), target=input(row,'对方人物 ID',value.targetId), relation=select(row,'关系方向：我 → 对方',relations,value.relation), content=input(row,'起点',value.value)

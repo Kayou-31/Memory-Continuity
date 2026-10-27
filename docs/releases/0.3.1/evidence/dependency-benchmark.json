@@ -1,0 +1,625 @@
+{
+  "node": "v22.23.3",
+  "sourceSha256": "cbf5d828565b3a6ec3b548d20818843e846a185f2c99ac3ca3e60c5ffa4fc640",
+  "equivalentCases": 76,
+  "results": [
+    {
+      "name": "diamond",
+      "records": 4,
+      "referenceMs": 0.12000000000000455,
+      "queueMs": 0.11459999999999582,
+      "edges": 8,
+      "visits": 4
+    },
+    {
+      "name": "missing-dependency",
+      "records": 1,
+      "referenceMs": 0.006999999999990791,
+      "queueMs": 0.010099999999994225,
+      "edges": 2,
+      "visits": 0
+    },
+    {
+      "name": "cycle-no-seed-defensive",
+      "records": 2,
+      "referenceMs": 0.06470000000000198,
+      "queueMs": 0.017499999999998295,
+      "edges": 4,
+      "visits": 0
+    },
+    {
+      "name": "cycle-seeded-defensive",
+      "records": 2,
+      "referenceMs": 0.011499999999998067,
+      "queueMs": 0.06799999999999784,
+      "edges": 4,
+      "visits": 2
+    },
+    {
+      "name": "reaccepted-source-old-records-stay-invalid",
+      "records": 3,
+      "referenceMs": 0.010099999999994225,
+      "queueMs": 0.016199999999997772,
+      "edges": 4,
+      "visits": 1
+    },
+    {
+      "name": "chain-insertion-order-64",
+      "records": 64,
+      "referenceMs": 0.03350000000000364,
+      "queueMs": 0.037399999999990996,
+      "edges": 127,
+      "visits": 63
+    },
+    {
+      "name": "reverse-chain-defensive-64",
+      "records": 64,
+      "referenceMs": 0.4095000000000084,
+      "queueMs": 0.03459999999999752,
+      "edges": 127,
+      "visits": 63
+    },
+    {
+      "name": "chain-insertion-order-512",
+      "records": 512,
+      "referenceMs": 0.2447000000000088,
+      "queueMs": 0.30110000000000525,
+      "edges": 1023,
+      "visits": 511
+    },
+    {
+      "name": "reverse-chain-defensive-512",
+      "records": 512,
+      "referenceMs": 10.013500000000008,
+      "queueMs": 0.24729999999999563,
+      "edges": 1023,
+      "visits": 511
+    },
+    {
+      "name": "chain-insertion-order-2048",
+      "records": 2048,
+      "referenceMs": 0.6226000000000056,
+      "queueMs": 1.079499999999996,
+      "edges": 4095,
+      "visits": 2047
+    },
+    {
+      "name": "generated-0",
+      "records": 64,
+      "referenceMs": 0.030500000000003524,
+      "queueMs": 0.054000000000002046,
+      "edges": 242,
+      "visits": 6
+    },
+    {
+      "name": "generated-1",
+      "records": 64,
+      "referenceMs": 0.030199999999993565,
+      "queueMs": 0.05639999999999645,
+      "edges": 240,
+      "visits": 90
+    },
+    {
+      "name": "generated-2",
+      "records": 64,
+      "referenceMs": 0.027100000000004343,
+      "queueMs": 0.04369999999998697,
+      "edges": 242,
+      "visits": 2
+    },
+    {
+      "name": "generated-3",
+      "records": 64,
+      "referenceMs": 0.028099999999994907,
+      "queueMs": 0.03890000000001237,
+      "edges": 241,
+      "visits": 5
+    },
+    {
+      "name": "generated-4",
+      "records": 64,
+      "referenceMs": 0.02400000000000091,
+      "queueMs": 0.04189999999999827,
+      "edges": 242,
+      "visits": 28
+    },
+    {
+      "name": "generated-5",
+      "records": 64,
+      "referenceMs": 0.019699999999986062,
+      "queueMs": 0.1326000000000107,
+      "edges": 244,
+      "visits": 96
+    },
+    {
+      "name": "generated-6",
+      "records": 64,
+      "referenceMs": 0.02369999999999095,
+      "queueMs": 0.04630000000000223,
+      "edges": 237,
+      "visits": 16
+    },
+    {
+      "name": "generated-7",
+      "records": 64,
+      "referenceMs": 0.0169000000000068,
+      "queueMs": 0.04919999999999902,
+      "edges": 242,
+      "visits": 167
+    },
+    {
+      "name": "generated-8",
+      "records": 64,
+      "referenceMs": 0.022800000000003706,
+      "queueMs": 0.03520000000000323,
+      "edges": 236,
+      "visits": 2
+    },
+    {
+      "name": "generated-9",
+      "records": 64,
+      "referenceMs": 0.019200000000012096,
+      "queueMs": 0.044799999999995066,
+      "edges": 237,
+      "visits": 92
+    },
+    {
+      "name": "generated-10",
+      "records": 64,
+      "referenceMs": 0.023200000000002774,
+      "queueMs": 0.04019999999999868,
+      "edges": 239,
+      "visits": 33
+    },
+    {
+      "name": "generated-11",
+      "records": 64,
+      "referenceMs": 0.024799999999999045,
+      "queueMs": 0.03669999999999618,
+      "edges": 242,
+      "visits": 6
+    },
+    {
+      "name": "generated-12",
+      "records": 64,
+      "referenceMs": 0.020799999999994156,
+      "queueMs": 0.041299999999992565,
+      "edges": 242,
+      "visits": 46
+    },
+    {
+      "name": "generated-13",
+      "records": 64,
+      "referenceMs": 0.02049999999999841,
+      "queueMs": 0.04100000000001103,
+      "edges": 242,
+      "visits": 46
+    },
+    {
+      "name": "generated-14",
+      "records": 64,
+      "referenceMs": 0.02370000000000516,
+      "queueMs": 0.03689999999998861,
+      "edges": 243,
+      "visits": 5
+    },
+    {
+      "name": "generated-15",
+      "records": 64,
+      "referenceMs": 0.023000000000010346,
+      "queueMs": 0.039299999999997226,
+      "edges": 241,
+      "visits": 28
+    },
+    {
+      "name": "generated-16",
+      "records": 64,
+      "referenceMs": 0.02360000000000184,
+      "queueMs": 0.036000000000001364,
+      "edges": 242,
+      "visits": 2
+    },
+    {
+      "name": "generated-17",
+      "records": 64,
+      "referenceMs": 0.02389999999999759,
+      "queueMs": 0.03649999999998954,
+      "edges": 243,
+      "visits": 2
+    },
+    {
+      "name": "generated-18",
+      "records": 64,
+      "referenceMs": 0.02389999999999759,
+      "queueMs": 0.03640000000000043,
+      "edges": 241,
+      "visits": 2
+    },
+    {
+      "name": "generated-19",
+      "records": 64,
+      "referenceMs": 0.021599999999992292,
+      "queueMs": 0.04080000000000439,
+      "edges": 239,
+      "visits": 41
+    },
+    {
+      "name": "generated-20",
+      "records": 64,
+      "referenceMs": 0.023300000000006094,
+      "queueMs": 0.04039999999999111,
+      "edges": 242,
+      "visits": 38
+    },
+    {
+      "name": "generated-21",
+      "records": 64,
+      "referenceMs": 0.025000000000005684,
+      "queueMs": 0.03669999999999618,
+      "edges": 244,
+      "visits": 5
+    },
+    {
+      "name": "generated-22",
+      "records": 64,
+      "referenceMs": 0.017800000000008254,
+      "queueMs": 0.06199999999999761,
+      "edges": 240,
+      "visits": 142
+    },
+    {
+      "name": "generated-23",
+      "records": 64,
+      "referenceMs": 0.027099999999990132,
+      "queueMs": 0.036100000000004684,
+      "edges": 244,
+      "visits": 2
+    },
+    {
+      "name": "generated-24",
+      "records": 64,
+      "referenceMs": 0.024500000000003297,
+      "queueMs": 0.03619999999999379,
+      "edges": 243,
+      "visits": 7
+    },
+    {
+      "name": "generated-25",
+      "records": 64,
+      "referenceMs": 0.024900000000002365,
+      "queueMs": 0.03690000000000282,
+      "edges": 244,
+      "visits": 6
+    },
+    {
+      "name": "generated-26",
+      "records": 64,
+      "referenceMs": 0.02400000000000091,
+      "queueMs": 0.037399999999990996,
+      "edges": 242,
+      "visits": 9
+    },
+    {
+      "name": "generated-27",
+      "records": 64,
+      "referenceMs": 0.017600000000001614,
+      "queueMs": 0.04599999999999227,
+      "edges": 242,
+      "visits": 141
+    },
+    {
+      "name": "generated-28",
+      "records": 64,
+      "referenceMs": 0.018000000000000682,
+      "queueMs": 0.04649999999999466,
+      "edges": 240,
+      "visits": 105
+    },
+    {
+      "name": "generated-29",
+      "records": 64,
+      "referenceMs": 0.016099999999994452,
+      "queueMs": 0.0490999999999957,
+      "edges": 246,
+      "visits": 182
+    },
+    {
+      "name": "generated-30",
+      "records": 64,
+      "referenceMs": 0.025199999999998113,
+      "queueMs": 0.046599999999997976,
+      "edges": 242,
+      "visits": 2
+    },
+    {
+      "name": "generated-31",
+      "records": 64,
+      "referenceMs": 0.018100000000004002,
+      "queueMs": 0.06800000000001205,
+      "edges": 244,
+      "visits": 120
+    },
+    {
+      "name": "generated-32",
+      "records": 64,
+      "referenceMs": 0.017700000000004934,
+      "queueMs": 0.03180000000000405,
+      "edges": 239,
+      "visits": 143
+    },
+    {
+      "name": "generated-33",
+      "records": 64,
+      "referenceMs": 0.021299999999996544,
+      "queueMs": 0.026699999999991064,
+      "edges": 239,
+      "visits": 80
+    },
+    {
+      "name": "generated-34",
+      "records": 64,
+      "referenceMs": 0.016999999999995907,
+      "queueMs": 0.019199999999997885,
+      "edges": 236,
+      "visits": 0
+    },
+    {
+      "name": "generated-35",
+      "records": 64,
+      "referenceMs": 0.024500000000003297,
+      "queueMs": 0.01999999999999602,
+      "edges": 238,
+      "visits": 4
+    },
+    {
+      "name": "generated-36",
+      "records": 64,
+      "referenceMs": 0.022499999999993747,
+      "queueMs": 0.022800000000003706,
+      "edges": 241,
+      "visits": 43
+    },
+    {
+      "name": "generated-37",
+      "records": 64,
+      "referenceMs": 0.02230000000000132,
+      "queueMs": 0.021399999999999864,
+      "edges": 240,
+      "visits": 23
+    },
+    {
+      "name": "generated-38",
+      "records": 64,
+      "referenceMs": 0.02549999999999386,
+      "queueMs": 0.02020000000000266,
+      "edges": 245,
+      "visits": 5
+    },
+    {
+      "name": "generated-39",
+      "records": 64,
+      "referenceMs": 0.02400000000000091,
+      "queueMs": 0.019800000000003593,
+      "edges": 239,
+      "visits": 7
+    },
+    {
+      "name": "generated-40",
+      "records": 64,
+      "referenceMs": 0.022199999999998,
+      "queueMs": 0.018699999999995498,
+      "edges": 239,
+      "visits": 2
+    },
+    {
+      "name": "generated-41",
+      "records": 64,
+      "referenceMs": 0.023499999999998522,
+      "queueMs": 0.13519999999999754,
+      "edges": 240,
+      "visits": 30
+    },
+    {
+      "name": "generated-42",
+      "records": 64,
+      "referenceMs": 0.032399999999995543,
+      "queueMs": 0.024399999999999977,
+      "edges": 240,
+      "visits": 38
+    },
+    {
+      "name": "generated-43",
+      "records": 64,
+      "referenceMs": 0.017899999999997362,
+      "queueMs": 0.019700000000000273,
+      "edges": 240,
+      "visits": 0
+    },
+    {
+      "name": "generated-44",
+      "records": 64,
+      "referenceMs": 0.02230000000000132,
+      "queueMs": 0.026099999999999568,
+      "edges": 240,
+      "visits": 46
+    },
+    {
+      "name": "generated-45",
+      "records": 64,
+      "referenceMs": 0.019000000000005457,
+      "queueMs": 0.050399999999996226,
+      "edges": 241,
+      "visits": 121
+    },
+    {
+      "name": "generated-46",
+      "records": 64,
+      "referenceMs": 0.03480000000000416,
+      "queueMs": 0.03549999999999898,
+      "edges": 241,
+      "visits": 72
+    },
+    {
+      "name": "generated-47",
+      "records": 64,
+      "referenceMs": 0.02970000000000539,
+      "queueMs": 0.02380000000000848,
+      "edges": 243,
+      "visits": 6
+    },
+    {
+      "name": "generated-48",
+      "records": 64,
+      "referenceMs": 0.027200000000007662,
+      "queueMs": 0.02230000000000132,
+      "edges": 239,
+      "visits": 7
+    },
+    {
+      "name": "generated-49",
+      "records": 64,
+      "referenceMs": 0.021399999999999864,
+      "queueMs": 0.030199999999993565,
+      "edges": 241,
+      "visits": 85
+    },
+    {
+      "name": "generated-50",
+      "records": 64,
+      "referenceMs": 0.0257000000000005,
+      "queueMs": 0.023200000000002774,
+      "edges": 236,
+      "visits": 20
+    },
+    {
+      "name": "generated-51",
+      "records": 64,
+      "referenceMs": 0.02210000000000889,
+      "queueMs": 0.02599999999999625,
+      "edges": 241,
+      "visits": 53
+    },
+    {
+      "name": "generated-52",
+      "records": 64,
+      "referenceMs": 0.02380000000000848,
+      "queueMs": 0.024700000000009936,
+      "edges": 240,
+      "visits": 34
+    },
+    {
+      "name": "generated-53",
+      "records": 64,
+      "referenceMs": 0.02559999999999718,
+      "queueMs": 0.021200000000007435,
+      "edges": 242,
+      "visits": 5
+    },
+    {
+      "name": "generated-54",
+      "records": 64,
+      "referenceMs": 0.02370000000000516,
+      "queueMs": 0.024899999999988154,
+      "edges": 237,
+      "visits": 36
+    },
+    {
+      "name": "generated-55",
+      "records": 64,
+      "referenceMs": 0.03619999999999379,
+      "queueMs": 0.02750000000000341,
+      "edges": 242,
+      "visits": 8
+    },
+    {
+      "name": "generated-56",
+      "records": 64,
+      "referenceMs": 0.02719999999999345,
+      "queueMs": 0.03299999999998704,
+      "edges": 243,
+      "visits": 80
+    },
+    {
+      "name": "generated-57",
+      "records": 64,
+      "referenceMs": 0.019000000000005457,
+      "queueMs": 0.029000000000010573,
+      "edges": 242,
+      "visits": 91
+    },
+    {
+      "name": "generated-58",
+      "records": 64,
+      "referenceMs": 0.026399999999995316,
+      "queueMs": 0.05530000000000257,
+      "edges": 237,
+      "visits": 8
+    },
+    {
+      "name": "generated-59",
+      "records": 64,
+      "referenceMs": 0.02560000000001139,
+      "queueMs": 0.030100000000004457,
+      "edges": 238,
+      "visits": 82
+    },
+    {
+      "name": "generated-60",
+      "records": 64,
+      "referenceMs": 0.02750000000000341,
+      "queueMs": 0.023199999999988563,
+      "edges": 242,
+      "visits": 12
+    },
+    {
+      "name": "generated-61",
+      "records": 64,
+      "referenceMs": 0.06619999999999493,
+      "queueMs": 0.02939999999999543,
+      "edges": 244,
+      "visits": 7
+    },
+    {
+      "name": "generated-62",
+      "records": 64,
+      "referenceMs": 0.03289999999999793,
+      "queueMs": 0.02410000000000423,
+      "edges": 243,
+      "visits": 23
+    },
+    {
+      "name": "generated-63",
+      "records": 64,
+      "referenceMs": 0.019599999999996953,
+      "queueMs": 0.030000000000001137,
+      "edges": 239,
+      "visits": 102
+    },
+    {
+      "name": "commit-special-0",
+      "records": 3,
+      "ids": [
+        "later_event",
+        "early_summary"
+      ],
+      "edges": 3,
+      "specialEdges": 1,
+      "visits": 1
+    },
+    {
+      "name": "commit-special-1",
+      "records": 3,
+      "ids": [
+        "a",
+        "b",
+        "c"
+      ],
+      "edges": 5,
+      "specialEdges": 1,
+      "visits": 4
+    }
+  ],
+  "decision": "Shadow only. Normal insertion-order reads do not establish a consistent end-to-end benefit; retain current production loops.",
+  "limits": "Synthetic graph microbenchmark; excludes disk replay, view authorization, managed copies and workspace privacy closure. Timings include queue construction, single samples, not a stable speed claim.",
+  "maxRssKiB": 50972
+}

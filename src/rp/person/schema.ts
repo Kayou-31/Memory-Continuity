@@ -2,7 +2,8 @@ import { cloneInput, denied, id, integer, invalid, object, text } from '../valid
 import type { PersonDraft, PersonField } from './types.js'
 export const personKeys: Record<PersonField['kind'], string> = { identity: 'identity', background: 'background', voice: 'voice', values: 'rule', boundaries: 'rule', trait:'rule', feeling:'rule', stage:'background' }
 export function personField(input: unknown): asserts input is PersonField {
-  const f = object(input, ['fieldId', 'kind', 'value', 'policy'], ['validity']); id(f.fieldId); text(f.value, 2048, true)
+  const f = object(input, ['fieldId', 'kind', 'value', 'policy'], ['validity','injection']); id(f.fieldId); text(f.value, 2048, true)
+  if(f.injection!==undefined&&!['core','default'].includes(f.injection))invalid('person injection choice')
   if (!Object.hasOwn(personKeys, f.kind) || !['stable', 'growable', 'situational'].includes(f.policy)) invalid('person field kind/policy')
   if(f.policy==='situational') {
     const v=object(f.validity,['kind'],['sceneId','from','through'])

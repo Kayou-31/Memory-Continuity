@@ -1,0 +1,22 @@
+{
+  "model": "deepseek-v4.1-flash",
+  "endpoint": "https://opencode.ai/inference/go/openai/v1/chat/completions",
+  "maxRequests": 1,
+  "totalAuthorizedCeiling": 16,
+  "priorFreeAttempts": 1,
+  "maxOutputTokens": 1024,
+  "extraPaymentsAuthorized": false,
+  "userReportedBalance": 0,
+  "attempts": [
+    {
+      "startedAt": "2026-10-27T16:43:47.158Z",
+      "requestBytes": 3628,
+      "sha256": "6a02f5a6478f57d281a64d63e98318a2fde5640a9aeef2c7764b451063e4ed11",
+      "httpStatus": 401,
+      "usage": null,
+      "error": "server_error",
+      "message": "Upstream request failed: Invalid credential"
+    }
+  ],
+  "childExit": 0
+}

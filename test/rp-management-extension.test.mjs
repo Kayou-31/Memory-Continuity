@@ -27,6 +27,21 @@ test('uploads reject bad encoding/type/size, stale or cross-controller handles a
  }finally{await f.close()}
 })
 
+test('pending document drafts can be found, resumed with choices, and cancelled without importing',async()=>{
+ const f=await ready();try{
+  const m=f.management.create(f.authority),u=await upload(m,'# 语气\n保留🐉完整原文'),before=await f.fence()
+  const pending=(await m.snapshot()).pendingUploads;assert.equal(pending.length,1);assert.equal(pending[0].personId,'erin');assert.equal(pending[0].id,u.id);assert.equal(pending[0].bytes,u.draft.utf8Bytes)
+  const policies=u.draft.sections.map(s=>({sectionId:s.sectionId,label:'新标签',category:'persona',tags:['语气'],enabled:true,when:{kind:'all'}}))
+  await m.updateUpload({id:u.id,personId:'erin',policies})
+  const resume=await m.read({kind:'upload',personId:'erin',id:u.id});assert.deepEqual(resume.policies,policies);assert.equal(resume.draft.text,u.draft.text)
+  await assert.rejects(m.read({kind:'upload',personId:'bea',id:u.id}),e=>e.code==='scope_denied')
+  await assert.rejects(f.management.create(f.authority).read({kind:'upload',personId:'erin',id:u.id}))
+  const prepared=await review(m,'document-import',{uploadId:u.id});await m.discardUpload(u.id)
+  await assert.rejects(m.confirm(prepared.id),/cancelled|expired|取消|过期/)
+  assert.equal((await m.snapshot()).pendingUploads.length,0);assert.equal((await m.snapshot()).documents.length,0);assert.deepEqual(await f.fence(),before)
+ }finally{await f.close()}
+})
+
 test('influence preference defaults on, changes only on explicit save, persists and never weakens authorization',async()=>{
  const f=await ready();try{const m=f.management.create(f.authority);assert.equal((await m.snapshot()).preferences.impactConfirmation,true)
   const r=await review(m,'settings',{impactConfirmation:false});assert.equal((await m.snapshot()).preferences.impactConfirmation,true);await m.confirm(r.id)

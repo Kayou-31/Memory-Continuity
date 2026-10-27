@@ -28,7 +28,7 @@ export async function openCoreService(input:CoreServiceInput){
    if(!bearer)throw new RpError('scope_denied','A service capability is required')
    const admin=equal(bearer,adminToken),route=req.url??''
    const tool=admin?undefined:rpc.toolCapability(bearer)
-   const adminRoutes=['/v1/admin/status','/v1/admin/session','/v1/admin/revoke','/v1/admin/workbench','/v1/admin/verify','/v1/admin/snapshot','/v1/admin/prepare','/v1/admin/confirm','/v1/admin/confirmation']
+   const adminRoutes=['/v1/admin/status','/v1/admin/session','/v1/admin/revoke','/v1/admin/workbench','/v1/admin/verify','/v1/admin/snapshot','/v1/admin/prepare','/v1/admin/confirm','/v1/admin/confirmation','/v1/admin/cancel']
    if(admin?!adminRoutes.includes(route):!['/v1/tool/search','/v1/tool/get'].includes(route))throw new RpError('scope_denied','This credential cannot perform the requested operation')
    if(req.headers['content-type']!=='application/json')throw new RpError('invalid_record','JSON content type required')
    const chunks:Buffer[]=[];let size=0

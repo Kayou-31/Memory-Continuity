@@ -28,6 +28,15 @@ export function canonical(value: unknown): string {
 }
 const digest = (v: unknown) => sha(canonical(v))
 const newId = (prefix: string) => prefix + '_' + randomUUID().replaceAll('-', '')
+// Shared by stores in this module, per physical workspace. Official entry
+// points additionally enforce exclusive process ownership of the profile.
+const publicationClocks = new Map<string, { epoch: bigint; publishing: number }>()
+function publicationClock(directory: string) {
+  const key = process.platform === 'win32' ? directory.toLowerCase() : directory
+  let clock = publicationClocks.get(key)
+  if (!clock) { clock = { epoch: 0n, publishing: 0 }; publicationClocks.set(key, clock) }
+  return clock
+}
 const ok = <T>(value: T): Result<T> => { const copy = structuredClone(value); inheritGrowthMarks(value, copy); return { ok: true, value: copy } }
 const same = (a: unknown, b: unknown) => canonical(a) === canonical(b)
 function eventDependencies(event: SemanticEvent): string[] {
@@ -47,7 +56,10 @@ function authenticateEvent(event: SemanticEvent, changes: readonly AuthorityChan
   if (!protocol) { if (['person_document','diary_entry','diary_policy'].includes(event.payload.kind)) denied('document or diary requires authenticated semantic marker'); return }
   markSemantic(event, protocol)
   if (protocol === 'agent-memory/v1') markGrowthEvent(event)
-  else if (protocol === 'person-core/v1') personValue(event)
+  else if (protocol === 'person-core/v1') {
+    const field=personValue(event)
+    if(field?.injection!==undefined&&!changes.some(c=>c.kind==='candidate_adoption'&&c.recordId==='person_injection_'+event.id&&c.record.candidateId==='person_injection_v1'&&c.record.decision==='accepted'&&c.record.eventIds.length===1&&c.record.eventIds[0]===event.id))denied('Person injection choice requires its reader capability marker')
+  }
   else if (protocol === 'person-document/v1') documentValue(event)
   else if (protocol === 'shared-diary/v1') diaryValue(event)
   else if (protocol === 'shared-diary-policy/v1') diaryPolicy(event)
@@ -208,7 +220,7 @@ export class RpStore {
       else throw cause
     } finally { await handle?.close() }
   }
-  async #publish(file: string, body: string | Buffer, kind: 'blob' | 'transaction' | 'seal', useFault = true, seal?: () => Promise<void>): Promise<void> {
+  async #publish(file: string, body: string | Buffer, kind: 'blob' | 'transaction' | 'seal', useFault = true, seal?: () => Promise<void>, workspaceId?: string): Promise<void> {
     const temporary = file + '.tmp-' + randomUUID()
     let published = false, handle: Awaited<ReturnType<typeof fs.open>> | undefined
     try {
@@ -223,7 +235,10 @@ export class RpStore {
       // existing immutable commit even on POSIX where rename permits it.
       try { await fs.lstat(file); error('store_corrupt', 'RP immutable destination already exists') } catch (cause) { if ((cause as NodeJS.ErrnoException).code !== 'ENOENT') throw cause }
       if(kind!=='seal'){this.#options.active?.();assertPublicationAllowed()}
-      await fs.rename(temporary, file); published = true
+      const clock = workspaceId ? publicationClock(this.#workspacePath(workspaceId)) : undefined
+      if (clock) { clock.epoch++; clock.publishing++ }
+      try { await fs.rename(temporary, file); published = true }
+      finally { if (clock) { clock.epoch++; clock.publishing-- } }
       // An independent immutable receipt detects single-file tail loss. A crash
       // before the receipt still leaves a valid, unacknowledged transaction;
       // subsequent writers seal it before appending any further effect.
@@ -341,7 +356,7 @@ export class RpStore {
         if (tx.schemaVersion !== 1 || tx.workspaceId !== workspaceId || tx.sequence !== state.transactions.length + 1 || tx.previousHash !== (state.hashes.at(-1) ?? ZERO) || envelope.sha256 !== digest(tx)) invalid('transaction chain')
         text(tx.idempotencyKey, 512); hash(tx.effectHash); this.#validateOperation(tx.operation)
         const caps = tx.requiredCapabilities ?? []
-        if (!Array.isArray(caps) || caps.some(c => !['rp.person-core/v1','rp.person-documents/v1','rp.shared-diary/v1'].includes(c))) error('capability_missing', 'Unsupported workspace reader capability')
+        if (!Array.isArray(caps) || caps.some(c => !['rp.person-core/v1','rp.person-documents/v1','rp.shared-diary/v1','rp.person-injection/v1'].includes(c))) error('capability_missing', 'Unsupported workspace reader capability')
         if (!same(caps, [...new Set(caps)].sort()) || state.requiredCapabilities.some(c => !caps.includes(c)) || (tx.operation.kind === 'commit' && requiredSemanticCapabilities(tx.operation.authorityChanges).some(c=>!caps.includes(c)))) invalid('workspace capability regression or missing semantic barrier')
         state.requiredCapabilities = caps
         if (effects.has(tx.idempotencyKey)) invalid('duplicate transaction effect')
@@ -446,7 +461,7 @@ export class RpStore {
     if (caps.some(c => !state.requiredCapabilities.includes(c))) await this.#backupBeforeCapabilities(workspaceId, state)
     await publishPayloads?.()
     await this.#publish(file, encoded, 'transaction', useFault,
-      () => this.#seal(workspaceId, transaction.sequence, digest(transaction), useFault))
+      () => this.#seal(workspaceId, transaction.sequence, digest(transaction), useFault), workspaceId)
   }
   /** Caller holds workspace writer lock. Backup payloads are deliberately outside
    * immutable audit metadata and are disclosed as separately managed copies. */
@@ -560,13 +575,25 @@ export class RpStore {
   }
   async #read<T>(authority: HostAuthority, work: (state: WorkspaceState, branch: BranchState, request: AuthorityRequest) => Promise<T> | T): Promise<Result<T>> {
     try {
+      // Capture before the first await, including authority/location validation.
+      const initial = authority && typeof authority === 'object' ? this.#grants.get(authority) : undefined
+      if (!initial || !initial.request.permissions.includes('read')) denied('unrecognized or insufficient host handle')
+      this.#options.active?.()
+      const clock = publicationClock(this.#workspacePath(initial.request.workspaceId)), epoch = clock.epoch
+      if (clock.publishing) error('stale_input', 'RP publication is in progress')
       const { grant } = await this.#authorize(authority, 'read'), state = await this.#load(grant.request.workspaceId), branch = this.#branch(state, grant.request)
       const result = await work(state, branch, grant.request)
       // Metadata/source reads may yield; revoked handles must not release data.
       await this.#authorize(authority, 'read')
       const latest = this.#branch(await this.#load(grant.request.workspaceId), grant.request)
       if (!same(latest.fence, branch.fence)) error('stale_input', 'RP read fence changed')
-      return ok(result)
+      const response = ok(result)
+      // No async work after this boundary, including copying the result. A
+      // later load can itself yield while the owner retires or data is deleted.
+      this.#options.active?.()
+      if (initial !== this.#grants.get(authority) || !initial.request.permissions.includes('read')) denied('host handle changed')
+      if (clock.publishing || clock.epoch !== epoch) error('stale_input', 'RP publication changed during read')
+      return response
     } catch (cause) { return failure(cause) }
   }
   readBranch(authority: HostAuthority): Promise<Result<Branch>> { return this.#read(authority, (_state, branch) => branch.branch) }
@@ -631,8 +658,11 @@ export class RpStore {
       } }) } finally { open = false; texts.clear() }
     })
   }
-  readSource(authority: HostAuthority, input: SourceSpan): Promise<Result<string>> {
-    return this.#read(authority, async (state, branch, request) => { await this.#checkSourceView(state, branch, request, input.sourceRevisionId); return this.#verifySpan(state, branch, request, cloneInput(input)) })
+  async readSource(authority: HostAuthority, input: SourceSpan): Promise<Result<string>> {
+    try {
+      const span = cloneInput(input); validateSpan(span)
+      return this.#read(authority, async (state, branch, request) => { await this.#checkSourceView(state, branch, request, span.sourceRevisionId); return this.#verifySpan(state, branch, request, span) })
+    } catch (cause) { return failure(cause) }
   }
   /** Public discovery authorizes each source before returning IDs or counts.
    * Unlike readLedger, this does not expose hidden control/deletion metadata. */
@@ -775,11 +805,21 @@ export class RpStore {
       })
     } catch (cause) { return failure(cause) }
   }
-  readPayloadCopies(authority: HostAuthority): Promise<Result<readonly (PayloadCopy & { readonly body: string })[]>> {
+  /** Metadata only, for bounded managed-payload selection before any blob reads. */
+  readPayloadCopyIndex(authority:HostAuthority,prefix:string):Promise<Result<readonly PayloadCopy[]>>{
+    return this.#read(authority,async(state,branch,request)=>{
+      text(prefix,128);if(request.viewpoint.kind!=='narrator')denied('managed index requires narrator');
+      return [...this.#activeCopies(state,branch).values()].filter(copy=>copy.id.startsWith(prefix)&&this.#visible(copy.visibility,request)&&copy.sourceRevisionIds.every(id=>{const s=state.sources.get(id);return !!s&&this.#visible(s.visibility,request)}))
+    })
+  }
+  readPayloadCopies(authority: HostAuthority, selectedIds?:readonly string[]): Promise<Result<readonly (PayloadCopy & { readonly body: string })[]>> {
+    const selected=selectedIds===undefined?undefined:cloneInput(selectedIds)
     return this.#read(authority, async (state, branch, request) => {
+      if(selected!==undefined){if(!Array.isArray(selected)||selected.length>256)invalid('managed selection limit');selected.forEach(id)}
       const result: (PayloadCopy & { body: string })[] = []
       const known = request.viewpoint.kind === 'character' ? new Set(eventsForView(await this.#readEventBodies(state, branch, request), branch.fence, request.viewpoint).map(e => e.id)) : null
       for (const copy of this.#activeCopies(state, branch).values()) {
+        if(selected&&!selected.includes(copy.id))continue
         if (!this.#visible(copy.visibility, request) || (known && (copy.dependencyIds.some(id => !known.has(id)) || !copy.dependencyIds.length))) continue
         if (copy.sourceRevisionIds.some(id => { const s = state.sources.get(id); return !s || !this.#visible(s.visibility, request) })) continue
         for (const source of copy.sourceRevisionIds) await this.#sourceText(state, branch, request, source)
@@ -1288,7 +1328,7 @@ export class RpStore {
             await fs.mkdir(directory)
             for (const name of ['bindings', 'commits', 'seals', 'blobs', 'snapshots', 'indexes', 'jobs', 'archives']) await fs.mkdir(path.join(directory, name))
             const binding: RootBinding = { workspaceId, profileId: this.#profileId, canonicalRootHash: sha(root), migrationRevision: 0, root, directoryIdentity: await directoryIdentity(root), markerNonce }
-            await this.#publish(markerFile, canonical({ schemaVersion: 1, profileId: this.#profileId, workspaceId, nonce: markerNonce }), 'transaction', false)
+            await this.#publish(markerFile, canonical({ schemaVersion: 1, profileId: this.#profileId, workspaceId, nonce: markerNonce }), 'transaction', false, undefined, workspaceId)
             await this.#writeBinding(binding, ZERO)
             return ok(this.#publicBinding(binding))
           })
@@ -1357,7 +1397,7 @@ export class RpStore {
   }
   async #writeBinding(binding: RootBinding, previousHash: string): Promise<void> {
     const file = path.join(this.#workspacePath(binding.workspaceId), 'bindings', String(binding.migrationRevision).padStart(16, '0') + '.json')
-    await this.#publish(file, canonical({ binding, previousHash, sha256: digest(binding) }), 'transaction', false)
+    await this.#publish(file, canonical({ binding, previousHash, sha256: digest(binding) }), 'transaction', false, undefined, binding.workspaceId)
   }
   #publicBinding(binding: RootBinding): WorkspaceBinding { const { workspaceId, profileId, canonicalRootHash, migrationRevision } = binding; return { workspaceId, profileId, canonicalRootHash, migrationRevision } }
   async #openWorkspace(inputRoot: string): Promise<Result<WorkspaceBinding>> {

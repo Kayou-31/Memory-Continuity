@@ -1,0 +1,2925 @@
+{
+  "kind": "offline-native-adapter",
+  "paidModelCalls": 0,
+  "billingVerified": false,
+  "requests": [
+    {
+      "round": 1,
+      "call": 1,
+      "messages": 2,
+      "packets": 1,
+      "retired": 0,
+      "requestObjectUtf8Bytes": 8645,
+      "messageTextUtf8Bytes": 2358,
+      "runtimeContextTextUtf8Bytes": 2240,
+      "toolResultCount": 0
+    },
+    {
+      "round": 2,
+      "call": 2,
+      "messages": 5,
+      "packets": 1,
+      "retired": 1,
+      "requestObjectUtf8Bytes": 9591,
+      "messageTextUtf8Bytes": 2691,
+      "runtimeContextTextUtf8Bytes": 2401,
+      "toolResultCount": 0
+    },
+    {
+      "round": 3,
+      "call": 3,
+      "messages": 8,
+      "packets": 1,
+      "retired": 2,
+      "requestObjectUtf8Bytes": 10537,
+      "messageTextUtf8Bytes": 3024,
+      "runtimeContextTextUtf8Bytes": 2562,
+      "toolResultCount": 0
+    },
+    {
+      "round": 4,
+      "call": 4,
+      "messages": 11,
+      "packets": 1,
+      "retired": 3,
+      "requestObjectUtf8Bytes": 11485,
+      "messageTextUtf8Bytes": 3358,
+      "runtimeContextTextUtf8Bytes": 2724,
+      "toolResultCount": 0
+    },
+    {
+      "round": 5,
+      "call": 5,
+      "messages": 14,
+      "packets": 1,
+      "retired": 4,
+      "requestObjectUtf8Bytes": 12431,
+      "messageTextUtf8Bytes": 3691,
+      "runtimeContextTextUtf8Bytes": 2885,
+      "toolResultCount": 0
+    },
+    {
+      "round": 6,
+      "call": 6,
+      "messages": 17,
+      "packets": 1,
+      "retired": 5,
+      "requestObjectUtf8Bytes": 13377,
+      "messageTextUtf8Bytes": 4024,
+      "runtimeContextTextUtf8Bytes": 3046,
+      "toolResultCount": 0
+    },
+    {
+      "round": 7,
+      "call": 7,
+      "messages": 20,
+      "packets": 1,
+      "retired": 6,
+      "requestObjectUtf8Bytes": 14323,
+      "messageTextUtf8Bytes": 4357,
+      "runtimeContextTextUtf8Bytes": 3207,
+      "toolResultCount": 0
+    },
+    {
+      "round": 8,
+      "call": 8,
+      "messages": 23,
+      "packets": 1,
+      "retired": 7,
+      "requestObjectUtf8Bytes": 15269,
+      "messageTextUtf8Bytes": 4690,
+      "runtimeContextTextUtf8Bytes": 3368,
+      "toolResultCount": 0
+    },
+    {
+      "round": 8,
+      "call": 9,
+      "messages": 25,
+      "packets": 1,
+      "retired": 7,
+      "requestObjectUtf8Bytes": 15795,
+      "messageTextUtf8Bytes": 4782,
+      "runtimeContextTextUtf8Bytes": 3368,
+      "toolResultCount": 1
+    },
+    {
+      "round": 9,
+      "call": 10,
+      "messages": 28,
+      "packets": 1,
+      "retired": 8,
+      "requestObjectUtf8Bytes": 16741,
+      "messageTextUtf8Bytes": 5115,
+      "runtimeContextTextUtf8Bytes": 3529,
+      "toolResultCount": 1
+    },
+    {
+      "round": 10,
+      "call": 11,
+      "messages": 31,
+      "packets": 1,
+      "retired": 9,
+      "requestObjectUtf8Bytes": 17688,
+      "messageTextUtf8Bytes": 5449,
+      "runtimeContextTextUtf8Bytes": 3690,
+      "toolResultCount": 1
+    },
+    {
+      "round": 11,
+      "call": 12,
+      "messages": 34,
+      "packets": 1,
+      "retired": 10,
+      "requestObjectUtf8Bytes": 18636,
+      "messageTextUtf8Bytes": 5784,
+      "runtimeContextTextUtf8Bytes": 3851,
+      "toolResultCount": 1
+    },
+    {
+      "round": 12,
+      "call": 13,
+      "messages": 37,
+      "packets": 1,
+      "retired": 11,
+      "requestObjectUtf8Bytes": 19584,
+      "messageTextUtf8Bytes": 6119,
+      "runtimeContextTextUtf8Bytes": 4012,
+      "toolResultCount": 1
+    },
+    {
+      "round": 13,
+      "call": 14,
+      "messages": 40,
+      "packets": 1,
+      "retired": 12,
+      "requestObjectUtf8Bytes": 20532,
+      "messageTextUtf8Bytes": 6454,
+      "runtimeContextTextUtf8Bytes": 4173,
+      "toolResultCount": 1
+    },
+    {
+      "round": 14,
+      "call": 15,
+      "messages": 43,
+      "packets": 1,
+      "retired": 13,
+      "requestObjectUtf8Bytes": 21480,
+      "messageTextUtf8Bytes": 6789,
+      "runtimeContextTextUtf8Bytes": 4334,
+      "toolResultCount": 1
+    },
+    {
+      "round": 15,
+      "call": 16,
+      "messages": 46,
+      "packets": 1,
+      "retired": 14,
+      "requestObjectUtf8Bytes": 22428,
+      "messageTextUtf8Bytes": 7124,
+      "runtimeContextTextUtf8Bytes": 4495,
+      "toolResultCount": 1
+    },
+    {
+      "round": 16,
+      "call": 17,
+      "messages": 49,
+      "packets": 1,
+      "retired": 15,
+      "requestObjectUtf8Bytes": 23376,
+      "messageTextUtf8Bytes": 7459,
+      "runtimeContextTextUtf8Bytes": 4656,
+      "toolResultCount": 1
+    },
+    {
+      "round": 16,
+      "call": 18,
+      "messages": 51,
+      "packets": 1,
+      "retired": 15,
+      "requestObjectUtf8Bytes": 23905,
+      "messageTextUtf8Bytes": 7551,
+      "runtimeContextTextUtf8Bytes": 4656,
+      "toolResultCount": 2
+    },
+    {
+      "round": 17,
+      "call": 19,
+      "messages": 54,
+      "packets": 1,
+      "retired": 16,
+      "requestObjectUtf8Bytes": 24853,
+      "messageTextUtf8Bytes": 7886,
+      "runtimeContextTextUtf8Bytes": 4817,
+      "toolResultCount": 2
+    },
+    {
+      "round": 18,
+      "call": 20,
+      "messages": 57,
+      "packets": 1,
+      "retired": 17,
+      "requestObjectUtf8Bytes": 25801,
+      "messageTextUtf8Bytes": 8221,
+      "runtimeContextTextUtf8Bytes": 4978,
+      "toolResultCount": 2
+    },
+    {
+      "round": 19,
+      "call": 21,
+      "messages": 60,
+      "packets": 1,
+      "retired": 18,
+      "requestObjectUtf8Bytes": 26749,
+      "messageTextUtf8Bytes": 8556,
+      "runtimeContextTextUtf8Bytes": 5139,
+      "toolResultCount": 2
+    },
+    {
+      "round": 20,
+      "call": 22,
+      "messages": 63,
+      "packets": 1,
+      "retired": 19,
+      "requestObjectUtf8Bytes": 27697,
+      "messageTextUtf8Bytes": 8891,
+      "runtimeContextTextUtf8Bytes": 5300,
+      "toolResultCount": 2
+    },
+    {
+      "round": 21,
+      "call": 23,
+      "messages": 66,
+      "packets": 1,
+      "retired": 20,
+      "requestObjectUtf8Bytes": 28645,
+      "messageTextUtf8Bytes": 9226,
+      "runtimeContextTextUtf8Bytes": 5461,
+      "toolResultCount": 2
+    },
+    {
+      "round": 22,
+      "call": 24,
+      "messages": 69,
+      "packets": 1,
+      "retired": 21,
+      "requestObjectUtf8Bytes": 29593,
+      "messageTextUtf8Bytes": 9561,
+      "runtimeContextTextUtf8Bytes": 5622,
+      "toolResultCount": 2
+    },
+    {
+      "round": 23,
+      "call": 25,
+      "messages": 72,
+      "packets": 1,
+      "retired": 22,
+      "requestObjectUtf8Bytes": 30541,
+      "messageTextUtf8Bytes": 9896,
+      "runtimeContextTextUtf8Bytes": 5783,
+      "toolResultCount": 2
+    },
+    {
+      "round": 24,
+      "call": 26,
+      "messages": 75,
+      "packets": 1,
+      "retired": 23,
+      "requestObjectUtf8Bytes": 31489,
+      "messageTextUtf8Bytes": 10231,
+      "runtimeContextTextUtf8Bytes": 5944,
+      "toolResultCount": 2
+    },
+    {
+      "round": 24,
+      "call": 27,
+      "messages": 77,
+      "packets": 1,
+      "retired": 23,
+      "requestObjectUtf8Bytes": 32018,
+      "messageTextUtf8Bytes": 10323,
+      "runtimeContextTextUtf8Bytes": 5944,
+      "toolResultCount": 3
+    },
+    {
+      "round": 25,
+      "call": 28,
+      "messages": 80,
+      "packets": 1,
+      "retired": 24,
+      "requestObjectUtf8Bytes": 32966,
+      "messageTextUtf8Bytes": 10658,
+      "runtimeContextTextUtf8Bytes": 6105,
+      "toolResultCount": 3
+    },
+    {
+      "round": 26,
+      "call": 29,
+      "messages": 83,
+      "packets": 1,
+      "retired": 25,
+      "requestObjectUtf8Bytes": 33914,
+      "messageTextUtf8Bytes": 10993,
+      "runtimeContextTextUtf8Bytes": 6266,
+      "toolResultCount": 3
+    },
+    {
+      "round": 27,
+      "call": 30,
+      "messages": 86,
+      "packets": 1,
+      "retired": 26,
+      "requestObjectUtf8Bytes": 34862,
+      "messageTextUtf8Bytes": 11328,
+      "runtimeContextTextUtf8Bytes": 6427,
+      "toolResultCount": 3
+    },
+    {
+      "round": 28,
+      "call": 31,
+      "messages": 89,
+      "packets": 1,
+      "retired": 27,
+      "requestObjectUtf8Bytes": 35810,
+      "messageTextUtf8Bytes": 11663,
+      "runtimeContextTextUtf8Bytes": 6588,
+      "toolResultCount": 3
+    },
+    {
+      "round": 29,
+      "call": 32,
+      "messages": 92,
+      "packets": 1,
+      "retired": 28,
+      "requestObjectUtf8Bytes": 36758,
+      "messageTextUtf8Bytes": 11998,
+      "runtimeContextTextUtf8Bytes": 6749,
+      "toolResultCount": 3
+    },
+    {
+      "round": 30,
+      "call": 33,
+      "messages": 95,
+      "packets": 1,
+      "retired": 29,
+      "requestObjectUtf8Bytes": 37706,
+      "messageTextUtf8Bytes": 12333,
+      "runtimeContextTextUtf8Bytes": 6910,
+      "toolResultCount": 3
+    },
+    {
+      "round": 31,
+      "call": 34,
+      "messages": 98,
+      "packets": 1,
+      "retired": 30,
+      "requestObjectUtf8Bytes": 38654,
+      "messageTextUtf8Bytes": 12668,
+      "runtimeContextTextUtf8Bytes": 7071,
+      "toolResultCount": 3
+    },
+    {
+      "round": 32,
+      "call": 35,
+      "messages": 101,
+      "packets": 1,
+      "retired": 31,
+      "requestObjectUtf8Bytes": 39602,
+      "messageTextUtf8Bytes": 13003,
+      "runtimeContextTextUtf8Bytes": 7232,
+      "toolResultCount": 3
+    },
+    {
+      "round": 32,
+      "call": 36,
+      "messages": 103,
+      "packets": 1,
+      "retired": 31,
+      "requestObjectUtf8Bytes": 40131,
+      "messageTextUtf8Bytes": 13095,
+      "runtimeContextTextUtf8Bytes": 7232,
+      "toolResultCount": 4
+    },
+    {
+      "round": 33,
+      "call": 37,
+      "messages": 106,
+      "packets": 1,
+      "retired": 32,
+      "requestObjectUtf8Bytes": 41079,
+      "messageTextUtf8Bytes": 13430,
+      "runtimeContextTextUtf8Bytes": 7393,
+      "toolResultCount": 4
+    },
+    {
+      "round": 34,
+      "call": 38,
+      "messages": 109,
+      "packets": 1,
+      "retired": 33,
+      "requestObjectUtf8Bytes": 42029,
+      "messageTextUtf8Bytes": 13766,
+      "runtimeContextTextUtf8Bytes": 7555,
+      "toolResultCount": 4
+    },
+    {
+      "round": 35,
+      "call": 39,
+      "messages": 112,
+      "packets": 1,
+      "retired": 34,
+      "requestObjectUtf8Bytes": 42977,
+      "messageTextUtf8Bytes": 14101,
+      "runtimeContextTextUtf8Bytes": 7716,
+      "toolResultCount": 4
+    },
+    {
+      "round": 36,
+      "call": 40,
+      "messages": 115,
+      "packets": 1,
+      "retired": 35,
+      "requestObjectUtf8Bytes": 43925,
+      "messageTextUtf8Bytes": 14436,
+      "runtimeContextTextUtf8Bytes": 7877,
+      "toolResultCount": 4
+    },
+    {
+      "round": 37,
+      "call": 41,
+      "messages": 118,
+      "packets": 1,
+      "retired": 36,
+      "requestObjectUtf8Bytes": 44873,
+      "messageTextUtf8Bytes": 14771,
+      "runtimeContextTextUtf8Bytes": 8038,
+      "toolResultCount": 4
+    },
+    {
+      "round": 38,
+      "call": 42,
+      "messages": 121,
+      "packets": 1,
+      "retired": 37,
+      "requestObjectUtf8Bytes": 45821,
+      "messageTextUtf8Bytes": 15106,
+      "runtimeContextTextUtf8Bytes": 8199,
+      "toolResultCount": 4
+    },
+    {
+      "round": 39,
+      "call": 43,
+      "messages": 124,
+      "packets": 1,
+      "retired": 38,
+      "requestObjectUtf8Bytes": 46769,
+      "messageTextUtf8Bytes": 15441,
+      "runtimeContextTextUtf8Bytes": 8360,
+      "toolResultCount": 4
+    },
+    {
+      "round": 40,
+      "call": 44,
+      "messages": 127,
+      "packets": 1,
+      "retired": 39,
+      "requestObjectUtf8Bytes": 47717,
+      "messageTextUtf8Bytes": 15776,
+      "runtimeContextTextUtf8Bytes": 8521,
+      "toolResultCount": 4
+    },
+    {
+      "round": 40,
+      "call": 45,
+      "messages": 129,
+      "packets": 1,
+      "retired": 39,
+      "requestObjectUtf8Bytes": 48246,
+      "messageTextUtf8Bytes": 15868,
+      "runtimeContextTextUtf8Bytes": 8521,
+      "toolResultCount": 5
+    },
+    {
+      "round": 41,
+      "call": 46,
+      "messages": 2,
+      "packets": 1,
+      "retired": 0,
+      "requestObjectUtf8Bytes": 14201,
+      "messageTextUtf8Bytes": 4944,
+      "runtimeContextTextUtf8Bytes": 4825,
+      "toolResultCount": 0
+    },
+    {
+      "round": 42,
+      "call": 47,
+      "messages": 5,
+      "packets": 1,
+      "retired": 1,
+      "requestObjectUtf8Bytes": 14455,
+      "messageTextUtf8Bytes": 4956,
+      "runtimeContextTextUtf8Bytes": 4663,
+      "toolResultCount": 0
+    },
+    {
+      "round": 43,
+      "call": 48,
+      "messages": 8,
+      "packets": 1,
+      "retired": 2,
+      "requestObjectUtf8Bytes": 14709,
+      "messageTextUtf8Bytes": 4968,
+      "runtimeContextTextUtf8Bytes": 4501,
+      "toolResultCount": 0
+    },
+    {
+      "round": 44,
+      "call": 49,
+      "messages": 11,
+      "packets": 1,
+      "retired": 3,
+      "requestObjectUtf8Bytes": 14963,
+      "messageTextUtf8Bytes": 4980,
+      "runtimeContextTextUtf8Bytes": 4339,
+      "toolResultCount": 0
+    },
+    {
+      "round": 45,
+      "call": 50,
+      "messages": 14,
+      "packets": 1,
+      "retired": 4,
+      "requestObjectUtf8Bytes": 15217,
+      "messageTextUtf8Bytes": 4992,
+      "runtimeContextTextUtf8Bytes": 4177,
+      "toolResultCount": 0
+    },
+    {
+      "round": 46,
+      "call": 51,
+      "messages": 17,
+      "packets": 1,
+      "retired": 5,
+      "requestObjectUtf8Bytes": 15471,
+      "messageTextUtf8Bytes": 5004,
+      "runtimeContextTextUtf8Bytes": 4015,
+      "toolResultCount": 0
+    },
+    {
+      "round": 47,
+      "call": 52,
+      "messages": 20,
+      "packets": 1,
+      "retired": 6,
+      "requestObjectUtf8Bytes": 15725,
+      "messageTextUtf8Bytes": 5016,
+      "runtimeContextTextUtf8Bytes": 3853,
+      "toolResultCount": 0
+    },
+    {
+      "round": 48,
+      "call": 53,
+      "messages": 23,
+      "packets": 1,
+      "retired": 7,
+      "requestObjectUtf8Bytes": 15979,
+      "messageTextUtf8Bytes": 5028,
+      "runtimeContextTextUtf8Bytes": 3691,
+      "toolResultCount": 0
+    },
+    {
+      "round": 48,
+      "call": 54,
+      "messages": 25,
+      "packets": 1,
+      "retired": 7,
+      "requestObjectUtf8Bytes": 16508,
+      "messageTextUtf8Bytes": 5120,
+      "runtimeContextTextUtf8Bytes": 3691,
+      "toolResultCount": 1
+    },
+    {
+      "round": 49,
+      "call": 55,
+      "messages": 28,
+      "packets": 1,
+      "retired": 8,
+      "requestObjectUtf8Bytes": 16764,
+      "messageTextUtf8Bytes": 5133,
+      "runtimeContextTextUtf8Bytes": 3530,
+      "toolResultCount": 1
+    },
+    {
+      "round": 50,
+      "call": 56,
+      "messages": 31,
+      "packets": 1,
+      "retired": 9,
+      "requestObjectUtf8Bytes": 17712,
+      "messageTextUtf8Bytes": 5468,
+      "runtimeContextTextUtf8Bytes": 3691,
+      "toolResultCount": 1
+    },
+    {
+      "round": 51,
+      "call": 57,
+      "messages": 34,
+      "packets": 1,
+      "retired": 10,
+      "requestObjectUtf8Bytes": 18660,
+      "messageTextUtf8Bytes": 5803,
+      "runtimeContextTextUtf8Bytes": 3852,
+      "toolResultCount": 1
+    },
+    {
+      "round": 52,
+      "call": 58,
+      "messages": 37,
+      "packets": 1,
+      "retired": 11,
+      "requestObjectUtf8Bytes": 19608,
+      "messageTextUtf8Bytes": 6138,
+      "runtimeContextTextUtf8Bytes": 4013,
+      "toolResultCount": 1
+    },
+    {
+      "round": 53,
+      "call": 59,
+      "messages": 40,
+      "packets": 1,
+      "retired": 12,
+      "requestObjectUtf8Bytes": 20556,
+      "messageTextUtf8Bytes": 6473,
+      "runtimeContextTextUtf8Bytes": 4174,
+      "toolResultCount": 1
+    },
+    {
+      "round": 54,
+      "call": 60,
+      "messages": 43,
+      "packets": 1,
+      "retired": 13,
+      "requestObjectUtf8Bytes": 21504,
+      "messageTextUtf8Bytes": 6808,
+      "runtimeContextTextUtf8Bytes": 4335,
+      "toolResultCount": 1
+    },
+    {
+      "round": 55,
+      "call": 61,
+      "messages": 46,
+      "packets": 1,
+      "retired": 14,
+      "requestObjectUtf8Bytes": 22452,
+      "messageTextUtf8Bytes": 7143,
+      "runtimeContextTextUtf8Bytes": 4496,
+      "toolResultCount": 1
+    },
+    {
+      "round": 56,
+      "call": 62,
+      "messages": 49,
+      "packets": 1,
+      "retired": 15,
+      "requestObjectUtf8Bytes": 23400,
+      "messageTextUtf8Bytes": 7478,
+      "runtimeContextTextUtf8Bytes": 4657,
+      "toolResultCount": 1
+    },
+    {
+      "round": 56,
+      "call": 63,
+      "messages": 51,
+      "packets": 1,
+      "retired": 15,
+      "requestObjectUtf8Bytes": 23929,
+      "messageTextUtf8Bytes": 7570,
+      "runtimeContextTextUtf8Bytes": 4657,
+      "toolResultCount": 2
+    },
+    {
+      "round": 57,
+      "call": 64,
+      "messages": 54,
+      "packets": 1,
+      "retired": 16,
+      "requestObjectUtf8Bytes": 24877,
+      "messageTextUtf8Bytes": 7905,
+      "runtimeContextTextUtf8Bytes": 4818,
+      "toolResultCount": 2
+    },
+    {
+      "round": 58,
+      "call": 65,
+      "messages": 57,
+      "packets": 1,
+      "retired": 17,
+      "requestObjectUtf8Bytes": 25825,
+      "messageTextUtf8Bytes": 8240,
+      "runtimeContextTextUtf8Bytes": 4979,
+      "toolResultCount": 2
+    },
+    {
+      "round": 59,
+      "call": 66,
+      "messages": 60,
+      "packets": 1,
+      "retired": 18,
+      "requestObjectUtf8Bytes": 26773,
+      "messageTextUtf8Bytes": 8575,
+      "runtimeContextTextUtf8Bytes": 5140,
+      "toolResultCount": 2
+    },
+    {
+      "round": 60,
+      "call": 67,
+      "messages": 63,
+      "packets": 1,
+      "retired": 19,
+      "requestObjectUtf8Bytes": 27721,
+      "messageTextUtf8Bytes": 8910,
+      "runtimeContextTextUtf8Bytes": 5301,
+      "toolResultCount": 2
+    },
+    {
+      "round": 61,
+      "call": 68,
+      "messages": 66,
+      "packets": 1,
+      "retired": 20,
+      "requestObjectUtf8Bytes": 28669,
+      "messageTextUtf8Bytes": 9245,
+      "runtimeContextTextUtf8Bytes": 5462,
+      "toolResultCount": 2
+    },
+    {
+      "round": 62,
+      "call": 69,
+      "messages": 69,
+      "packets": 1,
+      "retired": 21,
+      "requestObjectUtf8Bytes": 29617,
+      "messageTextUtf8Bytes": 9580,
+      "runtimeContextTextUtf8Bytes": 5623,
+      "toolResultCount": 2
+    },
+    {
+      "round": 63,
+      "call": 70,
+      "messages": 72,
+      "packets": 1,
+      "retired": 22,
+      "requestObjectUtf8Bytes": 30565,
+      "messageTextUtf8Bytes": 9915,
+      "runtimeContextTextUtf8Bytes": 5784,
+      "toolResultCount": 2
+    },
+    {
+      "round": 64,
+      "call": 71,
+      "messages": 75,
+      "packets": 1,
+      "retired": 23,
+      "requestObjectUtf8Bytes": 31513,
+      "messageTextUtf8Bytes": 10250,
+      "runtimeContextTextUtf8Bytes": 5945,
+      "toolResultCount": 2
+    },
+    {
+      "round": 64,
+      "call": 72,
+      "messages": 77,
+      "packets": 1,
+      "retired": 23,
+      "requestObjectUtf8Bytes": 32042,
+      "messageTextUtf8Bytes": 10342,
+      "runtimeContextTextUtf8Bytes": 5945,
+      "toolResultCount": 3
+    }
+  ],
+  "checkpoints": [
+    {
+      "round": 16,
+      "durationMs": 1772.6573000000008,
+      "status": {
+        "requestCost": {
+          "limits": {
+            "maxRequestsPerInput": 16,
+            "maxRetriesPerStep": 2
+          },
+          "inputId": "rp_input_0b37c4fa6b154cf9855ebecf22459ddb",
+          "requests": 2,
+          "stepKey": "16:2",
+          "stepRequests": 1,
+          "requestsRemaining": 14,
+          "currentStepRetries": 0,
+          "retriesRemaining": 2,
+          "unit": "durably-reserved-adapter-admissions",
+          "notice": "按明确输入累计准入预留次数；写入结果不确定也会保留预留。不是供应商账单或隐藏 HTTP 重试次数。"
+        },
+        "requestPayload": {
+          "provenance": "certified-adapter-input",
+          "at": "2026-10-27T11:49:18.757Z",
+          "payloadUtf8Bytes": 23893,
+          "mode": "conservative-utf8",
+          "sections": [
+            {
+              "kind": "ordinary-history",
+              "messages": 31,
+              "bytes": 7324,
+              "measuredUnits": 7324
+            },
+            {
+              "kind": "retirement",
+              "messages": 15,
+              "bytes": 7126,
+              "measuredUnits": 7126
+            },
+            {
+              "kind": "tool-call",
+              "messages": 2,
+              "bytes": 466,
+              "measuredUnits": 466
+            },
+            {
+              "kind": "tool-result",
+              "messages": 2,
+              "bytes": 591,
+              "measuredUnits": 591
+            },
+            {
+              "kind": "current-memory",
+              "messages": 1,
+              "bytes": 4879,
+              "measuredUnits": 4879
+            },
+            {
+              "kind": "tool-declarations",
+              "messages": 0,
+              "bytes": 1668,
+              "measuredUnits": 1668
+            },
+            {
+              "kind": "tool-history",
+              "messages": 0,
+              "bytes": 1691,
+              "measuredUnits": 1691
+            }
+          ],
+          "selection": {
+            "mandatory": {
+              "entries": 1,
+              "bytes": 83,
+              "measuredUnits": 83
+            },
+            "optional": {
+              "entries": 1,
+              "bytes": 125,
+              "measuredUnits": 125
+            },
+            "notice": "选中条目的正文计量；不含消息包装，不能与请求总量相加。"
+          },
+          "wireBytes": null,
+          "providerUsage": null,
+          "providerBilling": null,
+          "notice": "这是交给宿主适配器的最后一次已准入请求。分项含各自 JSON 包装，合计不等于完整请求；供应商格式、缓存、隐藏重试和实际账单未测量。"
+        },
+        "bindingHealth": "healthy",
+        "requestAdmission": {
+          "state": "admitted",
+          "stage": "send",
+          "at": "2026-10-27T11:49:18.770Z"
+        },
+        "recovery": {
+          "action": "none",
+          "detail": "绑定健康不等于下一次请求已获准；每次发送仍会重新校验。"
+        },
+        "enabled": true,
+        "lifecycle": "open",
+        "contextCompression": false,
+        "strictPov": false,
+        "nativeVersions": {
+          "cordis": "4.0.5",
+          "dsh-agent": "0.2.1-rc.2",
+          "dsh-llm": "0.2.1-rc.2",
+          "dsh-session": "0.2.1-rc.2",
+          "dsh-system-prompt": "0.2.1-rc.2",
+          "dsh-tools": "0.2.1-rc.2",
+          "schemastery": "3.18.5"
+        },
+        "memoryOptimization": {
+          "available": "standalone",
+          "packet": null
+        },
+        "policy": {
+          "mode": "rp",
+          "epoch": 1,
+          "modeEpoch": 1
+        },
+        "branchId": "branch_a675e186fd164052b40226400955ce6a",
+        "personId": "erin",
+        "injection": {
+          "protocol": "rp.injection-binding/v1",
+          "config": {
+            "depth": "association",
+            "budgets": {
+              "self": 2400,
+              "situation": 2400,
+              "relationships": 2400,
+              "recollection": 4800,
+              "unfinished": 2400
+            },
+            "pin": [],
+            "exclude": [],
+            "aliases": {},
+            "rules": []
+          },
+          "sha256": "40e78b03213f4c5e3ce70f87b9501546f930b75d7f683e33521d31b1dd061d41"
+        },
+        "memoryBudget": {
+          "protocol": "memcont.memory-budget/v2",
+          "unit": "tokens",
+          "limitTokens": 32768,
+          "target": {
+            "provider": "long-offline",
+            "model": "offline"
+          },
+          "meter": {
+            "id": "utf8",
+            "revision": "utf8-bytes/v1",
+            "mode": "conservative-utf8"
+          },
+          "layers": {
+            "self": 6144,
+            "situation": 4096,
+            "relationships": 4096,
+            "recollection": 12288,
+            "unfinished": 4096
+          },
+          "sha256": "c0f6d585eacd9dc7a9e6c187ecdebb890bb51d54cae9589e8e0e775b92a16cde"
+        },
+        "memoryUsage": {
+          "protocol": "memcont.memory-usage/v2",
+          "budgetSha256": "c0f6d585eacd9dc7a9e6c187ecdebb890bb51d54cae9589e8e0e775b92a16cde",
+          "mode": "conservative-utf8",
+          "total": 16397,
+          "limit": 32768,
+          "bytes": 16397,
+          "parts": [
+            {
+              "kind": "retired-context",
+              "id": "retired_4b1b50047c513d76d84a84ceca576330ccaac8aef12e1c0056679aa1ad79bf82",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_4749de0bddac63730ccd49b6ef54da003b8710b5680d30690eed0de4ec50a63c",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_7bacdff28aaa6ee6a622360e6ce86079c34a0de791a8313306a9569486b4c0bf",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_ada4282b3ec7728bf3793ca1b63b83e0a42606dd917969b3c59e727b3950bd60",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_878d77d95f69667dc13b8a2caebc8a5918d33f8cd2ef922107aabd3c90eaff4f",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_1d718a4bf8c4d8796e5ce4bb204d7fbf7dd32afe44af286cfb28defee94bc976",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_c3591bdb4ec44f382ff820ff8ce5f3eba551e0e8740d5190cbd007db4e8fe88f",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_5c35a5fb7c5ac8d476976e58b108b4b4e042eb9be4257434217816ca419f9989",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retained-memory",
+              "id": "1b408155-10c5-4032-9fb9-d9a4aa392dfc",
+              "count": 231,
+              "bytes": 231
+            },
+            {
+              "kind": "retained-memory",
+              "id": "b4fd7aed-7764-4786-906c-fe49b6ae6b91",
+              "count": 293,
+              "bytes": 293
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_9523b16f9f49b26743ff8c831277501d7dfd871495a2df3f7a66930528675fb7",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_1c9726f41e73474bd51c15b5e128eec0244c899086a3dfac83befe8f06ae7fd2",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_a89bb87c4698eeb2c4f33a9188313acb677586064682ad2ca536aff8a0d4a229",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_902e9e126c014a6fe9dd09876a7afaa9edd3a976487b630d16662b9f6db1a5dc",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_a8c9716083670e1bb809521655ee1f55637d25256472a88d2d28c2277004c66f",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_edf847086c05f080110a5013eb64b59de145a4993330d1896ccbdd4bd416f197",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_b6aaff984c258383297d99d22fc4b1f14c290b9967e141bf9690614156054c24",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retained-memory",
+              "id": "29df5c9d-6569-4023-bb59-269c81127e4e",
+              "count": 4877,
+              "bytes": 4877
+            },
+            {
+              "kind": "retained-memory",
+              "id": "2022db72-f6d9-4f2c-91c0-cbe7f572db84",
+              "count": 232,
+              "bytes": 232
+            },
+            {
+              "kind": "retained-memory",
+              "id": "a0024339-be75-4e68-a673-8025671f317a",
+              "count": 295,
+              "bytes": 295
+            },
+            {
+              "kind": "tool-declarations",
+              "count": 1668,
+              "bytes": 1668
+            },
+            {
+              "kind": "tool-history",
+              "count": 1691,
+              "bytes": 1691
+            }
+          ],
+          "sha256": "8513f430a6ae61154b3452b65fb2ba8d6fe1e0094c64f2ee973ff7d86bb48e60"
+        },
+        "purpose": {
+          "mode": "rp",
+          "enabledModules": [],
+          "constraints": {
+            "maxReadRecords": 16,
+            "maxOutputBytes": 16384,
+            "deniedCapabilities": [],
+            "protectedFieldIds": [],
+            "guidance": []
+          }
+        },
+        "blocked": false,
+        "candidateIds": [
+          "source_d309da89d05c46e29efd6af22317a962",
+          "source_053d1f9d40d343a0a6512a90016e91a5",
+          "source_2d124483bc10452fa2647b4c7cfc2b90",
+          "source_a5dda84e99e34745a29861e12889af8b",
+          "source_0064002aaf804c19ad6c0cc533b2fbc3",
+          "source_5aa54d394aad4db8956efb732a8431df",
+          "source_c15ac9704d734c4bb47f85bed4fbb6ea",
+          "source_fd645a5d25274c4eab9d4f28e460f208",
+          "source_4be2e54bccbe4db8a92981424c88a39f",
+          "source_b1240a7701f140ae8aae9cea61f087b7",
+          "source_10dc373bae294a52aa00b03fd19c4432",
+          "source_0ad76420d23547ca9255c8c40a1aea7c",
+          "source_295a4a4414034712b0e4205d50d7bc72",
+          "source_b3bf02e857654c1b93507b9ad1d4485b",
+          "source_323068eee2564dbfa19fd9061e1f1bb0",
+          "source_3961d733eb574e348ac30702b8838a20"
+        ],
+        "pendingInputIds": [],
+        "ambiguousInputIds": [
+          "source_d3a72e2000994a47a18b3a613453fd31",
+          "source_0747b48c163d4605b5a863ce5443530c",
+          "source_f7f5764d08e648f686e5676ec9e9ac38",
+          "source_45b86447bf274492959b37eb2e3539c4",
+          "source_4b23e79b72514a4e9b1f91015630ce14",
+          "source_7813d70df92b4f22a7deeae2e880654f",
+          "source_011b510cbd814181bdda1d5c818cf6fe",
+          "source_fec2814aa19741f0ac983396bf026948",
+          "source_c4839354cb1249ba9143cd8def4052b1",
+          "source_13b0d10c45fc4a55ba86a5c6273ea8e2",
+          "source_c6ed6106456c47da96e7341e531bdf2c",
+          "source_0552a9e89a044a33988062ef9c53401d",
+          "source_f7da35db49534068b56d7c1d37c4f32a",
+          "source_686f721693f6414689cc0951e9cef69c",
+          "source_6e64215782974dc68548560ad7a74d1d",
+          "source_a50e11351bf441619eb7b34ee33e3314"
+        ],
+        "snapshots": 16
+      }
+    },
+    {
+      "round": 32,
+      "durationMs": 4169.602899999998,
+      "status": {
+        "requestCost": {
+          "limits": {
+            "maxRequestsPerInput": 16,
+            "maxRetriesPerStep": 2
+          },
+          "inputId": "rp_input_09092c754581465e8592781d467b3ce5",
+          "requests": 2,
+          "stepKey": "32:2",
+          "stepRequests": 1,
+          "requestsRemaining": 14,
+          "currentStepRetries": 0,
+          "retriesRemaining": 2,
+          "unit": "durably-reserved-adapter-admissions",
+          "notice": "按明确输入累计准入预留次数；写入结果不确定也会保留预留。不是供应商账单或隐藏 HTTP 重试次数。"
+        },
+        "requestPayload": {
+          "provenance": "certified-adapter-input",
+          "at": "2026-10-27T11:49:52.247Z",
+          "payloadUtf8Bytes": 40119,
+          "mode": "conservative-utf8",
+          "sections": [
+            {
+              "kind": "ordinary-history",
+              "messages": 63,
+              "bytes": 14892,
+              "measuredUnits": 14892
+            },
+            {
+              "kind": "retirement",
+              "messages": 31,
+              "bytes": 14726,
+              "measuredUnits": 14726
+            },
+            {
+              "kind": "tool-call",
+              "messages": 4,
+              "bytes": 932,
+              "measuredUnits": 932
+            },
+            {
+              "kind": "tool-result",
+              "messages": 4,
+              "bytes": 1183,
+              "measuredUnits": 1183
+            },
+            {
+              "kind": "current-memory",
+              "messages": 1,
+              "bytes": 4879,
+              "measuredUnits": 4879
+            },
+            {
+              "kind": "tool-declarations",
+              "messages": 0,
+              "bytes": 1668,
+              "measuredUnits": 1668
+            },
+            {
+              "kind": "tool-history",
+              "messages": 0,
+              "bytes": 1691,
+              "measuredUnits": 1691
+            }
+          ],
+          "selection": {
+            "mandatory": {
+              "entries": 1,
+              "bytes": 83,
+              "measuredUnits": 83
+            },
+            "optional": {
+              "entries": 1,
+              "bytes": 125,
+              "measuredUnits": 125
+            },
+            "notice": "选中条目的正文计量；不含消息包装，不能与请求总量相加。"
+          },
+          "wireBytes": null,
+          "providerUsage": null,
+          "providerBilling": null,
+          "notice": "这是交给宿主适配器的最后一次已准入请求。分项含各自 JSON 包装，合计不等于完整请求；供应商格式、缓存、隐藏重试和实际账单未测量。"
+        },
+        "bindingHealth": "healthy",
+        "requestAdmission": {
+          "state": "admitted",
+          "stage": "send",
+          "at": "2026-10-27T11:49:52.271Z"
+        },
+        "recovery": {
+          "action": "none",
+          "detail": "绑定健康不等于下一次请求已获准；每次发送仍会重新校验。"
+        },
+        "enabled": true,
+        "lifecycle": "open",
+        "contextCompression": false,
+        "strictPov": false,
+        "nativeVersions": {
+          "cordis": "4.0.5",
+          "dsh-agent": "0.2.1-rc.2",
+          "dsh-llm": "0.2.1-rc.2",
+          "dsh-session": "0.2.1-rc.2",
+          "dsh-system-prompt": "0.2.1-rc.2",
+          "dsh-tools": "0.2.1-rc.2",
+          "schemastery": "3.18.5"
+        },
+        "memoryOptimization": {
+          "available": "standalone",
+          "packet": null
+        },
+        "policy": {
+          "mode": "rp",
+          "epoch": 1,
+          "modeEpoch": 1
+        },
+        "branchId": "branch_a675e186fd164052b40226400955ce6a",
+        "personId": "erin",
+        "injection": {
+          "config": {
+            "aliases": {},
+            "budgets": {
+              "recollection": 4800,
+              "relationships": 2400,
+              "self": 2400,
+              "situation": 2400,
+              "unfinished": 2400
+            },
+            "depth": "association",
+            "exclude": [],
+            "pin": [],
+            "rules": []
+          },
+          "protocol": "rp.injection-binding/v1",
+          "sha256": "40e78b03213f4c5e3ce70f87b9501546f930b75d7f683e33521d31b1dd061d41"
+        },
+        "memoryBudget": {
+          "layers": {
+            "recollection": 12288,
+            "relationships": 4096,
+            "self": 6144,
+            "situation": 4096,
+            "unfinished": 4096
+          },
+          "limitTokens": 32768,
+          "meter": {
+            "id": "utf8",
+            "mode": "conservative-utf8",
+            "revision": "utf8-bytes/v1"
+          },
+          "protocol": "memcont.memory-budget/v2",
+          "sha256": "c0f6d585eacd9dc7a9e6c187ecdebb890bb51d54cae9589e8e0e775b92a16cde",
+          "target": {
+            "model": "offline",
+            "provider": "long-offline"
+          },
+          "unit": "tokens"
+        },
+        "memoryUsage": {
+          "protocol": "memcont.memory-usage/v2",
+          "budgetSha256": "c0f6d585eacd9dc7a9e6c187ecdebb890bb51d54cae9589e8e0e775b92a16cde",
+          "mode": "conservative-utf8",
+          "total": 25035,
+          "limit": 32768,
+          "bytes": 25035,
+          "parts": [
+            {
+              "kind": "retired-context",
+              "id": "retired_4b1b50047c513d76d84a84ceca576330ccaac8aef12e1c0056679aa1ad79bf82",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_4749de0bddac63730ccd49b6ef54da003b8710b5680d30690eed0de4ec50a63c",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_7bacdff28aaa6ee6a622360e6ce86079c34a0de791a8313306a9569486b4c0bf",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_ada4282b3ec7728bf3793ca1b63b83e0a42606dd917969b3c59e727b3950bd60",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_878d77d95f69667dc13b8a2caebc8a5918d33f8cd2ef922107aabd3c90eaff4f",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_1d718a4bf8c4d8796e5ce4bb204d7fbf7dd32afe44af286cfb28defee94bc976",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_c3591bdb4ec44f382ff820ff8ce5f3eba551e0e8740d5190cbd007db4e8fe88f",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_5c35a5fb7c5ac8d476976e58b108b4b4e042eb9be4257434217816ca419f9989",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retained-memory",
+              "id": "1b408155-10c5-4032-9fb9-d9a4aa392dfc",
+              "count": 231,
+              "bytes": 231
+            },
+            {
+              "kind": "retained-memory",
+              "id": "b4fd7aed-7764-4786-906c-fe49b6ae6b91",
+              "count": 293,
+              "bytes": 293
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_9523b16f9f49b26743ff8c831277501d7dfd871495a2df3f7a66930528675fb7",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_1c9726f41e73474bd51c15b5e128eec0244c899086a3dfac83befe8f06ae7fd2",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_a89bb87c4698eeb2c4f33a9188313acb677586064682ad2ca536aff8a0d4a229",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_902e9e126c014a6fe9dd09876a7afaa9edd3a976487b630d16662b9f6db1a5dc",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_a8c9716083670e1bb809521655ee1f55637d25256472a88d2d28c2277004c66f",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_edf847086c05f080110a5013eb64b59de145a4993330d1896ccbdd4bd416f197",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_b6aaff984c258383297d99d22fc4b1f14c290b9967e141bf9690614156054c24",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_09c216082bf70ce566cf17768f2422fea4d236c2b9e1c5f913282b457b8f0f7b",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retained-memory",
+              "id": "2022db72-f6d9-4f2c-91c0-cbe7f572db84",
+              "count": 232,
+              "bytes": 232
+            },
+            {
+              "kind": "retained-memory",
+              "id": "a0024339-be75-4e68-a673-8025671f317a",
+              "count": 295,
+              "bytes": 295
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_35d8b5628e3b52878e4547f37649169b5f47228ffc066d8df3795ed4c18551ce",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_b45416923ac4edfe274048349d308dd615120f1cf9c354f5666fae38e23e4cdb",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_2949f0e51b14a35a60731248d4471cb93b70293d6e19647441da0ab1d1fe877b",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_9409cf21c17cca9b159555fcd9e0ffdd51fd5e858070601754e0bc02d71403bb",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_bab0402f0ac5b679d0dfdee1857eabf3119a6c512727b2454a6718a49d8a066e",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_fe827ddf9be988032be0518de41b1b4bf6394e47f9e0252bff06b31131536e6a",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_7afba8d1f38186f5c85d9f9c4aff04b8a9e7d4db7a664732604c57ee8f473388",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_bdc9b5d00a96f1f0756276bd22ec1b569682a21ca3b33a380e7fe4ada9e1bd74",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retained-memory",
+              "id": "aa4db254-183b-4be3-950f-762c155891fc",
+              "count": 232,
+              "bytes": 232
+            },
+            {
+              "kind": "retained-memory",
+              "id": "21840c28-c1bd-48cc-b991-a3f1d4e6ed0b",
+              "count": 295,
+              "bytes": 295
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_498d20f18c7e43ec9df5e34c56657148504728c891c227018d12faefd5b3566a",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_46b9b245213e086a9f32fc78b9abee55a37956faa212ea641245d81c6d0b79e6",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_4a15d6e3695a864ce99738728de0c7d80f11c2ff21e9c2a125f475ce06abb318",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_59babe9f457a9a1df399aa7c378dd64a632610db50d0fb14fce8e40d3fe1ba5d",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_d6291abb0e2685bb4cd056be395af51ecd13b9ba2a58376aef4bfdbd766316c0",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_24b1b821cd2404c2e2561cc1e0b9d12fffdc9b4afb990fa53ff6c9fc7f942856",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_f3da1d445103ecbf3b5e08024d74f52dab3b25ab5ee5a2e7378aae3f9d83e83c",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retained-memory",
+              "id": "9e30bbdc-ea00-4bf7-ae43-c399b5d2b647",
+              "count": 4877,
+              "bytes": 4877
+            },
+            {
+              "kind": "retained-memory",
+              "id": "ad40555b-00aa-4ee3-aa6d-a14313e1651b",
+              "count": 232,
+              "bytes": 232
+            },
+            {
+              "kind": "retained-memory",
+              "id": "5760c162-5df1-47b8-9909-7016ef628e25",
+              "count": 295,
+              "bytes": 295
+            },
+            {
+              "kind": "tool-declarations",
+              "count": 1668,
+              "bytes": 1668
+            },
+            {
+              "kind": "tool-history",
+              "count": 1691,
+              "bytes": 1691
+            }
+          ],
+          "sha256": "1683abf5bd86902b3b647d0678b5d8bbeb7bd4a94f1a6d0ea21d73f73085a0b8"
+        },
+        "purpose": {
+          "constraints": {
+            "deniedCapabilities": [],
+            "guidance": [],
+            "maxOutputBytes": 16384,
+            "maxReadRecords": 16,
+            "protectedFieldIds": []
+          },
+          "enabledModules": [],
+          "mode": "rp"
+        },
+        "blocked": false,
+        "candidateIds": [
+          "source_cc87ac2e80de42d7b08aa6dd4220ea91",
+          "source_5b4779a4b1fe4a96a933edae7c4d61e5",
+          "source_b4ad45bb454c464b87e09350f0edaff8",
+          "source_a5dda84e99e34745a29861e12889af8b",
+          "source_2d124483bc10452fa2647b4c7cfc2b90",
+          "source_f07dcb26207a4b61b5d95ff027c6b05f",
+          "source_38030280b9df4faebacb258687ade0f3",
+          "source_d309da89d05c46e29efd6af22317a962",
+          "source_0ad76420d23547ca9255c8c40a1aea7c",
+          "source_5aa54d394aad4db8956efb732a8431df",
+          "source_3961d733eb574e348ac30702b8838a20",
+          "source_b1240a7701f140ae8aae9cea61f087b7",
+          "source_323068eee2564dbfa19fd9061e1f1bb0",
+          "source_4be2e54bccbe4db8a92981424c88a39f",
+          "source_b140ea5d5bab44139a6064e63d761cc9",
+          "source_578b7028eeb649669107650ea5ccfdce",
+          "source_053d1f9d40d343a0a6512a90016e91a5",
+          "source_0064002aaf804c19ad6c0cc533b2fbc3",
+          "source_295a4a4414034712b0e4205d50d7bc72",
+          "source_74fc006d91ef4cb7a01ea40a178bbac8",
+          "source_c15ac9704d734c4bb47f85bed4fbb6ea",
+          "source_b3bf02e857654c1b93507b9ad1d4485b",
+          "source_10dc373bae294a52aa00b03fd19c4432",
+          "source_fd645a5d25274c4eab9d4f28e460f208",
+          "source_2ce513203ab84c6caef15aa30da5effa",
+          "source_b21a4dbdc3cb47928540a7b7ff10b5aa",
+          "source_780dffcc6dd74725a0ccd960a80a2795",
+          "source_616889a4fb754031bee735c89bf656eb",
+          "source_ac4e1c64ccd34e05982316a791c2f278",
+          "source_8f157745be914ded80a9e5f4335ddfe4",
+          "source_4dc294db05174d30a71fb2136c8a706f",
+          "source_ec5a80756d8c45dcbe8fc4264ee4f823"
+        ],
+        "pendingInputIds": [],
+        "ambiguousInputIds": [
+          "source_d3a72e2000994a47a18b3a613453fd31",
+          "source_0747b48c163d4605b5a863ce5443530c",
+          "source_f7f5764d08e648f686e5676ec9e9ac38",
+          "source_45b86447bf274492959b37eb2e3539c4",
+          "source_4b23e79b72514a4e9b1f91015630ce14",
+          "source_7813d70df92b4f22a7deeae2e880654f",
+          "source_011b510cbd814181bdda1d5c818cf6fe",
+          "source_fec2814aa19741f0ac983396bf026948",
+          "source_c4839354cb1249ba9143cd8def4052b1",
+          "source_13b0d10c45fc4a55ba86a5c6273ea8e2",
+          "source_c6ed6106456c47da96e7341e531bdf2c",
+          "source_0552a9e89a044a33988062ef9c53401d",
+          "source_f7da35db49534068b56d7c1d37c4f32a",
+          "source_686f721693f6414689cc0951e9cef69c",
+          "source_6e64215782974dc68548560ad7a74d1d",
+          "source_a50e11351bf441619eb7b34ee33e3314",
+          "source_36fcb76083794f12aa1dad85d7d9f3d4",
+          "source_ed6da5b52e464cf8b698af48533143ee",
+          "source_c08c05d0c9da46d48a478b7a4fe5cee3",
+          "source_8ea11fa82b6745fb81f8fa11946d31e4",
+          "source_54bc8f9041af4e618b663ce6411b93f4",
+          "source_3455532c5c7143ebadd48af4380c7563",
+          "source_0286f304470a4657a39acb3cd64910d8",
+          "source_b3ac1ceaa9904f629f3180849f05d2ae",
+          "source_c687441729b241fc9c03231e20e2f65a",
+          "source_b8a5cef6c17e4abaadfb13d8027492df",
+          "source_92f3e5824d834bdd9d51a612e8a33e76",
+          "source_a1ce353ca60a4717908a044b7dd0c4ac",
+          "source_f6af4a2acebc43da9092ab438ede5751",
+          "source_589f19fd4f254df6b5a3cc980a7d84ca",
+          "source_5662910d0a0c43578d32f684e985fae3",
+          "source_2c0d55c1c63e4bf089f01efa86feed86"
+        ],
+        "snapshots": 32
+      }
+    },
+    {
+      "round": 48,
+      "durationMs": 4831.332800000004,
+      "status": {
+        "requestCost": {
+          "limits": {
+            "maxRequestsPerInput": 16,
+            "maxRetriesPerStep": 2
+          },
+          "inputId": "rp_input_6ea064cebd8344b7ae40e1f6b2a15134",
+          "requests": 2,
+          "stepKey": "8:2",
+          "stepRequests": 1,
+          "requestsRemaining": 14,
+          "currentStepRetries": 0,
+          "retriesRemaining": 2,
+          "unit": "durably-reserved-adapter-admissions",
+          "notice": "按明确输入累计准入预留次数；写入结果不确定也会保留预留。不是供应商账单或隐藏 HTTP 重试次数。"
+        },
+        "requestPayload": {
+          "provenance": "certified-adapter-input",
+          "at": "2026-10-27T11:50:45.304Z",
+          "payloadUtf8Bytes": 16496,
+          "mode": "conservative-utf8",
+          "sections": [
+            {
+              "kind": "ordinary-history",
+              "messages": 15,
+              "bytes": 3558,
+              "measuredUnits": 3558
+            },
+            {
+              "kind": "retirement",
+              "messages": 7,
+              "bytes": 3326,
+              "measuredUnits": 3326
+            },
+            {
+              "kind": "current-memory",
+              "messages": 1,
+              "bytes": 5573,
+              "measuredUnits": 5573
+            },
+            {
+              "kind": "tool-call",
+              "messages": 1,
+              "bytes": 234,
+              "measuredUnits": 234
+            },
+            {
+              "kind": "tool-result",
+              "messages": 1,
+              "bytes": 297,
+              "measuredUnits": 297
+            },
+            {
+              "kind": "tool-declarations",
+              "messages": 0,
+              "bytes": 1668,
+              "measuredUnits": 1668
+            },
+            {
+              "kind": "tool-history",
+              "messages": 0,
+              "bytes": 1691,
+              "measuredUnits": 1691
+            }
+          ],
+          "selection": {
+            "mandatory": {
+              "entries": 1,
+              "bytes": 83,
+              "measuredUnits": 83
+            },
+            "optional": {
+              "entries": 1,
+              "bytes": 125,
+              "measuredUnits": 125
+            },
+            "notice": "选中条目的正文计量；不含消息包装，不能与请求总量相加。"
+          },
+          "wireBytes": null,
+          "providerUsage": null,
+          "providerBilling": null,
+          "notice": "这是交给宿主适配器的最后一次已准入请求。分项含各自 JSON 包装，合计不等于完整请求；供应商格式、缓存、隐藏重试和实际账单未测量。"
+        },
+        "bindingHealth": "healthy",
+        "requestAdmission": {
+          "state": "admitted",
+          "stage": "send",
+          "at": "2026-10-27T11:50:45.321Z"
+        },
+        "recovery": {
+          "action": "none",
+          "detail": "绑定健康不等于下一次请求已获准；每次发送仍会重新校验。"
+        },
+        "enabled": true,
+        "lifecycle": "open",
+        "contextCompression": false,
+        "strictPov": false,
+        "nativeVersions": {
+          "cordis": "4.0.5",
+          "dsh-agent": "0.2.1-rc.2",
+          "dsh-llm": "0.2.1-rc.2",
+          "dsh-session": "0.2.1-rc.2",
+          "dsh-system-prompt": "0.2.1-rc.2",
+          "dsh-tools": "0.2.1-rc.2",
+          "schemastery": "3.18.5"
+        },
+        "memoryOptimization": {
+          "available": "standalone",
+          "packet": null
+        },
+        "policy": {
+          "mode": "rp",
+          "epoch": 1,
+          "modeEpoch": 1
+        },
+        "branchId": "branch_a675e186fd164052b40226400955ce6a",
+        "personId": "erin",
+        "injection": {
+          "protocol": "rp.injection-binding/v1",
+          "config": {
+            "depth": "association",
+            "budgets": {
+              "self": 2400,
+              "situation": 2400,
+              "relationships": 2400,
+              "recollection": 4800,
+              "unfinished": 2400
+            },
+            "pin": [],
+            "exclude": [],
+            "aliases": {},
+            "rules": []
+          },
+          "sha256": "40e78b03213f4c5e3ce70f87b9501546f930b75d7f683e33521d31b1dd061d41"
+        },
+        "memoryBudget": {
+          "layers": {
+            "recollection": 12288,
+            "relationships": 4096,
+            "self": 6144,
+            "situation": 4096,
+            "unfinished": 4096
+          },
+          "limitTokens": 32768,
+          "meter": {
+            "id": "utf8",
+            "mode": "conservative-utf8",
+            "revision": "utf8-bytes/v1"
+          },
+          "protocol": "memcont.memory-budget/v2",
+          "sha256": "c0f6d585eacd9dc7a9e6c187ecdebb890bb51d54cae9589e8e0e775b92a16cde",
+          "target": {
+            "model": "offline",
+            "provider": "long-offline"
+          },
+          "unit": "tokens"
+        },
+        "memoryUsage": {
+          "protocol": "memcont.memory-usage/v2",
+          "budgetSha256": "c0f6d585eacd9dc7a9e6c187ecdebb890bb51d54cae9589e8e0e775b92a16cde",
+          "mode": "conservative-utf8",
+          "total": 12775,
+          "limit": 32768,
+          "bytes": 12775,
+          "parts": [
+            {
+              "kind": "retired-context",
+              "id": "retired_6d67047d4c2ebe01eb9404065eb61180d740c79742fd550a4872f3520edc4f69",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_2505521a6a99551b52ef05f67bf21b16855abcb1bab24a89e8dfb283c97dc564",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_427efce50787ed1c14083c0915ec4f68d32b5738fae3008bbdf2d8139f04ed7a",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_d411bb73deec7a78a5db78e4a7adce6796bae12efb5a61987ee4cf7a82b90b69",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_0b8611e94f8de3785213ac02eeb3116cbceb0bdd8b5b96d2edd7131da1ff258f",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_f7ad0300fe13f81a1e58dde40e6490ebf975193c49b90db8e6681c295514f00e",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_d6f7cda5b0fafdacd78ba005a3e0ffbb6005b13238e5ae166c98055c916202df",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retained-memory",
+              "id": "11c4eae9-9eea-48ae-bb0b-6e663fbcacdc",
+              "count": 5571,
+              "bytes": 5571
+            },
+            {
+              "kind": "retained-memory",
+              "id": "7c12f3a7-4f7b-4a7e-bbe4-c6e4025ec95e",
+              "count": 232,
+              "bytes": 232
+            },
+            {
+              "kind": "retained-memory",
+              "id": "c79cc609-c7fd-42b0-ad35-857a212500c0",
+              "count": 295,
+              "bytes": 295
+            },
+            {
+              "kind": "tool-declarations",
+              "count": 1668,
+              "bytes": 1668
+            },
+            {
+              "kind": "tool-history",
+              "count": 1691,
+              "bytes": 1691
+            }
+          ],
+          "sha256": "1c12071b8effdf7b48f1b63d9b7aae18f618fc14ff68cd516521046da7b0c1e5"
+        },
+        "purpose": {
+          "mode": "rp",
+          "enabledModules": [],
+          "constraints": {
+            "maxReadRecords": 16,
+            "maxOutputBytes": 16384,
+            "deniedCapabilities": [],
+            "protectedFieldIds": [],
+            "guidance": []
+          }
+        },
+        "blocked": false,
+        "candidateIds": [
+          "source_6d743abf1a7d4ae89a5d42166e108f38",
+          "source_e57846bf78a44270be756c310cb9246d",
+          "source_0e5c72b380d345eca7ba14b02753fadb",
+          "source_4fe063be43284b25b8c427d726ae5be0",
+          "source_905c65d335f84301a4791387c1394a40",
+          "source_adad475bf1364e4a86abe63458f41019",
+          "source_b8654e2fcac54777ba6cd7063c67fff2",
+          "source_9925cf08d4d94555b5418b7beb621c29"
+        ],
+        "pendingInputIds": [],
+        "ambiguousInputIds": [
+          "source_d3a72e2000994a47a18b3a613453fd31",
+          "source_0747b48c163d4605b5a863ce5443530c",
+          "source_f7f5764d08e648f686e5676ec9e9ac38",
+          "source_45b86447bf274492959b37eb2e3539c4",
+          "source_4b23e79b72514a4e9b1f91015630ce14",
+          "source_7813d70df92b4f22a7deeae2e880654f",
+          "source_011b510cbd814181bdda1d5c818cf6fe",
+          "source_fec2814aa19741f0ac983396bf026948",
+          "source_c4839354cb1249ba9143cd8def4052b1",
+          "source_13b0d10c45fc4a55ba86a5c6273ea8e2",
+          "source_c6ed6106456c47da96e7341e531bdf2c",
+          "source_0552a9e89a044a33988062ef9c53401d",
+          "source_f7da35db49534068b56d7c1d37c4f32a",
+          "source_686f721693f6414689cc0951e9cef69c",
+          "source_6e64215782974dc68548560ad7a74d1d",
+          "source_a50e11351bf441619eb7b34ee33e3314",
+          "source_36fcb76083794f12aa1dad85d7d9f3d4",
+          "source_ed6da5b52e464cf8b698af48533143ee",
+          "source_c08c05d0c9da46d48a478b7a4fe5cee3",
+          "source_8ea11fa82b6745fb81f8fa11946d31e4",
+          "source_54bc8f9041af4e618b663ce6411b93f4",
+          "source_3455532c5c7143ebadd48af4380c7563",
+          "source_0286f304470a4657a39acb3cd64910d8",
+          "source_b3ac1ceaa9904f629f3180849f05d2ae",
+          "source_c687441729b241fc9c03231e20e2f65a",
+          "source_b8a5cef6c17e4abaadfb13d8027492df",
+          "source_92f3e5824d834bdd9d51a612e8a33e76",
+          "source_a1ce353ca60a4717908a044b7dd0c4ac",
+          "source_f6af4a2acebc43da9092ab438ede5751",
+          "source_589f19fd4f254df6b5a3cc980a7d84ca",
+          "source_5662910d0a0c43578d32f684e985fae3",
+          "source_2c0d55c1c63e4bf089f01efa86feed86",
+          "source_a12f5941c2354894911eab6f587c737c",
+          "source_061e999de665480bb7cabbbfef897466",
+          "source_d731aee97d3b43f9a9e0e7418b4e6714",
+          "source_ef462d441ef64cc9a2169077a7be4d4c",
+          "source_6eb75c3382a1424b97021aedfc419c18",
+          "source_8973ca74d73443e39fa8dc8c43c163fb",
+          "source_64ecf5d09ce44fe9979289acef154395",
+          "source_9264a014d1204f3a95ac023c603eb1f5",
+          "source_533858835ea14904a712777ad8df7a17",
+          "source_f238b57ed3c54659aba8ad761333de39",
+          "source_c6a39bccadb9429ca9892ffc25fb5ceb",
+          "source_942bb81a8341471888eb858c5f4a9fd8",
+          "source_4b1b2c390fd142c784237711580ac3e6",
+          "source_46c8901f3abe46ee88ee490b0426c16d",
+          "source_4d0ec471b675497d95f274ed22d4b568",
+          "source_20ee216657cf4d55b5911fe0ea82cd79"
+        ],
+        "snapshots": 8
+      }
+    },
+    {
+      "round": 64,
+      "durationMs": 7956.084100000007,
+      "status": {
+        "requestCost": {
+          "limits": {
+            "maxRequestsPerInput": 16,
+            "maxRetriesPerStep": 2
+          },
+          "inputId": "rp_input_04bec456ab6e46d7814b26691ace13d2",
+          "requests": 2,
+          "stepKey": "24:2",
+          "stepRequests": 1,
+          "requestsRemaining": 14,
+          "currentStepRetries": 0,
+          "retriesRemaining": 2,
+          "unit": "durably-reserved-adapter-admissions",
+          "notice": "按明确输入累计准入预留次数；写入结果不确定也会保留预留。不是供应商账单或隐藏 HTTP 重试次数。"
+        },
+        "requestPayload": {
+          "provenance": "certified-adapter-input",
+          "at": "2026-10-27T11:51:59.254Z",
+          "payloadUtf8Bytes": 32030,
+          "mode": "conservative-utf8",
+          "sections": [
+            {
+              "kind": "ordinary-history",
+              "messages": 47,
+              "bytes": 11126,
+              "measuredUnits": 11126
+            },
+            {
+              "kind": "retirement",
+              "messages": 23,
+              "bytes": 10926,
+              "measuredUnits": 10926
+            },
+            {
+              "kind": "tool-call",
+              "messages": 3,
+              "bytes": 700,
+              "measuredUnits": 700
+            },
+            {
+              "kind": "tool-result",
+              "messages": 3,
+              "bytes": 889,
+              "measuredUnits": 889
+            },
+            {
+              "kind": "current-memory",
+              "messages": 1,
+              "bytes": 4881,
+              "measuredUnits": 4881
+            },
+            {
+              "kind": "tool-declarations",
+              "messages": 0,
+              "bytes": 1668,
+              "measuredUnits": 1668
+            },
+            {
+              "kind": "tool-history",
+              "messages": 0,
+              "bytes": 1691,
+              "measuredUnits": 1691
+            }
+          ],
+          "selection": {
+            "mandatory": {
+              "entries": 1,
+              "bytes": 83,
+              "measuredUnits": 83
+            },
+            "optional": {
+              "entries": 1,
+              "bytes": 125,
+              "measuredUnits": 125
+            },
+            "notice": "选中条目的正文计量；不含消息包装，不能与请求总量相加。"
+          },
+          "wireBytes": null,
+          "providerUsage": null,
+          "providerBilling": null,
+          "notice": "这是交给宿主适配器的最后一次已准入请求。分项含各自 JSON 包装，合计不等于完整请求；供应商格式、缓存、隐藏重试和实际账单未测量。"
+        },
+        "bindingHealth": "healthy",
+        "requestAdmission": {
+          "state": "admitted",
+          "stage": "send",
+          "at": "2026-10-27T11:51:59.274Z"
+        },
+        "recovery": {
+          "action": "none",
+          "detail": "绑定健康不等于下一次请求已获准；每次发送仍会重新校验。"
+        },
+        "enabled": true,
+        "lifecycle": "open",
+        "contextCompression": false,
+        "strictPov": false,
+        "nativeVersions": {
+          "cordis": "4.0.5",
+          "dsh-agent": "0.2.1-rc.2",
+          "dsh-llm": "0.2.1-rc.2",
+          "dsh-session": "0.2.1-rc.2",
+          "dsh-system-prompt": "0.2.1-rc.2",
+          "dsh-tools": "0.2.1-rc.2",
+          "schemastery": "3.18.5"
+        },
+        "memoryOptimization": {
+          "available": "standalone",
+          "packet": null
+        },
+        "policy": {
+          "mode": "rp",
+          "epoch": 1,
+          "modeEpoch": 1
+        },
+        "branchId": "branch_a675e186fd164052b40226400955ce6a",
+        "personId": "erin",
+        "injection": {
+          "protocol": "rp.injection-binding/v1",
+          "config": {
+            "depth": "association",
+            "budgets": {
+              "self": 2400,
+              "situation": 2400,
+              "relationships": 2400,
+              "recollection": 4800,
+              "unfinished": 2400
+            },
+            "pin": [],
+            "exclude": [],
+            "aliases": {},
+            "rules": []
+          },
+          "sha256": "40e78b03213f4c5e3ce70f87b9501546f930b75d7f683e33521d31b1dd061d41"
+        },
+        "memoryBudget": {
+          "layers": {
+            "recollection": 12288,
+            "relationships": 4096,
+            "self": 6144,
+            "situation": 4096,
+            "unfinished": 4096
+          },
+          "limitTokens": 32768,
+          "meter": {
+            "id": "utf8",
+            "mode": "conservative-utf8",
+            "revision": "utf8-bytes/v1"
+          },
+          "protocol": "memcont.memory-budget/v2",
+          "sha256": "c0f6d585eacd9dc7a9e6c187ecdebb890bb51d54cae9589e8e0e775b92a16cde",
+          "target": {
+            "model": "offline",
+            "provider": "long-offline"
+          },
+          "unit": "tokens"
+        },
+        "memoryUsage": {
+          "protocol": "memcont.memory-usage/v2",
+          "budgetSha256": "c0f6d585eacd9dc7a9e6c187ecdebb890bb51d54cae9589e8e0e775b92a16cde",
+          "mode": "conservative-utf8",
+          "total": 20721,
+          "limit": 32768,
+          "bytes": 20721,
+          "parts": [
+            {
+              "kind": "retired-context",
+              "id": "retired_6d67047d4c2ebe01eb9404065eb61180d740c79742fd550a4872f3520edc4f69",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_2505521a6a99551b52ef05f67bf21b16855abcb1bab24a89e8dfb283c97dc564",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_427efce50787ed1c14083c0915ec4f68d32b5738fae3008bbdf2d8139f04ed7a",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_d411bb73deec7a78a5db78e4a7adce6796bae12efb5a61987ee4cf7a82b90b69",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_0b8611e94f8de3785213ac02eeb3116cbceb0bdd8b5b96d2edd7131da1ff258f",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_f7ad0300fe13f81a1e58dde40e6490ebf975193c49b90db8e6681c295514f00e",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_d6f7cda5b0fafdacd78ba005a3e0ffbb6005b13238e5ae166c98055c916202df",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_cc38118a09f6e5492385bd6bb5ee9e2183aa846d8501feae83eeba7f3a5164b9",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retained-memory",
+              "id": "7c12f3a7-4f7b-4a7e-bbe4-c6e4025ec95e",
+              "count": 232,
+              "bytes": 232
+            },
+            {
+              "kind": "retained-memory",
+              "id": "c79cc609-c7fd-42b0-ad35-857a212500c0",
+              "count": 295,
+              "bytes": 295
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_dde02eaf2e83b0a742928aa7c295bf21997c7500f7c19f377bf55ecbbe1b55ba",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_a49056bbf62504213ddcc69eabda9ab9a76ac703fabb378b1e70372fc46b55c5",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_e858f0a551fca8f70eda6bb39e795a073432d5eb748c0c525bc69e17319a1cb1",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_0446dbb31be75d422b81135ecd41287a4443691ad32c04371d75d6ee5e628fc2",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_d887f5e8e3fb2ee4035fc429b2a9e568f870f07afad60aefa59f2dc8ee8ef0b7",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_510cc943a4c8aff8fa2e7c8229280f4719c693847445eaaa91a902cd3acde583",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_2f540b876166d8ef973c4ab30a2ce40664ce062e55b6e903f968902f2f311943",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_0b8becc3bda9753182613eb356c5fc2b6fc07567a277c2219abb6abdd6087bb0",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retained-memory",
+              "id": "8ae8975a-a759-46e7-af05-454c61a09628",
+              "count": 232,
+              "bytes": 232
+            },
+            {
+              "kind": "retained-memory",
+              "id": "6bb1037a-5bd6-472c-a615-8f5c685505b9",
+              "count": 295,
+              "bytes": 295
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_f558522099a8ac55c991e467956b494f4429dd459e76457ffade404e0c38228f",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_4c85558f2507ce6b8c47c0ea0b313732d0cbe6147e6dd1d4114432e86d4b0b2d",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_36bd6bc43710f624ce36bce36a21f97987e99754257949c45ac8af26788c5a20",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_ab899b604bb34a2fe599ac107cbc42d4ae8a045f7a3c4e5d3e09f860fec5ea6d",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_ca59ab4943ceaa9373e854d7020e2e36afe6e27ca652d0d3d1634fa097e3685a",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_d8ecd7e30515f59d121cfff5cdc2a64e58597bc8a2fa68486cbf71e6ff089b23",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retired-context",
+              "id": "retired_d9b96e9e6dad1a326ffb9d4bccff3c9d3d1d2fa2375da31622221e8ac3720eb0",
+              "count": 474,
+              "bytes": 474
+            },
+            {
+              "kind": "retained-memory",
+              "id": "df21c1cc-3a0e-47d2-bc35-69ecc8dd887d",
+              "count": 4879,
+              "bytes": 4879
+            },
+            {
+              "kind": "retained-memory",
+              "id": "8238f956-92e6-4a5b-bbc6-fe204fd99fd0",
+              "count": 232,
+              "bytes": 232
+            },
+            {
+              "kind": "retained-memory",
+              "id": "0ea8d4ed-21bd-46cf-a566-853cc4efac29",
+              "count": 295,
+              "bytes": 295
+            },
+            {
+              "kind": "tool-declarations",
+              "count": 1668,
+              "bytes": 1668
+            },
+            {
+              "kind": "tool-history",
+              "count": 1691,
+              "bytes": 1691
+            }
+          ],
+          "sha256": "07238326517df99c3576c7d05ac47c2f0233fc20c497d054c6b5c96e3539e0db"
+        },
+        "purpose": {
+          "mode": "rp",
+          "enabledModules": [],
+          "constraints": {
+            "maxReadRecords": 16,
+            "maxOutputBytes": 16384,
+            "deniedCapabilities": [],
+            "protectedFieldIds": [],
+            "guidance": []
+          }
+        },
+        "blocked": false,
+        "candidateIds": [
+          "source_6d743abf1a7d4ae89a5d42166e108f38",
+          "source_e57846bf78a44270be756c310cb9246d",
+          "source_0e5c72b380d345eca7ba14b02753fadb",
+          "source_4fe063be43284b25b8c427d726ae5be0",
+          "source_905c65d335f84301a4791387c1394a40",
+          "source_adad475bf1364e4a86abe63458f41019",
+          "source_b8654e2fcac54777ba6cd7063c67fff2",
+          "source_9925cf08d4d94555b5418b7beb621c29",
+          "source_6ca088c7a89e4184b6616f21d29bdd52",
+          "source_251642df16104ac3805592f755afeacd",
+          "source_e2a4726636e641b4a29df892073f0bee",
+          "source_0eb567ad4ada4b579cc172885ab4eedd",
+          "source_31824ae0483a4a6cbcbfebe2c0ac97cd",
+          "source_a5b1066555d742b4b72250eb96c63902",
+          "source_baf83a50bee04755be04a124c1c2a71b",
+          "source_42c2adf452a049f992c01307c2d73d08",
+          "source_7e554767475640e599095e3162fb1ebe",
+          "source_2ea8e4368dfb4847a9056fa7bd12a913",
+          "source_52fca08f8cdb43f5b367504ab56a46cf",
+          "source_416c21cea5764d14aed0359b83094260",
+          "source_6109fa72dd6842179f4681ebf017acd9",
+          "source_df58136748c2436dbdc17479cc786d4c",
+          "source_52d76823d1114224bf6bd964fd8b06c0",
+          "source_c903e27d6f1d4da398cb14f9b3389151"
+        ],
+        "pendingInputIds": [],
+        "ambiguousInputIds": [
+          "source_d3a72e2000994a47a18b3a613453fd31",
+          "source_0747b48c163d4605b5a863ce5443530c",
+          "source_f7f5764d08e648f686e5676ec9e9ac38",
+          "source_45b86447bf274492959b37eb2e3539c4",
+          "source_4b23e79b72514a4e9b1f91015630ce14",
+          "source_7813d70df92b4f22a7deeae2e880654f",
+          "source_011b510cbd814181bdda1d5c818cf6fe",
+          "source_fec2814aa19741f0ac983396bf026948",
+          "source_c4839354cb1249ba9143cd8def4052b1",
+          "source_13b0d10c45fc4a55ba86a5c6273ea8e2",
+          "source_c6ed6106456c47da96e7341e531bdf2c",
+          "source_0552a9e89a044a33988062ef9c53401d",
+          "source_f7da35db49534068b56d7c1d37c4f32a",
+          "source_686f721693f6414689cc0951e9cef69c",
+          "source_6e64215782974dc68548560ad7a74d1d",
+          "source_a50e11351bf441619eb7b34ee33e3314",
+          "source_36fcb76083794f12aa1dad85d7d9f3d4",
+          "source_ed6da5b52e464cf8b698af48533143ee",
+          "source_c08c05d0c9da46d48a478b7a4fe5cee3",
+          "source_8ea11fa82b6745fb81f8fa11946d31e4",
+          "source_54bc8f9041af4e618b663ce6411b93f4",
+          "source_3455532c5c7143ebadd48af4380c7563",
+          "source_0286f304470a4657a39acb3cd64910d8",
+          "source_b3ac1ceaa9904f629f3180849f05d2ae",
+          "source_c687441729b241fc9c03231e20e2f65a",
+          "source_b8a5cef6c17e4abaadfb13d8027492df",
+          "source_92f3e5824d834bdd9d51a612e8a33e76",
+          "source_a1ce353ca60a4717908a044b7dd0c4ac",
+          "source_f6af4a2acebc43da9092ab438ede5751",
+          "source_589f19fd4f254df6b5a3cc980a7d84ca",
+          "source_5662910d0a0c43578d32f684e985fae3",
+          "source_2c0d55c1c63e4bf089f01efa86feed86",
+          "source_a12f5941c2354894911eab6f587c737c",
+          "source_061e999de665480bb7cabbbfef897466",
+          "source_d731aee97d3b43f9a9e0e7418b4e6714",
+          "source_ef462d441ef64cc9a2169077a7be4d4c",
+          "source_6eb75c3382a1424b97021aedfc419c18",
+          "source_8973ca74d73443e39fa8dc8c43c163fb",
+          "source_64ecf5d09ce44fe9979289acef154395",
+          "source_9264a014d1204f3a95ac023c603eb1f5",
+          "source_533858835ea14904a712777ad8df7a17",
+          "source_f238b57ed3c54659aba8ad761333de39",
+          "source_c6a39bccadb9429ca9892ffc25fb5ceb",
+          "source_942bb81a8341471888eb858c5f4a9fd8",
+          "source_4b1b2c390fd142c784237711580ac3e6",
+          "source_46c8901f3abe46ee88ee490b0426c16d",
+          "source_4d0ec471b675497d95f274ed22d4b568",
+          "source_20ee216657cf4d55b5911fe0ea82cd79",
+          "source_db5b045c61dd41e48a54a22a30e265b6",
+          "source_30d7b491d459459893cbb4509ef11763",
+          "source_30d2d54867e64f9a9a063bfe45fbb255",
+          "source_958c4cd9711d45189cc088cb777f6025",
+          "source_9c28c291764945bfbcb95c976a8d53f6",
+          "source_4c4cdb6aa2cd4b6fbbddab6a2d8ee495",
+          "source_6fbeee17cc5d48a1b689f4d1ff5485e1",
+          "source_bf84d6a7f631418faa8c6bd400adabae",
+          "source_ba1e0d0301964c56aae4fed3ffc53c84",
+          "source_67a2d68aa0034591b9f7d458c607300a",
+          "source_8121fb061bb24915aabda08c72ccf902",
+          "source_9bae9b0deb3d466e9045835c471b8a55",
+          "source_f179e27f347c4c7bb89ef46bb6fe9489",
+          "source_07c817737b4c456f8d4c97727004640e",
+          "source_446ebf2de07a45bbbfa2d76b6b84d804",
+          "source_c5b3dcca86d94b7399c80c77cba48a56"
+        ],
+        "snapshots": 24
+      }
+    }
+  ],
+  "recoveries": [
+    {
+      "round": 25,
+      "kind": "cold-resume",
+      "callsBefore": 27,
+      "callsAfter": 27
+    },
+    {
+      "round": 41,
+      "kind": "explicit-clean-continuation",
+      "branchId": "branch_a675e186fd164052b40226400955ce6a"
+    }
+  ],
+  "completedInputs": 64,
+  "adapterCalls": 72,
+  "lastStatus": {
+    "requestCost": {
+      "limits": {
+        "maxRequestsPerInput": 16,
+        "maxRetriesPerStep": 2
+      },
+      "inputId": "rp_input_04bec456ab6e46d7814b26691ace13d2",
+      "requests": 2,
+      "stepKey": "24:2",
+      "stepRequests": 1,
+      "requestsRemaining": 14,
+      "currentStepRetries": 0,
+      "retriesRemaining": 2,
+      "unit": "durably-reserved-adapter-admissions",
+      "notice": "按明确输入累计准入预留次数；写入结果不确定也会保留预留。不是供应商账单或隐藏 HTTP 重试次数。"
+    },
+    "requestPayload": {
+      "provenance": "certified-adapter-input",
+      "at": "2026-10-27T11:51:59.254Z",
+      "payloadUtf8Bytes": 32030,
+      "mode": "conservative-utf8",
+      "sections": [
+        {
+          "kind": "ordinary-history",
+          "messages": 47,
+          "bytes": 11126,
+          "measuredUnits": 11126
+        },
+        {
+          "kind": "retirement",
+          "messages": 23,
+          "bytes": 10926,
+          "measuredUnits": 10926
+        },
+        {
+          "kind": "tool-call",
+          "messages": 3,
+          "bytes": 700,
+          "measuredUnits": 700
+        },
+        {
+          "kind": "tool-result",
+          "messages": 3,
+          "bytes": 889,
+          "measuredUnits": 889
+        },
+        {
+          "kind": "current-memory",
+          "messages": 1,
+          "bytes": 4881,
+          "measuredUnits": 4881
+        },
+        {
+          "kind": "tool-declarations",
+          "messages": 0,
+          "bytes": 1668,
+          "measuredUnits": 1668
+        },
+        {
+          "kind": "tool-history",
+          "messages": 0,
+          "bytes": 1691,
+          "measuredUnits": 1691
+        }
+      ],
+      "selection": {
+        "mandatory": {
+          "entries": 1,
+          "bytes": 83,
+          "measuredUnits": 83
+        },
+        "optional": {
+          "entries": 1,
+          "bytes": 125,
+          "measuredUnits": 125
+        },
+        "notice": "选中条目的正文计量；不含消息包装，不能与请求总量相加。"
+      },
+      "wireBytes": null,
+      "providerUsage": null,
+      "providerBilling": null,
+      "notice": "这是交给宿主适配器的最后一次已准入请求。分项含各自 JSON 包装，合计不等于完整请求；供应商格式、缓存、隐藏重试和实际账单未测量。"
+    },
+    "bindingHealth": "healthy",
+    "requestAdmission": {
+      "state": "admitted",
+      "stage": "send",
+      "at": "2026-10-27T11:51:59.274Z"
+    },
+    "recovery": {
+      "action": "none",
+      "detail": "绑定健康不等于下一次请求已获准；每次发送仍会重新校验。"
+    },
+    "enabled": true,
+    "lifecycle": "open",
+    "contextCompression": false,
+    "strictPov": false,
+    "nativeVersions": {
+      "cordis": "4.0.5",
+      "dsh-agent": "0.2.1-rc.2",
+      "dsh-llm": "0.2.1-rc.2",
+      "dsh-session": "0.2.1-rc.2",
+      "dsh-system-prompt": "0.2.1-rc.2",
+      "dsh-tools": "0.2.1-rc.2",
+      "schemastery": "3.18.5"
+    },
+    "memoryOptimization": {
+      "available": "standalone",
+      "packet": null
+    },
+    "policy": {
+      "mode": "rp",
+      "epoch": 1,
+      "modeEpoch": 1
+    },
+    "branchId": "branch_a675e186fd164052b40226400955ce6a",
+    "personId": "erin",
+    "injection": {
+      "protocol": "rp.injection-binding/v1",
+      "config": {
+        "depth": "association",
+        "budgets": {
+          "self": 2400,
+          "situation": 2400,
+          "relationships": 2400,
+          "recollection": 4800,
+          "unfinished": 2400
+        },
+        "pin": [],
+        "exclude": [],
+        "aliases": {},
+        "rules": []
+      },
+      "sha256": "40e78b03213f4c5e3ce70f87b9501546f930b75d7f683e33521d31b1dd061d41"
+    },
+    "memoryBudget": {
+      "layers": {
+        "recollection": 12288,
+        "relationships": 4096,
+        "self": 6144,
+        "situation": 4096,
+        "unfinished": 4096
+      },
+      "limitTokens": 32768,
+      "meter": {
+        "id": "utf8",
+        "mode": "conservative-utf8",
+        "revision": "utf8-bytes/v1"
+      },
+      "protocol": "memcont.memory-budget/v2",
+      "sha256": "c0f6d585eacd9dc7a9e6c187ecdebb890bb51d54cae9589e8e0e775b92a16cde",
+      "target": {
+        "model": "offline",
+        "provider": "long-offline"
+      },
+      "unit": "tokens"
+    },
+    "memoryUsage": {
+      "protocol": "memcont.memory-usage/v2",
+      "budgetSha256": "c0f6d585eacd9dc7a9e6c187ecdebb890bb51d54cae9589e8e0e775b92a16cde",
+      "mode": "conservative-utf8",
+      "total": 20721,
+      "limit": 32768,
+      "bytes": 20721,
+      "parts": [
+        {
+          "kind": "retired-context",
+          "id": "retired_6d67047d4c2ebe01eb9404065eb61180d740c79742fd550a4872f3520edc4f69",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_2505521a6a99551b52ef05f67bf21b16855abcb1bab24a89e8dfb283c97dc564",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_427efce50787ed1c14083c0915ec4f68d32b5738fae3008bbdf2d8139f04ed7a",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_d411bb73deec7a78a5db78e4a7adce6796bae12efb5a61987ee4cf7a82b90b69",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_0b8611e94f8de3785213ac02eeb3116cbceb0bdd8b5b96d2edd7131da1ff258f",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_f7ad0300fe13f81a1e58dde40e6490ebf975193c49b90db8e6681c295514f00e",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_d6f7cda5b0fafdacd78ba005a3e0ffbb6005b13238e5ae166c98055c916202df",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_cc38118a09f6e5492385bd6bb5ee9e2183aa846d8501feae83eeba7f3a5164b9",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retained-memory",
+          "id": "7c12f3a7-4f7b-4a7e-bbe4-c6e4025ec95e",
+          "count": 232,
+          "bytes": 232
+        },
+        {
+          "kind": "retained-memory",
+          "id": "c79cc609-c7fd-42b0-ad35-857a212500c0",
+          "count": 295,
+          "bytes": 295
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_dde02eaf2e83b0a742928aa7c295bf21997c7500f7c19f377bf55ecbbe1b55ba",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_a49056bbf62504213ddcc69eabda9ab9a76ac703fabb378b1e70372fc46b55c5",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_e858f0a551fca8f70eda6bb39e795a073432d5eb748c0c525bc69e17319a1cb1",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_0446dbb31be75d422b81135ecd41287a4443691ad32c04371d75d6ee5e628fc2",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_d887f5e8e3fb2ee4035fc429b2a9e568f870f07afad60aefa59f2dc8ee8ef0b7",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_510cc943a4c8aff8fa2e7c8229280f4719c693847445eaaa91a902cd3acde583",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_2f540b876166d8ef973c4ab30a2ce40664ce062e55b6e903f968902f2f311943",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_0b8becc3bda9753182613eb356c5fc2b6fc07567a277c2219abb6abdd6087bb0",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retained-memory",
+          "id": "8ae8975a-a759-46e7-af05-454c61a09628",
+          "count": 232,
+          "bytes": 232
+        },
+        {
+          "kind": "retained-memory",
+          "id": "6bb1037a-5bd6-472c-a615-8f5c685505b9",
+          "count": 295,
+          "bytes": 295
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_f558522099a8ac55c991e467956b494f4429dd459e76457ffade404e0c38228f",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_4c85558f2507ce6b8c47c0ea0b313732d0cbe6147e6dd1d4114432e86d4b0b2d",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_36bd6bc43710f624ce36bce36a21f97987e99754257949c45ac8af26788c5a20",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_ab899b604bb34a2fe599ac107cbc42d4ae8a045f7a3c4e5d3e09f860fec5ea6d",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_ca59ab4943ceaa9373e854d7020e2e36afe6e27ca652d0d3d1634fa097e3685a",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_d8ecd7e30515f59d121cfff5cdc2a64e58597bc8a2fa68486cbf71e6ff089b23",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retired-context",
+          "id": "retired_d9b96e9e6dad1a326ffb9d4bccff3c9d3d1d2fa2375da31622221e8ac3720eb0",
+          "count": 474,
+          "bytes": 474
+        },
+        {
+          "kind": "retained-memory",
+          "id": "df21c1cc-3a0e-47d2-bc35-69ecc8dd887d",
+          "count": 4879,
+          "bytes": 4879
+        },
+        {
+          "kind": "retained-memory",
+          "id": "8238f956-92e6-4a5b-bbc6-fe204fd99fd0",
+          "count": 232,
+          "bytes": 232
+        },
+        {
+          "kind": "retained-memory",
+          "id": "0ea8d4ed-21bd-46cf-a566-853cc4efac29",
+          "count": 295,
+          "bytes": 295
+        },
+        {
+          "kind": "tool-declarations",
+          "count": 1668,
+          "bytes": 1668
+        },
+        {
+          "kind": "tool-history",
+          "count": 1691,
+          "bytes": 1691
+        }
+      ],
+      "sha256": "07238326517df99c3576c7d05ac47c2f0233fc20c497d054c6b5c96e3539e0db"
+    },
+    "purpose": {
+      "mode": "rp",
+      "enabledModules": [],
+      "constraints": {
+        "maxReadRecords": 16,
+        "maxOutputBytes": 16384,
+        "deniedCapabilities": [],
+        "protectedFieldIds": [],
+        "guidance": []
+      }
+    },
+    "blocked": false,
+    "candidateIds": [
+      "source_6d743abf1a7d4ae89a5d42166e108f38",
+      "source_e57846bf78a44270be756c310cb9246d",
+      "source_0e5c72b380d345eca7ba14b02753fadb",
+      "source_4fe063be43284b25b8c427d726ae5be0",
+      "source_905c65d335f84301a4791387c1394a40",
+      "source_adad475bf1364e4a86abe63458f41019",
+      "source_b8654e2fcac54777ba6cd7063c67fff2",
+      "source_9925cf08d4d94555b5418b7beb621c29",
+      "source_6ca088c7a89e4184b6616f21d29bdd52",
+      "source_251642df16104ac3805592f755afeacd",
+      "source_e2a4726636e641b4a29df892073f0bee",
+      "source_0eb567ad4ada4b579cc172885ab4eedd",
+      "source_31824ae0483a4a6cbcbfebe2c0ac97cd",
+      "source_a5b1066555d742b4b72250eb96c63902",
+      "source_baf83a50bee04755be04a124c1c2a71b",
+      "source_42c2adf452a049f992c01307c2d73d08",
+      "source_7e554767475640e599095e3162fb1ebe",
+      "source_2ea8e4368dfb4847a9056fa7bd12a913",
+      "source_52fca08f8cdb43f5b367504ab56a46cf",
+      "source_416c21cea5764d14aed0359b83094260",
+      "source_6109fa72dd6842179f4681ebf017acd9",
+      "source_df58136748c2436dbdc17479cc786d4c",
+      "source_52d76823d1114224bf6bd964fd8b06c0",
+      "source_c903e27d6f1d4da398cb14f9b3389151"
+    ],
+    "pendingInputIds": [],
+    "ambiguousInputIds": [
+      "source_d3a72e2000994a47a18b3a613453fd31",
+      "source_0747b48c163d4605b5a863ce5443530c",
+      "source_f7f5764d08e648f686e5676ec9e9ac38",
+      "source_45b86447bf274492959b37eb2e3539c4",
+      "source_4b23e79b72514a4e9b1f91015630ce14",
+      "source_7813d70df92b4f22a7deeae2e880654f",
+      "source_011b510cbd814181bdda1d5c818cf6fe",
+      "source_fec2814aa19741f0ac983396bf026948",
+      "source_c4839354cb1249ba9143cd8def4052b1",
+      "source_13b0d10c45fc4a55ba86a5c6273ea8e2",
+      "source_c6ed6106456c47da96e7341e531bdf2c",
+      "source_0552a9e89a044a33988062ef9c53401d",
+      "source_f7da35db49534068b56d7c1d37c4f32a",
+      "source_686f721693f6414689cc0951e9cef69c",
+      "source_6e64215782974dc68548560ad7a74d1d",
+      "source_a50e11351bf441619eb7b34ee33e3314",
+      "source_36fcb76083794f12aa1dad85d7d9f3d4",
+      "source_ed6da5b52e464cf8b698af48533143ee",
+      "source_c08c05d0c9da46d48a478b7a4fe5cee3",
+      "source_8ea11fa82b6745fb81f8fa11946d31e4",
+      "source_54bc8f9041af4e618b663ce6411b93f4",
+      "source_3455532c5c7143ebadd48af4380c7563",
+      "source_0286f304470a4657a39acb3cd64910d8",
+      "source_b3ac1ceaa9904f629f3180849f05d2ae",
+      "source_c687441729b241fc9c03231e20e2f65a",
+      "source_b8a5cef6c17e4abaadfb13d8027492df",
+      "source_92f3e5824d834bdd9d51a612e8a33e76",
+      "source_a1ce353ca60a4717908a044b7dd0c4ac",
+      "source_f6af4a2acebc43da9092ab438ede5751",
+      "source_589f19fd4f254df6b5a3cc980a7d84ca",
+      "source_5662910d0a0c43578d32f684e985fae3",
+      "source_2c0d55c1c63e4bf089f01efa86feed86",
+      "source_a12f5941c2354894911eab6f587c737c",
+      "source_061e999de665480bb7cabbbfef897466",
+      "source_d731aee97d3b43f9a9e0e7418b4e6714",
+      "source_ef462d441ef64cc9a2169077a7be4d4c",
+      "source_6eb75c3382a1424b97021aedfc419c18",
+      "source_8973ca74d73443e39fa8dc8c43c163fb",
+      "source_64ecf5d09ce44fe9979289acef154395",
+      "source_9264a014d1204f3a95ac023c603eb1f5",
+      "source_533858835ea14904a712777ad8df7a17",
+      "source_f238b57ed3c54659aba8ad761333de39",
+      "source_c6a39bccadb9429ca9892ffc25fb5ceb",
+      "source_942bb81a8341471888eb858c5f4a9fd8",
+      "source_4b1b2c390fd142c784237711580ac3e6",
+      "source_46c8901f3abe46ee88ee490b0426c16d",
+      "source_4d0ec471b675497d95f274ed22d4b568",
+      "source_20ee216657cf4d55b5911fe0ea82cd79",
+      "source_db5b045c61dd41e48a54a22a30e265b6",
+      "source_30d7b491d459459893cbb4509ef11763",
+      "source_30d2d54867e64f9a9a063bfe45fbb255",
+      "source_958c4cd9711d45189cc088cb777f6025",
+      "source_9c28c291764945bfbcb95c976a8d53f6",
+      "source_4c4cdb6aa2cd4b6fbbddab6a2d8ee495",
+      "source_6fbeee17cc5d48a1b689f4d1ff5485e1",
+      "source_bf84d6a7f631418faa8c6bd400adabae",
+      "source_ba1e0d0301964c56aae4fed3ffc53c84",
+      "source_67a2d68aa0034591b9f7d458c607300a",
+      "source_8121fb061bb24915aabda08c72ccf902",
+      "source_9bae9b0deb3d466e9045835c471b8a55",
+      "source_f179e27f347c4c7bb89ef46bb6fe9489",
+      "source_07c817737b4c456f8d4c97727004640e",
+      "source_446ebf2de07a45bbbfa2d76b6b84d804",
+      "source_c5b3dcca86d94b7399c80c77cba48a56"
+    ],
+    "snapshots": 24
+  }
+}

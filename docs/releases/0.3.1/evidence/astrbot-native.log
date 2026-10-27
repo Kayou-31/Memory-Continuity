@@ -1,0 +1,42 @@
+test_connection_replacement_is_not_automatic_reauthorization (test_core_client.CoreClientTests.test_connection_replacement_is_not_automatic_reauthorization) ... ok
+test_connection_validation_refuses_remote_urls_and_malformed_credentials (test_core_client.CoreClientTests.test_connection_validation_refuses_remote_urls_and_malformed_credentials) ... ok
+test_failed_revoke_keeps_cleanup_record_until_explicit_close (test_core_client.CoreClientTests.test_failed_revoke_keeps_cleanup_record_until_explicit_close) ... ok
+test_missing_connection_cannot_revive_after_file_is_restored (test_core_client.CoreClientTests.test_missing_connection_cannot_revive_after_file_is_restored) ... ok
+test_real_core_read_and_revision_receipt (test_core_client.CoreClientTests.test_real_core_read_and_revision_receipt) ... ok
+test_revocation_and_client_retirement_do_not_reissue_capabilities (test_core_client.CoreClientTests.test_revocation_and_client_retirement_do_not_reissue_capabilities) ... ok
+test_revoke_of_expired_session_requires_confirmed_absence_then_allows_new_open (test_core_client.CoreClientTests.test_revoke_of_expired_session_requires_confirmed_absence_then_allows_new_open) ... ok
+test_transport_failure_retires_old_handles_without_reconnect (test_core_client.CoreClientTests.test_transport_failure_retires_old_handles_without_reconnect) ... ok
+test_real_loader_private_admin_controls_and_unload (test_host_management.HostManagementTests.test_real_loader_private_admin_controls_and_unload) ... [09:51:48.950] [Core] [WARN] [asyncio.base_events:2056]: Executing <Task pending name='Task-77' coro=<HostManagementTests.test_real_loader_private_admin_controls_and_unload() running at D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_host_management.py:60> wait_for=<Future pending cb=[Task.task_wakeup()] created at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py:460> cb=[_run_until_complete_cb() at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py:181] created at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py:101> took 3.717 seconds
+[09:51:50.107] [Core] [WARN] [asyncio.base_events:2056]: Executing <Task pending name='Task-77' coro=<HostManagementTests.test_real_loader_private_admin_controls_and_unload() running at D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_host_management.py:92> wait_for=<Future pending cb=[Task.task_wakeup()] created at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py:460> cb=[_run_until_complete_cb() at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py:181] created at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py:101> took 0.115 seconds
+[09:51:50.152] [Core] [INFO] [star.star_manager:1131]: Loading plugin astrbot_plugin_memory_continuity ...
+[09:51:50.187] [Core] [INFO] [star.star_manager:1215]: Plugin astrbot_plugin_memory_continuity (0.1.0-preview.2) by Kayou: 独立核心的显式本机管理入口；模型记忆注入尚未开放。
+[09:51:50.187] [Core] [INFO] [star.base:44]: Plugin astrbot_plugin_memory_continuity log level: INFO.
+Executing <Task pending name='Task-77' coro=<HostManagementTests.test_real_loader_private_admin_controls_and_unload() running at D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_host_management.py:141> wait_for=<Future pending cb=[Task.task_wakeup()] created at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py:460> cb=[_run_until_complete_cb() at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py:181] created at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py:101> took 0.551 seconds
+[09:51:50.779] [Core] [INFO] [respond.stage:237]: Prepare to send - 合成管理员/90001: 这个入口仅供 AstrBot 管理员使用。
+[09:51:50.801] [Core] [INFO] [respond.stage:237]: Prepare to send - 合成管理员/90001: 请在管理员私聊中操作；管理地址不会发到群里。
+[09:51:50.825] [Core] [INFO] [respond.stage:237]: Prepare to send - 合成管理员/90001: 未连接核心。先在本机显式启动核心服务并配置连接文件，再发送 /memcont connect。
+[09:51:50.871] [Core] [INFO] [respond.stage:237]: Prepare to send - 合成管理员/90001: 已连接本机 Memory-Continuity 核心，可用绑定 1 个。模型注入尚未开放。
+[09:51:50.907] [Core] [INFO] [respond.stage:237]: Prepare to send - 合成管理员/90001: 核心已连接。可用绑定：main。模型注入尚未开放；没有自动写记忆或压缩。
+[09:51:50.965] [Core] [INFO] [respond.stage:237]: Prepare to send - 合成管理员/90001: 本机工作台（含临时管理凭据，请勿转发）：
+[local-workbench-url-redacted]
+只能在运行核心的电脑上打开，最长十分钟有效。保存前仍须预览确认。
+[09:51:51.044] [Core] [INFO] [respond.stage:237]: Prepare to send - 合成管理员/90001: 本机工作台（含临时管理凭据，请勿转发）：
+[local-workbench-url-redacted]
+只能在运行核心的电脑上打开，最长十分钟有效。保存前仍须预览确认。
+[09:51:51.067] [Core] [INFO] [respond.stage:237]: Prepare to send - 合成管理员/90001: 请在管理员私聊中操作；管理地址不会发到群里。
+[09:51:51.072] [Core] [INFO] [star.star_manager:1934]: Terminating plugin astrbot_plugin_memory_continuity ...
+[09:51:51.094] [Core] [INFO] [star.star_manager:1934]: Terminating plugin astrbot_plugin_memory_continuity ...
+ok
+test_dedicated_http_client_can_block_retry_before_second_network_send (test_provider_boundary.ProviderBoundaryTests.test_dedicated_http_client_can_block_retry_before_second_network_send) ... Executing <Task pending name='Task-135' coro=<ProviderBoundaryTests.asyncSetUp() running at D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_provider_boundary.py:67> wait_for=<_GatheringFuture pending cb=[Task.task_wakeup()] created at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\tasks.py:767> cb=[_run_until_complete_cb() at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py:181] created at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py:101> took 0.189 seconds
+Executing <Task pending name='Task-138' coro=<ProviderBoundaryTests.test_dedicated_http_client_can_block_retry_before_second_network_send() running at D:\Codex\2026-10-20\https-github-com-kayou-31-dsh\work\rp-memory-m5\adapters\astrbot\tests\test_provider_boundary.py:100> wait_for=<Future pending cb=[_chain_future.<locals>._call_check_cancel() at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\futures.py:384, Task.task_wakeup()] created at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py:460> cb=[_run_until_complete_cb() at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py:181] created at C:\Users\kayou\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py:101> took 0.143 seconds
+[09:51:51.532] [Core] [WARN] [v4.29.3] [sources.request_retry:68]: [OpenAI] Request failed with retryable error; retrying (2/2): Error code: 500 - {'error': {'message': 'synthetic retry', 'type': 'test_error'}}
+ok
+test_disabling_inner_retry_does_not_disable_context_error_retry (test_provider_boundary.ProviderBoundaryTests.test_disabling_inner_retry_does_not_disable_context_error_retry) ... [09:51:52.601] [Core] [WARN] [v4.29.3] [sources.openai_source:1113]: 上下文长度超过限制。尝试弹出最早的记录然后重试。当前记录条数: 3
+ok
+test_one_provider_entry_can_send_multiple_http_requests (test_provider_boundary.ProviderBoundaryTests.test_one_provider_entry_can_send_multiple_http_requests) ... [09:51:52.676] [Core] [WARN] [v4.29.3] [sources.request_retry:68]: [OpenAI] Request failed with retryable error; retrying (2/2): Error code: 500 - {'error': {'message': 'synthetic retry', 'type': 'test_error'}}
+ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 19.307s
+
+OK

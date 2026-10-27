@@ -39,5 +39,5 @@ with zipfile.ZipFile(sys.argv[1]) as z:
 import json,sys,zipfile
 with zipfile.ZipFile(sys.argv[1]) as z:
  assert z.read('metadata.yaml')==Path(sys.argv[2]).read_bytes()
- assert json.loads(z.read('SOURCE-MANIFEST.json'))['version']=='0.1.0-preview.1'`,crlfZip,metadata])
+ assert json.loads(z.read('SOURCE-MANIFEST.json'))['version']=='0.1.0-preview.2'`,crlfZip,metadata])
 })

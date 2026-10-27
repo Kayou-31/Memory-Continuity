@@ -79,9 +79,10 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
   // src/rp/person/schema.ts
   var personKeys = { identity: "identity", background: "background", voice: "voice", values: "rule", boundaries: "rule", trait: "rule", feeling: "rule", stage: "background" };
   function personField(input2) {
-    const f = object(input2, ["fieldId", "kind", "value", "policy"], ["validity"]);
+    const f = object(input2, ["fieldId", "kind", "value", "policy"], ["validity", "injection"]);
     id(f.fieldId);
     text(f.value, 2048, true);
+    if (f.injection !== void 0 && !["core", "default"].includes(f.injection)) invalid("person injection choice");
     if (!Object.hasOwn(personKeys, f.kind) || !["stable", "growable", "situational"].includes(f.policy)) invalid("person field kind/policy");
     if (f.policy === "situational") {
       const v = object(f.validity, ["kind"], ["sceneId", "from", "through"]);
@@ -223,7 +224,7 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
   }
   var readers = /* @__PURE__ */ new WeakMap();
   function field(value) {
-    const row = entry("fields"), kind = select(row, "项目", kinds, value.kind), content = input(row, "内容", value.value, true), policy = select(row, "改变方式", policies, value.policy);
+    const row = entry("fields"), kind = select(row, "项目", kinds, value.kind), content = input(row, "内容", value.value, true), policy = select(row, "改变方式", policies, value.policy), injection = select(row, "参与记忆注入", { legacy: "保持原有规则", core: "人物核心：日常对话也带上", default: "按原有类型和话题规则" }, value.injection ?? "legacy");
     const validity = document.createElement("div");
     row.append(validity);
     const mode = select(validity, "有效范围", { scene: "指定场景", sequence: "已接受记录序号区间" }, value.validity?.kind ?? "scene");
@@ -236,7 +237,7 @@ const utf8Bytes = value => new TextEncoder().encode(value).length;
     };
     policy.onchange = mode.onchange = update;
     update();
-    readers.set(row, () => ({ fieldId: value.fieldId, kind: kind.value, value: content.value, policy: policy.value, ...policy.value === "situational" ? { validity: mode.value === "scene" ? { kind: "scene", sceneId: scene.value.trim() } : { kind: "sequence", from: Number(from.value), through: Number(through.value) } } : {} }));
+    readers.set(row, () => ({ fieldId: value.fieldId, kind: kind.value, value: content.value, policy: policy.value, ...injection.value !== "legacy" ? { injection: injection.value } : {}, ...policy.value === "situational" ? { validity: mode.value === "scene" ? { kind: "scene", sceneId: scene.value.trim() } : { kind: "sequence", from: Number(from.value), through: Number(through.value) } } : {} }));
   }
   function relationship(value) {
     const row = entry("relationships"), target = input(row, "对方人物 ID", value.targetId), relation = select(row, "关系方向：我 → 对方", relations, value.relation), content = input(row, "起点", value.value);

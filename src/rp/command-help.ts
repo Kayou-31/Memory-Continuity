@@ -65,6 +65,8 @@ ambiguous 输入严禁自动重发；先核对宿主与持久记录。
 /memcont start [branchId]：在空白根启动或绑定有效剧情分支。
 /memcont input <文本>：记录输入并发起模型请求。
 /memcont accept <sourceId>、/memcont reject <sourceId>：决定候选原文。
+/memcont experience enable|disable|status：显式开关 AI 经历候选；每五分钟最多一份，每 24 小时最多八份，待审阅最多 32 份。没有后台模型调用，工具续步仍计入聊天请求。开启后使用新会话；关闭立即禁止写入，已存在的工具声明保留至换会话。
+/memcont experience list|show <ID>：查看候选和精确原话；/memcont experience adopt|reject <ID>：人工采纳或拒绝。也可在工作台“经历与时间线”核对操作。
 /memcont agent <JSON>：人工记录 experience、relationship、goal 等受支持操作。
 /memcont goals、/memcont relationships、/memcont self：查看目标、方向关系与基础状态。
 /memcont summary <JSON>、/memcont candidates、/memcont candidate <ID>：提出并检查结构化摘要候选。

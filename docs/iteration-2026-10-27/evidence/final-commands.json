@@ -1,0 +1,32 @@
+[
+  {
+    "name": "typecheck",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js\" run typecheck",
+    "exitCode": 0,
+    "seconds": 2.547
+  },
+  {
+    "name": "build",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js\" run build",
+    "exitCode": 0,
+    "seconds": 2.958
+  },
+  {
+    "name": "test",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js\" test",
+    "exitCode": 1,
+    "seconds": 260.928
+  },
+  {
+    "name": "fixture",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js\" run evaluate:fixture",
+    "exitCode": 0,
+    "seconds": 0.193
+  },
+  {
+    "name": "pack-dry",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js\" pack --dry-run",
+    "exitCode": 0,
+    "seconds": 1.935
+  }
+]

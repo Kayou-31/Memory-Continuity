@@ -7,6 +7,22 @@ import type {DurableSession} from './host-journal.js'
 const hash=(value:string)=>createHash('sha256').update(value).digest('hex')
 const text=(m:any)=>(m.content??[]).filter((b:any)=>b.type==='text').map((b:any)=>b.text).join('\n')
 const marker={name:'memcont-retained',text:'Earlier memory snapshot omitted. Use the latest Memory-Continuity context.'}
+export interface SurfaceIndex {find:(id:string)=>{seq:any;event:any}|undefined;eventAt:(seq:any)=>any}
+const indexes=new WeakMap<SurfaceIndex,object>()
+/** Operation-local only. Never save this index in the journal or between requests. */
+export function createSurfaceIndex(session:any):SurfaceIndex{
+ const byId=new Map<string,{seq:any;event:any}>(),bySeq=new Map<any,any>()
+ const eventAt=(seq:any)=>{if(!bySeq.has(seq))bySeq.set(seq,session.eventAt(seq));return bySeq.get(seq)}
+ for(const seq of session.surface.nodes){const event=eventAt(seq),id=event?.data?.id;if(typeof id!=='string'||event.type!=='user/message'&&event.type!=='assistant/message')continue;if(byId.has(id))throw new RpError('scope_denied','Ambiguous native surface identity');byId.set(id,{seq,event})}
+ const index=Object.freeze({find:(id:string)=>byId.get(id),eventAt});indexes.set(index,session);return index
+}
+const checkedIndex=(session:any,index?:SurfaceIndex)=>{if(index&&indexes.get(index)!==session)throw new RpError('scope_denied','Uncertified native surface index');return index??createSurfaceIndex(session)}
+
+/** Same native snapshot shape as the eventual request, including section metadata.
+ * The host chooses the ID; reserve a bounded longer ID until it has been appended. */
+export function proposedContextMessage(sections:{name:string;text:string}[]){
+ return {id:'x'.repeat(128),role:'user',source:{kind:'runtime-context',form:'snapshot',sections},content:[{type:'text',text:joinContextSections(sections)}]}
+}
 
 function remainder(message:any,journal:DurableSession){
  const snapshot=journal.snapshots[message.id]
@@ -25,11 +41,12 @@ function remainder(message:any,journal:DurableSession){
 }
 
 /** Exact durable derivation; a label, new hash, or source reference alone is never authorization. */
-export function retiredContextOriginal(session:any,journal:DurableSession,message:any,event?:any):any|undefined{
+export function retiredContextOriginal(session:any,journal:DurableSession,message:any,event?:any,index?:SurfaceIndex):any|undefined{
  if(!message.id?.startsWith('retired_'))return
- event??=session.surface.nodes.map((seq:any)=>session.eventAt(seq)).find((e:any)=>e?.type==='user/message'&&e.data.id===message.id)
+ const current=event?undefined:checkedIndex(session,index)
+ event??=current!.find(message.id)?.event
  if(!event||event.type!=='user/message'||event.surfaceOp?.op!=='replace'||event.surfaceOp.startSeq!==event.surfaceOp.endSeq||event.sourceEventSeqs?.length!==1||event.sourceEventSeqs[0]!==event.surfaceOp.startSeq)throw new RpError('scope_denied','Uncertified memory surface replacement')
- const original=session.eventAt(event.sourceEventSeqs[0])
+ const original=current?current.eventAt(event.sourceEventSeqs[0]):session.eventAt(event.sourceEventSeqs[0])
  if(original?.type!=='user/message'||original.surfaceOp!=='append')throw new RpError('scope_denied','Memory replacement must cite one original snapshot')
  const expected=remainder(original.data,journal)
  if(!expected||canonical(expected)!==canonical(message)||canonical(event.data)!==canonical(message))throw new RpError('scope_denied','Memory replacement changed more than its owned section')
@@ -38,11 +55,12 @@ export function retiredContextOriginal(session:any,journal:DurableSession,messag
 
 /** Pure proposed surface used by sizing and then committed through the SDK's single-node API. */
 export function planContextRetirement(session:any,journal:DurableSession,keepPacketId?:string,keepBodyHash?:string){
+ const index=createSurfaceIndex(session)
  const replacements:{seq:any;message:any}[]=[],messages=session.deriveMessages().map((message:any)=>{
   if(keepBodyHash&&journal.snapshots[message.id]?.bodyHash===keepBodyHash)return message
   if(journal.snapshots[message.id]?.packetId===keepPacketId)return message
   const next=remainder(message,journal);if(!next)return message
-  const seq=session.surface.nodes.find((s:any)=>{const e=session.eventAt(s);return e?.type==='user/message'&&e.data.id===message.id&&e.surfaceOp==='append'})
+  const entry=index.find(message.id),seq=entry?.event.type==='user/message'&&entry.event.surfaceOp==='append'?entry.seq:undefined
   if(seq===undefined)throw new RpError('scope_denied','Memory snapshot is not an original surface node')
   replacements.push({seq,message:next});return next
  })

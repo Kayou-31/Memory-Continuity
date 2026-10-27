@@ -68,20 +68,21 @@ export async function createCoreRpc(input:CoreServiceInput){
     const v=object(value,['sessionId']),cap=lookup(v.sessionId);await revoke(cap);return{revoked:true}
    }
    if(route==='/v1/admin/workbench'){
-    const v=object(value,['sessionId']),cap=lookup(v.sessionId)
+    const v=object(value,['sessionId'],['host']),cap=lookup(v.sessionId);if(v.host!==undefined&&v.host!=='astrbot')throw new RpError('invalid_record','Unsupported management surface')
     if(!cap.workbench)await(cap.workbenchOpening??=(async()=>{
      const controller=await manager(cap);active(cap);requestActive()
-     const workbench=await openManagementServer(controller,()=>({host:'memory-continuity-core',personId:cap.binding.personId??null,modelDispatch:false}))
+     const workbench=await openManagementServer(controller,()=>({host:'memory-continuity-core',personId:cap.binding.personId??null,modelDispatch:false}),undefined,undefined,v.host??'independent-core')
      try{active(cap);requestActive()}catch(error){await workbench.close();throw error}
      cap.workbench=workbench
     })().finally(()=>{cap.workbenchOpening=undefined}))
     active(cap);requestActive();return{url:cap.workbench!.url}
    }
-   if(['/v1/admin/snapshot','/v1/admin/prepare','/v1/admin/confirm','/v1/admin/confirmation'].includes(route)){
+   if(['/v1/admin/snapshot','/v1/admin/prepare','/v1/admin/confirm','/v1/admin/confirmation','/v1/admin/cancel'].includes(route)){
     const fields=route.endsWith('/prepare')?['sessionId','snapshotId','action','payload']:route.endsWith('/snapshot')?['sessionId']:['sessionId','id']
     const v=object(value,fields),cap=lookup(v.sessionId),control=await manager(cap);active(cap);requestActive()
     if(route.endsWith('/snapshot'))return control.snapshot()
     if(route.endsWith('/prepare'))return control.prepare({snapshotId:v.snapshotId,action:v.action,payload:v.payload})
+    if(route.endsWith('/cancel'))return control.cancel(v.id)
     return route.endsWith('/confirmation')?control.confirmation(v.id):control.confirm(v.id)
    }
    if(route==='/v1/admin/verify'){

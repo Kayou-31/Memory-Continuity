@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: workbench serves only pinned local font bytes and does not expose other assets
+ok 1 - workbench serves only pinned local font bytes and does not expose other assets
+  ---
+  duration_ms: 96.1389
+  type: 'test'
+  ...
+# Subtest: revoking endpoint while a snapshot response waits cannot release old person data
+ok 2 - revoking endpoint while a snapshot response waits cannot release old person data
+  ---
+  duration_ms: 74.5067
+  type: 'test'
+  ...
+# Subtest: revoking owner while a snapshot response waits cannot release old person data
+ok 3 - revoking owner while a snapshot response waits cannot release old person data
+  ---
+  duration_ms: 66.3283
+  type: 'test'
+  ...
+# Subtest: manual management server binds loopback, rejects foreign callers and never exposes its token in HTML
+ok 4 - manual management server binds loopback, rejects foreign callers and never exposes its token in HTML
+  ---
+  duration_ms: 76.7111
+  type: 'test'
+  ...
+# Subtest: authenticated UTF8 upload has its own bounded route; cancel never publishes and normal actions retain the smaller limit
+ok 5 - authenticated UTF8 upload has its own bounded route; cancel never publishes and normal actions retain the smaller limit
+  ---
+  duration_ms: 77.6389
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 665.2949

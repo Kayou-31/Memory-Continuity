@@ -25,6 +25,24 @@ async function fixture(t,options={}){
  return{profileRoot,memory,server,authority,ctl,request,call,session,advance:ms=>now+=ms}
 }
 
+test('timed-out HTTP confirmation cannot subsequently publish workbench preferences',async t=>{
+ const f=await fixture(t,{requestTimeoutMs:500}),s=await f.session()
+ const snapshot=must((await f.call('/v1/admin/snapshot',{sessionId:s.sessionId})).body)
+ const review=must((await f.call('/v1/admin/prepare',{sessionId:s.sessionId,snapshotId:snapshot.id,action:'settings',payload:{impactConfirmation:false}})).body)
+ const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve}},reached=deferred(),release=deferred(),cleaned=deferred()
+ const bounded=p=>Promise.race([p,new Promise((_,reject)=>{const timer=setTimeout(()=>reject(Error('settings test deadline')),8000);timer.unref()})])
+ const open=fs.open,unlink=fs.unlink;let gated=false
+ const isTemporary=file=>String(file).includes('workbench-settings.json.')&&String(file).endsWith('.tmp')
+ fs.open=async(file,...args)=>{const h=await open(file,...args);if(isTemporary(file)){const sync=h.sync.bind(h);h.sync=async()=>{await sync();gated=true;reached.resolve();await release.promise}}return h}
+ fs.unlink=async(file,...args)=>{try{return await unlink(file,...args)}finally{if(isTemporary(file))cleaned.resolve()}}
+ try{
+  const pending=f.call('/v1/admin/confirm',{sessionId:s.sessionId,id:review.id});await bounded(reached.promise)
+  assert.equal((await pending).status,408);release.resolve();await bounded(cleaned.promise)
+  assert.equal(gated,true)
+  await assert.rejects(fs.readFile(path.join(f.profileRoot,'.dsh-rp/v1/workbench-settings.json'),'utf8'),{code:'ENOENT'},'no preference was published after timeout')
+ }finally{release.resolve();fs.open=open;fs.unlink=unlink}
+})
+
 test('loopback service rejects missing credentials, foreign origin/host and caller-invented authority',async t=>{
  const f=await fixture(t)
  assert.equal((await f.call('/v1/admin/status',{},null)).status,403)
@@ -159,6 +177,22 @@ test('explicit confirmation returns a durable outcome and cold duplicate confirm
  assert.deepEqual(must(await next.memory.store.readFence(next.authority)),expected)
  const separate=must(await next.call('/v1/admin/session',{bindingId:'separate'}))
  assert.equal((await next.call('/v1/admin/confirm',{sessionId:separate.sessionId,id:review.id})).code,'scope_denied')
+})
+
+test('core HTTP cancellation retires a prepared review and exposes bounded activity in the workbench',async t=>{
+ const f=await fixture(t),session=await f.session(),review=await editReview(f,session)
+ const before=must(await f.memory.store.readFence(f.authority))
+ assert.equal(must((await f.call('/v1/admin/cancel',{sessionId:session.sessionId,id:review.id})).body).status,'cancelled')
+ assert.equal((await f.call('/v1/admin/confirm',{sessionId:session.sessionId,id:review.id})).body.code,'stale_input')
+ assert.equal(must((await f.call('/v1/admin/snapshot',{sessionId:session.sessionId})).body).confirmationCapacity.active,0)
+ assert.deepEqual(must(await f.memory.store.readFence(f.authority)),before)
+})
+
+for(const host of ['independent-core','astrbot'])test(host+' workbench describes its actual capabilities and reopening path',async t=>{
+ const f=await fixture(t),session=await f.session(),opened=must((await f.call('/v1/admin/workbench',{sessionId:session.sessionId,...(host==='astrbot'?{host}:{})})).body),url=new URL(opened.url),token=url.hash.slice(1);url.hash=''
+ const page=await(await fetch(url)).text(),snapshot=must(await(await fetch(new URL('api/snapshot',url),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:'{}'})).json())
+ assert.equal(snapshot.capabilities.host,host);assert.equal(snapshot.capabilities.features.injectionPreview,false);assert.equal(snapshot.capabilities.features.chatBinding,false);assert.equal(snapshot.capabilities.features.continuation,false);assert.equal(snapshot.capabilities.features.documents,true)
+ assert.ok(page.includes(snapshot.capabilities.reopen));assert.match(snapshot.capabilities.reopen,host==='astrbot'?/memcont open/:/核心服务/)
 })
 
 test('a lost completion receipt stays uncertain after restart and never repeats an already applied change',async t=>{

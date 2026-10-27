@@ -4,7 +4,7 @@ import type {workbenchExtensions} from './workbench-extensions.js'
 import type {workbenchReading} from './workbench-reading.js'
 
 /** Self-contained browser entry. All person content is rendered as text. */
-export function workbenchClient(makeClient:typeof createManagementClient,extensions:typeof workbenchExtensions,makeVisuals:typeof workbenchVisuals,makeReading:typeof workbenchReading){
+export function workbenchClient(makeClient:typeof createManagementClient,extensions:typeof workbenchExtensions,makeVisuals:typeof workbenchVisuals,makeReading:typeof workbenchReading,capabilities:any){
  const {icon}=makeVisuals()
  const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T
  let credential=location.hash.slice(1)
@@ -39,9 +39,9 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
  const command=(root:HTMLElement,text:string)=>{const c=card(root);code(c,text);button(c,'复制指令',async()=>{try{await navigator.clipboard.writeText(text);message('已复制。请回到宿主执行。')}catch{message('无法访问剪贴板，请选择上面的指令手动复制。',true)}});return c}
  const empty=(root:HTMLElement,text:string)=>elem('div',text,root,'mc-empty')
  const hideReview=()=>{$<HTMLDialogElement>('review').close();$('inline-review').hidden=true;reviewId='';closeReview=false}
- const closeModal=()=>{if(busy)return;hideReview();focusBefore?.focus()}
+ const closeModal=async()=>{if(busy)return;setBusy(true);try{if(reviewId)await api.request('cancel',{id:reviewId});hideReview();focusBefore?.focus()}catch(e){fail(e)}finally{setBusy(false)}}
  const clear=()=>{epoch++;hideReview();snapshot=undefined;selected='';reviewId='';for(const id of ['content','person','scope','review-body','review-summary','review-error'])$(id).replaceChildren();$('chat-person').textContent='未绑定';$('person-name').textContent='选择人物';$('person-avatar').textContent='';$('person-menu').replaceChildren();$('person-menu').hidden=true;$('person-picker').setAttribute('aria-expanded','false');$('viewing-note').textContent='查看人物不会切换当前聊天。';$('breadcrumb').textContent='人物 / 工作台';$('stamp').textContent='';$<HTMLDialogElement>('review').close()}
- const invalidate=()=>{closed=true;clear();empty($('content'),'管理入口已关闭或失效。请在宿主执行 /memcont person manage，打开新地址。');message('人物数据已清空，旧地址不能恢复权限。',true)}
+ const invalidate=()=>{closed=true;clear();empty($('content'),'管理入口已关闭或失效。'+capabilities.reopen);message('人物数据已清空，旧地址不能恢复权限。',true)}
  const api=makeClient(fetch.bind(window),credential,invalidate);credential=''
  const drawer=(open:boolean)=>{$('sidebar').classList.toggle('open',open);$('scrim').classList.toggle('open',open);$('menu').setAttribute('aria-expanded',String(open))}
  const go=(next:string)=>{if(busy||closed||!snapshot)return;page=next;render();drawer(false);window.scrollTo(0,0);$('page-title')?.focus({preventScroll:true})}
@@ -61,6 +61,9 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
    closeReview=false;reviewId=review.id;$('review-summary').replaceChildren();const summary=$('review-summary'),impact=card(summary,review.impact.title)
    for(const change of review.impact.changes)elem('p',change,impact);note(impact,review.impact.history);note(impact,review.impact.recovery);note(impact,'影响范围：'+review.impact.branchId+(review.impact.personIds.length?' · '+review.impact.personIds.join('、'):''))
    if(action==='document-import'){const p=review.payload;elem('p',p.title,summary);note(summary,p.documentId+' · '+p.utf8Bytes.toLocaleString()+' 字节 · '+p.sections.length+' 个章节');details(summary,'逐章分类与条件',p.policies);details(summary,'核对完整原文',p.text);note(summary,'原文校验：'+p.sha256)}
+   else if(action==='experience-configure')note(summary,review.payload.enabled?'开启聊天中的低频经历提案；来源和人工采纳仍须核对。':'关闭新的提案，保留已有候选与正式经历。')
+   else if(action==='set-injection'){const field=snapshot.persons.find((p:any)=>p.personId===review.payload.personId)?.fields.find((f:any)=>f.fieldId===review.payload.fieldId);elem('p',field?.value??review.payload.fieldId,summary,'mc-reading');note(summary,review.payload.injection==='core'?'加入人物核心：日常对话也保留，仍受核心和总容量限制。':'恢复按原有类型与话题选择，不再显式标记为人物核心。');note(summary,'变化策略保持不变。理由：'+review.payload.note)}
+   else if(action==='experience-adopt'||action==='experience-reject'){const c=review.payload.candidate;elem('p',c.description,summary,'mc-reading');note(summary,'提出理由：'+c.reason);note(summary,'性质：'+({world:'发生的事',utterance:'人物的说法',uncertain:'不确定的理解'} as any)[c.epistemic]);for(const e of c.evidence){elem('blockquote',e.quote,summary,'mc-reading');details(summary,'原文来源与位置',e)}}
    else if(action==='summary-adopt'){note(summary,'采纳后这份摘要会成为当前人生线的正式记忆；原始来源继续保留。');elem('p',review.payload.summary?.text??'候选没有摘要正文',summary,'mc-reading');details(summary,'来源锚点与候选事件',{来源:review.payload.summary?.exactAnchors??[],事件:review.payload.proposedEvents})}
    else if(action==='settings')note(summary,review.payload.impactConfirmation?'以后修改时显示影响弹窗。':'以后在页面内显示预览，并保留“确认写入”按钮。')
    else if(action==='diary-configure'){note(summary,review.payload.allowAgentWrite?'你和 AI 都可以写日记，各自保留作者身份。':'你可以写日记；AI 的日记写入保持关闭。');note(summary,'当前范围：本机人物「'+personName(snapshot.persons.find((p:any)=>p.personId===review.payload.personId))+'」的共同日记。')}
@@ -78,11 +81,12 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
   }finally{setBusy(false)}
  }
  const refresh=async(success='')=>{
+  if(reviewId){try{await api.request('cancel',{id:reviewId})}catch(e){if((e as any)?.code!=='persistence_uncertain'){fail(e);return}message('上次操作结果仍需核对；本次刷新不会重发。',true)}}
   const ticket=++epoch;setBusy(true);hideReview();$('content').replaceChildren();empty($('content'),'正在读取已验证记录…');message('正在刷新…')
   try{const result=await api.request('snapshot');if(closed||ticket!==epoch)return;snapshot=result;if(!snapshot.persons.some((p:any)=>p.personId===selected))selected=snapshot.context?.personId??snapshot.persons[0]?.personId??''
    const picker=$<HTMLSelectElement>('person');picker.replaceChildren();if(!snapshot.persons.length){const o=elem('option','暂无人物',picker);o.value=''}
    for(const p of snapshot.persons){const o=elem('option',personName(p)+' · '+p.personId,picker);o.value=p.personId}picker.value=selected
-   const bound=snapshot.persons.find((p:any)=>p.personId===snapshot.context?.personId);$('chat-person').textContent=personName(bound);$('chat-person').title=snapshot.context?.sessionId??'未绑定'
+   const bound=snapshot.capabilities.features.chatBinding?snapshot.persons.find((p:any)=>p.personId===snapshot.context?.personId):undefined;$('chat-person').textContent=bound?personName(bound):'未连接聊天';$('chat-person').title=snapshot.context?.sessionId??'未绑定'
    $('stamp').textContent='r'+snapshot.fence.contextRevision+' · '+new Date().toLocaleTimeString('zh-CN',{hour12:false});$('scope').textContent='人生线 '+snapshot.fence.branchId
    render();message(success)
   }catch(e){if(ticket===epoch&&!closed){clear();empty($('content'),'读取失败，旧记录已清空。请手动刷新或重新打开入口。')}throw e}finally{setBusy(false)}
@@ -96,13 +100,13 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
  const createPerson=(root:HTMLElement)=>{
   title(root,'定义一个人物的起点','只使用宿主已授权的实体。空白字段保持未设定，不会自动补写经历。')
   const allowed=snapshot.entityIds.filter((id:string)=>!snapshot.persons.some((p:any)=>p.personId===id));if(!allowed.length){empty(root,'当前没有可创建的已授权实体。请先在宿主配置 entityIds，然后重新打开管理入口。');return}
-  const entity=select(root,'人物实体 ID',Object.fromEntries(allowed.map((id:string)=>[id,id]))),grid=elem('div','',root,'mc-grid'),fields:{kind:string;value:HTMLInputElement|HTMLTextAreaElement;policy:HTMLSelectElement}[]=[]
-  for(const kind of ['identity','background','trait','values','boundaries','voice']){const c=card(grid,names[kind]),value=input(c,'内容','',true),policy=select(c,'变化策略',{stable:'保持稳定',growable:'允许经确认成长'},['trait','background'].includes(kind)?'growable':'stable');fields.push({kind,value,policy})}
-  const actions=elem('div','',root,'mc-actions');button(actions,'预览人物定义',()=>preview('create',{schemaVersion:1,kind:'person-draft',personId:entity.value,fields:fields.filter(f=>f.value.value.trim()).map(f=>({fieldId:f.kind,kind:f.kind,value:f.value.value.trim(),policy:f.policy.value})),relationships:[],goals:[]}),'btn btn-primary');button(actions,'返回人物列表',()=>go('people'))
+  const entity=select(root,'人物实体 ID',Object.fromEntries(allowed.map((id:string)=>[id,id]))),grid=elem('div','',root,'mc-grid'),fields:{kind:string;value:HTMLInputElement|HTMLTextAreaElement;policy:HTMLSelectElement;injection:HTMLSelectElement}[]=[]
+  for(const kind of ['identity','background','trait','values','boundaries','voice']){const c=card(grid,names[kind]),value=input(c,'内容','',true),policy=select(c,'变化策略',{stable:'保持稳定',growable:'允许经确认成长'},['trait','background'].includes(kind)?'growable':'stable');const injection=select(c,'参与注入',{legacy:'保持原有类型与话题规则',core:'人物核心：日常对话也保留'},'legacy');fields.push({kind,value,policy,injection})}
+  const actions=elem('div','',root,'mc-actions');button(actions,'预览人物定义',()=>preview('create',{schemaVersion:1,kind:'person-draft',personId:entity.value,fields:fields.filter(f=>f.value.value.trim()).map(f=>({fieldId:f.kind,kind:f.kind,value:f.value.value.trim(),policy:f.policy.value,...(f.injection.value==='core'?{injection:'core'}:{})})),relationships:[],goals:[]}),'btn btn-primary');button(actions,'返回人物列表',()=>go('people'))
  }
  const renderProfile=(root:HTMLElement,p:any,editing=false)=>{
   if(!editing){reading('profile',root,p);return}
-  const hero=elem('header','',root,'persona-hero');elem('div',personName(p).slice(0,1),hero,'avatar lg');const name=elem('div','',hero,'names');elem('div','人物档案 · '+p.personId,name,'eyebrow');const heading=elem('h1',personName(p),name,'h1 persona-hero-title');heading.id='page-title';heading.tabIndex=-1;elem('p',p.fields.find((f:any)=>f.kind==='background')?.value??'故事从这里开始。',name,'aka');const markers=elem('div','',name,'who-markers');elem('span','正在查看',markers,'chip marker-viewing');if(p.personId===snapshot.context?.personId)elem('span','当前聊天使用',markers,'chip marker-chat')
+  const hero=elem('header','',root,'persona-hero');elem('div',personName(p).slice(0,1),hero,'avatar lg');const name=elem('div','',hero,'names');elem('div','人物档案 · '+p.personId,name,'eyebrow');const heading=elem('h1',personName(p),name,'h1 persona-hero-title');heading.id='page-title';heading.tabIndex=-1;elem('p',p.fields.find((f:any)=>f.kind==='background')?.value??'故事从这里开始。',name,'aka');const markers=elem('div','',name,'who-markers');elem('span','正在查看',markers,'chip marker-viewing');if(snapshot.capabilities.features.chatBinding&&p.personId===snapshot.context?.personId)elem('span','当前聊天使用',markers,'chip marker-chat')
   const actions=elem('div','',hero,'hero-acts row');button(actions,editing?'完成编辑':'编辑档案',()=>{hideReview();root.replaceChildren();renderProfile(root,p,!editing)},editing?'btn':'btn btn-primary').prepend(icon(editing?'check':'edit'))
   note(root,'逐项预览并保存。只有点“确认写入”的修改才会进入人物；结束编辑不会自动保存草稿。')
   const section=elem('div','',root,'section-head');elem('h2','身份与性格',section,'h2');elem('span','先读懂一个人，再决定怎样修改',section,'sub')
@@ -110,6 +114,7 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
    if(f.validity)details(c,'情境适用范围',f.validity);if(f.kind==='feeling')note(c,'这是一条感受记录，不代表已经证实的外部事实。')
    const actions=elem('div','',c,'mc-actions');button(actions,'预览修改',()=>preview('edit',{personId:selected,fieldId:f.fieldId,value:value.value,note:noteInput.value,...(f.validity?{validity:f.validity}:{})}),'btn btn-sm btn-primary')
    button(actions,'预览策略变更',()=>{if(policy.value==='situational'&&!f.validity)throw Error('当前字段没有情境范围。请通过可信人物指令设置 scene 或 sequence 有效期。');return preview('set-policy',{personId:selected,fieldId:f.fieldId,policy:policy.value,note:noteInput.value,...(policy.value==='situational'?{validity:f.validity}:{})})},'btn btn-sm')
+   const injection=select(c,'参与注入（与变化策略独立）',{default:'按原有类型与话题规则',core:'人物核心：日常对话也保留'},f.injection??'default');note(c,'身份、价值观、边界和表达仍按原规则保留；核心有独立预算，超限会提示调整，不会自动删减。');button(actions,'预览核心选择',()=>preview('set-injection',{personId:selected,fieldId:f.fieldId,injection:injection.value,note:noteInput.value}),'btn btn-sm');
    sourceInfo(c,{eventId:f.eventId,sourceRevisionIds:timeline(p.personId).find((x:any)=>x.eventId===f.eventId)?.sourceRevisionIds??[]})
   }note(root,'情境感受和阶段可通过人物草稿定义。日历到期、任意增删现有字段等能力列入未来计划。')
  }
@@ -154,12 +159,14 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
  }
  const renderInjection=(root:HTMLElement)=>{
   title(root,'记忆注入预览','输入这一轮的话题，查看人物会带着哪些记忆进入对话、为什么选它们，以及最终交给模型阅读的文字。')
+  if(!snapshot.capabilities.features.injectionPreview){note(card(root,'当前入口未接入聊天请求预览'),snapshot.capabilities.notice);button(root,'查看人物档案',()=>go('profile'),'btn btn-primary');return}
   const banner=elem('div','',root,'preview-banner');banner.append(icon('layers'));elem('span','仅预览。不发送给模型，不修改记忆。实际发送前仍会重新验证权限与版本。',banner)
   const bound=snapshot.persons.find((p:any)=>p.personId===snapshot.context?.personId),c=elem('section','',root,'panel query-panel')
   c.setAttribute('aria-label','预览设置');note(c,'预览对象：'+personName(bound)+'。查看其他档案不会改变当前对话绑定。')
   const query=input(c,'这一轮的话题或问题','',true,8192) as HTMLTextAreaElement;query.rows=2;query.placeholder='例如：我们还有什么尚未兑现的约定？'
   const options=elem('div','',c,'opt-row'),configuration=fold(root,'分层与条件设置'),config=input(configuration,'注入配置 JSON',JSON.stringify(snapshot.context?.injection?.config??{},null,2),true,32768)
-  note(configuration,'配置经预览确认后保存；可设置 depth、budgets、pin、exclude、aliases 和 rules。token 总额及分层上限在“记忆预算”页管理。')
+  note(configuration,'配置经预览确认后保存；可设置 depth、budgets、coreBudget、pin、exclude、aliases 和 rules。token 总额及分层上限在“记忆预算”页管理。')
+  const coreBudget=input(configuration,'人物核心上限（当前计量单位，最多 8192）',String(snapshot.context?.injection?.config?.coreBudget??4096)) as HTMLInputElement;coreBudget.type='number';coreBudget.min='1';coreBudget.max='8192';note(configuration,'明确选择核心后，身份、边界、表达与选中的核心字段共同受此上限约束，也受总预算约束。旧人物未选核心时保持原规则。');button(configuration,'预览核心预算',()=>preview('host-injection',{config:{...JSON.parse(config.value),coreBudget:Number(coreBudget.value)}}),'btn btn-sm')
   const configActions=elem('div','',configuration,'row');button(configActions,'预览注入配置',()=>preview('host-injection',{config:JSON.parse(config.value)}),'btn btn-primary');button(configActions,'预览关闭分层注入',()=>preview('host-injection',{config:null}))
   const summary=elem('div','',options,'mc-preview-options'),capacity=elem('div','',summary,'stack'),depth=elem('div','',summary,'stack');note(capacity,'当前总记忆容量');elem('strong',snapshot.context?.memoryBudget?snapshot.context.memoryBudget.limitTokens.toLocaleString()+' 计量单位':'旧版 UTF-8 字节预算',capacity);note(depth,'当前最大展开深度');elem('strong',depths[snapshot.context?.injection?.config?.depth]??'尚未设置',depth);button(summary,'调整配置',()=>{(configuration.parentElement as HTMLDetailsElement).open=true;configuration.scrollIntoView({behavior:'smooth'})},'btn btn-sm btn-ghost')
   const output=elem('div','',root,'stack-lg')
@@ -194,15 +201,15 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
   if(diagnostic?.blocked||diagnostic?.requestAdmission?.state==='rejected'){const warning=card(root,'当前请求不能继续发送');warning.classList.add('callout-cand');note(warning,diagnostic.recovery?.detail??'当前请求未通过准入检查。请先查看状态并核对已完成内容，不要直接重复发送。');details(warning,'查看诊断详情',{requestAdmission:diagnostic.requestAdmission,lastError:diagnostic.lastError,recovery:diagnostic.recovery});command(warning,diagnostic.recovery?.action==='continue-clean'?'/memcont status\n/memcont continue-clean':'/memcont status')}
   const handoff=card(root,'出发前，把重要的事放在手边');note(handoff,'按需预览关键用户原话、当前状态、已确认经历和待办。只读取当前授权分支，不发送给模型，也不自动创建会话。');const handoffOutput=elem('div','',handoff,'stack')
   button(handoff,'生成交接预览',async()=>{setBusy(true);handoffOutput.replaceChildren();try{const result=await api.request('organize',{snapshotId:snapshot.id,operation:'handoff'});for(const [heading,items]of [['关键用户原话',result.userQuotes.map((q:any)=>({text:q.text,detail:q.span}))],['已确认经历与人物起点',result.confirmedExperiences.map((e:any)=>({text:e.payload.description,detail:e.sources}))],['未完成事项',result.openCommitments.map((s:any)=>({text:s.value?.objective??s.key,detail:s}))]] as [string,any[]][]){const c=card(handoffOutput,heading);if(!items.length)note(c,'当前没有可带入的记录。');for(const item of items){elem('p',item.text,c,'mc-reading');details(c,'查看来源',item.detail)}}details(handoffOutput,'当前状态与有方向的关系',{状态:result.currentState,关系:result.relationships});note(handoffOutput,result.notice);details(handoffOutput,'覆盖范围与版本',result.coverage);button(handoffOutput,'复制这份交接预览',async()=>{try{await navigator.clipboard.writeText(JSON.stringify(result,null,2));message('已复制当前交接预览。更正或删除后请重新生成。')}catch{details(handoffOutput,'手动选择并复制',result)}})}finally{setBusy(false)}},'btn btn-primary')
-  const binding=elem('section','',root,'panel stack');handoff.before(binding);const currentHead=elem('div','',binding,'row-between');elem('h2','当前会话',currentHead,'h2');button(currentHead,'准备开启新会话',()=>{(next.parentElement as HTMLDetailsElement).open=true;next.scrollIntoView({behavior:'smooth'})},'btn btn-primary');const chain=elem('div','',binding,'chain'),item=elem('div','',chain,'chain-item'),rail=elem('div','',item,'chain-rail');elem('span','',rail,'chain-dot active');const body=elem('div','',item,'chain-body');elem('strong',personName(snapshot.persons.find((p:any)=>p.personId===snapshot.context?.personId)),body);note(body,snapshot.context?.sessionId?'沿当前人生线继续；开始时间和轮数尚未由宿主提供。':'当前是独立管理空间，没有宿主聊天会话。');details(body,'会话与人生线编号',{会话:snapshot.context?.sessionId??null,人生线:snapshot.fence.branchId})
+  const binding=elem('section','',root,'panel stack');handoff.before(binding);const currentHead=elem('div','',binding,'row-between');elem('h2','当前会话',currentHead,'h2');const continueButton=button(currentHead,'准备开启新会话',()=>{(next.parentElement as HTMLDetailsElement).open=true;next.scrollIntoView({behavior:'smooth'})},'btn btn-primary');if(!snapshot.capabilities.features.continuation){continueButton.disabled=true;continueButton.dataset.unavailable='true'}const chain=elem('div','',binding,'chain'),item=elem('div','',chain,'chain-item'),rail=elem('div','',item,'chain-rail');elem('span','',rail,'chain-dot active');const body=elem('div','',item,'chain-body');elem('strong',personName(snapshot.persons.find((p:any)=>p.personId===snapshot.context?.personId)),body);note(body,snapshot.context?.sessionId?'沿当前人生线继续；开始时间和轮数尚未由宿主提供。':'当前是独立管理空间，没有宿主聊天会话。');details(body,'会话与人生线编号',{会话:snapshot.context?.sessionId??null,人生线:snapshot.fence.branchId})
   const plan=elem('div','',root,'carry-plan');for(const [heading,cls,items]of [['继续带着','yes',['有效的人物定义与已确认经历','当前人生线、关系和未完成事项','经过认证的人物绑定与注入配置']],['留在旧会话','no',['旧宿主聊天消息和未经认证的工具结果','尚未采纳的成长候选不会变成事实','结果不明的输入不会自动重发']]] as [string,string,string[]][]){const panel=elem('section','',plan,'panel stack');elem('h2',heading,panel,'h2');const list=elem('ul','',panel,'plan-list '+cls);for(const text of items){const li=elem('li','',list);li.append(icon(cls==='yes'?'check':'x'));elem('span',text,li)}}
-  handoff.before(plan);const next=fold(root,'开启干净的新会话');note(next,'在 DSH 中执行以下指令，再选择返回的新根会话；独立核心不代替宿主创建聊天。');command(next,'/memcont continue-clean')
+  handoff.before(plan);const next=fold(root,'开启干净的新会话');note(next,snapshot.capabilities.features.continuation?'在 DSH 中执行以下指令，再选择返回的新根会话。':'当前入口可准备交接资料，但没有接入新聊天会话的创建。');if(snapshot.capabilities.features.continuation)command(next,'/memcont continue-clean')
   const scopes=elem('section','',root,'stack'),h=elem('div','',scopes,'section-head');elem('h2','记忆的两种范围',h,'h2');const grid=elem('div','',scopes,'grid-2');for(const [name,text]of [['人物人生线','定义、经历、关系和承诺按人物与分支读取，保持各自的来源。'],['全局记忆','通用偏好与世界设定通过明确授权发布、采用或撤销，不自动共享私人记忆。']]){const c=elem('section','',grid,'panel stack');elem('h3',name,c,'h3');elem('p',text,c,'muted')}
-  const controls=fold(root,'绑定与全局记忆操作');button(controls,'预览绑定当前查看人物',()=>preview('host-person',{personId:selected}),'btn btn-primary');command(controls,'/memcont help memory\n/memcont help storage')
+  const controls=fold(root,'绑定与全局记忆操作');if(snapshot.capabilities.features.chatBinding){button(controls,'预览绑定当前查看人物',()=>preview('host-person',{personId:selected}),'btn btn-primary');command(controls,'/memcont help memory\n/memcont help storage')}else note(controls,snapshot.capabilities.notice)
  }
  const renderRules=(root:HTMLElement)=>{
   title(root,'让他以怎样的方式陪伴你','用途与规则 · 只改变当前聊天配置，人物规则不能授予额外权限。')
-  const config=snapshot.context?.config,mode=config?.mode??'rp',host=typeof snapshot.context?.cleanRoot==='boolean',clean=snapshot.context?.cleanRoot===true
+  const config=snapshot.context?.config,mode=config?.mode??'rp',host=snapshot.capabilities.features.hostRules===true,clean=snapshot.context?.cleanRoot===true
   const configure=(action:string,payload:any)=>{if(!host)throw Error('独立核心不接管宿主聊天配置，请在相应宿主中设置。');if(!clean){message('当前会话已有历史。请先干净续接，再在新会话打开工作台修改配置。',true);go('continuity');return}return preview(action,payload)}
   const purposes=elem('section','',root,'stack'),purposeHead=elem('div','',purposes,'section-head');elem('h2','用途',purposeHead,'h2');note(purposeHead,host?(clean?'空白会话 · 确认后生效':'已有历史 · 请先干净续接'):'此核心没有宿主用途绑定')
   const grid=elem('div','',purposes,'purpose-grid'),descriptions:Record<string,string>={rp:'在故事与角色之间保持连续。',companion:'保留共同经历、关系和约定。',creation:'延续人物与世界的创作。',project:'让目标、决策与进展有据可循。'}
@@ -219,11 +226,11 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
    const add=(id:string,value:string)=>{if(drafts.length>=16)throw Error('最多 16 条规则。');const row=elem('div','',rows,'stack'),text=input(row,'规则内容',value,true,512),draft={id,text,node:row};drafts.push(draft);button(row,'从草稿中移除',()=>{drafts.splice(drafts.indexOf(draft),1);row.remove()},'btn btn-sm btn-danger-ghost')};for(const g of guidance)add(g.id,g.text)
    button(form,'添加规则',()=>add('guidance_'+crypto.randomUUID().replaceAll('-',''),''),'btn btn-sm');button(form,'预览保存规则',()=>configure('host-constraints',{constraints:{...config.constraints,guidance:drafts.map(d=>({id:d.id,text:d.text.value.trim()}))}}),'btn btn-primary')
   }else note(user,'此独立核心管理页尚未接入宿主用途配置。')
-  const controls=fold(root,'高级约束与指令');command(controls,'/memcont help modules');details(controls,'当前真实运行配置',config??{说明:'没有宿主配置'})
+  const controls=fold(root,'高级约束与指令');if(host)command(controls,'/memcont help modules');details(controls,'当前真实运行配置',config??{说明:'没有宿主配置'})
  }
  const render=()=>{
   epoch++;hideReview();const root=$('content');root.replaceChildren();$('nav').replaceChildren();for(const group of ['人物','记忆','对话','管理']){const section=elem('div','',$('nav'),'nav-group');elem('div',group,section,'nav-title');for(const [key,label,g,_glyph]of pages.filter(p=>p[2]===group)){const b=button(section,label,()=>go(key),'nav-item');const glyph=({people:'users',profile:'user',documents:'source',experiences:'book',relations:'arrows',goals:'target',growth:'sprout',diary:'edit',organize:'layers',inject:'layers',continuity:'thread',rules:'sliders',budget:'target',settings:'sliders'} as Record<string,string>)[key];b.prepend(icon(glyph));if(key==='growth'&&selected){const count=snapshot?.candidates.filter((c:any)=>c.state==='pending'&&c.changes.some((x:any)=>x.personId===selected)).length;if(count)elem('span',String(count),b,'nav-tag')}b.setAttribute('aria-current',page===key?'page':'false')}}
-  if(!snapshot)return;const p=current();$('breadcrumb').textContent=(page==='people'?'人物':personName(p))+'  /  '+(pages.find(x=>x[0]===page)?.[1]??'创建人物');$('person-name').textContent=personName(p);$('person-avatar').textContent=personName(p).slice(0,1);$('viewing-note').textContent=p?.personId===snapshot.context?.personId?'也是当前聊天使用的人物':'查看人物不会切换当前聊天。';$('person-menu').hidden=true;$('person-picker').setAttribute('aria-expanded','false');if(p&&p.personId!==snapshot.context?.personId){elem('div','正在查看「'+personName(p)+'」。当前聊天使用「'+personName(snapshot.persons.find((x:any)=>x.personId===snapshot.context?.personId))+'」。',root,'callout callout-cand').setAttribute('role','note')}
+  if(!snapshot)return;const p=current();$('breadcrumb').textContent=(page==='people'?'人物':personName(p))+'  /  '+(pages.find(x=>x[0]===page)?.[1]??'创建人物');$('person-name').textContent=personName(p);$('person-avatar').textContent=personName(p).slice(0,1);$('viewing-note').textContent=snapshot.capabilities.features.chatBinding&&p?.personId===snapshot.context?.personId?'也是当前聊天使用的人物':'查看人物不会切换当前聊天。';$('person-menu').hidden=true;$('person-picker').setAttribute('aria-expanded','false');if(snapshot.capabilities.features.chatBinding&&p&&p.personId!==snapshot.context?.personId){elem('div','正在查看「'+personName(p)+'」。当前聊天使用「'+personName(snapshot.persons.find((x:any)=>x.personId===snapshot.context?.personId))+'」。',root,'callout callout-cand').setAttribute('role','note')}
   if(page==='new'){createPerson(root);return}if(page==='people'){reading('people',root);return}if(page==='organize'){reading('organize',root);return}if(page==='inject'){renderInjection(root);return}if(page==='continuity'){renderContinuity(root);return}if(page==='rules'){renderRules(root);return}
   if((p||['budget','settings'].includes(page))&&extensions(page,root,{snapshot,selected,elem,title,card,note,input,select,button,details,chip,preview,api,message,setBusy,command,fold,icon}))return
   if(!p){title(root,'先定义一个人物','人物的经历、关系与成长将在这里延续。');empty(root,'当前没有可查看人物。');button(root,'新建人物',()=>go('new'),'btn btn-primary');return}
@@ -233,12 +240,31 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
  const applyTheme=()=>{if(theme==='system')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=theme;for(const b of $('theme').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.theme===theme))}
  for(const [value,label,glyph]of [['light','浅色','☀'],['dark','深色','☾'],['system','跟随系统','◐']]){const b=elem('button','',$('theme'));b.append(icon(value==='light'?'sun':value==='dark'?'moon':'monitor'));elem('span',label,b,'t-label');b.type='button';b.dataset.theme=value;b.title=label;b.setAttribute('aria-label',label);b.onclick=()=>{theme=value;applyTheme();try{localStorage.setItem('memcont-theme',theme)}catch{}}}applyTheme()
  $('menu').replaceChildren(icon('menu'));$('refresh').replaceChildren(icon('refresh'));$('viewing-label').prepend(icon('eye'));$('person-picker').append(icon('chevDown'));$('new').prepend(icon('plus'));$('close').replaceChildren(icon('power'));$('close').setAttribute('aria-label','关闭管理入口');$('close').setAttribute('title','关闭管理入口');
- $('person-picker').onclick=()=>{if(busy||closed||!snapshot)return;const menu=$('person-menu');menu.hidden=!menu.hidden;$('person-picker').setAttribute('aria-expanded',String(!menu.hidden));menu.replaceChildren();for(const p of snapshot.persons){const b=button(menu,'',()=>{selected=p.personId;$<HTMLSelectElement>('person').value=selected;render()},'');elem('span',personName(p).slice(0,1),b,'avatar sm');elem('span',personName(p),b,'pm-name');if(p.personId===selected)b.append(icon('check'))}button(menu,'管理全部人物',()=>go('people'),'')};
+ $('person-picker').onclick=()=>{
+  if(busy||closed||!snapshot)return
+  const menu=$('person-menu');menu.hidden=!menu.hidden;$('person-picker').setAttribute('aria-expanded',String(!menu.hidden));menu.replaceChildren()
+  for(const p of snapshot.persons){
+   const viewing=p.personId===selected,chat=snapshot.capabilities.features.chatBinding&&p.personId===snapshot.context?.personId
+   const b=button(menu,'',()=>{selected=p.personId;$<HTMLSelectElement>('person').value=selected;render()},'pm-person')
+   elem('span',Array.from(String(personName(p)))[0]??'人',b,'avatar sm')
+   const info=elem('span','',b,'pm-info');elem('span',personName(p),info,'pm-name');const tags=elem('span','',info,'pm-tags')
+   // Purpose belongs to the bound conversation, not to every person in the list.
+   const purpose=chat?modes[snapshot.context?.config?.mode??snapshot.context?.mode]:undefined
+   if(purpose)elem('span',purpose,tags,'pm-tag')
+   if(chat)elem('span','当前聊天使用',tags,'pm-tag pm-tag-chat')
+   else if(viewing)elem('span','正在查看',tags,'pm-tag pm-tag-viewing')
+   const pending=(snapshot.candidates??[]).filter((c:any)=>c.state==='pending'&&c.changes.some((x:any)=>x.personId===p.personId)).length+(snapshot.experienceCandidates?.find((x:any)=>x.personId===p.personId)?.items.filter((x:any)=>x.state==='pending').length??0)
+   if(pending)elem('span','待审阅 '+pending,tags,'pm-tag pm-tag-pending')
+   if(!tags.childElementCount)elem('span','已建档',tags,'pm-tag')
+   if(viewing){const check=elem('span','',b,'pm-selected');check.title='正在查看';if(chat)elem('span','正在查看',check,'sr-only');check.append(icon('check'))}
+  }
+  const manage=button(menu,'管理全部人物',()=>go('people'),'');manage.prepend(icon('users'))
+ };
  $('menu').onclick=()=>drawer($('menu').getAttribute('aria-expanded')!=='true');$('scrim').onclick=()=>drawer(false);document.addEventListener('keydown',e=>{if(e.key==='Escape')drawer(false)})
  $('brand').onclick=e=>{e.preventDefault();go('people')};$('new').onclick=()=>go('new');$('person').onchange=()=>{if(!busy&&!closed){selected=$<HTMLSelectElement>('person').value;render()}}
  $('refresh').onclick=()=>{if(!busy&&!closed)refresh().catch(fail)}
  for(const id of ['cancel','cancel-x'])$(id).onclick=closeModal;$<HTMLDialogElement>('review').oncancel=e=>{e.preventDefault();closeModal()}
- const askClose=()=>{if(busy||closed)return;closeReview=true;reviewId='';$('review-summary').replaceChildren();note($('review-summary'),'关闭会撤销当前管理入口并清空页面记录；宿主聊天不受影响。再次管理需要通过 /memcont person manage 获取新地址。');$('review-body').textContent='撤销本次管理凭证';showReview('关闭管理入口？')}
+ const askClose=()=>{if(busy||closed)return;closeReview=true;reviewId='';$('review-summary').replaceChildren();note($('review-summary'),'关闭会撤销当前管理入口并清空页面记录；已保存的人物与记忆仍然保留。'+capabilities.reopen+'');$('review-body').textContent='撤销本次管理凭证';showReview('关闭管理入口？')}
  $('close').onclick=askClose;$('close-side').onclick=askClose
  $('confirm').onclick=async()=>{if(busy||closed)return;if(closeReview){setBusy(true);try{await api.request('close');message('管理入口已关闭。')}catch(e){fail(e)}finally{setBusy(false)}return}if(!reviewId)return
   const confirmed=reviewId;setBusy(true);$('review-error').textContent='';try{await api.request('confirm',{id:confirmed});if(closed)return;$<HTMLDialogElement>('review').close();reviewId='';if(page==='new')page='people';await refresh('已确认写入并重新读取。旧聊天如提示上下文失效，请干净续接。')}catch(e){fail(e)}finally{setBusy(false)}

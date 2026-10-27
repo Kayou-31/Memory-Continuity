@@ -1,3 +1,4 @@
+import type {ExperienceService} from '../experience-candidates.js'
 /** Explicit user management capability. No model tools or autonomous work. */
 import {randomUUID,createHash} from 'node:crypto'
 import {canonical,type RpStore} from '../store.js'
@@ -23,7 +24,7 @@ export interface ManagementHost {
  prepare(action:string,payload:unknown):Promise<{payload:unknown;command:string}>
  apply(command:string,key:string,check:()=>Promise<void>):Promise<unknown>
 }
-export function createManagementService(store:RpStore,control:Parameters<typeof createCanonicalService>[1],entities:readonly string[],coordinator:MemoryCoordinator,profileRoot:string,assistance?:{organizer:ReturnType<typeof createOrganizer>;summaries:SummaryService}){
+export function createManagementService(store:RpStore,control:Parameters<typeof createCanonicalService>[1],entities:readonly string[],coordinator:MemoryCoordinator,profileRoot:string,assistance?:{organizer:ReturnType<typeof createOrganizer>;summaries:SummaryService;experienceCandidates:ExperienceService}){
  const canonicalService=createCanonicalService(store,control,{entityIds:entities}),person=createPersonService(store,canonicalService,entities),agent=createAgentMemory(store,canonicalService,entities)
  const settings=workbenchSettings(profileRoot)
  return Object.freeze({create(authority:HostAuthority,active:()=>boolean=()=>true,host?:ManagementHost,summaryContext:SummaryContext={}){
@@ -43,8 +44,10 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
    assertActive:guard,
    revoke(){revoked=true;snapshots.clear();reviews.clear();extra.revoke()},
    async upload(input:unknown){return coordinator.mutate(async()=>{await authorize();const result=await extra.upload(input);guard();return result})},
-   async discardUpload(id:string){await authorize();return extra.discardUpload(id)},
-   async read(input:unknown){await authorize();const result=await extra.read(input);guard();return result},
+   async discardUpload(id:string){return coordinator.mutate(async()=>{await authorize();return extra.discardUpload(id)})},
+   async updateUpload(input:unknown){return coordinator.mutate(async()=>{await authorize();return extra.updateUpload(input)})},
+   async cancel(id:string):Promise<unknown>{return coordinator.mutate(async()=>{await authorize();text(id,64);const review=reviews.get(id);if(review?.attempted&&!review.done)throw new RpError('persistence_uncertain','这项修改已尝试，请核对结果；不能当作未执行预览取消');if(review?.done)return {committed:true};reviews.delete(id);return {cancelled:true}})},
+   async read(input:unknown){await authorize();const r=object(cloneInput(input),['kind','personId','id']);const result=r.kind==='experience-candidate'&&assistance?unwrap(await assistance.experienceCandidates.get(authority,r.personId,r.id)):await extra.read(input);guard();return result},
    async organize(input:unknown){
     const r=object(cloneInput(input),['snapshotId','operation'],['candidateId']);text(r.snapshotId,64)
     await authorize();const stamp=snapshots.get(r.snapshotId);if(!stamp)throw new RpError('scope_denied','Unknown management snapshot');await check(stamp)
@@ -69,9 +72,10 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
     },{audit:true}))
     const candidates=unwrap(await person.list(authority)),timelines=[]
     for(const p of data.persons){const t=unwrap(await person.timeline(authority,p.personId));timelines.push({...t,changes:t.changes.slice(-200),changeCount:t.changes.length})}
-    const extension=await extra.snapshot(data.persons.map(p=>p.personId))
+    const extension=await extra.snapshot(data.persons.map(p=>p.personId)),experienceCandidates=[]
+    if(assistance)for(const p of data.persons)experienceCandidates.push({personId:p.personId,settings:unwrap(await assistance.experienceCandidates.settings(authority,p.personId)),...unwrap(await assistance.experienceCandidates.list(authority,p.personId))})
     const stamp={fence:structuredClone(data.fence),candidatesHash:digest(candidates),preferences:extension.preferences,hostHash:digest(host?.snapshot()??null)};await check(stamp)
-    const id=uid(),result={id,entityIds:[...entities],...data,...extension,candidates,timelines,notice:'手动刷新；每次变更先预览再确认。人物变化后，旧聊天可能需要 /memcont continue-clean。'}
+    const id=uid(),result={id,entityIds:[...entities],...data,...extension,experienceCandidates,candidates,timelines,notice:'手动刷新；每次变更先预览再确认。人物变化后，旧聊天可能需要 /memcont continue-clean。'}
     if(Buffer.byteLength(canonical(result))>2*1024*1024)throw new RpError('capacity_exceeded','Management snapshot exceeds 2 MiB; use bounded core commands')
     retain(snapshots,id,stamp);return result
    })},
@@ -82,12 +86,15 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
      guard();const stamp=snapshots.get(r.snapshotId);if(!stamp)throw new RpError('scope_denied','Unknown management snapshot');await check(stamp)
      const id=uid(),review:Review={stamp:structuredClone(stamp),action:r.action,payload:r.payload,key:'manager_'+id}
      if(r.action==='create'){const p=unwrap(await person.preview(authority,r.payload,review.key));review.handle=p.handle;review.payload=p.draft}
-     else if(['edit','set-policy'].includes(r.action)){
-      const op=object(r.payload,['personId','fieldId','note',r.action==='edit'?'value':'policy'],['validity'])
+     else if(['edit','set-policy','set-injection'].includes(r.action)){
+      const op=object(r.payload,['personId','fieldId','note',r.action==='edit'?'value':r.action==='set-injection'?'injection':'policy'],['validity'])
+      if(typeof op.note!=='string'||!op.note.trim())throw new RpError('invalid_record','请先填写这次修改的理由，再预览。')
       const current=unwrap(await person.read(authority,op.personId)).fields.find(f=>f.fieldId===op.fieldId)
       if(!current)throw new RpError('source_unavailable','Current person field unavailable')
       review.payload={...op,previousEventId:current.eventId,operation:r.action}
-     }else if(r.action==='adopt')object(r.payload,['candidateIds'])
+     }else if(r.action==='experience-configure'){const p=object(r.payload,['personId','enabled']);if(!assistance)throw new RpError('capability_missing','经历候选未接入');if(typeof p.enabled!=='boolean')throw new RpError('invalid_record','Explicit boolean required');review.payload={...p,previousPolicyId:unwrap(await assistance.experienceCandidates.settings(authority,p.personId)).policyId}}
+     else if(['experience-adopt','experience-reject'].includes(r.action)){const p=object(r.payload,['personId','candidateId']);if(!assistance)throw new RpError('capability_missing','经历候选未接入');review.payload={...p,candidate:unwrap(await assistance.experienceCandidates.get(authority,p.personId,p.candidateId))}}
+     else if(r.action==='adopt')object(r.payload,['candidateIds'])
      else if(r.action==='reject')object(r.payload,['candidateId'])
      else if(r.action==='propose')object(r.payload,['changes'])
      else if(r.action==='summary-adopt'){
@@ -113,6 +120,14 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
    },
    async confirm(id:string){
     text(id,64);const candidate=reviews.get(id)
+    if(candidate&&['experience-configure','experience-adopt','experience-reject'].includes(candidate.action)){
+     await authorize();if(candidate.done){unwrap(await store.ensureDurable(authority,unwrap(await store.readFence(authority))));guard();return structuredClone(candidate.result)}
+     if(!candidate.confirming)candidate.confirming=withPublicationGuard(guard,async()=>{
+      const source=await coordinator.mutate(async()=>{await authorize();if(!candidate.attempted)await check(candidate.stamp);candidate.attempted=true;return unwrap(await store.observeSource(authority,{idempotencyKey:candidate.key,origin:'user_control',role:'user_control',turnId:candidate.key,publicText:'用户明确确认经历候选操作 '+candidate.action+' '+digest(candidate.payload)}))})
+      guard();const p=candidate.payload,result=candidate.action==='experience-configure'?unwrap(await assistance!.experienceCandidates.configure(authority,source,{personId:p.personId,enabled:p.enabled,key:candidate.key,expectedPolicyId:p.previousPolicyId})):unwrap(await assistance!.experienceCandidates.decide(authority,source,{personId:p.personId,candidateId:p.candidateId,decision:candidate.action==='experience-adopt'?'accepted':'rejected',key:candidate.key}));guard();candidate.result=result;candidate.done=true;return structuredClone(result)
+     }).finally(()=>{candidate.confirming=undefined})
+     return candidate.confirming
+    }
     if(candidate?.action==='summary-adopt'){
      await authorize();if(candidate.done){unwrap(await store.ensureDurable(authority,unwrap(await store.readFence(authority))));guard();return structuredClone(candidate.result)}
      // Summary publication owns the coordinator itself; never await it under the management lock.
@@ -137,15 +152,16 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
     return coordinator.mutate(()=>withPublicationGuard(guard,async()=>{
     await authorize();text(id,64);const r=reviews.get(id);if(!r)throw new RpError('scope_denied','Unknown management review')
     if(r.done){unwrap(await store.ensureDurable(authority,unwrap(await store.readFence(authority))));guard();return structuredClone(r.result)}
-    const prefix=r.action==='create'?'person:':r.action==='edit'||r.action==='set-policy'?'person_edit:':r.action==='adopt'?'person_adopt:':r.action==='reject'?'person_reject:':''
+    const prefix=r.action==='create'?'person:':r.action==='edit'||r.action==='set-policy'||r.action==='set-injection'?'person_edit:':r.action==='adopt'?'person_adopt:':r.action==='reject'?'person_reject:':''
     const prior=r.attempted&&r.action!=='propose'?unwrap(await store.readControlCommit(authority,prefix+r.key)):null
     if(!prior&&!(r.attempted&&r.extension))await check(r.stamp)
+    if(!r.attempted)r.extension?.validate?.()
     r.attempted=true
     const ctl=unwrap(await store.observeSource(authority,{idempotencyKey:r.key,origin:'user_control',role:'user_control',turnId:r.key,publicText:'用户在本机管理页明确确认 '+r.action+' '+digest(r.payload)}));guard()
     let result:unknown
     if(r.extension)result=await r.extension.execute(ctl)
     else if(r.action==='create')result=unwrap(await person.confirm(authority,r.handle!,ctl))
-    else if(r.action==='edit'||r.action==='set-policy')result=unwrap(await person.apply(authority,ctl,{...r.payload,expected:r.stamp.fence,idempotencyKey:r.key}))
+    else if(r.action==='edit'||r.action==='set-policy'||r.action==='set-injection')result=unwrap(await person.apply(authority,ctl,{...r.payload,expected:r.stamp.fence,idempotencyKey:r.key}))
     else if(r.action==='adopt')result=unwrap(await person.adopt(authority,ctl,r.payload.candidateIds,r.key))
     else if(r.action==='reject')result=unwrap<unknown>(await person.reject(authority,ctl,r.payload.candidateId,r.key,r.stamp.fence))
     else if(r.action==='propose'){const p=unwrap(await person.propose(authority,r.payload,r.key,r.stamp.fence));result={candidateId:p.id}}
