@@ -36,3 +36,15 @@ test('content revocation after the final metadata bytes were read cannot release
  fs.readFile=async(file,...args)=>{const data=await read(file,...args);if(!changed&&String(file).endsWith(path.sep+'seal.json')&&++seals===4){changed=true;must(await f.global.control.revoke(f.other,f.approval,{idempotencyKey:'late_revoke',expected:must(await f.global.store.readFence(f.other)),publicationId:f.publications[0].id}))}return data}
  try{deny(await f.global.store.readPublication(f.a,f.publications[0].id),'stale_input');assert.equal(changed,true)}finally{fs.readFile=read;await f.close()}
 })
+test('reader beginning after rename dispatch still rejects a commit completed before its final release',{timeout:10000},async()=>{
+ const f=await fixture(1),read=fs.readFile,rename=fs.rename;let releaseWrite,releaseRead,enteredWrite,enteredRead,seals=0,reading=false,paused=false
+ const writeGate=new Promise(r=>releaseWrite=r),readGate=new Promise(r=>releaseRead=r),writeEntered=new Promise(r=>enteredWrite=r),readEntered=new Promise(r=>enteredRead=r)
+ let publication,pending
+ try{
+  const expected=must(await f.global.store.readFence(f.a))
+  fs.rename=async(from,to)=>{if(!paused&&String(to).includes(path.sep+'commits'+path.sep)){paused=true;enteredWrite();await writeGate}return rename(from,to)}
+  publication=f.global.control.revoke(f.a,f.approval,{idempotencyKey:'delayed_revoke',expected,publicationId:f.publications[0].id});await writeEntered
+  fs.readFile=async(file,...args)=>{const data=await read(file,...args);if(reading&&String(file).endsWith(path.sep+'seal.json')&&++seals===4){reading=false;enteredRead();await readGate}return data}
+  reading=true;pending=f.global.store.readPublication(f.other,f.publications[0].id);await readEntered;releaseWrite();must(await publication);releaseRead();deny(await pending,'stale_input')
+ }finally{releaseWrite();releaseRead();await Promise.allSettled([publication,pending]);fs.readFile=read;fs.rename=rename;await f.close()}
+})

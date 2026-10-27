@@ -42,10 +42,13 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
       const h = await fs.open(tmp, 'wx', 0o600)
       try { await h.writeFile(body); await h.sync() } finally { await h.close() }
       guard()
-      if(file.startsWith(globalRoot+path.sep)&&path.basename(path.dirname(file))==='commits'){
-        const scopeDir=path.dirname(path.dirname(file));scopeClocks.set(scopeDir,(scopeClocks.get(scopeDir)??0)+1)
+      const scopeDir=file.startsWith(globalRoot+path.sep)&&path.basename(path.dirname(file))==='commits'?path.dirname(path.dirname(file)):undefined
+      if(scopeDir)scopeClocks.set(scopeDir,(scopeClocks.get(scopeDir)??0)+1)
+      try{await fs.rename(tmp, file)}finally{
+        // Readers can start while rename is pending. Completion (including an
+        // uncertain result) must invalidate that later reader generation too.
+        if(scopeDir)scopeClocks.set(scopeDir,(scopeClocks.get(scopeDir)??0)+1)
       }
-      await fs.rename(tmp, file)
     } catch (e) { await fs.rm(tmp, { force: true }).catch(() => {}); throw e }
   }
   const validateState = (input: unknown, g: Grant, segmented = false): State => {

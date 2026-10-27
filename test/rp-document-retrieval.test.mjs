@@ -65,3 +65,17 @@ test('document proof is tied to exact returned content and cannot be rebound aft
   proof.document.chunks[0].span.quoteSha256='0'.repeat(64);await assert.rejects(()=>f.documentRetrieval.verify(f.authority,proof,f.access),/unavailable/)
  }finally{await f.close()}
 })
+test('caller mutation cannot remove the original audience handle from the final revocation check',async()=>{
+ const f=await fixture();try{
+  await f.save('PRIVATE_BODY','private',f.doc.eventId,{kind:'direct',platform:'qq',accountId:'bot',senderIds:['user']})
+  const audience=f.audiences.create(f.authority,{platform:'qq',accountId:'bot',kind:'direct',senderId:'user'}),access={personId:'erin',audience:audience.context()}
+  const wrapped=new Proxy(f.store,{get(target,key){if(key==='withReadView')return(a,work,options)=>target.withReadView(a,async view=>{const old=await work(view);audience.revoke();delete access.audience;return old},options);return target[key]}})
+  deny(await api.createDocumentRetrieval(wrapped).search(f.authority,access,{query:'PRIVATE_BODY'}),'ownership_lost')
+ }finally{await f.close()}
+})
+test('sizing callbacks cannot rewrite the exact document content that is certified',async()=>{
+ const f=await fixture();try{
+  const result=await f.documentRetrieval.search(f.authority,f.access,{query:'紫色月亮'},{fits:r=>{r.value.items[0].excerpt='FORGED';return true}});assert.match(must(result).items[0].excerpt,/紫色月亮/)
+  await f.documentRetrieval.verify(f.authority,f.documentRetrieval.evidence(result,f.authority),f.access)
+ }finally{await f.close()}
+})

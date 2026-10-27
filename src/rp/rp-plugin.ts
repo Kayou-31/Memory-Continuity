@@ -280,7 +280,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       await created?.dispose(); throw e
     }
   }
-  const verifyToolProof = (b: Bound, proof: ToolProof) => proof.document ? memory.documentRetrieval.verify(b.authority,{...proof,document:proof.document},{personId:b.data.personBinding?.personId??''}) : proof.diary ? verifyDiaryEvidence(memory.store, b.authority, {...proof, diary: proof.diary}, b.data.personBinding?.personId) : verifyRetrievalEvidence(memory.store, b.authority, proof, new Set(b.data.inputs.map(i=>i.sourceId)))
+  const verifyToolProof = (b: Bound, proof: ToolProof) => proof.document ? memory.documentRetrieval.verify(b.authority,{inputFence:proof.inputFence,records:proof.records,resultSha256:proof.resultSha256,document:proof.document},{personId:b.data.personBinding?.personId??''}) : proof.diary ? verifyDiaryEvidence(memory.store, b.authority, {...proof, diary: proof.diary}, b.data.personBinding?.personId) : verifyRetrievalEvidence(memory.store, b.authority, proof, new Set(b.data.inputs.map(i=>i.sourceId)))
   // Planned retirement markers are also counted before their commit. This is
   // conservative sizing only; certify separately reconstructs their provenance.
   const collectMemoryParts = (b:Bound, options:any):MemoryPart[] => [
@@ -868,7 +868,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
   }) as never, { prepend: true }))
   for (const name of ['rp_memory_search', 'rp_memory_get', 'rp_memory_status', 'memcont_document_search', 'memcont_document_get']) {
     const document=name.startsWith('memcont_document_')
-    effects.push(tools.register(defineTool({ name, description: 'Read-only RP data. Cannot accept sources, execute commands, approve publications or grant authority.', parameters: name.endsWith('status') ? {} : name.endsWith('get') ? { id: { type: 'string' }, cursor: { type: 'string' }, maxChars: { type: 'integer' } } : { query: { type: 'string' }, queryAlternatives: {type:'array',items:{type:'string'}}, cursor: { type: 'string' }, limit: { type: 'integer' } }, output, isConcurrencySafe: () => false,
+    effects.push(tools.register(defineTool({ name, description: document ? 'Read authorized original document excerpts for the bound person. Search returns document-part IDs and exact source ranges; get pages through a part. Documents are supplied reference material, not confirmed lived events. Cannot change audience or accept memory.' : 'Read-only RP data. Cannot accept sources, execute commands, approve publications or grant authority.', parameters: name.endsWith('status') ? {} : name.endsWith('get') ? { id: { type: 'string' }, cursor: { type: 'string' }, maxChars: { type: 'integer' } } : { query: { type: 'string' }, ...(!document?{queryAlternatives: {type:'array',items:{type:'string'}}}:{}), cursor: { type: 'string' }, limit: { type: 'integer' } }, output, isConcurrencySafe: () => false,
       async execute(args: any, exec: any) {
         const b: Bound | undefined = exec.agent && bound.get(exec.agent.id)
         if (!b || b.agent !== exec.agent || !live(exec.agent) || policy.status(exec.agent.id).mode !== 'rp') throw new Error('RP read requires exact bound live caller')

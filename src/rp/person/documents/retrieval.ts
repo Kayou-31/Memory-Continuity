@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto'
 import {canonical,type RpStore} from '../../store.js'
-import {failure,hash,id,integer,object,RpError,sourceSpan,text} from '../../schema.js'
+import {cloneInput,failure,hash,id,integer,object,RpError,sourceSpan,text} from '../../schema.js'
 import {unwrap,type RetrievalSizing} from '../../retrieval.js'
 import type {RetrievalEvidence} from '../../retrieval-evidence.js'
 import type {HostAuthority,InputFence,SourceSpan} from '../../types.js'
@@ -37,6 +37,7 @@ export function createDocumentRetrieval(store:RpStore){
   }
   const remember=(key:string,value:Omit<Cursor,'expires'>)=>{sweep();if(cursors.size>=256)cursors.delete(cursors.keys().next().value!);cursors.set(key,{...value,expires:Date.now()+600000})}
   const read=async(authority:HostAuthority,access:DocumentAccess)=>{
+    access={...access}
     id(access.personId);const audience=access.audience?resolveAudience(access.audience,authority):undefined
     const result=unwrap(await store.withReadView(authority,async view=>({fence:view.fence,chunks:await selectDocumentSections(view,access.personId,audience)}),{audit:true}))
     if(access.audience)resolveAudience(access.audience,authority)
@@ -57,26 +58,28 @@ export function createDocumentRetrieval(store:RpStore){
   return Object.freeze({
     async search(authority:HostAuthority,access:DocumentAccess,input:{query?:string;limit?:number;cursor?:string},sizing:RetrievalSizing={}){
       try{
+        access={...access};input=cloneInput(input)
         object(input,[],['query','limit','cursor']);text(input.query??'',4096,true);const limit=input.limit??8;integer(limit,1);if(limit>32)throw new RpError('invalid_record','Document result limit is 32')
         const current=await read(authority,access);let fixed:Fixed,offset=0
         if(input.cursor){const c=cursor(input.cursor,'search',authority,access);fixed=c.fixed;offset=c.offset}
         else{const query=input.query??'',groups=queryGroups(query),hits=current.chunks.map(c=>({id:c.id,revision:digest(c.event),score:lexicalScore(c.text,groups)})).filter(c=>c.score!==null).sort((a,b)=>b.score!-a.score!||a.id.localeCompare(b.id));fixed={authority,access:{...access},fence:current.fence,ids:hits.map(({id,revision})=>({id,revision})),query,snapshotId:randomUUID()}}
         const map=validate(fixed,current),items=fixed.ids.slice(offset,offset+limit).map(r=>{const c=map.get(r.id)!,part=documentExcerpt(c,fixed.query,192);return {...locator(c,part.span),label:c.label,category:c.category,excerpt:part.text}}),next=randomUUID()
         const result=()=>({ok:true as const,value:{snapshotId:fixed.snapshotId,resultManifestHash:digest(fixed.ids),items:[...items],nextCursor:offset+items.length<fixed.ids.length?next:null}})
-        while(sizing.fits&&!sizing.fits(result())){if(items.length<=1)throw new RpError('context_budget_exceeded','No complete document search item fits');items.pop()}
+        while(sizing.fits&&!sizing.fits(structuredClone(result()))){if(items.length<=1)throw new RpError('context_budget_exceeded','No complete document search item fits');items.pop()}
         const selected=result();if(selected.value.nextCursor)remember(next,{kind:'search',fixed,offset:offset+items.length})
         return certify(selected,authority,access,current.fence,items.map(({id,recordId,revision,span})=>({id,recordId,revision,span})))
       }catch(e){return failure(e)}
     },
     async get(authority:HostAuthority,access:DocumentAccess,input:{id?:string;cursor?:string;maxChars?:number},sizing:RetrievalSizing={}){
       try{
+        access={...access};input=cloneInput(input)
         object(input,[],['id','cursor','maxChars']);const max=input.maxChars??1024;integer(max,2);if(max>8192)throw new RpError('invalid_record','Document page exceeds 8192 UTF-16 units')
         const current=await read(authority,access);let fixed:Fixed,offset=0
         if(input.cursor){const c=cursor(input.cursor,'get',authority,access);fixed=c.fixed;offset=c.offset}
         else{const found=current.chunks.find(c=>c.id===input.id);if(!found)throw new RpError('source_unavailable','Document part unavailable in this view');fixed={authority,access:{...access},fence:current.fence,ids:[{id:found.id,revision:digest(found.event)}],query:'',snapshotId:randomUUID()}}
         const c=validate(fixed,current).get(fixed.ids[0].id)!,next=randomUUID();let length=max,part=documentExcerpt(c,'',length,offset)
         const result=()=>({ok:true as const,value:{id:c.id,recordId:c.event.id,revision:digest(c.event),snapshotId:fixed.snapshotId,text:part.text,sourceSpan:part.span,nextCursor:part.end<c.text.length?next:null}})
-        while(sizing.fits&&!sizing.fits(result())){if(length<=2)throw new RpError('context_budget_exceeded','No complete document code point fits');length=Math.max(2,Math.floor(length/2));part=documentExcerpt(c,'',length,offset)}
+        while(sizing.fits&&!sizing.fits(structuredClone(result()))){if(length<=2)throw new RpError('context_budget_exceeded','No complete document code point fits');length=Math.max(2,Math.floor(length/2));part=documentExcerpt(c,'',length,offset)}
         const selected=result();if(selected.value.nextCursor)remember(next,{kind:'get',fixed,offset:part.end})
         return certify(selected,authority,access,current.fence,[locator(c,part.span)])
       }catch(e){return failure(e)}
@@ -86,6 +89,7 @@ export function createDocumentRetrieval(store:RpStore){
       return structuredClone(saved.proof)
     },
     async verify(authority:HostAuthority,proof:DocumentEvidence,access:DocumentAccess){
+      access={...access};proof=cloneInput(proof)
       validateDocumentReceipt(proof.document)
       if(proof.document.personId!==access.personId)throw new RpError('scope_denied','Document receipt belongs to another person')
       const current=await read(authority,access);sameAuthorization(proof.inputFence,current.fence)
