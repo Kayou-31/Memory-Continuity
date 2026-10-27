@@ -8,6 +8,12 @@ const hash=(value:string)=>createHash('sha256').update(value).digest('hex')
 const text=(m:any)=>(m.content??[]).filter((b:any)=>b.type==='text').map((b:any)=>b.text).join('\n')
 const marker={name:'memcont-retained',text:'Earlier memory snapshot omitted. Use the latest Memory-Continuity context.'}
 
+/** Same native snapshot shape as the eventual request, including section metadata.
+ * The host chooses the ID; reserve a bounded longer ID until it has been appended. */
+export function proposedContextMessage(sections:{name:string;text:string}[]){
+ return {id:'x'.repeat(128),role:'user',source:{kind:'runtime-context',form:'snapshot',sections},content:[{type:'text',text:joinContextSections(sections)}]}
+}
+
 function remainder(message:any,journal:DurableSession){
  const snapshot=journal.snapshots[message.id]
  if(!snapshot||snapshot.provenance!=='packet'||message.source?.kind!=='runtime-context')return

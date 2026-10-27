@@ -1,5 +1,5 @@
 import {requestLimits,currentRequestCost,requestStop,type RequestLimits} from './request-cost.js'
-import {memoryDelivery,missingRecentOriginals,planContextRetirement,retiredContextOriginal} from './context-retention.js'
+import {memoryDelivery,missingRecentOriginals,planContextRetirement,retiredContextOriginal,proposedContextMessage} from './context-retention.js'
 import {createMemoryBudget,openMemoryMeter,measureMemoryParts,type MemoryBudgetV2,type MemoryMeter,type MemoryPart,type MemoryUsage} from './token-budget.js'
 import {budgetMarkerValid,writeBudgetMarker} from './token-budget-marker.js'
 import {createInjectionBinding,verifyInjectionText,injectionMarkerValid,writeInjectionMarker,type InjectionBinding} from './injection-binding.js'
@@ -297,7 +297,11 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     return {fits:(result:unknown)=>{
       if(!meter)return true
       const tools=b.staticToolDefinitions??[]
-      const usage=measureMemoryParts([...collectMemoryParts(b,{messages:planContextRetirement(b.agent.session,b.data,b.packet?.id).messages,tools,toolHistory:{tools,updates:[]}}),...(b.lastContextBody?[{kind:'next-runtime-context-reserve',text:b.lastContextBody}]:[]),{kind:'proposed-tool-result',text:canonical({role:'tool',toolCallId:callId,content:[{type:'text',text:canonical(result)}]})}],meter,false)
+      const plan=planContextRetirement(b.agent.session,b.data,undefined,b.preparedContextHash)
+      const retained=plan.messages.some((m:any)=>b.data.snapshots[m.id]?.bodyHash===b.preparedContextHash)
+      // A reused packet is already in the native surface. Only reserve a new
+      // snapshot when the proposed surface does not contain the prepared one.
+      const usage=measureMemoryParts([...collectMemoryParts(b,{messages:plan.messages,tools,toolHistory:{tools,updates:[]}}),...(!retained&&b.lastContextBody?[{kind:'new-packet',text:b.lastContextBody}]:[]),{kind:'proposed-tool-result',text:canonical({role:'tool',toolCallId:callId,content:[{type:'text',text:canonical(result)}]})}],meter,false)
       return usage.total+256<=usage.limit
     }}
   }
@@ -685,11 +689,12 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       return { ...assembly, tools: assembly.tools.filter((t: any) => allowedTools.includes(t.name)), contexts: [...assembly.contexts, { name: 'rp-memory', interpolate:false, text: canonical({ rpPacketId: p.id, data: JSON.parse(p.text), recentAcceptedOriginals }) }] }
     }
     let completed = compose(packet)
-    const envelope = () => ({ provider: agent!.options.provider, model: agent!.options.model, maxTokens: agent!.options.maxTokens, system: renderPrompt(completed), tools: completed.tools, toolHistory: { tools: completed.tools, updates: [] }, messages: [...planContextRetirement(agent!.session,b.data).messages, { role: 'user', content: [{ type: 'text', text: joinContextSections(renderContextSections(completed)) }] }] })
+    const nextContext=()=>proposedContextMessage(renderContextSections(completed))
+    const envelope = () => ({ provider: agent!.options.provider, model: agent!.options.model, maxTokens: agent!.options.maxTokens, system: renderPrompt(completed), tools: completed.tools, toolHistory: { tools: completed.tools, updates: [] }, messages: [...planContextRetirement(agent!.session,b.data).messages, nextContext()] })
     const reserve = Math.max(config.budget!.outputReserveTokens, agent!.options.maxTokens ?? 0) + config.budget!.toolReserveTokens
     if (estimateFinalRequest(envelope()) > Math.min(config.budget!.inputLimit, config.budget!.contextWindow - reserve)) { packet = unwrap(await prepare(0)); completed = compose(packet) }
     if(memoryMeter){
-      const parts=():MemoryPart[]=>[...collectMemoryParts(b,envelope()),{kind:'new-packet',text:canonical({role:'user',source:{kind:'runtime-context'},content:[{type:'text',text:joinContextSections(renderContextSections(completed))}]})},{kind:'native-id-reserve',text:'x'.repeat(128)}]
+      const parts=():MemoryPart[]=>[...collectMemoryParts(b,envelope()),{kind:'new-packet',text:canonical(nextContext())}]
       let allowance=delivery.optionalLimit
       for(let attempt=0;attempt<4;attempt++){
         const usage=measureMemoryParts(parts(),memoryMeter,false)
@@ -701,7 +706,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       checkMemory(b,parts(),memoryMeter)
     }
     const fullContext = joinContextSections(renderContextSections(completed)), snapshot: Snapshot = { ...(b.data.memoryBudget?{memoryBudget:structuredClone(b.data.memoryBudget)}:{}), ...(packet.injection ? {injection:packet.injection,injectionBinding:structuredClone(b.data.injectionBinding!)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), provenance: 'packet', packetProof: packet.proof, bodyHash: sha(fullContext), packetId: packet.id, fence: packet.inputFence, globals: [...packet.globalFences], globalDependencies: [...packet.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [...packet.dependencyIds], eventIds: packet.proof.records.filter(r => r.kind === 'event').map(e => e.id), modeEpoch: policy.status(b.agent.id).modeEpoch }
-    b.preparedContextHash=snapshot.bodyHash; b.lastContextBody=canonical({role:'user',source:{kind:'runtime-context'},content:[{type:'text',text:fullContext}]}); b.packet = packet; b.packetRecentSourceIds=includedRecentSourceIds; b.staticSystem = sha(renderPrompt(completed)); b.staticTools = sha(canonical(completed.tools)); b.staticToolDefinitions=structuredClone(completed.tools); b.data.pending[snapshot.bodyHash] = snapshot
+    b.preparedContextHash=snapshot.bodyHash; b.lastContextBody=canonical(nextContext()); b.packet = packet; b.packetRecentSourceIds=includedRecentSourceIds; b.staticSystem = sha(renderPrompt(completed)); b.staticTools = sha(canonical(completed.tools)); b.staticToolDefinitions=structuredClone(completed.tools); b.data.pending[snapshot.bodyHash] = snapshot
     await save(b); b.requestAdmission={state:'prepared',stage:'assembly',at:new Date().toISOString()};return completed
     }catch(e){requestRejected(b,'assembly',e);throw e}
   }) as never))
