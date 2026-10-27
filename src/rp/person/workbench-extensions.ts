@@ -18,6 +18,9 @@ export function workbenchExtensions(page:string,root:HTMLElement,u:any):boolean 
   note(c,binding?.meter.mode==='tokenizer-text'?'使用已校验的本地模型 tokenizer 计量文本 token。':'当前模型未匹配精确 tokenizer，使用 conservative-utf8 保守估算；中文容量不等于精确 token 容量。')
   details(c,'模型与计量身份',binding??snapshot.context?.model??{});if(snapshot.context?.diagnostic?.requestCost){const cost=snapshot.context.diagnostic.requestCost;note(c,'当前输入已预留 '+cost.requests+' 次适配器请求，上限 '+cost.limits.maxRequestsPerInput+' 次；每步重试上限 '+cost.limits.maxRetriesPerStep+' 次。');note(c,'这不是供应商账单，也无法统计适配器内部 HTTP 重试。')}if(usage)details(c,'最近实际请求的用量',usage);else note(c,'尚无本次会话的实际请求计量。注入预览不会制造真实模型结果。')
   const form=fold(root,'调整总额与分层上限'),limit=input(form,'总记忆上限（1–32768）',String(binding?.limitTokens??32768)),fields:any={};limit.type='number';limit.min='1';limit.max='32768'
+  const diagnostic=snapshot.context?.diagnostic,payload=diagnostic?.requestPayload,cost=diagnostic?.requestCost
+  if(cost?.requestsRemaining!==undefined)note(c,'这次输入还可预留 '+cost.requestsRemaining+' 次请求；当前步骤还可重试 '+cost.retriesRemaining+' 次。新输入会单独计数。')
+  if(payload){note(c,'最近准入请求序列化后约 '+payload.payloadUtf8Bytes.toLocaleString()+' 字节；普通历史、工具和消息包装也会占用上下文。供应商账单尚未测量。');details(c,'查看核心、可选记忆与历史分项',payload)}
   const layerFields=elem('div','',form,'form-grid');for(const [key,label]of Object.entries({self:'自我核心',situation:'当前处境',relationships:'关系背景',recollection:'相关往事',unfinished:'未完成事项'}))fields[key]=input(layerFields,label+'上限',String(binding?.layers[key]??({self:6144,situation:4096,relationships:4096,recollection:12288,unfinished:4096} as any)[key]))
   note(form,'只能在空白根会话修改；有历史时先干净续接。总记忆预算仍受模型总上下文、输出及工具预留限制。各层是上限，不代表一定填满。')
   button(form,'预览预算修改',()=>preview('host-budget',{config:{limitTokens:Number(limit.value),layers:Object.fromEntries(Object.entries(fields).map(([k,v]:[string,any])=>[k,Number(v.value)]))}}),'btn btn-primary')

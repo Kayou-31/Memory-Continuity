@@ -50,6 +50,7 @@ export function createDocumentRetrieval(store:RpStore){
     return map
   }
   const certify=<T extends object>(result:T,authority:HostAuthority,access:DocumentAccess,fence:InputFence,chunks:DocumentReceiptContext['chunks'])=>{
+    if(access.audience)resolveAudience(access.audience,authority)
     const records=[...new Map(chunks.map(c=>[c.recordId,{id:c.recordId,kind:'event' as const,revision:c.revision}])).values()]
     proofs.set(result,{authority,proof:{inputFence:structuredClone(fence),records,resultSha256:digest(result),document:{personId:access.personId,chunks:structuredClone(chunks)}}})
     return result

@@ -79,3 +79,12 @@ test('sizing callbacks cannot rewrite the exact document content that is certifi
   await f.documentRetrieval.verify(f.authority,f.documentRetrieval.evidence(result,f.authority),f.access)
  }finally{await f.close()}
 })
+
+for(const method of ['search','get'])test('document '+method+' rechecks audience after sizing callbacks',async()=>{
+ const f=await fixture();try{
+  await f.save('PRIVATE_BODY','private',f.doc.eventId,{kind:'direct',platform:'qq',accountId:'bot',senderIds:['user']})
+  const audience=f.audiences.create(f.authority,{platform:'qq',accountId:'bot',kind:'direct',senderId:'user'}),access={personId:'erin',audience:audience.context()}
+  const item=must(await f.documentRetrieval.search(f.authority,access,{query:'PRIVATE_BODY'})).items[0]
+  deny(await f.documentRetrieval[method](f.authority,access,method==='search'?{query:'PRIVATE_BODY'}:{id:item.id},{fits:()=>{audience.revoke();return true}}),'ownership_lost')
+ }finally{await f.close()}
+})

@@ -4,6 +4,10 @@ import type {DurableSession} from './host-journal.js'
 
 export interface RequestLimits {maxRequestsPerInput:number;maxRetriesPerStep:number}
 export interface RequestCost {inputId:string;requests:number;stepKey:string;stepRequests:number;stopReason?:'request_limit'|'retry_limit'}
+export function requestCostDiagnostic(cost:RequestCost|undefined,limits:RequestLimits){
+ const requests=cost?.requests??0,stepRequests=cost?.stepRequests??0,currentStepRetries=Math.max(0,stepRequests-1)
+ return {limits,...(cost??{requests,stepRequests}),requestsRemaining:Math.max(0,limits.maxRequestsPerInput-requests),currentStepRetries,retriesRemaining:Math.max(0,limits.maxRetriesPerStep-currentStepRetries),unit:'durably-reserved-adapter-admissions',notice:'按明确输入累计准入预留次数；写入结果不确定也会保留预留。不是供应商账单或隐藏 HTTP 重试次数。'}
+}
 export function requestLimits(input:unknown={}):RequestLimits{
  const v=object(input,[],['maxRequestsPerInput','maxRetriesPerStep'])
  const maxRequestsPerInput=v.maxRequestsPerInput??16,maxRetriesPerStep=v.maxRetriesPerStep??2

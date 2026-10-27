@@ -28,6 +28,23 @@ test('preview discloses first-load then follow-up optional allowance without con
  }finally{await f.dispose()}
 })
 
+test('native diagnostics separate certified request bytes, memory selection and unverified billing without model calls',async()=>{
+ const f=await host({entityIds:['erin']}),seen=[]
+ class Terminal extends LlmAdapter{async *stream(options){seen.push(options);yield {type:'text-delta',index:0,text:'离线回复'};yield {type:'finish',reason:{kind:'stop'}}}}
+ try{
+  const a=await setup(f);a.options.provider='cost-diagnostic';f.ctx.llm.registerAdapter(['cost-diagnostic'],new Terminal());ok(await f.command(a,'budget set {}'))
+  for(let i=0;i<8;i++)await input(f,a,'继续聊第 '+i+' 轮')
+  const status=value(await f.command(a,'status')),cost=status.requestCost,last=status.requestPayload
+  assert.equal(cost.requestsRemaining,15);assert.equal(cost.currentStepRetries,0);assert.equal(cost.retriesRemaining,2)
+  assert.equal(last.provenance,'certified-adapter-input');assert.equal(last.providerUsage,null);assert.equal(last.providerBilling,null);assert.equal(last.wireBytes,null)
+  assert.equal(last.payloadUtf8Bytes,Buffer.byteLength(JSON.stringify(Object.fromEntries(Object.entries(seen.at(-1)).filter(([key])=>key!=='signal')))))
+  assert.equal(last.sections.find(s=>s.kind==='retirement').messages,7);assert.ok(last.sections.find(s=>s.kind==='ordinary-history').bytes>0)
+  assert.ok(last.selection.mandatory.bytes>0);assert.equal(last.selection.optional.bytes,0)
+  const preview=value(await f.command(a,'injection preview 钟楼'));assert.ok(preview.cost.historyBytes>0);assert.equal(preview.cost.providerBilling,null)
+  assert.equal(seen.length,8,'status and preview must not call any adapter')
+ }finally{await f.dispose()}
+})
+
 test('retirement preserves foreign context sections byte-for-byte and does not hide a stale original proof',async()=>{
  const f=await host({entityIds:['erin']}),seen=[]
  class Terminal extends LlmAdapter{async *stream(options){seen.push(options);yield {type:'text-delta',index:0,text:'已记录'};yield {type:'finish',reason:{kind:'stop'}}}}
