@@ -1,0 +1,172 @@
+{
+  "node": "v22.23.3",
+  "note": "Synthetic author-labeled cases, fixed before benchmark execution; not a blind human study or model evaluation. same and contrast both merit manual review; different does not.",
+  "modelCalls": 0,
+  "baseline": {
+    "suggestions": 2,
+    "labelledSuggestions": 1,
+    "unlabelledCrossCase": 1,
+    "reviewPrecision": 1,
+    "labelledRecall": 0.125,
+    "hits": 1
+  },
+  "qgram": {
+    "suggestions": 9,
+    "labelledSuggestions": 7,
+    "unlabelledCrossCase": 2,
+    "reviewPrecision": 0.8571428571428571,
+    "labelledRecall": 0.75,
+    "hits": 6
+  },
+  "matchedReviewBudget": {
+    "limit": 2,
+    "baseline": {
+      "suggestions": 2,
+      "labelledSuggestions": 1,
+      "unlabelledCrossCase": 1,
+      "reviewPrecision": 1,
+      "labelledRecall": 0.125,
+      "hits": 1
+    },
+    "qgram": {
+      "suggestions": 2,
+      "labelledSuggestions": 2,
+      "unlabelledCrossCase": 0,
+      "reviewPrecision": 1,
+      "labelledRecall": 0.25,
+      "hits": 2
+    }
+  },
+  "milliseconds": 1.3783999999999992,
+  "coverage": {
+    "inputRecords": 24,
+    "indexedRecords": 24,
+    "skippedOversize": 0,
+    "skippedShort": 0,
+    "completeForStrategy": true,
+    "limits": [],
+    "notice": "只比较同一归属中的文字相似性；未选中不代表不同，分组不代表事实相同。"
+  },
+  "stats": {
+    "textUnits": 883,
+    "partitionUnits": 30,
+    "indexKeyUnits": 912,
+    "indexEntries": 384,
+    "postingVisits": 238,
+    "comparisons": 64,
+    "compareUnits": 868
+  },
+  "pairs": [
+    {
+      "ids": [
+        "exact_a",
+        "exact_b"
+      ],
+      "score": 1,
+      "warnings": []
+    },
+    {
+      "ids": [
+        "negation_a",
+        "negation_b"
+      ],
+      "score": 0.75,
+      "warnings": [
+        "negation_difference"
+      ]
+    },
+    {
+      "ids": [
+        "date_a",
+        "date_b"
+      ],
+      "score": 0.8,
+      "warnings": [
+        "number_difference"
+      ]
+    },
+    {
+      "ids": [
+        "topic_only_a",
+        "topic_only_b"
+      ],
+      "score": 0.7,
+      "warnings": []
+    },
+    {
+      "ids": [
+        "near_a",
+        "near_b"
+      ],
+      "score": 0.765,
+      "warnings": []
+    },
+    {
+      "ids": [
+        "near_a",
+        "owner_a"
+      ],
+      "score": 0.765,
+      "warnings": []
+    },
+    {
+      "ids": [
+        "near_b",
+        "owner_a"
+      ],
+      "score": 1,
+      "warnings": []
+    },
+    {
+      "ids": [
+        "english_a",
+        "english_b"
+      ],
+      "score": 0.861,
+      "warnings": [
+        "negation_difference"
+      ]
+    },
+    {
+      "ids": [
+        "unicode_a",
+        "unicode_b"
+      ],
+      "score": 1,
+      "warnings": []
+    }
+  ],
+  "missedLabelled": [
+    "paraphrase_a|paraphrase_b",
+    "direction_a|direction_b"
+  ],
+  "boundedStress": {
+    "input": 256,
+    "milliseconds": 3.1222999999999956,
+    "coverage": {
+      "inputRecords": 256,
+      "indexedRecords": 256,
+      "skippedOversize": 0,
+      "skippedShort": 0,
+      "completeForStrategy": false,
+      "limits": [
+        "maxPairs"
+      ],
+      "notice": "只比较同一归属中的文字相似性；未选中不代表不同，分组不代表事实相同。"
+    },
+    "stats": {
+      "textUnits": 11044,
+      "partitionUnits": 10,
+      "indexKeyUnits": 508,
+      "indexEntries": 5008,
+      "postingVisits": 65,
+      "comparisons": 65,
+      "compareUnits": 1170
+    }
+  },
+  "memory": {
+    "rssBytes": 42192896,
+    "maxRssKiB": 41208,
+    "scope": "whole process including fixture and bundler; not per-algorithm allocation"
+  }
+}

@@ -6,7 +6,7 @@ import {fullSpan,unwrap} from './retrieval.js'
 import {projectPerson} from './person/projection.js'
 import {MemoryCoordinator} from './session-policy.js'
 import {withPublicationGuard} from './publication-guard.js'
-import type {HostAuthority,InputFence,SemanticEvent,SourceRevision,SourceSpan} from './types.js'
+import type {HostAuthority,InputFence,PayloadCopy,SemanticEvent,SourceRevision,SourceSpan} from './types.js'
 const sha=(s:string)=>createHash('sha256').update(s).digest('hex'),digest=(v:unknown)=>sha(canonical(v))
 const limits={cooldownSeconds:300,maxPending:32,maxPerDay:8,maxEvidence:8,maxQuoteChars:2048}
 const prefix=(personId:string)=>'experience_candidate_'+sha(personId).slice(0,24)+'_'
@@ -39,19 +39,45 @@ export function createExperienceService(store:RpStore,control:{checkManagement(a
   })
  }
  const status=async(a:HostAuthority,p:string)=>{
-  const who=await person(a,p),ledger=unwrap(await store.readLedger(a)),key=policyKey(p,who.originEventId)
-  const last=ledger.authorityChanges.filter(c=>c.kind==='candidate_adoption'&&c.recordId===key).at(-1)
-  const ctl=last?.kind==='candidate_adoption'?ledger.sources.find(s=>s.id===last.record.controlSourceId):undefined
-  const valid=!!ctl&&ctl.origin==='user_control'&&ctl.visibility.audienceSetId===a.visibility.audienceSetId&&ledger.sourceBindings.some(b=>b.sourceRevisionId===ctl.id&&b.disposition==='accepted')
-  return {personId:p,originEventId:who.originEventId,enabled:valid&&last!.kind==='candidate_adoption'&&last!.record.candidateId===key+'_on',policyId:ctl?.id??null,limits:{...limits}}
+  id(p)
+  return unwrap(await store.withReadView(a,async view=>{
+   const who=projectPerson(view,p),ledger=view.ledger!,key=policyKey(p,who.originEventId)
+   const last=ledger.authorityChanges.filter(c=>c.kind==='candidate_adoption'&&c.recordId===key).at(-1)
+   const policyId=last?.kind==='candidate_adoption'?last.record.controlSourceId:null
+   // Audit metadata survives deletion. Only the effective, verified source can
+   // authorize new proposals; never fall back to an older enable record.
+   const ctl=view.sources.find(s=>s.id===policyId)
+   const valid=!!ctl&&ctl.origin==='user_control'&&ctl.visibility.audienceSetId===a.visibility.audienceSetId
+   if(valid)await view.readSource(fullSpan(ctl))
+   return {personId:p,originEventId:who.originEventId,enabled:valid&&last!.kind==='candidate_adoption'&&last!.record.candidateId===key+'_on',policyId,limits:{...limits}}
+  },{audit:true}))
  }
  const checkFence=async(a:HostAuthority,f:InputFence)=>{if(canonical(unwrap(await store.readFence(a)))!==canonical(f))throw new RpError('stale_input','Experience evidence changed during read')}
+ // Older v1 copies did not list the policy as a dependency. Verify their saved
+ // authorization without migrating history or requiring the switch to stay on.
+ const validPolicies=async(a:HostAuthority,keys:string[])=>new Set(unwrap(await store.withReadView(a,async view=>{
+  const valid:string[]=[]
+  for(const key of new Set(keys)){id(key);const ctl=view.sources.find(s=>s.id===key&&s.origin==='user_control'&&s.visibility.audienceSetId===a.visibility.audienceSetId);if(ctl){await view.readSource(fullSpan(ctl));valid.push(key)}}
+  return valid
+ })))
+ const validPending=async(a:HostAuthority,p:string,origin:string,ledger:any,index:readonly PayloadCopy[])=>{
+  const pending=index.filter(c=>!decision(ledger,c.id)),valid=new Set<string>()
+  // Legacy invalid copies can accumulate; read bounded batches without treating
+  // invisible candidates as a permanent quota reservation. Admissions stay spent.
+  for(let i=0;i<pending.length;i+=256){
+   const copies=unwrap(await store.readPayloadCopies(a,pending.slice(i,i+256).map(c=>c.id)))
+   const saved=copies.map(copy=>{const s=object(JSON.parse(copy.body),['protocol','personId','originEventId','inputSourceId','sessionId','policyId','createdAt','inputFence','proposal','spans']) as Saved;if(s.protocol!=='experience-candidate/v1'||s.personId!==p||s.originEventId!==origin)throw new RpError('store_corrupt','Experience pending identity');return {copy,s}})
+   const policies=await validPolicies(a,saved.map(r=>r.s.policyId));for(const r of saved)if(policies.has(r.s.policyId))valid.add(r.copy.id)
+  }
+  return pending.filter(c=>valid.has(c.id))
+ }
  const read=async(a:HostAuthority,p:string,candidateId:string)=>{
   id(candidateId);if(!candidateId.startsWith(prefix(p)))throw new RpError('source_unavailable','Candidate not available for this person')
   const start=unwrap(await store.readFence(a)),who=await person(a,p),copy=unwrap(await store.readPayloadCopies(a,[candidateId]))[0]
   if(!copy||copy.kind!=='job_input')throw new RpError('source_unavailable','Candidate evidence is no longer available')
   const s=object(JSON.parse(copy.body),['protocol','personId','originEventId','inputSourceId','sessionId','policyId','createdAt','inputFence','proposal','spans']) as Saved
   if(s.protocol!=='experience-candidate/v1'||s.personId!==p||s.originEventId!==who.originEventId||digest(JSON.parse(copy.body))!==copy.bodySha256)throw new RpError('store_corrupt','Candidate identity mismatch')
+  if(!(await validPolicies(a,[s.policyId])).has(s.policyId))throw new RpError('source_unavailable','Candidate authorization source is no longer available')
   proposal(s.proposal);integer(s.createdAt);if(!Array.isArray(s.spans)||s.spans.length!==s.proposal.evidence.length)throw new RpError('store_corrupt','Candidate spans mismatch')
   const evidence=[]
   for(const [i,span]of s.spans.entries()){sourceSpan(span);const quote=unwrap(await store.readSource(a,span));if(quote!==s.proposal.evidence[i].quote)throw new RpError('store_corrupt','Candidate quote mismatch');evidence.push({...span,quote})}
@@ -83,7 +109,7 @@ export function createExperienceService(store:RpStore,control:{checkManagement(a
     guard();await authorize(a);const currentPolicy=await status(a,x.personId);if(!currentPolicy.enabled||currentPolicy.policyId!==issued.policyId)denied('Experience policy changed')
     const p=proposal(rawProposal),candidateId=prefix(x.personId)+digest([a.scope.branchId,x.inputSourceId]),index=unwrap(await store.readPayloadCopyIndex(a,prefix(x.personId)))
     if(index.some(c=>c.id===candidateId)){const old=await read(a,x.personId,candidateId);if(canonical(old.s.proposal)!==canonical(p))throw new RpError('idempotency_conflict','This input already proposed a different experience');guard();unwrap(await store.ensureDurable(a,old.fence));return result(old)}
-    const view=unwrap(await store.readLedger(a)),pending=index.filter(c=>!decision(view,c.id));if(pending.length>=limits.maxPending)throw new RpError('request_limit_exceeded','Review pending experience candidates first')
+    const view=unwrap(await store.readLedger(a)),pending=await validPending(a,x.personId,currentPolicy.originEventId,view,index);if(pending.length>=limits.maxPending)throw new RpError('request_limit_exceeded','Review pending experience candidates first')
     const admissionId=admissionPrefix(x.personId)+digest([a.scope.branchId,x.inputSourceId]),recent=await admissions(a,x.personId,currentPolicy.originEventId,admissionId),now=Date.now(),priorAdmission=recent.find(r=>r.id===admissionId)
     if(priorAdmission&&priorAdmission.proposalSha256!==digest(p))throw new RpError('idempotency_conflict','This input reserved a different experience proposal')
     if(!priorAdmission&&(recent.some(s=>now-s.createdAt<limits.cooldownSeconds*1000)||recent.filter(s=>now-s.createdAt<86400000).length>=limits.maxPerDay))throw new RpError('request_limit_exceeded','Experience proposal cooldown or daily limit reached')
@@ -93,23 +119,24 @@ export function createExperienceService(store:RpStore,control:{checkManagement(a
     await checkFence(a,view.fence);guard()
     if(!priorAdmission)unwrap(await store.savePayloadCopy(a,{idempotencyKey:admissionId,id:admissionId,kind:'job_input',sourceRevisionIds:origin.sources.map(s=>s.sourceRevisionId),dependencyIds:[origin.id],body:canonical({protocol:'experience-admission/v1',personId:x.personId,originEventId:origin.id,createdAt:now,proposalSha256:digest(p)})}))
     try{guard()}catch{throw new RpError('persistence_uncertain','Experience admission was reserved but caller retired; inspect before retrying')}
-    const copy=unwrap(await store.savePayloadCopy(a,{idempotencyKey:candidateId,id:candidateId,kind:'job_input',sourceRevisionIds:[...new Set([x.inputSourceId,...spans.map(s=>s.sourceRevisionId),...origin.sources.map(s=>s.sourceRevisionId)])],dependencyIds:[origin.id],body:canonical(saved)}));try{guard()}catch{throw new RpError('persistence_uncertain','Experience candidate was published but its caller retired; inspect the pending list before retrying')}
+     const copy=unwrap(await store.savePayloadCopy(a,{idempotencyKey:candidateId,id:candidateId,kind:'job_input',sourceRevisionIds:[...new Set([issued.policyId!,x.inputSourceId,...spans.map(s=>s.sourceRevisionId),...origin.sources.map(s=>s.sourceRevisionId)])],dependencyIds:[origin.id],body:canonical(saved)}));try{guard()}catch{throw new RpError('persistence_uncertain','Experience candidate was published but its caller retired; inspect the pending list before retrying')}
     return {id:copy.id,state:'pending' as const,bodySha256:copy.bodySha256}
    }))}}catch(e){return failure(e)}}})}
   }catch(e){return failure(e)}},
   async list(a:HostAuthority,p:string){try{
    const start=unwrap(await store.readFence(a)),who=await person(a,p),ledger=unwrap(await store.readLedger(a)),index=unwrap(await store.readPayloadCopyIndex(a,prefix(p)))
-   const pending=index.filter(c=>!decision(ledger,c.id)),terminal=index.filter(c=>decision(ledger,c.id)).reverse(),chosen=[...pending,...terminal.slice(0,Math.max(0,64-pending.length))]
+   const pending=await validPending(a,p,who.originEventId,ledger,index),terminal=index.filter(c=>decision(ledger,c.id)).reverse(),chosen=[...pending,...terminal.slice(0,Math.max(0,64-pending.length))]
    if(pending.length>limits.maxPending)throw new RpError('store_corrupt','Experience pending capacity inconsistent')
-   const copies=unwrap(await store.readPayloadCopies(a,chosen.map(c=>c.id))),items=copies.map(copy=>{
+   const copies=unwrap(await store.readPayloadCopies(a,chosen.map(c=>c.id))),policies=await validPolicies(a,copies.map(c=>JSON.parse(c.body).policyId)),items=copies.flatMap(copy=>{
     const s=object(JSON.parse(copy.body),['protocol','personId','originEventId','inputSourceId','sessionId','policyId','createdAt','inputFence','proposal','spans']) as Saved
     if(s.protocol!=='experience-candidate/v1'||s.personId!==p||s.originEventId!==who.originEventId)throw new RpError('store_corrupt','Experience list identity')
+    if(!policies.has(s.policyId))return []
     const candidate=proposal(s.proposal);integer(s.createdAt);return {id:copy.id,state:decision(ledger,copy.id)??'pending',bodySha256:copy.bodySha256,description:candidate.description,epistemic:candidate.epistemic,createdAt:s.createdAt}
    })
    await checkFence(a,start);return {ok:true as const,value:{items,total:index.length,limit:64}}
   }catch(e){return failure(e)}},
   async availability(a:HostAuthority,p:string,inputSourceId?:string){try{
-   const start=unwrap(await store.readFence(a)),settings=await status(a,p),ledger=unwrap(await store.readLedger(a)),index=unwrap(await store.readPayloadCopyIndex(a,prefix(p))),pending=index.filter(c=>!decision(ledger,c.id)).length
+   const start=unwrap(await store.readFence(a)),settings=await status(a,p),ledger=unwrap(await store.readLedger(a)),index=unwrap(await store.readPayloadCopyIndex(a,prefix(p))),pending=(await validPending(a,p,settings.originEventId,ledger,index)).length
    const recent=await admissions(a,p,settings.originEventId),now=Date.now(),used=recent.filter(c=>now-c.createdAt<86400000).length
    const reason=!settings.enabled?'disabled':inputSourceId&&index.some(c=>c.id===prefix(p)+digest([a.scope.branchId,inputSourceId]))?'already_proposed':pending>=limits.maxPending?'pending_limit':used>=limits.maxPerDay?'daily_limit':recent.some(c=>now-c.createdAt<limits.cooldownSeconds*1000)?'cooldown':null
    await checkFence(a,start);return {ok:true as const,value:{allowed:reason===null,reason,pending,dailyRemaining:Math.max(0,limits.maxPerDay-used)}}

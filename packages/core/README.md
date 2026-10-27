@@ -90,4 +90,4 @@ Node API 还提供 `memory.experienceCandidates`：可信宿主绑定原话与�
 
 数据沿用已有 branch/global v1 与新人物、原文、共同日记的能力标记及备份规则。不要把新版工作区直接交给旧读取器；恢复旧版前核对完整备份。固定 tokenizer 与字体资源保留各自的上游许可证；`SOURCE-MANIFEST.json` 记录实际包中文件大小与 SHA-256。
 
-在完整源码仓库执行 `npm run build:core` 生成新的独立打包目录。核心 JavaScript 和声明从 `src/core/index.ts` 及共用源码构建，不维护另一份存储代码。npm 包内的 sourcemap 包含对应 TypeScript 源文；完整仓库包含构建脚本、回归测试和 DSH / 后续其他适配源码。正式版本通过 GitHub 分发，不在 npm 注册表自动发布；0.1.0-preview.3 是本轮本地候选，尚未推送或公开发布。
+在完整源码仓库执行 `npm run build:core` 生成新的独立打包目录。核心 JavaScript 和声明从 `src/core/index.ts` 及共用源码构建，不维护另一份存储代码。npm 包内的 sourcemap 包含对应 TypeScript 源文；完整仓库包含构建脚本、回归测试和 DSH / 后续其他适配源码。正式版本通过 GitHub 分发，不在 npm 注册表自动发布；0.1.0-preview.3 随 0.3.1 分包发布，仍保留预览标记；完整模型宿主适配应另外验证。

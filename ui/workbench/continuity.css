@@ -49,3 +49,35 @@ body{font-size:14px;line-height:1.7;background:var(--bg)}
 
 /* Keep the viewed person visible while the full navigation scrolls. */
 @media(min-width:901px){.sidebar{overflow:hidden;gap:16px}.viewing-card,.sidebar-foot{flex-shrink:0}#nav{min-height:0;overflow-y:auto;flex:1;padding-right:2px}.sidebar-foot{padding-top:0}#scope{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}}
+
+/* Local review: readable evidence and paired memories, using existing themes. */
+.mc-organize-action-head{display:flex;align-items:center;gap:12px;color:var(--accent)}
+.mc-organize-action-head .icon{width:22px;height:22px;padding:10px;box-sizing:content-box;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.mc-organize-action-head .h3{margin:0;color:var(--fg)}
+.mc-similarity-section{display:flex;flex-direction:column;gap:14px;padding-top:20px;border-top:1px solid var(--line)}
+.mc-similarity-heading{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.mc-similarity-heading .h2{margin:0;font-family:var(--font-display);font-size:23px}
+.mc-review-count{background:var(--cand-soft);color:var(--cand);border:1px solid var(--cand-line);white-space:normal}.mc-review-coverage{margin-top:-8px}
+.mc-similarity-pair{border:1px solid var(--cand-line);border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--shadow);overflow:hidden}
+.mc-similarity-pair-head{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--cand);background:var(--cand-soft);font-size:12px}
+.mc-review-number{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;border-radius:50%;border:1px solid var(--cand-line);font-variant-numeric:tabular-nums;font-size:11px}
+.mc-similarity-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:18px 0}
+.mc-similarity-column{min-width:0;padding:0 22px}.mc-similarity-column+.mc-similarity-column{border-left:1px solid var(--line)}
+.mc-similarity-column>.h3{font-size:12px;font-family:var(--font-body);color:var(--accent);margin:0 0 8px}.mc-similarity-column>.mc-reading{margin:0 0 14px}
+.mc-similarity-column>.mc-editor{border:0;background:transparent}.mc-similarity-column>.mc-editor>summary{padding:5px 0;font-size:12px}.mc-similarity-column>.mc-editor>.mc-editor-body{padding:8px 0 0}
+.mc-source-quote{padding:12px 14px;background:var(--surface-2);border-radius:var(--r);margin-bottom:8px}.mc-source-quote blockquote{margin:0 0 8px;padding-left:12px;border-left:2px solid var(--line-strong);font-size:13px;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--fg-2)}
+.mc-source-quote .mc-form-note{font-size:11px}.mc-source-quote .mc-details{margin-top:6px}.mc-source-quote .mc-code{max-height:240px;overflow:auto}
+.mc-similarity-pair-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 18px;border-top:1px solid var(--line)}.mc-similarity-pair-foot .mc-form-note{margin:0;font-size:11px}
+.mc-review-checks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:start}.mc-review-checks>.mc-editor{background:var(--surface);border:1px solid var(--line)}.mc-review-checks summary{font-size:12px;white-space:normal}.mc-review-checks p{font-size:13px}
+@media(max-width:1240px) and (min-width:901px){.mc-organize-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.mc-organize-grid .mc-card{padding:18px}.mc-organize-action-head{gap:8px}.mc-organize-action-head .icon{width:18px;height:18px;padding:8px}.mc-organize-action-head .h3{font-size:16px}}
+@media(max-width:900px){.mc-review-checks{grid-template-columns:repeat(2,minmax(0,1fr))}.mc-similarity-columns{grid-template-columns:minmax(0,1fr);gap:18px}.mc-similarity-column+.mc-similarity-column{border-left:0;border-top:1px solid var(--line);padding-top:18px}}
+@media(max-width:480px){.mc-review-checks{grid-template-columns:minmax(0,1fr)}.mc-similarity-column{padding-left:16px;padding-right:16px}}
+/* 人物选择：名称可自然换行，标签只描述已验证的状态。 */
+#person-menu .pm-person{padding-block:11px;align-items:flex-start}
+#person-menu .pm-person>.avatar{margin-top:2px}
+#person-menu .pm-info{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px}
+#person-menu .pm-name{display:block;flex:none;overflow-wrap:anywhere}
+#person-menu .pm-tags{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+#person-menu .pm-tag{display:inline-block;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:11px;font-weight:400;line-height:1.5;color:var(--fg-2);background:var(--surface-2)}
+#person-menu .pm-tag-chat,#person-menu .pm-tag-viewing{color:var(--accent);background:var(--accent-soft);border-color:transparent}
+#person-menu .pm-tag-pending{color:var(--cand);background:var(--cand-soft);border-color:transparent}
+#person-menu .pm-selected{display:flex;flex:none;margin-top:3px;color:var(--accent)}

@@ -55,7 +55,7 @@ export function createPersonProposal(store:RpStore,entityIds:readonly string[]) 
       try {
         text(key,220);const raw=object(cloneInput(input),['changes']);if(!Array.isArray(raw.changes)||!raw.changes.length||raw.changes.length>16)invalid('growth batch count');raw.changes.forEach(validateChange)
         const changes=raw.changes as Change[];if(new Set(changes.map(c=>c.changeId)).size!==changes.length)invalid('duplicate change IDs')
-        return await store.withReadView(authority,async view=>{
+        const prepared=unwrap(await store.withReadView(authority,view=>{
           if(expected&&canonical(view.fence)!==canonical(expected))throw new RpError('stale_input','Original growth proposal snapshot changed')
           const candidateId='person_candidate_'+digest([view.fence.branchId,key,changes.slice().sort((a,b)=>a.changeId.localeCompare(b.changeId))]).slice(0,48)
           const ids=new Map(changes.map(c=>[c.changeId,'person_'+digest([candidateId,c.changeId]).slice(0,48)]))
@@ -64,9 +64,12 @@ export function createPersonProposal(store:RpStore,entityIds:readonly string[]) 
           const dependencies=[...new Set(compiled.flatMap(c=>[...c.causeEventIds,...(view.events.some(e=>e.id===c.previousEventId)?[c.previousEventId!]:[])]))].sort()
           const sources=[...new Set(dependencies.flatMap(id=>view.events.find(e=>e.id===id)!.sources.map(s=>s.sourceRevisionId)))].sort()
           const saved:Saved={protocol:'person-growth/v1',id:candidateId,inputFence:view.fence,changes:ordered(compiled)}
-          unwrap(await store.savePayloadCopy(authority,{idempotencyKey:'person_candidate:'+key,id:candidateId,kind:'job_input',sourceRevisionIds:sources,dependencyIds:dependencies,body:canonical(saved)}))
-          return saved
-        })
+          return {saved,sources,dependencies}
+        }))
+        // Finish the authenticated read before publishing its candidate. A read
+        // callback must not invalidate its own publication epoch by writing.
+        unwrap(await store.savePayloadCopy(authority,{idempotencyKey:'person_candidate:'+key,id:prepared.saved.id,kind:'job_input',sourceRevisionIds:prepared.sources,dependencyIds:prepared.dependencies,body:canonical(prepared.saved)}))
+        return {ok:true as const,value:prepared.saved}
       }catch(e){return failure(e)}
     }
 }

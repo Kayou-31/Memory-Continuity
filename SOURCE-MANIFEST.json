@@ -664,8 +664,8 @@
     },
     {
       "path": "src/rp/experience-candidates.ts",
-      "bytes": 20963,
-      "sha256": "6c4c80810eeabf8c3f3ca4c3f402109a037ae00f959cd0a84d22826ecfc563af"
+      "bytes": 23136,
+      "sha256": "9694be22f2fe0ab2b8c59b6a10888c5753810c2cb9362afc97a9a579f048d94a"
     },
     {
       "path": "src/rp/global-dependencies.ts",
@@ -754,8 +754,8 @@
     },
     {
       "path": "src/rp/organizer.ts",
-      "bytes": 5683,
-      "sha256": "c401b2566d496fe86a79658588fd1634ca4a5490fe4f9fdea9f78ecffd56eb1d"
+      "bytes": 8227,
+      "sha256": "a128da3c02542e1d56f476835b219895a4ba27743b192fbfcc179516e5a29e3e"
     },
     {
       "path": "src/rp/packet-proof.ts",
@@ -774,8 +774,8 @@
     },
     {
       "path": "src/rp/person/changes.ts",
-      "bytes": 15409,
-      "sha256": "f283709fa7e643f61ae69e8df666d3cfdd3c8d419d7f107b3781ce3af21187a7"
+      "bytes": 15687,
+      "sha256": "b7c6df5b257799eabdc6cb6a19d366783042f3efcb8c036b7c62b7d9807e8d68"
     },
     {
       "path": "src/rp/person/documents/audience.ts",
@@ -869,8 +869,8 @@
     },
     {
       "path": "src/rp/person/management-settings.ts",
-      "bytes": 2321,
-      "sha256": "16886472b60d5fd65338a758ca8b9fb32bc018391ad1cc9e50fe81938c52d857"
+      "bytes": 2469,
+      "sha256": "5184c807040028f41cb755a18e99b9dfa02b1b95adbd0dac3e6044b5cadcf167"
     },
     {
       "path": "src/rp/person/management.ts",
@@ -904,8 +904,8 @@
     },
     {
       "path": "src/rp/person/workbench-client.ts",
-      "bytes": 63667,
-      "sha256": "abb31c51301dd71239a90f2d01d64217b51719bde0c1936c43b10dc0a3e639a9"
+      "bytes": 64874,
+      "sha256": "f83e3388546c94ff911f1e7d298403122654a35fc0bf356de94e116200c472da"
     },
     {
       "path": "src/rp/person/workbench-extensions.ts",
@@ -929,13 +929,13 @@
     },
     {
       "path": "src/rp/person/workbench-reading.ts",
-      "bytes": 17278,
-      "sha256": "62839245347cddd3ad3d171cf568359ffc315e3edcffe10e3730f7278c939a54"
+      "bytes": 20142,
+      "sha256": "2f6c4e8c8ac907a58ee44745ef6a0ee51202e30b85e68ef6eee35daefe7c675f"
     },
     {
       "path": "src/rp/person/workbench-style.ts",
-      "bytes": 192739,
-      "sha256": "be5a4840a2aed0023608c6df2e1298faa82162bab815d7eb5192d5aa9a4b52c9"
+      "bytes": 197272,
+      "sha256": "a072404d72fb5eca05f7d3745e494754bcab407cc9dc23e32d51454fb027c4dc"
     },
     {
       "path": "src/rp/person/workbench-visuals.ts",
@@ -998,14 +998,19 @@
       "sha256": "7db5a764c827d3332abfa660e50b19f86108e5b5a36d7e2c9a15dc99de356509"
     },
     {
+      "path": "src/rp/similarity-review.ts",
+      "bytes": 5304,
+      "sha256": "870560d6f6abf60ce50477763fe9ad9adb64d5ae4c05ca9c468ea6fe95ef69cc"
+    },
+    {
       "path": "src/rp/source-adapter.ts",
       "bytes": 2593,
       "sha256": "6647a6ddbb05e602e1a440b9d38224725c129eb342a1e6a0f10e2f7b937e9b6f"
     },
     {
       "path": "src/rp/store.ts",
-      "bytes": 133183,
-      "sha256": "9b8d5cd995d3a94d351d300b88ef84f197d4c383d853b53bb89532a41c9c3b1a"
+      "bytes": 135109,
+      "sha256": "cbf5d828565b3a6ec3b548d20818843e846a185f2c99ac3ca3e60c5ffa4fc640"
     },
     {
       "path": "src/rp/summarizer.ts",
@@ -1059,13 +1064,13 @@
     },
     {
       "path": "lib/index.js",
-      "bytes": 1091165,
-      "sha256": "1e236062575cb07b5a02aa27130fc46bf1cbfd8cb0bd88412d2f784efedf373b"
+      "bytes": 1112818,
+      "sha256": "5a1c3e577ec820ac0c9ee327a700f80697f34eb6e9ec5c32c6b466d958ddfbe8"
     },
     {
       "path": "lib/index.js.map",
-      "bytes": 1747244,
-      "sha256": "d6dbbd9cbaef0cf68469dbb707a55174485985b89465c2f9c1b4803551bbf156"
+      "bytes": 1779902,
+      "sha256": "cd9c411429dc96b79d5530ba33c754b735ac248d4b9319d0643896415d21ac10"
     },
     {
       "path": "lib/types/core/cli-init.d.ts",
@@ -1084,8 +1089,8 @@
     },
     {
       "path": "lib/types/core/confirmations.d.ts",
-      "bytes": 13935,
-      "sha256": "7128429d4b20862dce3c54e36c0547db72bdd167096cc689167f59fc4d5ddc17"
+      "bytes": 16330,
+      "sha256": "474a531a7b8e43b76cc5ce94fc0c60d93cdb2b1eeaf27a4fc63b30c174c87867"
     },
     {
       "path": "lib/types/core/index.d.ts",
@@ -1094,8 +1099,8 @@
     },
     {
       "path": "lib/types/core/owned-memory.d.ts",
-      "bytes": 59261,
-      "sha256": "37ec95cc24808982a6f0e5825435c7eed0407b9a30e750cd1fbd4a2e7137b316"
+      "bytes": 64968,
+      "sha256": "4573d53914a02d673d11fd7641fd8daf9e191bacb878e62e7843063bcd1a36ce"
     },
     {
       "path": "lib/types/core/owner.d.ts",
@@ -1254,8 +1259,8 @@
     },
     {
       "path": "lib/types/rp/memory.d.ts",
-      "bytes": 58322,
-      "sha256": "faad3f28eb84be78fb79120c6a9d9c14ebd2c5d7795e98333f6842e668e3ae07"
+      "bytes": 63997,
+      "sha256": "43b01a4a03e08ed7c4f2af60e448b9cf7a444bf55463fa82f70a13daacd0f160"
     },
     {
       "path": "lib/types/rp/modules/commands.d.ts",
@@ -1284,8 +1289,8 @@
     },
     {
       "path": "lib/types/rp/organizer.d.ts",
-      "bytes": 2791,
-      "sha256": "0e852eb5f1531faa7387a7f5e5cd641893a88f8784bfbc883089a3c84e61453e"
+      "bytes": 4939,
+      "sha256": "be9751ffeea6055541d8268293885e130ad531eff454d93b4a133d242fce56be"
     },
     {
       "path": "lib/types/rp/packet-proof.d.ts",
@@ -1304,8 +1309,8 @@
     },
     {
       "path": "lib/types/rp/person/changes.d.ts",
-      "bytes": 3465,
-      "sha256": "f6fdec361f3e2e969fe0ceef0d2394cdfd5d8e2c34fadeccd8fa8cc6d84d10fb"
+      "bytes": 3663,
+      "sha256": "854cc9dece4888622ebe79ddceb7d3ac29d6986c3ac19301e76028dc10ec07f8"
     },
     {
       "path": "lib/types/rp/person/documents/audience.d.ts",
@@ -1394,8 +1399,8 @@
     },
     {
       "path": "lib/types/rp/person/management-server.d.ts",
-      "bytes": 13347,
-      "sha256": "74aa957c1bf4a7cb41b7b5ac011f3d7b8fc14b6005aa1167f934071ff477f51a"
+      "bytes": 15966,
+      "sha256": "95c1213775ad515917b1cdad2a0a2cea6d603ac0096ec5c948315cc9078061e1"
     },
     {
       "path": "lib/types/rp/person/management-settings.d.ts",
@@ -1404,8 +1409,8 @@
     },
     {
       "path": "lib/types/rp/person/management.d.ts",
-      "bytes": 13850,
-      "sha256": "d18f49e92637f7d4b6a8c291680445a27599119e87bb47044ea56e08ec258732"
+      "bytes": 16469,
+      "sha256": "18a1f068e99cdf9dc4ad51df626a6e1b0d480924cffc383253d7dc7694f2ada0"
     },
     {
       "path": "lib/types/rp/person/manager-ui.d.ts",
@@ -1424,8 +1429,8 @@
     },
     {
       "path": "lib/types/rp/person/service.d.ts",
-      "bytes": 5267,
-      "sha256": "63f5116ac8cade94312cdbbc718794da2499a2a21206af3077a85173ac0cb44c"
+      "bytes": 5444,
+      "sha256": "4cdd756bb0b9aea4709207f7ab3901bc471d66b568dd425e791511371f2add8b"
     },
     {
       "path": "lib/types/rp/person/types.d.ts",
@@ -1464,8 +1469,8 @@
     },
     {
       "path": "lib/types/rp/person/workbench-style.d.ts",
-      "bytes": 193223,
-      "sha256": "ebc2925c8f4bf5f4bbd4ac969d99ed027bc40e2643af06b32b867bc5155e3de8"
+      "bytes": 197831,
+      "sha256": "347f612870988a764a20e5ddbdf9c96568f0e1f8378740b003cbcdf8d3fc1f7d"
     },
     {
       "path": "lib/types/rp/person/workbench-visuals.d.ts",
@@ -1509,8 +1514,8 @@
     },
     {
       "path": "lib/types/rp/rp-plugin.d.ts",
-      "bytes": 65325,
-      "sha256": "b7dd4965930a1709c5f58c677ad6f6d387e4502c7ad63098d759e64431b7dbb5"
+      "bytes": 71482,
+      "sha256": "95cca8a2651fbc1c3d94943dfd0c0e5d1b8f3d06dd888b0195f57077628b4b7f"
     },
     {
       "path": "lib/types/rp/schema.d.ts",
@@ -1526,6 +1531,11 @@
       "path": "lib/types/rp/session-policy.d.ts",
       "bytes": 2188,
       "sha256": "79010ede2dbfc77eb77d8c4c7d297b67bf7552a86117e07e65dff88595ca99d4"
+    },
+    {
+      "path": "lib/types/rp/similarity-review.d.ts",
+      "bytes": 1754,
+      "sha256": "fba007228d59ef7b35e0161eee6fbb08ce6581f7874778271d16320dcbc22bfb"
     },
     {
       "path": "lib/types/rp/source-adapter.d.ts",
@@ -1584,8 +1594,8 @@
     },
     {
       "path": "ui/workbench/continuity.css",
-      "bytes": 17943,
-      "sha256": "96d1f082124115e4ad041145b21309b5f3625ff2a42382723f5309f386d7a40b"
+      "bytes": 22444,
+      "sha256": "714748c742c9144aed1dfa60db7485d4687b41d6f1fa4f238780519d2fecefea"
     },
     {
       "path": "ui/workbench/fonts.css",

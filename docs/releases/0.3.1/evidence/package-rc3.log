@@ -1,0 +1,178 @@
+TAP version 13
+# Subtest: actual TGZ blocks every native session after an observation persistence failure and failed close
+ok 1 - actual TGZ blocks every native session after an observation persistence failure and failed close
+  ---
+  duration_ms: 279.4928
+  type: 'test'
+  ...
+# Subtest: actual TGZ permits diagnosis and clean continuation after journal failure without carrying old messages
+ok 2 - actual TGZ permits diagnosis and clean continuation after journal failure without carrying old messages
+  ---
+  duration_ms: 229.9146
+  type: 'test'
+  ...
+# Subtest: unchanged tool steps reuse their current certified memory context
+ok 3 - unchanged tool steps reuse their current certified memory context
+  ---
+  duration_ms: 384.2954
+  type: 'test'
+  ...
+# Subtest: empty first-step decisions do not retire a context or manufacture a later request
+ok 4 - empty first-step decisions do not retire a context or manufacture a later request
+  ---
+  duration_ms: 236.993
+  type: 'test'
+  ...
+# Subtest: request policy bounds a tool loop without deleting the completed tool history
+ok 5 - request policy bounds a tool loop without deleting the completed tool history
+  ---
+  duration_ms: 321.1792
+  type: 'test'
+  ...
+# Subtest: a host retry handler cannot retry a failing step past the configured limit
+ok 6 - a host retry handler cannot retry a failing step past the configured limit
+  ---
+  duration_ms: 164.4645
+  type: 'test'
+  ...
+# Subtest: a new explicit input receives its own allowance after a failed input
+ok 7 - a new explicit input receives its own allowance after a failed input
+  ---
+  duration_ms: 253.4442
+  type: 'test'
+  ...
+# Subtest: cost allowance survives a genuine cold restore and resume alone sends nothing
+ok 8 - cost allowance survives a genuine cold restore and resume alone sends nothing
+  ---
+  duration_ms: 287.9644
+  type: 'test'
+  ...
+# Subtest: failed reservation persistence does not reach the adapter and leaves diagnosis available
+ok 9 - failed reservation persistence does not reach the adapter and leaves diagnosis available
+  ---
+  duration_ms: 242.5319
+  type: 'test'
+  ...
+# Subtest: organizer commands are explicit, reuse candidates, and consume no additional model requests
+ok 10 - organizer commands are explicit, reuse candidates, and consume no additional model requests
+  ---
+  duration_ms: 282.8316
+  type: 'test'
+  ...
+# Subtest: a native history change during durable request reservation is checked before adapter admission
+ok 11 - a native history change during durable request reservation is checked before adapter admission
+  ---
+  duration_ms: 244.9866
+  type: 'test'
+  ...
+# Subtest: native chat proposes evidence-backed experiences without extra generation and workbench adopts explicitly
+ok 12 - native chat proposes evidence-backed experiences without extra generation and workbench adopts explicitly
+  ---
+  duration_ms: 1113.727
+  type: 'test'
+  ...
+# Subtest: malformed experience JSON is a certified refusal and does not disable conversation
+ok 13 - malformed experience JSON is a certified refusal and does not disable conversation
+  ---
+  duration_ms: 493.2792
+  type: 'test'
+  ...
+# Subtest: failed experience receipt blocks continuation and clean recovery keeps one pending candidate without replay
+ok 14 - failed experience receipt blocks continuation and clean recovery keeps one pending candidate without replay
+  ---
+  duration_ms: 831.0196
+  type: 'test'
+  ...
+# Subtest: clean continuation can propose current evidence even when earlier accepted assistant history exists
+ok 15 - clean continuation can propose current evidence even when earlier accepted assistant history exists
+  ---
+  duration_ms: 1263.2467
+  type: 'test'
+  ...
+# Subtest: human review racing a saved proposal receipt reports persistence uncertainty and never pretends the write failed
+ok 16 - human review racing a saved proposal receipt reports persistence uncertainty and never pretends the write failed
+  ---
+  duration_ms: 749.5191
+  type: 'test'
+  ...
+# Subtest: native follow-up carries one latest memory packet while all original snapshots and conversation stay auditable
+ok 17 - native follow-up carries one latest memory packet while all original snapshots and conversation stay auditable
+  ---
+  duration_ms: 1298.4622
+  type: 'test'
+  ...
+# Subtest: preview discloses first-load then follow-up optional allowance without consuming a model call
+ok 18 - preview discloses first-load then follow-up optional allowance without consuming a model call
+  ---
+  duration_ms: 331.9303
+  type: 'test'
+  ...
+# Subtest: native diagnostics separate certified request bytes, memory selection and unverified billing without model calls
+ok 19 - native diagnostics separate certified request bytes, memory selection and unverified billing without model calls
+  ---
+  duration_ms: 10586.4702
+  type: 'test'
+  ...
+# Subtest: retirement preserves foreign context sections byte-for-byte and does not hide a stale original proof
+ok 20 - retirement preserves foreign context sections byte-for-byte and does not hide a stale original proof
+  ---
+  duration_ms: 1070.8435
+  type: 'test'
+  ...
+# Subtest: retired context survives a genuine cold restore and forged replacement references are rejected
+ok 21 - retired context survives a genuine cold restore and forged replacement references are rejected
+  ---
+  duration_ms: 692.0677
+  type: 'test'
+  ...
+# Subtest: persistence failure after committing a retirement blocks the next provider request without deleting the original log
+ok 22 - persistence failure after committing a retirement blocks the next provider request without deleting the original log
+  ---
+  duration_ms: 469.721
+  type: 'test'
+  ...
+# Subtest: reused same-packet tool context cannot certify a request with the current full packet removed
+ok 23 - reused same-packet tool context cannot certify a request with the current full packet removed
+  ---
+  duration_ms: 416.0509
+  type: 'test'
+  ...
+# Subtest: next-request preview includes the pending retired marker in actual memory accounting
+ok 24 - next-request preview includes the pending retired marker in actual memory accounting
+  ---
+  duration_ms: 312.1369
+  type: 'test'
+  ...
+# Subtest: a different pre-step middleware cannot drop queued input that was omitted from the memory duplicate
+ok 25 - a different pre-step middleware cannot drop queued input that was omitted from the memory duplicate
+  ---
+  duration_ms: 259.0562
+  type: 'test'
+  ...
+# Subtest: summary candidates interoperate between native commands and workbench with the same policy epoch
+ok 26 - summary candidates interoperate between native commands and workbench with the same policy epoch
+  ---
+  duration_ms: 698.0633
+  type: 'test'
+  ...
+# Subtest: native workbench previews and commits actual budget/binding settings without nested locks or provider calls
+ok 27 - native workbench previews and commits actual budget/binding settings without nested locks or provider calls
+  ---
+  duration_ms: 1673.6781
+  type: 'test'
+  ...
+# Subtest: native workbench refuses a stale budget review after person edits and preserves the old binding
+ok 28 - native workbench refuses a stale budget review after person edits and preserves the old binding
+  ---
+  duration_ms: 764.0956
+  type: 'test'
+  ...
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 32746.6853

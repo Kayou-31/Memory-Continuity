@@ -25,6 +25,24 @@ async function fixture(t,options={}){
  return{profileRoot,memory,server,authority,ctl,request,call,session,advance:ms=>now+=ms}
 }
 
+test('timed-out HTTP confirmation cannot subsequently publish workbench preferences',async t=>{
+ const f=await fixture(t,{requestTimeoutMs:500}),s=await f.session()
+ const snapshot=must((await f.call('/v1/admin/snapshot',{sessionId:s.sessionId})).body)
+ const review=must((await f.call('/v1/admin/prepare',{sessionId:s.sessionId,snapshotId:snapshot.id,action:'settings',payload:{impactConfirmation:false}})).body)
+ const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve}},reached=deferred(),release=deferred(),cleaned=deferred()
+ const bounded=p=>Promise.race([p,new Promise((_,reject)=>{const timer=setTimeout(()=>reject(Error('settings test deadline')),8000);timer.unref()})])
+ const open=fs.open,unlink=fs.unlink;let gated=false
+ const isTemporary=file=>String(file).includes('workbench-settings.json.')&&String(file).endsWith('.tmp')
+ fs.open=async(file,...args)=>{const h=await open(file,...args);if(isTemporary(file)){const sync=h.sync.bind(h);h.sync=async()=>{await sync();gated=true;reached.resolve();await release.promise}}return h}
+ fs.unlink=async(file,...args)=>{try{return await unlink(file,...args)}finally{if(isTemporary(file))cleaned.resolve()}}
+ try{
+  const pending=f.call('/v1/admin/confirm',{sessionId:s.sessionId,id:review.id});await bounded(reached.promise)
+  assert.equal((await pending).status,408);release.resolve();await bounded(cleaned.promise)
+  assert.equal(gated,true)
+  await assert.rejects(fs.readFile(path.join(f.profileRoot,'.dsh-rp/v1/workbench-settings.json'),'utf8'),{code:'ENOENT'},'no preference was published after timeout')
+ }finally{release.resolve();fs.open=open;fs.unlink=unlink}
+})
+
 test('loopback service rejects missing credentials, foreign origin/host and caller-invented authority',async t=>{
  const f=await fixture(t)
  assert.equal((await f.call('/v1/admin/status',{},null)).status,403)

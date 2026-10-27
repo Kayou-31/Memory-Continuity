@@ -11,6 +11,49 @@ async function input(f,key,body){const s=await f.controlSource(key); // trusted 
 async function enable(f,on=true){return must(await f.experienceCandidates.configure(f.authority,await f.controlSource('cfg_'+String(on)),{personId:'erin',enabled:on,key:'cfg_'+String(on)}))}
 const proposal={description:'林澈答应周末帮忙整理画稿。',epistemic:'world',reason:'明确约定',evidence:[{quote:'周末我来帮你整理画稿。'}]}
 async function writer(f,s,extra={}){return must(await f.experienceCandidates.writer(f.authority,{personId:'erin',sessionId:f.request.sessionId,inputSourceId:s.id,sourceRevisionIds:[s.id],...extra}))}
+
+test('deleting the enable control source disables old and new experience writers',async()=>{
+ const f=await ready();try{
+  const policy=await f.controlSource('enable')
+  must(await f.experienceCandidates.configure(f.authority,policy,{personId:'erin',enabled:true,key:'enable'}))
+  const s=await input(f,'one','周末我来帮你整理画稿。'),old=await writer(f,s)
+  must(await f.canonical.applyControl(f.authority,await f.controlSource('delete-policy'),{kind:'privacy_delete',idempotencyKey:'delete-policy',expected:await f.fence(),sourceRevisionIds:[policy.id],affectedBranchIds:[f.request.branchId]}))
+  assert.equal(must(await f.experienceCandidates.settings(f.authority,'erin')).enabled,false)
+  deny(await old.propose(proposal),'scope_denied')
+  deny(await f.experienceCandidates.writer(f.authority,{personId:'erin',sessionId:f.request.sessionId,inputSourceId:s.id,sourceRevisionIds:[s.id]}),'scope_denied')
+  assert.equal(must(await f.experienceCandidates.list(f.authority,'erin')).items.length,0)
+  await enable(f);const renewed=must(await (await writer(f,s)).propose(proposal));assert.equal(renewed.state,'pending')
+ }finally{await f.close()}
+})
+
+test('pending experience provenance expires with its deleted authorization source',async()=>{
+ const f=await ready();try{
+  const policy=await f.controlSource('enable');must(await f.experienceCandidates.configure(f.authority,policy,{personId:'erin',enabled:true,key:'enable'}))
+  const s=await input(f,'one','周末我来帮你整理画稿。'),r=must(await (await writer(f,s)).propose(proposal))
+  must(await f.canonical.applyControl(f.authority,await f.controlSource('delete-policy'),{kind:'privacy_delete',idempotencyKey:'delete-policy',expected:await f.fence(),sourceRevisionIds:[policy.id],affectedBranchIds:[f.request.branchId]}))
+  deny(await f.experienceCandidates.get(f.authority,'erin',r.id),'source_unavailable')
+ }finally{await f.close()}
+})
+
+test('legacy v1 candidates verify their saved policy even without a policy copy dependency',async()=>{
+ const f=await ready();try{
+  const policy=await f.controlSource('legacy_enable');must(await f.experienceCandidates.configure(f.authority,policy,{personId:'erin',enabled:true,key:'legacy_enable'}))
+  const proto=Object.getPrototypeOf(f.store),save=proto.savePayloadCopy;proto.savePayloadCopy=function(a,v){return save.call(this,a,{...v,sourceRevisionIds:v.sourceRevisionIds.filter(id=>id!==policy.id)})}
+  let r;try{const s=await input(f,'legacy','周末我来帮你整理画稿。');r=must(await (await writer(f,s)).propose(proposal))}finally{proto.savePayloadCopy=save}
+  const proof=must(await f.experienceCandidates.receipt(f.authority,'erin',r))
+  const copy=must(await f.store.readPayloadCopies(f.authority,[r.id]))[0]
+  for(let i=1;i<32;i++){const id=r.id+'_legacy_'+i;must(await f.store.savePayloadCopy(f.authority,{idempotencyKey:id,id,kind:copy.kind,body:copy.body,sourceRevisionIds:copy.sourceRevisionIds,dependencyIds:copy.dependencyIds}))}
+  assert.equal(must(await f.experienceCandidates.availability(f.authority,'erin')).pending,32)
+  await enable(f,false);assert.equal(must(await f.experienceCandidates.get(f.authority,'erin',r.id)).state,'pending','disabling proposals preserves valid history')
+  must(await f.canonical.applyControl(f.authority,await f.controlSource('delete_legacy'),{kind:'privacy_delete',idempotencyKey:'delete_legacy',expected:await f.fence(),sourceRevisionIds:[policy.id],affectedBranchIds:[f.request.branchId]}))
+  deny(await f.experienceCandidates.get(f.authority,'erin',r.id),'source_unavailable')
+  assert.equal(must(await f.experienceCandidates.list(f.authority,'erin')).items.length,0)
+  await assert.rejects(f.experienceCandidates.verify(f.authority,'erin',proof))
+  deny(await f.experienceCandidates.decide(f.authority,await f.controlSource('legacy_adopt'),{personId:'erin',candidateId:r.id,decision:'accepted',key:'legacy_adopt'}),'source_unavailable')
+  await enable(f);const availability=must(await f.experienceCandidates.availability(f.authority,'erin'));assert.equal(availability.pending,0);assert.equal(availability.reason,'cooldown','deletion does not refund admission')
+  const now=Date.now;try{Date.now=()=>now()+300001;const next=await input(f,'after_legacy','周末我来帮你整理画稿。');assert.equal(must(await (await writer(f,next)).propose(proposal)).state,'pending')}finally{Date.now=now}
+ }finally{await f.close()}
+})
 test('experience proposal stays pending, survives unrelated append and cold retry, and needs explicit adoption',async()=>{
  const f=await ready();try{
   await enable(f);const s=await input(f,'one','周末我来帮你整理画稿。'),w=await writer(f,s),before=await f.fence(),r=must(await w.propose(proposal));

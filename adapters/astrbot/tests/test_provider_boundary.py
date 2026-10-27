@@ -10,6 +10,7 @@ from pathlib import Path
 import socket
 import sys
 import unittest
+from unittest.mock import patch
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -26,7 +27,11 @@ def offline():
         return call
     socket.socket.connect, socket.socket.connect_ex = wrap(original), wrap(original_ex)
     try:
-        yield
+        # httpx can inherit Windows registry proxies even with no HTTP_PROXY
+        # environment variable. The synthetic endpoint must stay on loopback,
+        # never be forwarded through the user's proxy. Restore both on exit.
+        with patch.dict(os.environ, {'NO_PROXY': '127.0.0.1,::1', 'no_proxy': '127.0.0.1,::1'}):
+            yield
     finally:
         socket.socket.connect, socket.socket.connect_ex = original, original_ex
 

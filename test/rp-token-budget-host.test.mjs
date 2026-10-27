@@ -21,10 +21,14 @@ test('native explicit token budget is visible, checks actual model identity, and
 const journalPath=(f,a)=>path.join(f.profile,'.dsh-rp/v1/host',createHash('sha256').update(a.id).digest('hex')+'.json')
 const readJournal=async(f,a)=>JSON.parse(await fs.readFile(journalPath(f,a),'utf8'))
 const must=r=>{assert.equal(r.ok,true,JSON.stringify(r));return r.value}
-for(const maxChars of [2048,65536])test('actual tokenizer budget certifies bounded pages or a complete refusal for maxChars='+maxChars,async()=>{
+for(const {maxChars,forceRefusal=false} of [{maxChars:2048},{maxChars:65536},{maxChars:65536,forceRefusal:true}])test('actual tokenizer budget certifies bounded pages or a complete refusal for maxChars='+maxChars+(forceRefusal?' when the next call consumes the remaining reserve':''),async()=>{
  const f=await host({entityIds:['erin']}),seen=[];let calls=0,id,cursor
+ // A later model-generated call can itself consume the remaining budget. The
+ // valid cursor takes precedence over id, but the full supplied arguments
+ // remain in native history. Make that cost deterministic, independent of UUIDs.
+ const secondCallId='budget_get_2'
  class Terminal extends LlmAdapter{async *stream(options){calls++;seen.push(options);const tool=options.messages.findLast(m=>m.role==='tool');if(tool){const r=JSON.parse(tool.content[0].text);if(r.ok){cursor=r.value.nextCursor;assert.ok(r.value.text.length<60000);assert.ok(cursor)}else{assert.equal(maxChars,65536);assert.equal(r.code,'context_budget_exceeded')}}
-  if(calls<3){yield {type:'tool-call-delta',index:0,id:'budget_get_'+calls,name:'rp_memory_get',argumentsDelta:JSON.stringify(cursor?{cursor,maxChars}:{id,maxChars})};yield {type:'finish',reason:{kind:'tool-calls'}}}
+  if(calls<3){yield {type:'tool-call-delta',index:0,id:calls===2?secondCallId:'budget_get_1',name:'rp_memory_get',argumentsDelta:JSON.stringify(cursor?{cursor,maxChars,...(forceRefusal?{id:'unused '.repeat(1024)}:{})}:{id,maxChars})};yield {type:'finish',reason:{kind:'tool-calls'}}}
   else{yield {type:'text-delta',text:'离线工具预算验证'};yield {type:'finish',reason:{kind:'stop'}}}
  }}
  try{
@@ -32,13 +36,19 @@ for(const maxChars of [2048,65536])test('actual tokenizer budget certifies bound
   ok(await f.command(a,'budget set {"limitTokens":8000}'))
   const j=await readJournal(f,a),auth=must(await f.rp.memory.control.authorize(j.data.request)),ctl=must(await f.rp.memory.store.observeSource(auth,{idempotencyKey:'big_event',origin:'user_control',role:'user_control',publicText:'Approved offline test event',turnId:'big_turn'}))
   id=must(await f.rp.memory.agentMemory.apply(auth,ctl,{kind:'experience',actorIds:['erin'],description:' hello'.repeat(10000),fictionalTime:'test',sourceRevisionIds:[],idempotencyKey:'big_event',expected:must(await f.rp.memory.store.readFence(auth))})).eventId
-  ok(await f.command(a,'input 查阅原文'));await a.whenIdle();await f.rp.ready(a.id).catch(e=>{throw new Error(JSON.stringify(f.rp.status(a.id)),{cause:e})});const status=value(await f.command(a,'status'));assert.equal(status.memoryUsage.mode,'tokenizer-text');assert.equal(status.blocked,false)
-  if(calls===2&&maxChars===65536){
+  ok(await f.command(a,'input 查阅原文'));await a.whenIdle();let readyError;await f.rp.ready(a.id).catch(e=>{readyError=e});const status=value(await f.command(a,'status'));assert.equal(status.memoryUsage.mode,'tokenizer-text')
+  const refusalCannotFit=status.blocked&&maxChars===65536&&status.lastError==='context_budget_exceeded'
+  if(forceRefusal)assert.equal(refusalCannotFit,true,JSON.stringify(status))
+  if(refusalCannotFit){
+   // No complete certified refusal can be published. Native error output must
+   // not receive a receipt or reach a third provider request; recovery is clean.
+   assert.equal(calls,2);assert.equal(status.bindingHealth,'blocked');assert.equal(status.requestAdmission.state,'rejected');assert.equal(status.recovery.action,'continue-clean');assert.ok(status.ambiguousInputIds.length>0)
+  }else if(calls===2&&maxChars===65536){
    // The new packet can grow after tool evidence is authenticated. Its final
    // complete envelope must still stop at the gate, never bypass that limit.
-   assert.equal(status.bindingHealth,'healthy');assert.equal(status.requestAdmission.state,'rejected');assert.equal(status.requestAdmission.stage,'assembly');assert.equal(status.requestAdmission.code,'context_budget_exceeded');assert.ok(status.memoryUsage.total>8000);assert.equal(status.recovery.action,'continue-clean')
-  }else{assert.equal(calls,3,JSON.stringify(status));assert.ok(status.memoryUsage.total<=8000);assert.equal(status.memoryUsage.parts.filter(p=>p.kind==='retained-memory').length,5)}
-  const final=await readJournal(f,a);for(const key of ['budget_get_1','budget_get_2']){const receipt=final.data.receipts[key].snapshot;if(receipt.provenance==='error'){assert.equal(maxChars,65536);assert.equal(receipt.records.length,0);const actual=a.session.deriveMessages().find(m=>m.role==='tool'&&m.toolCallId===key),body=actual?.content?.[0]?.text;assert.ok(body);assert.deepEqual(JSON.parse(body),{ok:false,code:'context_budget_exceeded'});assert.equal(createHash('sha256').update(body).digest('hex'),receipt.resultSha256)}else assert.equal(receipt.records[0].id,id);assert.equal(receipt.memoryBudget.sha256,status.memoryBudget.sha256)}
+   assert.equal(readyError,undefined);assert.equal(status.blocked,false);assert.equal(status.bindingHealth,'healthy');assert.equal(status.requestAdmission.state,'rejected');assert.equal(status.requestAdmission.stage,'assembly');assert.equal(status.requestAdmission.code,'context_budget_exceeded');assert.ok(status.memoryUsage.total>8000);assert.equal(status.recovery.action,'continue-clean')
+  }else{assert.equal(readyError,undefined);assert.equal(status.blocked,false);assert.equal(calls,3,JSON.stringify(status));assert.ok(status.memoryUsage.total<=8000);assert.equal(status.memoryUsage.parts.filter(p=>p.kind==='retained-memory').length,5)}
+  const final=await readJournal(f,a);for(const key of ['budget_get_1',secondCallId]){if(refusalCannotFit&&key===secondCallId){assert.equal(final.data.receipts[key],undefined);const actual=a.session.deriveMessages().find(m=>m.role==='tool'&&m.toolCallId===key);assert.ok(actual,'native failure remains available for diagnostics');assert.equal(final.data.frames[actual.id],undefined,'native failure must not become a certified memory frame');continue}const receipt=final.data.receipts[key].snapshot;if(receipt.provenance==='error'){assert.equal(maxChars,65536);assert.equal(receipt.records.length,0);const actual=a.session.deriveMessages().find(m=>m.role==='tool'&&m.toolCallId===key),body=actual?.content?.[0]?.text;assert.ok(body);assert.deepEqual(JSON.parse(body),{ok:false,code:'context_budget_exceeded'});assert.equal(createHash('sha256').update(body).digest('hex'),receipt.resultSha256)}else assert.equal(receipt.records[0].id,id);assert.equal(receipt.memoryBudget.sha256,status.memoryBudget.sha256)}
   // Reconstruct each actual memory envelope independently with the packaged meter.
   const {api}=await import('./fixtures/rp/growth.mjs'),meter=await api.openMemoryMeter(status.memoryBudget,status.memoryBudget.target)
   for(const req of seen){const parts=req.messages.filter(m=>final.data.snapshots[m.id]||final.data.frames[m.id]||m.id?.startsWith('retired_')).map(m=>({kind:'actual',text:api.canonical(m)}));parts.push({kind:'tools',text:api.canonical(req.tools)},{kind:'toolHistory',text:api.canonical(req.toolHistory)});assert.ok(api.measureMemoryParts(parts,meter).total<=8000)}

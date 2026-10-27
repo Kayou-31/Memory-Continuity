@@ -1,0 +1,17 @@
+{
+  "model": "deepseek-v4.1-flash-free",
+  "maxRequests": 1,
+  "maxOutputTokens": 1024,
+  "attempts": [
+    {
+      "startedAt": "2026-10-27T16:35:23.032Z",
+      "requestBytes": 1735,
+      "model": "deepseek-v4.1-flash-free",
+      "maxTokens": 1024,
+      "status": 429,
+      "responseBytes": 208
+    }
+  ],
+  "paidFallback": false,
+  "exitCode": null
+}

@@ -240,7 +240,26 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
  const applyTheme=()=>{if(theme==='system')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=theme;for(const b of $('theme').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.theme===theme))}
  for(const [value,label,glyph]of [['light','浅色','☀'],['dark','深色','☾'],['system','跟随系统','◐']]){const b=elem('button','',$('theme'));b.append(icon(value==='light'?'sun':value==='dark'?'moon':'monitor'));elem('span',label,b,'t-label');b.type='button';b.dataset.theme=value;b.title=label;b.setAttribute('aria-label',label);b.onclick=()=>{theme=value;applyTheme();try{localStorage.setItem('memcont-theme',theme)}catch{}}}applyTheme()
  $('menu').replaceChildren(icon('menu'));$('refresh').replaceChildren(icon('refresh'));$('viewing-label').prepend(icon('eye'));$('person-picker').append(icon('chevDown'));$('new').prepend(icon('plus'));$('close').replaceChildren(icon('power'));$('close').setAttribute('aria-label','关闭管理入口');$('close').setAttribute('title','关闭管理入口');
- $('person-picker').onclick=()=>{if(busy||closed||!snapshot)return;const menu=$('person-menu');menu.hidden=!menu.hidden;$('person-picker').setAttribute('aria-expanded',String(!menu.hidden));menu.replaceChildren();for(const p of snapshot.persons){const b=button(menu,'',()=>{selected=p.personId;$<HTMLSelectElement>('person').value=selected;render()},'');elem('span',personName(p).slice(0,1),b,'avatar sm');elem('span',personName(p),b,'pm-name');if(p.personId===selected)b.append(icon('check'))}button(menu,'管理全部人物',()=>go('people'),'')};
+ $('person-picker').onclick=()=>{
+  if(busy||closed||!snapshot)return
+  const menu=$('person-menu');menu.hidden=!menu.hidden;$('person-picker').setAttribute('aria-expanded',String(!menu.hidden));menu.replaceChildren()
+  for(const p of snapshot.persons){
+   const viewing=p.personId===selected,chat=snapshot.capabilities.features.chatBinding&&p.personId===snapshot.context?.personId
+   const b=button(menu,'',()=>{selected=p.personId;$<HTMLSelectElement>('person').value=selected;render()},'pm-person')
+   elem('span',Array.from(String(personName(p)))[0]??'人',b,'avatar sm')
+   const info=elem('span','',b,'pm-info');elem('span',personName(p),info,'pm-name');const tags=elem('span','',info,'pm-tags')
+   // Purpose belongs to the bound conversation, not to every person in the list.
+   const purpose=chat?modes[snapshot.context?.config?.mode??snapshot.context?.mode]:undefined
+   if(purpose)elem('span',purpose,tags,'pm-tag')
+   if(chat)elem('span','当前聊天使用',tags,'pm-tag pm-tag-chat')
+   else if(viewing)elem('span','正在查看',tags,'pm-tag pm-tag-viewing')
+   const pending=(snapshot.candidates??[]).filter((c:any)=>c.state==='pending'&&c.changes.some((x:any)=>x.personId===p.personId)).length+(snapshot.experienceCandidates?.find((x:any)=>x.personId===p.personId)?.items.filter((x:any)=>x.state==='pending').length??0)
+   if(pending)elem('span','待审阅 '+pending,tags,'pm-tag pm-tag-pending')
+   if(!tags.childElementCount)elem('span','已建档',tags,'pm-tag')
+   if(viewing){const check=elem('span','',b,'pm-selected');check.title='正在查看';if(chat)elem('span','正在查看',check,'sr-only');check.append(icon('check'))}
+  }
+  const manage=button(menu,'管理全部人物',()=>go('people'),'');manage.prepend(icon('users'))
+ };
  $('menu').onclick=()=>drawer($('menu').getAttribute('aria-expanded')!=='true');$('scrim').onclick=()=>drawer(false);document.addEventListener('keydown',e=>{if(e.key==='Escape')drawer(false)})
  $('brand').onclick=e=>{e.preventDefault();go('people')};$('new').onclick=()=>go('new');$('person').onchange=()=>{if(!busy&&!closed){selected=$<HTMLSelectElement>('person').value;render()}}
  $('refresh').onclick=()=>{if(!busy&&!closed)refresh().catch(fail)}
