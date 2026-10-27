@@ -16,6 +16,8 @@ import { createJobService } from './jobs.js'
 import { createAgentMemory } from './agent-memory.js'
 import { createPersonService } from './person/service.js'
 import {createDocumentService} from './person/documents/service.js'
+import {createDocumentRetrieval} from './person/documents/retrieval.js'
+export {createDocumentRetrieval} from './person/documents/retrieval.js'
 import {createAudienceService} from './person/documents/audience.js'
 import {createDiaryService} from './diary/service.js'
 import { createModuleService } from './modules/runtime.js'
@@ -54,6 +56,7 @@ export async function openRpMemory(input: { profileRoot: string; entityIds: read
   const organizer=createOrganizer(store,summaries,a=>inputs.get(a.scope.branchId)??new Set())
   return { organizer,store, control, global, canonical: service, person: createPersonService(store, service, input.entityIds), agentMemory: createAgentMemory(store, service, input.entityIds), summaries, jobs, retrieval: createRetrieval(store, { entityIds: input.entityIds, inputSourceIds: authority => inputs.get(authority.scope.branchId) ?? new Set(), verification: input.verification }), packets: createPacketService(store, global, { optimizer: input.optimizer,memoryParts:input.memoryParts }), coordinator,
     documents: createDocumentService(store,service,input.entityIds),
+    documentRetrieval:createDocumentRetrieval(store),
     audiences: createAudienceService(),
     diary:createDiaryService(store,service,input.entityIds),
     registerInputBindings(branchId: string, bindings: readonly import('./packet.js').InputBinding[]) { const set = inputs.get(branchId) ?? new Set<string>(); bindings.filter(b => b.kind === 'input').forEach(b => set.add(b.sourceId)); inputs.set(branchId, set) },

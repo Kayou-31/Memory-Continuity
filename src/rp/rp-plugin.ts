@@ -27,6 +27,7 @@ import { acquireSessionPolicy, engineeringAllowed, type SessionMemoryPolicy } fr
 import { acquireRpAdmission } from './admission.js'
 import { retrievalEvidence, verifyRetrievalEvidence, type RetrievalEvidence } from './retrieval-evidence.js'
 import { diaryEvidence, verifyDiaryEvidence, type DiaryReceiptContext } from './diary/evidence.js'
+import type {DocumentReceiptContext} from './person/documents/retrieval.js'
 import { validateDiaryDraft } from './diary/schema.js'
 import { diaryCommand } from './diary/commands.js'
 import { verifyPacketProof, verifyPacketProofs } from './packet-proof.js'
@@ -42,9 +43,9 @@ import type { HostAuthority, InputFence, SourceRevision } from './types.js'
 import type { GlobalFence } from './global.js'
 const sha = (s: string) => createHash('sha256').update(s).digest('hex')
 const uid = (p: string) => p + '_' + randomUUID().replaceAll('-', '')
-const memoryToolNames = ['rp_memory_search', 'rp_memory_get', 'rp_memory_status', 'memcont_diary_write', 'memcont_diary_read', 'memcont_diary_search']
-type ToolProof = RetrievalEvidence & { diary?: DiaryReceiptContext }
-type ToolProvenance = 'retrieval-result' | 'diary-result' | 'status' | 'error'
+const memoryToolNames = ['rp_memory_search', 'rp_memory_get', 'rp_memory_status', 'memcont_diary_write', 'memcont_diary_read', 'memcont_diary_search', 'memcont_document_search', 'memcont_document_get']
+type ToolProof = RetrievalEvidence & { diary?: DiaryReceiptContext; document?:DocumentReceiptContext }
+type ToolProvenance = 'retrieval-result' | 'diary-result' | 'document-result' | 'status' | 'error'
 const body = (m: any) => (m.content ?? []).filter((b: any) => b.type === 'text').map((b: any) => b.text).join('\n')
 const normalizedMessage = (m: any) => canonical(m)
 const commandObject = (input: string, required: readonly string[], optional: readonly string[] = []) => {
@@ -279,7 +280,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
       await created?.dispose(); throw e
     }
   }
-  const verifyToolProof = (b: Bound, proof: ToolProof) => proof.diary ? verifyDiaryEvidence(memory.store, b.authority, {...proof, diary: proof.diary}, b.data.personBinding?.personId) : verifyRetrievalEvidence(memory.store, b.authority, proof, new Set(b.data.inputs.map(i=>i.sourceId)))
+  const verifyToolProof = (b: Bound, proof: ToolProof) => proof.document ? memory.documentRetrieval.verify(b.authority,{...proof,document:proof.document},{personId:b.data.personBinding?.personId??''}) : proof.diary ? verifyDiaryEvidence(memory.store, b.authority, {...proof, diary: proof.diary}, b.data.personBinding?.personId) : verifyRetrievalEvidence(memory.store, b.authority, proof, new Set(b.data.inputs.map(i=>i.sourceId)))
   // Planned retirement markers are also counted before their commit. This is
   // conservative sizing only; certify separately reconstructs their provenance.
   const collectMemoryParts = (b:Bound, options:any):MemoryPart[] => [
@@ -323,7 +324,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           if(canonical(s.memoryBudget??null)!==canonical(b.data.memoryBudget??null))throw new RpError('stale_input','历史记忆预算绑定不匹配')
           if(canonical(s.injectionBinding??null)!==bindingHash||canonical(s.personBinding??null)!==canonical(b.data.personBinding??null)||canonical(s.runtimeBinding??null)!==canonical(b.data.runtimeBinding??null))throw new RpError('stale_input','历史配置绑定不匹配')
           if(s.provenance==='packet'||s.provenance==='tool-call')await verifyPacketProof(memory.store,b.authority,s.packetProof)
-          if(s.records)await verifyToolProof(b,{inputFence:s.fence,records:s.records,resultSha256:s.resultSha256!,diary:s.diary})
+          if(s.records)await verifyToolProof(b,{inputFence:s.fence,records:s.records,resultSha256:s.resultSha256!,diary:s.diary,document:s.document})
           if(s.bodyHash!==sha(body(message))||s.modeEpoch!==policy.status(b.agent.id).modeEpoch||s.fence.branchId!==fence.branchId||s.fence.visibilityRevision!==fence.visibilityRevision||s.fence.deletionGeneration!==fence.deletionGeneration||s.fence.canonBindingsHash!==fence.canonBindingsHash||s.fence.policyVersion!==fence.policyVersion||s.dependencyIds.some(id=>!sources.has(id)))throw new RpError('stale_input','历史来源或权限已失效')
           if(s.globalPolicyHash!==globalPolicyHash()||s.globals.length!==globalAuthorities.length)throw new RpError('scope_denied','历史全局授权已改变')
           for(const dep of s.globalDependencies){let found=false;for(const g of globalAuthorities){const r=await memory.global.store.readPublication(g,dep.publicationId);if(r.ok&&r.value.source.id===dep.sourceId&&r.value.bodySha256===dep.bodySha256&&canonical(r.value.scope)===canonical(dep.scope)&&(r.value.scope.kind!=='profile'||unwrap(await memory.global.store.listActive(g)).some(x=>x.id===r.value.id)))found=true}if(!found)throw new RpError('scope_denied','历史全局来源已失效')}
@@ -676,7 +677,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
     await drain(b); request.signal?.throwIfAborted(); const generation = ++b.generation, assembly = await next()
     const diaryConfigured=b.data.personBinding?await memory.diary.settings(b.authority,{personId:b.data.personBinding.personId,boardId:'shared'}):undefined
     if(diaryConfigured&&!diaryConfigured.ok&&diaryConfigured.code!=='scope_denied')throw new RpError(diaryConfigured.code,diaryConfigured.message)
-    const allowedTools=memoryToolNames.filter(name=>!name.startsWith('memcont_diary_')||diaryConfigured?.ok)
+    const allowedTools=memoryToolNames.filter(name=>(!name.startsWith('memcont_diary_')||diaryConfigured?.ok)&&(!name.startsWith('memcont_document_')||b.data.personBinding))
     const memoryMeter=await sessionMeter(b)
     const delivery=memoryDelivery(b.data,memoryMeter?.budget.limitTokens??config.budget!.packetSoftTokens)
     const prepare=(optionalTokens=delivery.optionalLimit)=>memory.packets.prepare(b.authority,{budget:config.budget!,globalAuthorities,inputBindings:b.data.inputs,personId:b.data.personBinding?.personId,injection:b.data.injectionBinding?.config,runtime:b.runtime?.context(),memoryMeter,optionalTokens})
@@ -752,7 +753,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         if(snapshot.injection && snapshot.injection.context.personId!==b.data.personBinding?.personId)throw new RpError('stale_input','Historical injection person mismatch')
         if(canonical(snapshot.runtimeBinding ?? null)!==canonical(b.data.runtimeBinding ?? null))throw new RpError('stale_input','Historical runtime binding proof mismatch')
         if (canonical(snapshot.personBinding ?? null) !== canonical(b.data.personBinding ?? null)) throw new RpError('stale_input', 'Historical person binding proof mismatch')
-        if (snapshot.records) await verifyToolProof(b, { inputFence: snapshot.fence, records: snapshot.records, resultSha256: snapshot.resultSha256!, diary: snapshot.diary })
+        if (snapshot.records) await verifyToolProof(b, { inputFence: snapshot.fence, records: snapshot.records, resultSha256: snapshot.resultSha256!, diary: snapshot.diary, document:snapshot.document })
         if (snapshot.bodyHash !== sha(body(message)) || snapshot.modeEpoch !== policy.status(b.agent.id).modeEpoch || snapshot.fence.branchId !== fence.branchId || snapshot.fence.canonBindingsHash !== fence.canonBindingsHash || snapshot.fence.visibilityRevision !== fence.visibilityRevision || snapshot.fence.deletionGeneration !== fence.deletionGeneration || snapshot.fence.policyVersion !== fence.policyVersion || snapshot.dependencyIds.some(id => !sourceMap.has(id)) || snapshot.eventIds.some(id => !events.has(id))) throw new RpError('stale_input', 'Historical RP snapshot is invalid; use clean continuation')
         if (snapshot.globalPolicyHash !== globalPolicyHash() || snapshot.globals.length !== globalAuthorities.length) throw new RpError('scope_denied', 'Historical global grants changed')
         for (const dep of snapshot.globalDependencies) {
@@ -859,13 +860,14 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         checkPublication()
         await verifyToolProof(b, pending.proof)
         checkPublication()
-        const snapshot: Snapshot = { ...(b.data.memoryBudget?{memoryBudget:structuredClone(b.data.memoryBudget)}:{}), ...(b.data.injectionBinding ? {injectionBinding:structuredClone(b.data.injectionBinding)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), ...(pending.proof.diary ? {diary: pending.proof.diary} : {}), provenance: pending.provenance, records: pending.proof.records, resultSha256: pending.proof.resultSha256, bodyHash: sha(pending.text), packetId: pending.packetId, fence: pending.proof.inputFence, globals: [...b.packet!.globalFences], globalDependencies: [...b.packet!.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [], eventIds: [], modeEpoch: policy.status(b.agent.id).modeEpoch }
+        const snapshot: Snapshot = { ...(b.data.memoryBudget?{memoryBudget:structuredClone(b.data.memoryBudget)}:{}), ...(b.data.injectionBinding ? {injectionBinding:structuredClone(b.data.injectionBinding)} : {}), ...(b.data.runtimeBinding ? { runtimeBinding: structuredClone(b.data.runtimeBinding) } : {}), ...(b.data.personBinding ? { personBinding: structuredClone(b.data.personBinding) } : {}), ...(pending.proof.diary ? {diary: pending.proof.diary} : {}), ...(pending.proof.document ? {document:pending.proof.document} : {}), provenance: pending.provenance, records: pending.proof.records, resultSha256: pending.proof.resultSha256, bodyHash: sha(pending.text), packetId: pending.packetId, fence: pending.proof.inputFence, globals: [...b.packet!.globalFences], globalDependencies: [...b.packet!.globalDependencies], globalPolicyHash: globalPolicyHash(), dependencyIds: [], eventIds: [], modeEpoch: policy.status(b.agent.id).modeEpoch }
         const data = { ...b.data, receipts: { ...b.data.receipts, [exec.callId]: { contentHash: sha(canonical(result.content)), snapshot } } }
         try { await writeJournal(b, false, data, checkPublication); checkPublication(); b.data = data } catch (e) { b.data.blocked = true; b.lastError = e instanceof RpError ? e.code : 'persistence_failed'; throw e }
       }) } finally { finish() }; return result
     } finally { pendingTools.delete(exec.token) }
   }) as never, { prepend: true }))
-  for (const name of ['rp_memory_search', 'rp_memory_get', 'rp_memory_status']) {
+  for (const name of ['rp_memory_search', 'rp_memory_get', 'rp_memory_status', 'memcont_document_search', 'memcont_document_get']) {
+    const document=name.startsWith('memcont_document_')
     effects.push(tools.register(defineTool({ name, description: 'Read-only RP data. Cannot accept sources, execute commands, approve publications or grant authority.', parameters: name.endsWith('status') ? {} : name.endsWith('get') ? { id: { type: 'string' }, cursor: { type: 'string' }, maxChars: { type: 'integer' } } : { query: { type: 'string' }, queryAlternatives: {type:'array',items:{type:'string'}}, cursor: { type: 'string' }, limit: { type: 'integer' } }, output, isConcurrencySafe: () => false,
       async execute(args: any, exec: any) {
         const b: Bound | undefined = exec.agent && bound.get(exec.agent.id)
@@ -873,11 +875,11 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
         await drain(b); const generation = b.generation, packetId = b.packet?.id
         if (!packetId || typeof exec.token !== 'symbol') throw new RpError('scope_denied', 'No native execution identity or packet')
         const sizing=await toolSizing(b,exec.callId)
-        let result: any, proof: RetrievalEvidence, provenance: 'retrieval-result' | 'status' | 'error'
+        let result: any, proof: ToolProof, provenance: ToolProvenance
         if (name.endsWith('status')) { const inputFence = unwrap(await memory.store.readFence(b.authority)); result = { mode: 'memory', branchId: inputFence.branchId, pendingInputIds: b.data.inputs.filter(i => !i.dispatched).map(i => i.sourceId) }; proof = { inputFence, records: [], resultSha256: sha(canonical(result)) }; provenance = 'status' }
         else {
-          result = name.endsWith('get') ? await memory.retrieval.get(b.authority, args,sizing) : await memory.retrieval.search(b.authority, args,sizing)
-          if (result.ok) { proof = retrievalEvidence(result, b.authority); provenance = 'retrieval-result' }
+          result = document ? b.data.personBinding ? name.endsWith('get') ? await memory.documentRetrieval.get(b.authority,{personId:b.data.personBinding.personId},args,sizing) : await memory.documentRetrieval.search(b.authority,{personId:b.data.personBinding.personId},args,sizing) : {ok:false,code:'scope_denied'} : name.endsWith('get') ? await memory.retrieval.get(b.authority, args,sizing) : await memory.retrieval.search(b.authority, args,sizing)
+          if (result.ok) { proof = document ? memory.documentRetrieval.evidence(result,b.authority) : retrievalEvidence(result, b.authority); provenance = document ? 'document-result' : 'retrieval-result' }
           else { result = { ok: false, code: result.code }; proof = { inputFence: unwrap(await memory.store.readFence(b.authority)), records: [], resultSha256: sha(canonical(result)) }; provenance = 'error' }
         }
         exec.signal.throwIfAborted(); if (closed || b.generation !== generation) throw new RpError('ownership_lost', 'Late tool result')
@@ -945,7 +947,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           b.data.blocked = true; await attempt(() => save(b, true))
         }
         for (const dispose of effects.reverse()) if (typeof dispose === 'function') await attempt(dispose)
-        await attempt(() => memory.retrieval.dispose()); for (const h of handles.reverse()) await attempt(() => h.dispose()); await attempt(() => lease.release()); await attempt(() => memory.close()); admission.unreserve(owner)
+        await attempt(() => memory.retrieval.dispose()); await attempt(() => memory.documentRetrieval.dispose()); for (const h of handles.reverse()) await attempt(() => h.dispose()); await attempt(() => lease.release()); await attempt(() => memory.close()); admission.unreserve(owner)
         if (errors.length) throw new AggregateError(errors, 'RP close failed; request ownership remains retired')
       })(); return closePromise
     },
