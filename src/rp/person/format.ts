@@ -7,10 +7,10 @@ export function personValue(event: SemanticEvent): PersonValue | null {
   if (semanticProtocol(event) !== 'person-core/v1') return null
   const p = event.payload
   if (p.kind !== 'state_change') invalid('person field payload')
-  const v = object(p.after, ['protocol', 'operation', 'fieldId', 'kind', 'value', 'policy', 'previousEventId', 'causeEventIds', 'note'], ['validity'])
-  if (v.protocol !== 'person-core/v1' || !['init','edit','grow','set-policy'].includes(v.operation)) invalid('person operation')
+  const v = object(p.after, ['protocol', 'operation', 'fieldId', 'kind', 'value', 'policy', 'previousEventId', 'causeEventIds', 'note'], ['validity','injection'])
+  if (v.protocol !== 'person-core/v1' || !['init','edit','grow','set-policy','set-injection'].includes(v.operation)) invalid('person operation')
   if(v.operation==='init') { if(v.previousEventId!==null)invalid('person initial predecessor') } else id(v.previousEventId)
-  personField({ fieldId: v.fieldId, kind: v.kind, value: v.value, policy: v.policy, ...(v.validity?{validity:v.validity}:{}) })
+  personField({ fieldId: v.fieldId, kind: v.kind, value: v.value, policy: v.policy, ...(v.validity?{validity:v.validity}:{}),...(v.injection!==undefined?{injection:v.injection}:{}) })
   if (p.key !== personKeys[v.kind as PersonValue['kind']]) invalid('person storage key')
   if (!Array.isArray(v.causeEventIds) || v.causeEventIds.length > 32 || new Set(v.causeEventIds).size!==v.causeEventIds.length || (v.operation==='init' ? v.causeEventIds.length!==1 : v.operation==='grow' ? !v.causeEventIds.length : v.causeEventIds.length!==0)) invalid('person causes')
   v.causeEventIds.forEach(id); text(v.note, 2048)
@@ -33,6 +33,8 @@ export function checkPersonTransition(event: SemanticEvent, history: readonly Se
   if(old.kind!==v.kind || heads[0].acceptedSeq>event.acceptedSeq)invalid('person field identity/order')
   if(v.operation==='set-policy') {if(v.value!==old.value)invalid('policy change must retain value')}
   else if(v.policy!==old.policy)denied('use explicit set-policy')
+  if(v.operation==='set-injection'){if(v.value!==old.value||JSON.stringify(v.validity)!==JSON.stringify(old.validity))invalid('injection choice must retain value and validity')}
+  else if(v.injection!==old.injection)denied('use explicit set-injection')
   if(v.operation==='grow') {
     if(old.policy!=='growable')denied('only growable person fields can grow')
     for(const id of v.causeEventIds) {const cause=history.find(e=>e.id===id);if(!cause || cause.payload.kind!=='occurrence' || cause.epistemic!=='world' || cause.acceptedSeq>event.acceptedSeq || semanticProtocol(cause)==='person-origin/v1')invalid('person growth requires accepted experiences, not initial definitions')}

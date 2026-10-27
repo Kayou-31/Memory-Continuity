@@ -82,8 +82,8 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
      guard();const stamp=snapshots.get(r.snapshotId);if(!stamp)throw new RpError('scope_denied','Unknown management snapshot');await check(stamp)
      const id=uid(),review:Review={stamp:structuredClone(stamp),action:r.action,payload:r.payload,key:'manager_'+id}
      if(r.action==='create'){const p=unwrap(await person.preview(authority,r.payload,review.key));review.handle=p.handle;review.payload=p.draft}
-     else if(['edit','set-policy'].includes(r.action)){
-      const op=object(r.payload,['personId','fieldId','note',r.action==='edit'?'value':'policy'],['validity'])
+     else if(['edit','set-policy','set-injection'].includes(r.action)){
+      const op=object(r.payload,['personId','fieldId','note',r.action==='edit'?'value':r.action==='set-injection'?'injection':'policy'],['validity'])
       const current=unwrap(await person.read(authority,op.personId)).fields.find(f=>f.fieldId===op.fieldId)
       if(!current)throw new RpError('source_unavailable','Current person field unavailable')
       review.payload={...op,previousEventId:current.eventId,operation:r.action}
@@ -137,7 +137,7 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
     return coordinator.mutate(()=>withPublicationGuard(guard,async()=>{
     await authorize();text(id,64);const r=reviews.get(id);if(!r)throw new RpError('scope_denied','Unknown management review')
     if(r.done){unwrap(await store.ensureDurable(authority,unwrap(await store.readFence(authority))));guard();return structuredClone(r.result)}
-    const prefix=r.action==='create'?'person:':r.action==='edit'||r.action==='set-policy'?'person_edit:':r.action==='adopt'?'person_adopt:':r.action==='reject'?'person_reject:':''
+    const prefix=r.action==='create'?'person:':r.action==='edit'||r.action==='set-policy'||r.action==='set-injection'?'person_edit:':r.action==='adopt'?'person_adopt:':r.action==='reject'?'person_reject:':''
     const prior=r.attempted&&r.action!=='propose'?unwrap(await store.readControlCommit(authority,prefix+r.key)):null
     if(!prior&&!(r.attempted&&r.extension))await check(r.stamp)
     r.attempted=true
@@ -145,7 +145,7 @@ export function createManagementService(store:RpStore,control:Parameters<typeof 
     let result:unknown
     if(r.extension)result=await r.extension.execute(ctl)
     else if(r.action==='create')result=unwrap(await person.confirm(authority,r.handle!,ctl))
-    else if(r.action==='edit'||r.action==='set-policy')result=unwrap(await person.apply(authority,ctl,{...r.payload,expected:r.stamp.fence,idempotencyKey:r.key}))
+    else if(r.action==='edit'||r.action==='set-policy'||r.action==='set-injection')result=unwrap(await person.apply(authority,ctl,{...r.payload,expected:r.stamp.fence,idempotencyKey:r.key}))
     else if(r.action==='adopt')result=unwrap(await person.adopt(authority,ctl,r.payload.candidateIds,r.key))
     else if(r.action==='reject')result=unwrap<unknown>(await person.reject(authority,ctl,r.payload.candidateId,r.key,r.stamp.fence))
     else if(r.action==='propose'){const p=unwrap(await person.propose(authority,r.payload,r.key,r.stamp.fence));result={candidateId:p.id}}

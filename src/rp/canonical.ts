@@ -152,6 +152,7 @@ export function createCanonicalService(store: RpStore, control: ReturnType<RpSto
             if (origin && event.payload.kind === 'occurrence' && !entities.has(event.payload.actorIds[0])) denied('unknown person origin entity')
             if (!origin && event.payload.kind === 'state_change' && !entities.has(event.payload.subjectId)) denied('unknown person field entity')
             growthMarkers.push({ kind: 'candidate_adoption', recordId: (origin ? 'person_origin_' : 'person_') + event.id, record: { candidateId: origin && event.payload.kind === 'occurrence' ? personOriginCandidate(event.payload.actorIds[0]) : 'person_core_v1', sourceRevisionIds: support.map(s => s.id), eventIds: [event.id], summaryIds: [], decision: 'accepted', controlSourceId: source.id } })
+            if(!origin&&event.payload.kind==='state_change'&&event.payload.after&&typeof event.payload.after==='object'&&'injection' in event.payload.after)growthMarkers.push({kind:'candidate_adoption',recordId:'person_injection_'+event.id,record:{candidateId:'person_injection_v1',sourceRevisionIds:support.map(s=>s.id),eventIds:[event.id],summaryIds:[],decision:'accepted',controlSourceId:source.id}})
           }
           return event
         })

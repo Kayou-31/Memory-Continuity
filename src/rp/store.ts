@@ -47,7 +47,10 @@ function authenticateEvent(event: SemanticEvent, changes: readonly AuthorityChan
   if (!protocol) { if (['person_document','diary_entry','diary_policy'].includes(event.payload.kind)) denied('document or diary requires authenticated semantic marker'); return }
   markSemantic(event, protocol)
   if (protocol === 'agent-memory/v1') markGrowthEvent(event)
-  else if (protocol === 'person-core/v1') personValue(event)
+  else if (protocol === 'person-core/v1') {
+    const field=personValue(event)
+    if(field?.injection!==undefined&&!changes.some(c=>c.kind==='candidate_adoption'&&c.recordId==='person_injection_'+event.id&&c.record.candidateId==='person_injection_v1'&&c.record.decision==='accepted'&&c.record.eventIds.length===1&&c.record.eventIds[0]===event.id))denied('Person injection choice requires its reader capability marker')
+  }
   else if (protocol === 'person-document/v1') documentValue(event)
   else if (protocol === 'shared-diary/v1') diaryValue(event)
   else if (protocol === 'shared-diary-policy/v1') diaryPolicy(event)
@@ -341,7 +344,7 @@ export class RpStore {
         if (tx.schemaVersion !== 1 || tx.workspaceId !== workspaceId || tx.sequence !== state.transactions.length + 1 || tx.previousHash !== (state.hashes.at(-1) ?? ZERO) || envelope.sha256 !== digest(tx)) invalid('transaction chain')
         text(tx.idempotencyKey, 512); hash(tx.effectHash); this.#validateOperation(tx.operation)
         const caps = tx.requiredCapabilities ?? []
-        if (!Array.isArray(caps) || caps.some(c => !['rp.person-core/v1','rp.person-documents/v1','rp.shared-diary/v1'].includes(c))) error('capability_missing', 'Unsupported workspace reader capability')
+        if (!Array.isArray(caps) || caps.some(c => !['rp.person-core/v1','rp.person-documents/v1','rp.shared-diary/v1','rp.person-injection/v1'].includes(c))) error('capability_missing', 'Unsupported workspace reader capability')
         if (!same(caps, [...new Set(caps)].sort()) || state.requiredCapabilities.some(c => !caps.includes(c)) || (tx.operation.kind === 'commit' && requiredSemanticCapabilities(tx.operation.authorityChanges).some(c=>!caps.includes(c)))) invalid('workspace capability regression or missing semantic barrier')
         state.requiredCapabilities = caps
         if (effects.has(tx.idempotencyKey)) invalid('duplicate transaction effect')

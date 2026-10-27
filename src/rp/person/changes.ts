@@ -86,9 +86,11 @@ export function createPersonChanges(store:RpStore,service:ReturnType<typeof crea
   return {
     async apply(authority:HostAuthority,control:SourceRevision,input:unknown) {
       try {
-        const op=object(cloneInput(input),['operation','personId','fieldId','previousEventId','note','expected','idempotencyKey'],['value','policy','validity']);text(op.idempotencyKey,220);validateFence(op.expected);id(op.personId);id(op.fieldId);id(op.previousEventId);text(op.note,2048)
+        const op=object(cloneInput(input),['operation','personId','fieldId','previousEventId','note','expected','idempotencyKey'],['value','policy','validity','injection']);text(op.idempotencyKey,220);validateFence(op.expected);id(op.personId);id(op.fieldId);id(op.previousEventId);text(op.note,2048)
         if(!known.has(op.personId))denied('unknown person entity')
-        if(!['edit','set-policy'].includes(op.operation))denied('only human edit/set-policy; growth uses review queue')
+        if(!['edit','set-policy','set-injection'].includes(op.operation))denied('only human edit/set-policy/set-injection; growth uses review queue')
+        if(op.operation==='set-injection'){if(!['core','default'].includes(op.injection)||op.policy!==undefined||op.validity!==undefined)invalid('explicit injection choice required')}
+        else if(op.injection!==undefined)invalid('use separate set-injection')
         if(op.operation==='edit'){text(op.value,2048,true);if(op.policy!==undefined)invalid('edit cannot change policy')}
         else if(op.value!==undefined)invalid('policy cannot change value')
         const key='person_edit:'+op.idempotencyKey,eventId='person_'+digest({key,op}).slice(0,48)
@@ -101,7 +103,7 @@ export function createPersonChanges(store:RpStore,service:ReturnType<typeof crea
           const {validity:_oldValidity,...base}=value
           const policy=op.operation==='set-policy'?op.policy:value.policy,validity=policy==='situational'?(op.validity??value.validity):undefined
           if(policy!=='situational'&&op.validity!==undefined)invalid('validity on persistent field')
-          const next:PersonValue={...base,operation:op.operation,value:op.operation==='edit'?op.value:value.value,policy,previousEventId:op.previousEventId,causeEventIds:[],note:op.note,...(validity?{validity:validity as PersonValidity}:{})}
+          const next:PersonValue={...base,...(op.operation==='set-injection'?{injection:op.injection}:{}),operation:op.operation,value:op.operation==='edit'?op.value:value.value,policy,previousEventId:op.previousEventId,causeEventIds:[],note:op.note,...(validity?{validity:validity as PersonValidity}:{})}
           const event=makeEvent(view,view.events,op.personId,eventId,next)
           return {id:eventId,personProtocol:'person-core/v1' as const,epistemic:'world' as const,payload:event.payload}
         }))

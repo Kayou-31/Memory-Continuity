@@ -17,7 +17,7 @@ import type {WorkbenchSettings} from './management-settings.js'
 export interface ManagementImpact {title:string;changes:string[];personIds:string[];branchId:string;history:string;recovery:string;mandatory:boolean}
 export interface ExtensionReview {payload:any;execute:(source:SourceRevision)=>Promise<unknown>}
 export function managementImpact(action:string,payload:any,branchId:string):ManagementImpact{
- const labels:Record<string,string>={'summary-adopt':'采纳摘要候选',create:'建立人物起点',edit:'修改人物定义','set-policy':'修改成长边界',agent:'改变经历、关系或目标',adopt:'采纳人物成长',reject:'拒绝成长候选',propose:'提交待审阅成长','document-import':'保存完整人物资料','document-retract':'撤回人物资料','diary-configure':'修改共同日记权限','diary-write':'保存共同日记','diary-delete':'隐私删除日记',settings:'保存工作台提醒偏好','host-budget':'改变记忆预算','host-injection':'改变注入规则','host-person':'改变聊天人物绑定','host-mode':'切换聊天用途','host-module':'调整可选能力模块','host-constraints':'修改人物与用途规则'}
+ const labels:Record<string,string>={'summary-adopt':'采纳摘要候选',create:'建立人物起点',edit:'修改人物定义','set-policy':'修改成长边界','set-injection':'修改人物核心选择',agent:'改变经历、关系或目标',adopt:'采纳人物成长',reject:'拒绝成长候选',propose:'提交待审阅成长','document-import':'保存完整人物资料','document-retract':'撤回人物资料','diary-configure':'修改共同日记权限','diary-write':'保存共同日记','diary-delete':'隐私删除日记',settings:'保存工作台提醒偏好','host-budget':'改变记忆预算','host-injection':'改变注入规则','host-person':'改变聊天人物绑定','host-mode':'切换聊天用途','host-module':'调整可选能力模块','host-constraints':'修改人物与用途规则'}
  const changes:Record<string,string>={
   settings:'只改变修改前的提醒方式；每次保存仍需要你明确确认。',
   'diary-configure':payload.allowAgentWrite?'允许该人物在获授权的当前对话中写自己的日记。':payload.previousEventId?'关闭 AI 日记写入，已有日记保留。':'建立共同日记，先只允许你写入。',

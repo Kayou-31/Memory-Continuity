@@ -96,9 +96,9 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
  const createPerson=(root:HTMLElement)=>{
   title(root,'定义一个人物的起点','只使用宿主已授权的实体。空白字段保持未设定，不会自动补写经历。')
   const allowed=snapshot.entityIds.filter((id:string)=>!snapshot.persons.some((p:any)=>p.personId===id));if(!allowed.length){empty(root,'当前没有可创建的已授权实体。请先在宿主配置 entityIds，然后重新打开管理入口。');return}
-  const entity=select(root,'人物实体 ID',Object.fromEntries(allowed.map((id:string)=>[id,id]))),grid=elem('div','',root,'mc-grid'),fields:{kind:string;value:HTMLInputElement|HTMLTextAreaElement;policy:HTMLSelectElement}[]=[]
-  for(const kind of ['identity','background','trait','values','boundaries','voice']){const c=card(grid,names[kind]),value=input(c,'内容','',true),policy=select(c,'变化策略',{stable:'保持稳定',growable:'允许经确认成长'},['trait','background'].includes(kind)?'growable':'stable');fields.push({kind,value,policy})}
-  const actions=elem('div','',root,'mc-actions');button(actions,'预览人物定义',()=>preview('create',{schemaVersion:1,kind:'person-draft',personId:entity.value,fields:fields.filter(f=>f.value.value.trim()).map(f=>({fieldId:f.kind,kind:f.kind,value:f.value.value.trim(),policy:f.policy.value})),relationships:[],goals:[]}),'btn btn-primary');button(actions,'返回人物列表',()=>go('people'))
+  const entity=select(root,'人物实体 ID',Object.fromEntries(allowed.map((id:string)=>[id,id]))),grid=elem('div','',root,'mc-grid'),fields:{kind:string;value:HTMLInputElement|HTMLTextAreaElement;policy:HTMLSelectElement;injection:HTMLSelectElement}[]=[]
+  for(const kind of ['identity','background','trait','values','boundaries','voice']){const c=card(grid,names[kind]),value=input(c,'内容','',true),policy=select(c,'变化策略',{stable:'保持稳定',growable:'允许经确认成长'},['trait','background'].includes(kind)?'growable':'stable');const injection=select(c,'参与注入',{legacy:'保持原有类型与话题规则',core:'人物核心：日常对话也保留'},'legacy');fields.push({kind,value,policy,injection})}
+  const actions=elem('div','',root,'mc-actions');button(actions,'预览人物定义',()=>preview('create',{schemaVersion:1,kind:'person-draft',personId:entity.value,fields:fields.filter(f=>f.value.value.trim()).map(f=>({fieldId:f.kind,kind:f.kind,value:f.value.value.trim(),policy:f.policy.value,...(f.injection.value==='core'?{injection:'core'}:{})})),relationships:[],goals:[]}),'btn btn-primary');button(actions,'返回人物列表',()=>go('people'))
  }
  const renderProfile=(root:HTMLElement,p:any,editing=false)=>{
   if(!editing){reading('profile',root,p);return}
@@ -110,6 +110,7 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
    if(f.validity)details(c,'情境适用范围',f.validity);if(f.kind==='feeling')note(c,'这是一条感受记录，不代表已经证实的外部事实。')
    const actions=elem('div','',c,'mc-actions');button(actions,'预览修改',()=>preview('edit',{personId:selected,fieldId:f.fieldId,value:value.value,note:noteInput.value,...(f.validity?{validity:f.validity}:{})}),'btn btn-sm btn-primary')
    button(actions,'预览策略变更',()=>{if(policy.value==='situational'&&!f.validity)throw Error('当前字段没有情境范围。请通过可信人物指令设置 scene 或 sequence 有效期。');return preview('set-policy',{personId:selected,fieldId:f.fieldId,policy:policy.value,note:noteInput.value,...(policy.value==='situational'?{validity:f.validity}:{})})},'btn btn-sm')
+   const injection=select(c,'参与注入（与变化策略独立）',{default:'按原有类型与话题规则',core:'人物核心：日常对话也保留'},f.injection??'default');note(c,'身份、价值观、边界和表达仍按原规则保留；核心有独立预算，超限会提示调整，不会自动删减。');button(actions,'预览核心选择',()=>preview('set-injection',{personId:selected,fieldId:f.fieldId,injection:injection.value,note:noteInput.value}),'btn btn-sm');
    sourceInfo(c,{eventId:f.eventId,sourceRevisionIds:timeline(p.personId).find((x:any)=>x.eventId===f.eventId)?.sourceRevisionIds??[]})
   }note(root,'情境感受和阶段可通过人物草稿定义。日历到期、任意增删现有字段等能力列入未来计划。')
  }
@@ -159,7 +160,8 @@ export function workbenchClient(makeClient:typeof createManagementClient,extensi
   c.setAttribute('aria-label','预览设置');note(c,'预览对象：'+personName(bound)+'。查看其他档案不会改变当前对话绑定。')
   const query=input(c,'这一轮的话题或问题','',true,8192) as HTMLTextAreaElement;query.rows=2;query.placeholder='例如：我们还有什么尚未兑现的约定？'
   const options=elem('div','',c,'opt-row'),configuration=fold(root,'分层与条件设置'),config=input(configuration,'注入配置 JSON',JSON.stringify(snapshot.context?.injection?.config??{},null,2),true,32768)
-  note(configuration,'配置经预览确认后保存；可设置 depth、budgets、pin、exclude、aliases 和 rules。token 总额及分层上限在“记忆预算”页管理。')
+  note(configuration,'配置经预览确认后保存；可设置 depth、budgets、coreBudget、pin、exclude、aliases 和 rules。token 总额及分层上限在“记忆预算”页管理。')
+  const coreBudget=input(configuration,'人物核心上限（当前计量单位，最多 8192）',String(snapshot.context?.injection?.config?.coreBudget??4096)) as HTMLInputElement;coreBudget.type='number';coreBudget.min='1';coreBudget.max='8192';note(configuration,'明确选择核心后，身份、边界、表达与选中的核心字段共同受此上限约束，也受总预算约束。旧人物未选核心时保持原规则。');button(configuration,'预览核心预算',()=>preview('host-injection',{config:{...JSON.parse(config.value),coreBudget:Number(coreBudget.value)}}),'btn btn-sm')
   const configActions=elem('div','',configuration,'row');button(configActions,'预览注入配置',()=>preview('host-injection',{config:JSON.parse(config.value)}),'btn btn-primary');button(configActions,'预览关闭分层注入',()=>preview('host-injection',{config:null}))
   const summary=elem('div','',options,'mc-preview-options'),capacity=elem('div','',summary,'stack'),depth=elem('div','',summary,'stack');note(capacity,'当前总记忆容量');elem('strong',snapshot.context?.memoryBudget?snapshot.context.memoryBudget.limitTokens.toLocaleString()+' 计量单位':'旧版 UTF-8 字节预算',capacity);note(depth,'当前最大展开深度');elem('strong',depths[snapshot.context?.injection?.config?.depth]??'尚未设置',depth);button(summary,'调整配置',()=>{(configuration.parentElement as HTMLDetailsElement).open=true;configuration.scrollIntoView({behavior:'smooth'})},'btn btn-sm btn-ghost')
   const output=elem('div','',root,'stack-lg')

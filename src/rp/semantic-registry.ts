@@ -26,6 +26,7 @@ export function markerProtocol(changes: readonly AuthorityChange[], event: Seman
 export const hasPersonOwner = (changes: readonly AuthorityChange[], personId: string) => changes.some(c => c.kind === 'candidate_adoption' && c.record.decision === 'accepted' && c.record.candidateId === personOriginCandidate(personId) && c.record.eventIds.length === 1 && c.recordId === 'person_origin_' + c.record.eventIds[0])
 export const requiresPerson = (changes: readonly AuthorityChange[]) => changes.some(c => c.kind === 'candidate_adoption' && (c.record.candidateId === 'person_core_v1' || c.record.candidateId.startsWith('person_origin_')))
 export const requiredSemanticCapabilities = (changes: readonly AuthorityChange[]) => [
+  ...(changes.some(c=>c.kind==='candidate_adoption'&&c.record.candidateId==='person_injection_v1')?['rp.person-injection/v1']:[]),
   ...(requiresPerson(changes) ? ['rp.person-core/v1'] : []),
   ...(changes.some(c => c.kind === 'candidate_adoption' && c.record.candidateId.startsWith('person_document_v1_')) ? ['rp.person-documents/v1'] : []),
   ...(changes.some(c=>c.kind==='candidate_adoption'&&/^shared_diary_(policy|entry)_/u.test(c.record.candidateId))?['rp.shared-diary/v1']:[]),

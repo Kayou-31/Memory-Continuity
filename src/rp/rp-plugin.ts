@@ -562,9 +562,9 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           const proposal=commandObject(value,['changes'])
           return {kind:'success',text:canonical(unwrap(await memory.person.propose(b.authority,proposal,commandId)))}
         }
-        if(['edit','set-policy','adopt','reject'].includes(sub)) {
+        if(['edit','set-policy','set-injection','adopt','reject'].includes(sub)) {
           if(Buffer.byteLength(value,'utf8')>65536)throw new RpError('invalid_record','Person control exceeds 64 KiB')
-          const op= sub==='adopt'?commandObject(value,['candidateIds']):sub==='reject'?commandObject(value,['candidateId']):commandObject(value,['personId','fieldId','previousEventId','note',sub==='edit'?'value':'policy'],['validity'])
+          const op= sub==='adopt'?commandObject(value,['candidateIds']):sub==='reject'?commandObject(value,['candidateId']):commandObject(value,['personId','fieldId','previousEventId','note',sub==='edit'?'value':sub==='set-injection'?'injection':'policy'],['validity'])
           const ctl=unwrap(await controlSource(b,commandId,value))
           const result=sub==='adopt'?unwrap(await memory.person.adopt(b.authority,ctl,op.candidateIds,commandId)):sub==='reject'?unwrap<any>(await memory.person.reject(b.authority,ctl,op.candidateId,commandId)):unwrap(await memory.person.apply(b.authority,ctl,{...op,operation:sub,expected:unwrap(await memory.store.readFence(b.authority)),idempotencyKey:commandId}))
           for(const session of bound.values())if(session.data.request.branchId===b.data.request.branchId)session.packet=undefined
@@ -579,7 +579,7 @@ export async function installRpPlugin(context: Context, config: RpPluginConfig =
           b.generation++; b.packet = undefined; b.data.personBinding = binding; await save(b)
           return { kind: 'success', text: canonical({ personId: value, branchId: binding.boundAt.branchId }) }
         }
-        throw new RpError('invalid_record', 'Use person preview|confirm|show|use|edit|set-policy|propose|candidates|adopt|reject|timeline')
+        throw new RpError('invalid_record', 'Use person preview|confirm|show|use|edit|set-policy|set-injection|propose|candidates|adopt|reject|timeline')
       }
       if (action === 'agent') {
         const op = commandObject(arg, ['kind'], ['actorIds', 'description', 'sourceRevisionIds', 'fictionalTime', 'entityId', 'key', 'value', 'fromId', 'toId', 'relation', 'previousEventId', 'causeEventIds', 'note', 'ownerId', 'goalId', 'category', 'objective', 'status', 'progress', 'nextAction', 'targetEntityId'])
