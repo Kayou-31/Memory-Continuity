@@ -13,6 +13,10 @@ export interface GlobalFence { scope: GlobalScope; scopeRevision: number; visibi
 export interface GlobalPublication { id: string; key: string; scope: GlobalScope; revision: number; body: string; bodySha256: string; source: SourceRevision; supersedes: string | null; verification: 'source-match' | 'private-source-deleted' }
 interface Meta extends Omit<GlobalPublication, 'body' | 'verification'> { privateSourceIds: string[]; revoked: boolean; deleted: boolean; privateDeleted: boolean }
 interface State { fence: GlobalFence; publications: Meta[]; keys: Record<string, { effect: string; result: string }>; previousHash: string; seq: number }
+export interface GlobalReadView {fence:GlobalFence;publications:Omit<GlobalPublication,'body'>[];active:Omit<GlobalPublication,'body'>[];readPublication:(id:string)=>Promise<GlobalPublication>}
+// Process-local invalidation shared by stores opened on the same real directory.
+// Disk history/seal validation is still performed on every operation.
+const scopeClocks=new Map<string,number>()
 const sha = (value: string) => createHash('sha256').update(value).digest('hex')
 const uid = (prefix: string) => prefix + '_' + randomUUID().replaceAll('-', '')
 const ok = <T>(value: T): Result<T> => ({ ok: true, value })
@@ -26,16 +30,22 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
   const layouts = new WeakMap<State, SegmentLayout>()
   await fs.mkdir(globalRoot, { recursive: true })
   const check = async () => { active?.(); if (canonical(await readRpJson(path.join(root, 'identity.json'))) !== identityText) denied('global profile identity changed') }
-  const grant = async (authority: object, write = false) => { await check(); const g = grants.get(authority); if (!g || (write && !g.write)) denied('global authority'); return g! }
+  const assertGrant = (authority: object, write = false) => { active?.(); const g=grants.get(authority); if(!g||(write&&!g.write))denied('global authority'); return g! }
+  const grant = async (authority: object, write = false) => { await check(); return assertGrant(authority,write) }
+  const assertWrite = (authority: object, approval: object) => { assertGrant(authority,true); if(!approvals.has(approval))denied('global command approval revoked') }
   const directory = (scope: GlobalScope) => path.join(globalRoot, sha(canonical(scope)))
-  const atomic = async (file: string, body: string) => {
-    const guard=()=>{if(path.basename(file)!=='seal.json'){active?.();assertPublicationAllowed()}}
+  const atomic = async (file: string, body: string, permission?:()=>void) => {
+    const guard=()=>{if(path.basename(file)!=='seal.json'){active?.();assertPublicationAllowed();permission?.()}}
     guard()
     await fs.mkdir(path.dirname(file), { recursive: true }); const tmp = file + '.tmp-' + uid('write')
     try {
       const h = await fs.open(tmp, 'wx', 0o600)
       try { await h.writeFile(body); await h.sync() } finally { await h.close() }
-      guard(); await fs.rename(tmp, file)
+      guard()
+      if(file.startsWith(globalRoot+path.sep)&&path.basename(path.dirname(file))==='commits'){
+        const scopeDir=path.dirname(path.dirname(file));scopeClocks.set(scopeDir,(scopeClocks.get(scopeDir)??0)+1)
+      }
+      await fs.rename(tmp, file)
     } catch (e) { await fs.rm(tmp, { force: true }).catch(() => {}); throw e }
   }
   const validateState = (input: unknown, g: Grant, segmented = false): State => {
@@ -112,20 +122,32 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
     try { for (const p of affected) await fs.rm(path.join(directory(g.scope), 'blobs', p.source.id, p.source.blobId + '.txt'), { force: true }) }
     catch { throw new RpError('persistence_uncertain', 'Approved tombstone committed; physical purge incomplete, retry the same operation') }
   }
-  const read = async (authority: object, publicationId: string): Promise<Result<GlobalPublication>> => {
-    try {
-      const g = await grant(authority); id(publicationId); const state = await load(g), p = state.publications.find(p => p.id === publicationId)
-      if (!p || !allowed(g, p)) denied('global publication scope')
-      if (p!.revoked || p!.deleted) throw new RpError('source_unavailable', 'Global publication is unavailable')
-      let body: string
-      try { body = await fs.readFile(path.join(directory(g.scope), 'blobs', p!.source.id, p!.source.blobId + '.txt'), 'utf8') } catch { throw new RpError('source_unavailable', 'Global approved source unavailable') }
-      if (sha(body) !== p!.bodySha256) throw new RpError('source_unavailable', 'Global approved source hash mismatch')
-      await grant(authority)
-      const latest = await load(g); if (!same(latest.fence, state.fence)) throw new RpError('stale_input', 'Global read changed')
-      const { privateSourceIds: _private, revoked: _revoked, deleted: _deleted, privateDeleted, ...publicMeta } = p!
-      return ok({ ...publicMeta, body, verification: privateDeleted ? 'private-source-deleted' : 'source-match' })
-    } catch (e) { return failure(e) }
+  const metadata=(p:Meta):Omit<GlobalPublication,'body'>=>{const {privateSourceIds:_private,revoked:_revoked,deleted:_deleted,privateDeleted,...value}=p;return {...structuredClone(value),verification:privateDeleted?'private-source-deleted':'source-match'}}
+  const withReadView=async<T>(authority:object,reader:(view:GlobalReadView)=>Promise<T>):Promise<Result<T>>=>{
+    let live=true
+    try{
+      const g=await grant(authority),dir=directory(g.scope),clock=scopeClocks.get(dir)??0,state=await load(g)
+      const ensure=()=>{if(!live)throw new RpError('stale_input','Global read view closed');assertGrant(authority);if(clock!==(scopeClocks.get(dir)??0))throw new RpError('stale_input','Global read changed')}
+      ensure()
+      const heads=new Map<string,Meta>();for(const p of state.publications)heads.set(p.key,p)
+      const visible=(p:Meta)=>allowed(g,p)&&!p.revoked&&!p.deleted
+      const cache=new Map<string,Promise<GlobalPublication>>()
+      const view:GlobalReadView={fence:structuredClone(state.fence),publications:state.publications.filter(visible).map(metadata),active:[...heads.values()].filter(visible).map(metadata),readPublication:async publicationId=>{
+        ensure();id(publicationId)
+        const p=state.publications.find(p=>p.id===publicationId)
+        if(!p||!allowed(g,p))denied('global publication scope')
+        if(p!.revoked||p!.deleted)throw new RpError('source_unavailable','Global publication is unavailable')
+        let pending=cache.get(publicationId)
+        if(!pending){pending=(async()=>{let body:string;try{body=await fs.readFile(path.join(dir,'blobs',p!.source.id,p!.source.blobId+'.txt'),'utf8')}catch{throw new RpError('source_unavailable','Global approved source unavailable')};ensure();if(sha(body)!==p!.bodySha256)throw new RpError('source_unavailable','Global approved source hash mismatch');return {...metadata(p!),body}})();cache.set(publicationId,pending)}
+        const value=await pending;ensure();return structuredClone(value)
+      }}
+      const value=await reader(view)
+      await check();const latest=await load(g)
+      if(latest.seq!==state.seq||!same(latest.fence,state.fence))throw new RpError('stale_input','Global read changed')
+      ensure();return ok(value)
+    }catch(e){return failure(e)}finally{live=false}
   }
+  const read = (authority:object,publicationId:string):Promise<Result<GlobalPublication>>=>withReadView(authority,view=>view.readPublication(publicationId))
   const mutate = async (authority: object, approval: object, input: unknown, update: (s: State, g: Grant, v: any, blobs: { file: string; body: string }[]) => Promise<string>, publication = false, enableSegments = false): Promise<Result<GlobalPublication | GlobalFence>> => {
     let published = false
     try {
@@ -141,7 +163,8 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
             let existing: unknown; try { existing = await readRpJson(target) } catch (e) { if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e }
             if (!same(existing ?? null, expected)) await atomic(target, canonical(expected))
           }
-          if (prior) { if (prior.effect !== effect) throw new RpError('idempotency_conflict', 'Global command differs'); published = true; await sealHead(); await reclaimUnpublished(current, g); await purge(current, g, value); return prior.result ? read(authority, prior.result) : ok(current.fence) }
+          const completed=async(result:string,fence:GlobalFence)=>{const outcome=result?await read(authority,result):ok(fence);if(!outcome.ok)throw new RpError(outcome.code,outcome.message);assertGrant(authority);return outcome}
+          if (prior) { if (prior.effect !== effect) throw new RpError('idempotency_conflict', 'Global command differs'); published = true; await sealHead(); await reclaimUnpublished(current, g); await purge(current, g, value); return completed(prior.result,current.fence) }
           if (!same(current.fence, value.expected)) throw new RpError('stale_input', 'Global fence changed')
           await sealHead()
           const next = structuredClone(current), blobs: { file: string; body: string }[] = [], result = await update(next, g, value, blobs)
@@ -157,10 +180,13 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
           }
           await grant(authority, true); if (!approvals.has(approval)) denied('global command approval revoked before publication')
           await reclaimUnpublished(current, g)
-          if (segments) await writeSegments(dir, segments.pages, atomic)
-          for (const blob of blobs) await atomic(blob.file, blob.body)
+          const permittedAtomic=(file:string,body:string)=>atomic(file,body,()=>assertWrite(authority,approval))
+          if (segments) await writeSegments(dir, segments.pages, permittedAtomic)
+          for (const blob of blobs) await permittedAtomic(blob.file, blob.body)
           const commitFile = path.join(dir, 'commits', String(next.seq).padStart(16, '0') + '.json')
-          try { await atomic(commitFile, encoded); published = true } catch (e) {
+          // Permission is linearized immediately before dispatching rename.
+          // A rename already handed to the filesystem cannot be cancelled.
+          try { await permittedAtomic(commitFile, encoded); published = true } catch (e) {
             // A rename may have succeeded before an adapter reported an error.
             try { published = await fs.readFile(commitFile, 'utf8') === encoded } catch (readError) { if ((readError as NodeJS.ErrnoException).code !== 'ENOENT') published = true }
             throw e
@@ -168,25 +194,27 @@ export async function openRpGlobalStore(profileRoot: string, coordinator = new M
           await atomic(path.join(dir, 'seal.json'), canonical({ seq: next.seq, hash: sha(canonical(next)) }))
           // Tombstone is durable before any approved body is removed.
           await purge(next, g, value)
-          return result ? read(authority, result) : ok(next.fence)
+          return completed(result,next.fence)
         })
       })
     } catch (e) { return failure(published ? new RpError('persistence_uncertain',e instanceof Error?e.message:'Global publication needs inspection') : e instanceof RpError ? e : new RpError('persistence_failed', e instanceof Error ? e.message : 'Global persistence failure')) }
   }
   const store = {
-    async storageStatus(authority: object) { try { const g = await grant(authority), state = await load(g), layout = layouts.get(state); return ok({ format: layout ? SEGMENT_FORMAT : 'v1', ...layout, logicalBytes: Buffer.byteLength(canonical({ state, sha256: sha(canonical(state)) })), seq: state.seq, publicationLimitBytes: layout ? SEGMENT_PUBLISH_BYTES : MAX_RP_PUBLISH_BYTES, controlLimitBytes: layout ? SEGMENT_CONTROL_BYTES : MAX_RP_JSON_BYTES }) } catch (e) { return failure(e) } },
-    async listActive(authority: object) { try { const g = await grant(authority), state = await load(g), heads = new Map<string, Meta>(); for (const p of state.publications) heads.set(p.key, p); const values: GlobalPublication[] = []; for (const p of heads.values()) if (allowed(g, p) && !p.revoked && !p.deleted) { const r = await read(authority, p.id); if (!r.ok) return r; values.push(r.value) }; return ok(values) } catch (e) { return failure(e) } },
-    async readFence(authority: object): Promise<Result<GlobalFence>> { try { return ok((await load(await grant(authority))).fence) } catch (e) { return failure(e) } },
+    withReadView,
+    async storageStatus(authority: object) { try { const g = await grant(authority), state = await load(g), layout = layouts.get(state); assertGrant(authority); return ok({ format: layout ? SEGMENT_FORMAT : 'v1', ...layout, logicalBytes: Buffer.byteLength(canonical({ state, sha256: sha(canonical(state)) })), seq: state.seq, publicationLimitBytes: layout ? SEGMENT_PUBLISH_BYTES : MAX_RP_PUBLISH_BYTES, controlLimitBytes: layout ? SEGMENT_CONTROL_BYTES : MAX_RP_JSON_BYTES }) } catch (e) { return failure(e) } },
+    listActive(authority:object){return withReadView(authority,async view=>{const values:GlobalPublication[]=[];for(const p of view.active)values.push(await view.readPublication(p.id));return values})},
+    async readFence(authority: object): Promise<Result<GlobalFence>> { try { const state=await load(await grant(authority));assertGrant(authority);return ok(state.fence) } catch (e) { return failure(e) } },
     readPublication: read,
-    async list(authority: object) { try { const g = await grant(authority), state = await load(g); const values: GlobalPublication[] = []; for (const p of state.publications) if (allowed(g, p) && !p.revoked && !p.deleted) { const r = await read(authority, p.id); if (!r.ok) return r; values.push(r.value) } return ok(values) } catch (e) { return failure(e) } },
+    list(authority:object){return withReadView(authority,async view=>{const values:GlobalPublication[]=[];for(const p of view.publications)values.push(await view.readPublication(p.id));return values})},
     async verifyBinding(authority: object, binding: CanonBinding) { const r = await read(authority, binding.publicationId); return r.ok && r.value.scope.kind === 'world' && r.value.scope.worldId === binding.worldId && r.value.scope.entityId === binding.entityId && r.value.revision === binding.revision && r.value.bodySha256 === binding.bodySha256 },
   }
   const control = {
     enableSegments(authority: object, approval: object, input: { idempotencyKey: string; expected: GlobalFence }) { return mutate(authority, approval, input, async (_s, _g, v) => { object(v, ['idempotencyKey', 'expected']); return '' }, false, true) as Promise<Result<GlobalFence>> },
-    async purgeStatus(authority: object) { try { const g = await grant(authority), s = await load(g), values = []; for (const p of s.publications.filter(p => allowed(g, p) && p.deleted)) { let exists = true; try { await fs.lstat(path.join(directory(g.scope), 'blobs', p.source.id, p.source.blobId + '.txt')) } catch (e) { if ((e as NodeJS.ErrnoException).code === 'ENOENT') exists = false; else throw e }; values.push({ publicationId: p.id, purgeState: exists ? 'blocked' : 'complete' }) }; return ok(values) } catch (e) { return failure(e) } },
+    async purgeStatus(authority: object) { try { const g = await grant(authority), s = await load(g), values = []; for (const p of s.publications.filter(p => allowed(g, p) && p.deleted)) { let exists = true; try { await fs.lstat(path.join(directory(g.scope), 'blobs', p.source.id, p.source.blobId + '.txt')) } catch (e) { if ((e as NodeJS.ErrnoException).code === 'ENOENT') exists = false; else throw e }; values.push({ publicationId: p.id, purgeState: exists ? 'blocked' : 'complete' }) }; assertGrant(authority); return ok(values) } catch (e) { return failure(e) } },
     isApproval(handle: object) { return approvals.has(handle) },
     async authorize(input: Grant): Promise<Result<object>> { try { await check(); const g = cloneInput(input); object(g, ['scope', 'visibility', 'audienceSetIds', 'write']); validateScope(g.scope); validateVisibility(g.visibility); if (!['profile', 'world'].includes(g.scope.kind) || g.scope.profileId !== identity.profileId || typeof g.write !== 'boolean' || !Array.isArray(g.audienceSetIds) || !g.audienceSetIds.includes(g.visibility.audienceSetId)) denied('global profile/scope grant'); g.audienceSetIds.forEach(id); const handle = Object.freeze({}); grants.set(handle, g); return ok(handle) } catch (e) { return failure(e) } },
-    async revokeAuthority(authority: object) { await coordinator.mutate(async () => { grants.delete(authority) }) },
+    // Revocation takes effect now, then waits for already-running work to settle.
+    async revokeAuthority(authority: object) { grants.delete(authority); await coordinator.mutate(async () => {}) },
     async recoverWriterLock(authority: object): Promise<Result<'unlocked' | 'recovered'>> { try { const g = await grant(authority, true); return ok(await coordinator.mutate(() => recoverRpWriterLock(directory(g.scope)))) } catch (e) { return failure(e) } },
     approval(input: { commandId: string; sessionId: string }) { id(input.commandId); hostId(input.sessionId); const handle = Object.freeze({}); approvals.add(handle); return handle },
     revokeApproval(handle: object) { approvals.delete(handle) },

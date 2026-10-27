@@ -55,9 +55,12 @@ export function createPacketService(store: RpStore, global: Awaited<ReturnType<t
         for (const change of ledger?.authorityChanges ?? []) if (change.kind === 'canon_binding') bindings.set(change.record.worldId + ':' + (change.record.entityId ?? ''), change.record)
         const globalFences: GlobalFence[] = [], canon: GlobalPublication[] = []
         for (const grant of input.globalAuthorities) {
-          globalFences.push(unwrap(await global.store.readFence(grant)))
-          const publications = unwrap(await global.store.list(grant)), active = unwrap(await global.store.listActive(grant))
-          for (const p of publications) if ((p.scope.kind === 'profile' && active.some(x => x.id === p.id)) || [...bindings.values()].some(b => b.publicationId === p.id)) canon.push(p)
+          const selected=unwrap(await global.store.withReadView(grant,async view=>{
+            const active=new Set(view.active.map(p=>p.id)),pinned=new Set([...bindings.values()].map(b=>b.publicationId)),publications:GlobalPublication[]=[]
+            for(const p of view.publications)if(p.scope.kind==='profile'?active.has(p.id):pinned.has(p.id))publications.push(await view.readPublication(p.id))
+            return {fence:view.fence,publications}
+          }))
+          globalFences.push(selected.fence);canon.push(...selected.publications)
         }
         if ([...bindings.values()].some(b => !canon.some(p => p.id === b.publicationId))) throw new RpError('source_unavailable', 'Pinned canon is unavailable or not authorized')
         if(injection){
