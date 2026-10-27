@@ -1,0 +1,20 @@
+[
+  {
+    "name": "typecheck",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js\" run typecheck",
+    "exitCode": 0,
+    "seconds": 2.849
+  },
+  {
+    "name": "build",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js\" run build",
+    "exitCode": 0,
+    "seconds": 4.242
+  },
+  {
+    "name": "test",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js\" test",
+    "exitCode": 1,
+    "seconds": 317.024
+  }
+]

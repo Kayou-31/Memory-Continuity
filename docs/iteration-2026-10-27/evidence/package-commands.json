@@ -1,0 +1,107 @@
+[
+  {
+    "name": "package-dsh",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js\" pack --json --ignore-scripts --pack-destination D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-2026-10-27\\verified-packages",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5",
+    "exitCode": 0,
+    "seconds": 1.93
+  },
+  {
+    "name": "junction-rc2",
+    "command": "powershell -NoProfile -Command \"New-Item -ItemType Junction -Path 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-2026-10-27\\verified-packages\\rc2\\package\\node_modules' -Target 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-021-public\\node_modules' | Out-Null\"",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5",
+    "exitCode": 0,
+    "seconds": 0.37
+  },
+  {
+    "name": "package-rc2",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe --test --test-concurrency=1 test/rp-cost-reliability-host.test.mjs test/rp-injection-cost-host.test.mjs test/rp-management-host-extension.test.mjs test/rp-experience-host.test.mjs scripts/host-acceptance/package-compat.test.mjs",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5",
+    "exitCode": 0,
+    "seconds": 28.453
+  },
+  {
+    "name": "junction-rc3",
+    "command": "powershell -NoProfile -Command \"New-Item -ItemType Junction -Path 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-2026-10-27\\verified-packages\\rc3\\package\\node_modules' -Target 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\release-0.2.1\\sdk-rc3\\node_modules' | Out-Null\"",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5",
+    "exitCode": 0,
+    "seconds": 0.195
+  },
+  {
+    "name": "test-junction-rc3",
+    "command": "powershell -NoProfile -Command \"New-Item -ItemType Junction -Path 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-2026-10-27\\rc3-project\\node_modules' -Target 'D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\release-0.2.1\\sdk-rc3\\node_modules' | Out-Null\"",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5",
+    "exitCode": 0,
+    "seconds": 0.198
+  },
+  {
+    "name": "package-rc3",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe --test --test-concurrency=1 test/rp-cost-reliability-host.test.mjs test/rp-injection-cost-host.test.mjs test/rp-management-host-extension.test.mjs test/rp-experience-host.test.mjs scripts/host-acceptance/package-compat.test.mjs",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-2026-10-27\\rc3-project",
+    "exitCode": 0,
+    "seconds": 32.548
+  },
+  {
+    "name": "candidate-long-64",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe --test --test-concurrency=1 scripts/benchmarks/reliability-cost.mjs",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5",
+    "exitCode": 0,
+    "seconds": 174.118
+  },
+  {
+    "name": "package-core-build",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe scripts/build-core.mjs --out D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-2026-10-27\\core-stage",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5",
+    "exitCode": 0,
+    "seconds": 3.344
+  },
+  {
+    "name": "package-core-pack",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js\" pack --json --ignore-scripts --pack-destination D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-2026-10-27\\verified-packages",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-2026-10-27\\core-stage",
+    "exitCode": 0,
+    "seconds": 1.678
+  },
+  {
+    "name": "package-core-install",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe \"C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js\" install --offline --ignore-scripts --no-audit --no-fund --package-lock=false D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-2026-10-27\\verified-packages\\memory-continuity-core-0.1.0-preview.3.tgz",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\memory-continuity-candidate-core-20261027",
+    "exitCode": 0,
+    "seconds": 1.166
+  },
+  {
+    "name": "package-core-write",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe package-smoke.mjs write",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\memory-continuity-candidate-core-20261027",
+    "exitCode": 0,
+    "seconds": 1.193
+  },
+  {
+    "name": "package-core-cold-read",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe package-smoke.mjs read",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\memory-continuity-candidate-core-20261027",
+    "exitCode": 0,
+    "seconds": 0.718
+  },
+  {
+    "name": "package-core-recovery",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\toolchain\\node-v22.23.3-win-x64\\node.exe service-process.mjs",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\memory-continuity-candidate-core-20261027",
+    "exitCode": 0,
+    "seconds": 1.696
+  },
+  {
+    "name": "package-astrbot",
+    "command": "C:\\Users\\kayou\\AppData\\Local\\Programs\\Python\\Python313\\python.exe scripts/build-astrbot.py --out D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\iteration-2026-10-27\\verified-packages\\astrbot-memory-continuity-0.1.0-preview.2.zip",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5",
+    "exitCode": 0,
+    "seconds": 0.092
+  },
+  {
+    "name": "astrbot-native",
+    "command": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5\\work\\task8-host\\astrbot-v4.29.3\\.venv\\Scripts\\python.exe -m unittest discover -s adapters/astrbot/tests -v",
+    "cwd": "D:\\Codex\\2026-10-20\\https-github-com-kayou-31-dsh\\work\\rp-memory-m5",
+    "exitCode": 0,
+    "seconds": 25.479
+  }
+]

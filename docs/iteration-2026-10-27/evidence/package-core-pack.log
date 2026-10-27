@@ -1,0 +1,981 @@
+[
+  {
+    "id": "@memory-continuity/core@0.1.0-preview.3",
+    "name": "@memory-continuity/core",
+    "version": "0.1.0-preview.3",
+    "size": 9296762,
+    "unpackedSize": 19339608,
+    "shasum": "89452e167d3e3c4caf6dee0367ab5dc0bc578ef5",
+    "integrity": "sha512-1o+a2sZrD4MyVjXfiFc6HFMAkrux5w7A2cwXPfSfLskVZxAzCWR/Ou4xy1ZKE1rqKb+nZIDCi/u7uZo3Kh9KiQ==",
+    "filename": "memory-continuity-core-0.1.0-preview.3.tgz",
+    "files": [
+      {
+        "path": "LICENSE",
+        "size": 1513,
+        "mode": 420
+      },
+      {
+        "path": "README.md",
+        "size": 8520,
+        "mode": 420
+      },
+      {
+        "path": "SOURCE-MANIFEST.json",
+        "size": 46872,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-000.woff2",
+        "size": 4644,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-001.woff2",
+        "size": 27568,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-002.woff2",
+        "size": 15672,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-003.woff2",
+        "size": 26040,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-004.woff2",
+        "size": 85288,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-005.woff2",
+        "size": 73872,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-006.woff2",
+        "size": 82664,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-007.woff2",
+        "size": 77944,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-008.woff2",
+        "size": 71356,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-009.woff2",
+        "size": 64664,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-010.woff2",
+        "size": 67936,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-011.woff2",
+        "size": 72784,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-012.woff2",
+        "size": 76908,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-013.woff2",
+        "size": 64260,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-014.woff2",
+        "size": 68000,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-015.woff2",
+        "size": 66088,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-016.woff2",
+        "size": 64724,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-017.woff2",
+        "size": 63760,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-018.woff2",
+        "size": 57848,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-019.woff2",
+        "size": 67828,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-020.woff2",
+        "size": 75304,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-021.woff2",
+        "size": 72288,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-022.woff2",
+        "size": 66144,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-023.woff2",
+        "size": 51516,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-024.woff2",
+        "size": 62740,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-025.woff2",
+        "size": 58348,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-026.woff2",
+        "size": 72500,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-027.woff2",
+        "size": 91672,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-028.woff2",
+        "size": 77584,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-029.woff2",
+        "size": 74000,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-030.woff2",
+        "size": 64612,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-031.woff2",
+        "size": 70316,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-032.woff2",
+        "size": 64520,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-033.woff2",
+        "size": 57320,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-034.woff2",
+        "size": 67828,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-035.woff2",
+        "size": 53856,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-036.woff2",
+        "size": 69316,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-037.woff2",
+        "size": 61532,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-038.woff2",
+        "size": 69656,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-039.woff2",
+        "size": 74032,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-040.woff2",
+        "size": 82552,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-041.woff2",
+        "size": 69524,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-042.woff2",
+        "size": 61376,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-043.woff2",
+        "size": 61312,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-044.woff2",
+        "size": 79496,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-045.woff2",
+        "size": 63936,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-046.woff2",
+        "size": 51012,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-047.woff2",
+        "size": 58572,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-048.woff2",
+        "size": 69204,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-049.woff2",
+        "size": 71680,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-050.woff2",
+        "size": 54196,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-051.woff2",
+        "size": 73588,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-052.woff2",
+        "size": 53064,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-053.woff2",
+        "size": 62884,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-054.woff2",
+        "size": 65720,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-055.woff2",
+        "size": 56040,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-056.woff2",
+        "size": 74576,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-057.woff2",
+        "size": 57824,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-058.woff2",
+        "size": 65740,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-059.woff2",
+        "size": 51780,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-060.woff2",
+        "size": 71048,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-061.woff2",
+        "size": 58804,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-062.woff2",
+        "size": 45184,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-063.woff2",
+        "size": 60576,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-064.woff2",
+        "size": 62128,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-065.woff2",
+        "size": 58812,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-066.woff2",
+        "size": 42656,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-067.woff2",
+        "size": 40440,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-068.woff2",
+        "size": 47820,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-069.woff2",
+        "size": 7400,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-070.woff2",
+        "size": 6892,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-071.woff2",
+        "size": 12280,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-072.woff2",
+        "size": 9736,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-073.woff2",
+        "size": 10640,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-074.woff2",
+        "size": 2416,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-075.woff2",
+        "size": 4376,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-076.woff2",
+        "size": 12324,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-077.woff2",
+        "size": 84696,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-078.woff2",
+        "size": 77788,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-079.woff2",
+        "size": 79680,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-080.woff2",
+        "size": 84088,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-081.woff2",
+        "size": 81044,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-082.woff2",
+        "size": 81516,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-083.woff2",
+        "size": 81652,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-084.woff2",
+        "size": 79804,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-085.woff2",
+        "size": 83484,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-086.woff2",
+        "size": 79044,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-087.woff2",
+        "size": 79548,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-088.woff2",
+        "size": 81144,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-089.woff2",
+        "size": 75996,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-090.woff2",
+        "size": 75872,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-091.woff2",
+        "size": 74744,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-092.woff2",
+        "size": 72508,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-093.woff2",
+        "size": 67304,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-094.woff2",
+        "size": 66656,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-095.woff2",
+        "size": 58224,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-096.woff2",
+        "size": 104964,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-097.woff2",
+        "size": 14476,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-098.woff2",
+        "size": 10920,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-099.woff2",
+        "size": 10332,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/noto-serif-sc-100.woff2",
+        "size": 32964,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/OFL.txt",
+        "size": 4350,
+        "mode": 420
+      },
+      {
+        "path": "assets/fonts/noto-serif-sc/UPSTREAM.json",
+        "size": 30240,
+        "mode": 420
+      },
+      {
+        "path": "assets/tokenizers/deepseek-v3.2/LICENSE",
+        "size": 1084,
+        "mode": 420
+      },
+      {
+        "path": "assets/tokenizers/deepseek-v3.2/tokenizer_config.json",
+        "size": 795,
+        "mode": 420
+      },
+      {
+        "path": "assets/tokenizers/deepseek-v3.2/tokenizer.json",
+        "size": 7847502,
+        "mode": 420
+      },
+      {
+        "path": "assets/tokenizers/README.md",
+        "size": 1988,
+        "mode": 420
+      },
+      {
+        "path": "lib/cli.js",
+        "size": 945259,
+        "mode": 420
+      },
+      {
+        "path": "lib/cli.js.map",
+        "size": 1509953,
+        "mode": 420
+      },
+      {
+        "path": "lib/index.js",
+        "size": 937443,
+        "mode": 420
+      },
+      {
+        "path": "lib/index.js.map",
+        "size": 1496048,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/core/confirmations.d.ts",
+        "size": 13935,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/core/index.d.ts",
+        "size": 1563,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/core/owned-memory.d.ts",
+        "size": 59308,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/core/owner.d.ts",
+        "size": 877,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/core/rpc.d.ts",
+        "size": 1686,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/core/server.d.ts",
+        "size": 292,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/admission.d.ts",
+        "size": 1076,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/agent-memory.d.ts",
+        "size": 1411,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/candidates.d.ts",
+        "size": 2063,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/canonical.d.ts",
+        "size": 3436,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/diary/admission.d.ts",
+        "size": 603,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/diary/evidence.d.ts",
+        "size": 902,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/diary/format.d.ts",
+        "size": 1335,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/diary/schema.d.ts",
+        "size": 209,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/diary/selection.d.ts",
+        "size": 537,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/diary/service.d.ts",
+        "size": 5144,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/diary/transition.d.ts",
+        "size": 376,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/diary/types.d.ts",
+        "size": 1776,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/experience-candidates.d.ts",
+        "size": 5580,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/global-segments.d.ts",
+        "size": 992,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/global.d.ts",
+        "size": 3556,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/growth-format.d.ts",
+        "size": 1501,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/host-adapter.d.ts",
+        "size": 552,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/injection.d.ts",
+        "size": 3025,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/jobs.d.ts",
+        "size": 1956,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/lexical.d.ts",
+        "size": 252,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/memory-optimizer.d.ts",
+        "size": 478,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/memory.d.ts",
+        "size": 58322,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/modules/contract.d.ts",
+        "size": 1604,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/modules/runtime.d.ts",
+        "size": 2118,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/organizer.d.ts",
+        "size": 2791,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/packet-proof.d.ts",
+        "size": 964,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/packet.d.ts",
+        "size": 3359,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/changes.d.ts",
+        "size": 3465,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/documents/audience.d.ts",
+        "size": 754,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/documents/excerpt.d.ts",
+        "size": 538,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/documents/format.d.ts",
+        "size": 916,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/documents/import.d.ts",
+        "size": 171,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/documents/reconcile.d.ts",
+        "size": 710,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/documents/retrieval.d.ts",
+        "size": 2844,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/documents/schema.d.ts",
+        "size": 672,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/documents/selection.d.ts",
+        "size": 648,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/documents/service.d.ts",
+        "size": 2756,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/documents/types.d.ts",
+        "size": 1835,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/format.d.ts",
+        "size": 418,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/management-capabilities.d.ts",
+        "size": 710,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/management-client.d.ts",
+        "size": 467,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/management-extensions.d.ts",
+        "size": 5662,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/management-server.d.ts",
+        "size": 13347,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/management-settings.d.ts",
+        "size": 436,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/management.d.ts",
+        "size": 13850,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/manager-ui.d.ts",
+        "size": 159,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/projection.d.ts",
+        "size": 844,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/schema.d.ts",
+        "size": 307,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/service.d.ts",
+        "size": 5267,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/types.d.ts",
+        "size": 1174,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/workbench-client.d.ts",
+        "size": 570,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/workbench-extensions.d.ts",
+        "size": 179,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/workbench-font-manifest.d.ts",
+        "size": 66,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/workbench-fonts.d.ts",
+        "size": 158,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/workbench-page.d.ts",
+        "size": 369,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/workbench-reading.d.ts",
+        "size": 184,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/workbench-style.d.ts",
+        "size": 193223,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/person/workbench-visuals.d.ts",
+        "size": 174,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/publication-guard.d.ts",
+        "size": 249,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/reducer.d.ts",
+        "size": 878,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/retrieval-evidence.d.ts",
+        "size": 844,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/retrieval-index.d.ts",
+        "size": 754,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/retrieval.d.ts",
+        "size": 2229,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/schema.d.ts",
+        "size": 1663,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/semantic-registry.d.ts",
+        "size": 1093,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/session-policy.d.ts",
+        "size": 2188,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/store.d.ts",
+        "size": 8678,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/summarizer.d.ts",
+        "size": 4047,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/token-budget.d.ts",
+        "size": 1600,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/tokenizers/deepseek.d.ts",
+        "size": 374,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/types.d.ts",
+        "size": 13722,
+        "mode": 420
+      },
+      {
+        "path": "lib/types/rp/validation.d.ts",
+        "size": 1455,
+        "mode": 420
+      },
+      {
+        "path": "package.json",
+        "size": 827,
+        "mode": 420
+      }
+    ],
+    "entryCount": 193,
+    "bundled": []
+  }
+]

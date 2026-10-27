@@ -1,0 +1,3310 @@
+{
+  "schemaVersion": 1,
+  "policyVersion": "rp-exact-annotation-fixture/v2",
+  "corpusVersion": "zh-rp-fixed/v2",
+  "toy": {
+    "status": "separate-mechanism-evidence",
+    "path": "acceptance-matrix.json"
+  },
+  "offline": {
+    "status": "fixed-annotated-fixtures",
+    "annotationAuthor": "implementation agent; human-reviewable; no user adjudication claimed",
+    "modelGenerated": false,
+    "samples": 12,
+    "outputs": 49,
+    "results": [
+      {
+        "sampleId": "fact",
+        "tags": [
+          "fact"
+        ],
+        "variant": "correct",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 2,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 2,
+          "denominator": 2,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 2,
+          "denominator": 2,
+          "rate": 1
+        },
+        "gatePassed": true
+      },
+      {
+        "sampleId": "fact",
+        "tags": [
+          "fact"
+        ],
+        "variant": "critical-loss",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "fact",
+        "tags": [
+          "fact"
+        ],
+        "variant": "false-sourced",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 2,
+          "rate": 0.5
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 2,
+          "rate": 0.5
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 2,
+            "rate": 0.5
+          },
+          "predicate": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 2,
+          "rate": 0.5
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "fact",
+        "tags": [
+          "fact"
+        ],
+        "variant": "wrong-subject",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 2,
+          "rate": 0.5
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 2,
+          "rate": 0.5
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 2,
+            "rate": 0.5
+          },
+          "speaker": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 2,
+            "denominator": 2,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 2,
+          "rate": 0.5
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "lie",
+        "tags": [
+          "lie"
+        ],
+        "variant": "correct",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": true
+      },
+      {
+        "sampleId": "lie",
+        "tags": [
+          "lie"
+        ],
+        "variant": "critical-loss",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "speaker": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "predicate": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "epistemic": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "time": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "lie",
+        "tags": [
+          "lie"
+        ],
+        "variant": "false-sourced",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "lie",
+        "tags": [
+          "lie"
+        ],
+        "variant": "wrong-subject",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "belief",
+        "tags": [
+          "misunderstanding"
+        ],
+        "variant": "correct",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": true
+      },
+      {
+        "sampleId": "belief",
+        "tags": [
+          "misunderstanding"
+        ],
+        "variant": "critical-loss",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "speaker": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "predicate": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "epistemic": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "time": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "belief",
+        "tags": [
+          "misunderstanding"
+        ],
+        "variant": "false-sourced",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "belief",
+        "tags": [
+          "misunderstanding"
+        ],
+        "variant": "wrong-subject",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "prop",
+        "tags": [
+          "prop"
+        ],
+        "variant": "correct",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": true
+      },
+      {
+        "sampleId": "prop",
+        "tags": [
+          "prop"
+        ],
+        "variant": "critical-loss",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "speaker": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "predicate": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "epistemic": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "time": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "prop",
+        "tags": [
+          "prop"
+        ],
+        "variant": "false-sourced",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "prop",
+        "tags": [
+          "prop"
+        ],
+        "variant": "wrong-subject",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "promise",
+        "tags": [
+          "promise"
+        ],
+        "variant": "correct",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": true
+      },
+      {
+        "sampleId": "promise",
+        "tags": [
+          "promise"
+        ],
+        "variant": "critical-loss",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "speaker": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "predicate": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "epistemic": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "time": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "promise",
+        "tags": [
+          "promise"
+        ],
+        "variant": "false-sourced",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "promise",
+        "tags": [
+          "promise"
+        ],
+        "variant": "wrong-subject",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "relation",
+        "tags": [
+          "relationship"
+        ],
+        "variant": "correct",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": true
+      },
+      {
+        "sampleId": "relation",
+        "tags": [
+          "relationship"
+        ],
+        "variant": "critical-loss",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "speaker": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "predicate": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "epistemic": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "time": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "relation",
+        "tags": [
+          "relationship"
+        ],
+        "variant": "false-sourced",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "relation",
+        "tags": [
+          "relationship"
+        ],
+        "variant": "wrong-subject",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "secret",
+        "tags": [
+          "secret"
+        ],
+        "variant": "correct",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": true
+      },
+      {
+        "sampleId": "secret",
+        "tags": [
+          "secret"
+        ],
+        "variant": "critical-loss",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "speaker": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "predicate": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "epistemic": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "time": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "secret",
+        "tags": [
+          "secret"
+        ],
+        "variant": "false-sourced",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "secret",
+        "tags": [
+          "secret"
+        ],
+        "variant": "wrong-subject",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "secret",
+        "tags": [
+          "secret"
+        ],
+        "variant": "wrong-pov",
+        "viewpoint": "erin",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 1,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "flashback",
+        "tags": [
+          "flashback"
+        ],
+        "variant": "correct",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": true
+      },
+      {
+        "sampleId": "flashback",
+        "tags": [
+          "flashback"
+        ],
+        "variant": "critical-loss",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "speaker": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "predicate": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "epistemic": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "time": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "flashback",
+        "tags": [
+          "flashback"
+        ],
+        "variant": "false-sourced",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "flashback",
+        "tags": [
+          "flashback"
+        ],
+        "variant": "wrong-subject",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "retcon",
+        "tags": [
+          "retcon"
+        ],
+        "variant": "correct",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": true
+      },
+      {
+        "sampleId": "retcon",
+        "tags": [
+          "retcon"
+        ],
+        "variant": "critical-loss",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "speaker": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "predicate": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "epistemic": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "time": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "retcon",
+        "tags": [
+          "retcon"
+        ],
+        "variant": "false-sourced",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "retcon",
+        "tags": [
+          "retcon"
+        ],
+        "variant": "wrong-subject",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "fork",
+        "tags": [
+          "fork"
+        ],
+        "variant": "correct",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": true
+      },
+      {
+        "sampleId": "fork",
+        "tags": [
+          "fork"
+        ],
+        "variant": "critical-loss",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "speaker": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "predicate": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "epistemic": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "time": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "fork",
+        "tags": [
+          "fork"
+        ],
+        "variant": "false-sourced",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "fork",
+        "tags": [
+          "fork"
+        ],
+        "variant": "wrong-subject",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "uncertain",
+        "tags": [
+          "uncertainty"
+        ],
+        "variant": "correct",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": true
+      },
+      {
+        "sampleId": "uncertain",
+        "tags": [
+          "uncertainty"
+        ],
+        "variant": "critical-loss",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "speaker": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "predicate": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "epistemic": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "time": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "uncertain",
+        "tags": [
+          "uncertainty"
+        ],
+        "variant": "false-sourced",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "uncertain",
+        "tags": [
+          "uncertainty"
+        ],
+        "variant": "wrong-subject",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "names",
+        "tags": [
+          "same-name"
+        ],
+        "variant": "correct",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "attribution": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "gatePassed": true
+      },
+      {
+        "sampleId": "names",
+        "tags": [
+          "same-name"
+        ],
+        "variant": "critical-loss",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "speaker": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "predicate": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "epistemic": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          },
+          "time": {
+            "numerator": 0,
+            "denominator": 0,
+            "rate": null
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "names",
+        "tags": [
+          "same-name"
+        ],
+        "variant": "false-sourced",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      },
+      {
+        "sampleId": "names",
+        "tags": [
+          "same-name"
+        ],
+        "variant": "wrong-subject",
+        "viewpoint": "narrator",
+        "criticalRecall": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "otherRecall": {
+          "numerator": 0,
+          "denominator": 0,
+          "rate": null
+        },
+        "unsupported": {
+          "numerator": 1,
+          "denominator": 1,
+          "rate": 1
+        },
+        "attribution": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "dimensions": {
+          "subject": {
+            "numerator": 0,
+            "denominator": 1,
+            "rate": 0
+          },
+          "speaker": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "object": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "predicate": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "epistemic": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          },
+          "time": {
+            "numerator": 1,
+            "denominator": 1,
+            "rate": 1
+          }
+        },
+        "povErrors": 0,
+        "sourceSupport": {
+          "numerator": 0,
+          "denominator": 1,
+          "rate": 0
+        },
+        "gatePassed": false
+      }
+    ],
+    "realModelCalls": 0,
+    "networkCalls": 0,
+    "boundary": "Exact tuple and source annotations test the scorer. This is not general natural-language fidelity, tokenizer compression ratio or model quality."
+  },
+  "live": {
+    "status": "not-run",
+    "samples": 0,
+    "model": null,
+    "metrics": null
+  }
+}

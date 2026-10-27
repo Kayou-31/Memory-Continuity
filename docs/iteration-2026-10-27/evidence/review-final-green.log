@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: native chat proposes evidence-backed experiences without extra generation and workbench adopts explicitly
+ok 1 - native chat proposes evidence-backed experiences without extra generation and workbench adopts explicitly
+  ---
+  duration_ms: 1056.0532
+  type: 'test'
+  ...
+# Subtest: malformed experience JSON is a certified refusal and does not disable conversation
+ok 2 - malformed experience JSON is a certified refusal and does not disable conversation
+  ---
+  duration_ms: 496.6691
+  type: 'test'
+  ...
+# Subtest: failed experience receipt blocks continuation and clean recovery keeps one pending candidate without replay
+ok 3 - failed experience receipt blocks continuation and clean recovery keeps one pending candidate without replay
+  ---
+  duration_ms: 767.9225
+  type: 'test'
+  ...
+# Subtest: clean continuation can propose current evidence even when earlier accepted assistant history exists
+ok 4 - clean continuation can propose current evidence even when earlier accepted assistant history exists
+  ---
+  duration_ms: 1177.3113
+  type: 'test'
+  ...
+# Subtest: human review racing a saved proposal receipt reports persistence uncertainty and never pretends the write failed
+ok 5 - human review racing a saved proposal receipt reports persistence uncertainty and never pretends the write failed
+  ---
+  duration_ms: 708.0884
+  type: 'test'
+  ...
+# Subtest: native explicit token budget is visible, checks actual model identity, and blocks mandatory over-budget requests before the provider
+ok 6 - native explicit token budget is visible, checks actual model identity, and blocks mandatory over-budget requests before the provider
+  ---
+  duration_ms: 526.0613
+  type: 'test'
+  ...
+# Subtest: actual tokenizer budget certifies bounded pages or a complete refusal for maxChars=2048
+ok 7 - actual tokenizer budget certifies bounded pages or a complete refusal for maxChars=2048
+  ---
+  duration_ms: 1437.6117
+  type: 'test'
+  ...
+# Subtest: actual tokenizer budget certifies bounded pages or a complete refusal for maxChars=65536
+ok 8 - actual tokenizer budget certifies bounded pages or a complete refusal for maxChars=65536
+  ---
+  duration_ms: 1356.0037
+  type: 'test'
+  ...
+# Subtest: dynamic output reserve blocks even an otherwise valid token-budget memory packet
+ok 9 - dynamic output reserve blocks even an otherwise valid token-budget memory packet
+  ---
+  duration_ms: 289.6565
+  type: 'test'
+  ...
+# Subtest: explicit budget upgrades back up the original journal and a stripped binding cannot silently downgrade after resume
+ok 10 - explicit budget upgrades back up the original journal and a stripped binding cannot silently downgrade after resume
+  ---
+  duration_ms: 195.0702
+  type: 'test'
+  ...
+# Subtest: deletion between a native sized retrieval and receipt publication refuses the old data and the next provider request
+ok 11 - deletion between a native sized retrieval and receipt publication refuses the old data and the next provider request
+  ---
+  duration_ms: 491.6557
+  type: 'test'
+  ...
+# Subtest: two small memory calls in one assistant turn share budget and both complete
+ok 12 - two small memory calls in one assistant turn share budget and both complete
+  ---
+  duration_ms: 682.2415
+  type: 'test'
+  ...
+# Subtest: downstream provider failure is not mislabeled as a memory admission rejection
+ok 13 - downstream provider failure is not mislabeled as a memory admission rejection
+  ---
+  duration_ms: 269.0298
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10795.4328

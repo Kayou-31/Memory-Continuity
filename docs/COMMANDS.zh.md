@@ -1,14 +1,14 @@
 # Memory-Continuity 中文指令速查
 
-> 适用本轮 **0.3.0-preview.1**。稳定版 0.2.1 不包含新的人物原文、共同日记与 32K 预算；请核对安装包版本。相关专题见 [人物资料](framework-evolution-2026-10-25/RESULTS.md)、[共同日记](shared-diary.zh.md)、[记忆预算](memory-budget.zh.md)。
+> 当前公开稳定版为 **0.3.0**；本文新增标记为 **0.3.1-dev.1 本地候选** 的操作，尚未公开发布。请先核对安装包版本。相关专题见 [本轮验证报告](iteration-2026-10-27/RESULTS.md)、[人物资料](framework-evolution-2026-10-25/RESULTS.md)、[共同日记](shared-diary.zh.md)、[记忆预算](memory-budget.zh.md)。
 
-兼容 DSH 0.2.1-rc.2 / rc.3。插件包为 `@dsh-external/dsh-memory-continuity`，宿主主命令为 `/memcont`（Memory + Continuity），旧 `/rp` 保留为兼容别名；旧数据目录不改名。人物工作台已接入真实后端；在会话内执行 /memcont person manage 打开，所有写入须先预览再明确确认。
+兼容 DSH 0.2.1-rc.2 / rc.3。插件包为 `@dsh-external/dsh-memory-continuity`，宿主主命令为 `/memcont`（Memory + Continuity），旧 `/rp` 保留为兼容别名；旧数据目录不改名。人物工作台已接入真实后端；在会话内执行 /memcont person manage 打开，人物和正式记忆的修改须先核对再明确确认；已授权的 AI 日记与经历候选写入有各自的范围和限额，不会自动修改人物正史。
 
 ## 工作台资料导入与提醒设置
 
-以下功能包含在本轮预览包中，不属于稳定版 0.2.1。
+人物资料、共同日记和预算管理已包含在 0.3.0；资料草稿恢复、AI 经历候选与明确人物核心属于 0.3.1-dev.1 本地候选。
 
-执行 `/memcont person manage` 后，可在“完整人物资料”页选择 UTF-8 Markdown 或文本文件，单份最多 1 MiB。先解析，再核对章节分类、注入资格和适用范围，最后明确确认保存。原文保留 BOM 与换行；未分类章节不会被丢弃，默认只保存、不注入。修订原文后必须重新解析；章节编号随原文校验值变化，请重新核对分类与条件。
+执行 `/memcont person manage` 后，可在“完整人物资料”页选择 UTF-8 Markdown 或文本文件，单份最多 1 MiB。先解析，再核对章节分类、注入资格和适用范围，最后明确确认保存。原文保留 BOM 与换行；未分类章节不会被丢弃，默认只保存、不注入。修订原文后必须重新解析；界面提供章节分类和条件的匹配建议，仍需核对并确认，不会凭标题自动继承权限。
 
 工作台上传后还会返回一条临时短指令。它使用上传时的默认分类，不包含网页中尚未保存的分类调整：
 
@@ -25,6 +25,35 @@
 “工作台设置”里的“修改前提示对后续对话的影响”默认开启，可切换为页内预览。关闭弹窗后仍须明确点击“确认写入”；权限、来源、版本校验和必要确认不受影响。偏好保存在当前本机 profile，AI 不能修改它。
 
 “记忆预算”页显示实际计量方式，可预览并修改总额和五层上限；当前聊天人物绑定与注入配置也使用服务端预览。修改这些聊天配置需要空白根会话，已有历史时先干净续接。精确 tokenizer 与保守计量的区别见 [记忆预算](memory-budget.zh.md)。
+
+## AI 提出的经历（0.3.1-dev.1 本地候选）
+
+先绑定正在聊天的人物。工作台“经历与时间线”的开关与以下命令共用后端：
+
+```text
+/memcont experience status
+/memcont experience enable
+/memcont experience list
+/memcont experience show <候选ID>
+/memcont experience adopt <候选ID>
+/memcont experience reject <候选ID>
+/memcont experience disable
+```
+
+默认关闭。开启后使用新会话；若首轮已经固定了工具声明，先 `/memcont continue-clean`。关闭立即禁止新提案。AI 在正常聊天中可以提出带精确原话与理由的片段，候选不会自动成为正式经历；`adopt` 和 `reject` 是明确的人工作出决定，先查看原话再执行。每个人物在当前人生线五分钟最多一次、滚动二十四小时八次准入、最多三十二条待审；重复输入复用候选，撤回原话不退还已消费额度。
+
+没有额外后台总结请求。模型调用提案工具后，普通工具后续回复仍可能产生一次模型请求。若写入结果不确定，先查看候选和状态，不能自动重发输入。独立核心和 AstrBot 管理桥能审阅；没有接入模型写工具的宿主不会自行生成经历。
+
+## 明确人物核心（0.3.1-dev.1 本地候选）
+
+工作台“人物档案”可将字段设为“人物核心”，与“保持稳定／允许成长”分开设置。命令操作先用 `person show` 读取当前字段事件 ID：
+
+```text
+/memcont person show erin
+/memcont person set-injection {"personId":"erin","fieldId":"voice","previousEventId":"实际字段事件ID","injection":"core","note":"这条表达方式应跨话题保留"}
+```
+
+`injection` 可设为 `core` 或 `default`；不能把示例事件 ID 直接照抄。人物核心仍受核心、层级与总容量限制；超额会说明原因，不静默丢弃必需字段。新增阅读能力会触发备份，旧版不能读取升级后的工作区，详见本轮报告。字段修改后，旧会话可能因为旧快照失效而需要干净续接。
 
 ## 从哪里开始
 
